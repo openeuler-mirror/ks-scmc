@@ -2,49 +2,76 @@ package main
 
 import (
 	"flag"
-	"log"
+	"fmt"
 	"net"
 	"os"
+	"path/filepath"
 
+	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 
-	"ksc-mcube/agent/server"
 	"ksc-mcube/common"
-	"ksc-mcube/rpc/pb/container"
-	"ksc-mcube/rpc/pb/node"
-	// user "ksc-mcube/rpc/pb/user"
+	"ksc-mcube/server/agent"
+	"ksc-mcube/server/controller"
+)
+
+const (
+	agentMode      = "agent"
+	controllerMode = "controller"
 )
 
 var (
-	listenAddr string
-	logFile    string
+	logDir    string
+	logStdout bool
+	verbose   int
+	mode      string
 )
 
 func main() {
-	if len(os.Args) < 2 {
-		log.Fatalf("Usage: %s controller|agent ...", os.Args[0])
-	}
-
 	flag.Parse()
-	common.InitLogger(true, logFile)
 
-	lis, err := net.Listen("tcp", listenAddr)
-	if err != nil {
-		log.Fatalf("failed to listen: %v", err)
+	if flag.NArg() > 0 {
+		mode = flag.Arg(0)
 	}
 
-	s := grpc.NewServer()
-	// user.RegisterUserServer(s, &server.UserServer{})
-	node.RegisterNodeServer(s, &server.NodeServer{})
-	container.RegisterContainerServer(s, &server.ContainerServer{})
+	if flag.NArg() != 1 || (mode != agentMode && mode != controllerMode) {
+		fmt.Fprintf(flag.CommandLine.Output(), "%s need one arg, value must be '%s' or '%s':\n", os.Args[0], agentMode, controllerMode)
+		flag.Usage()
+		os.Exit(1)
+	}
 
-	log.Printf("server listening at %v", lis.Addr())
+	// TODO check log dir, create when it not exists.
+	logFile := filepath.Join(logDir, mode)
+	common.InitLogger(verbose, logStdout, logFile)
+
+	var addr string
+	s := grpc.NewServer()
+	if mode == agentMode {
+		agent.Register(s)
+		addr = fmt.Sprintf("%s:%d", common.Host, common.AgentPort)
+	} else {
+		controller.Register(s)
+		addr = fmt.Sprintf("%s:%d", common.Host, common.ControllerPort)
+	}
+
+	lis, err := net.Listen("tcp", addr)
+	if err != nil {
+		logrus.Fatalf("failed to listen(%s): %v", addr, err)
+	}
+
+	logrus.Printf("%s server listening at %v", mode, lis.Addr())
 	if err := s.Serve(lis); err != nil {
-		log.Fatalf("failed to serve: %v", err)
+		logrus.Fatalf("failed to serve: %v", err)
 	}
 }
 
 func init() {
-	flag.StringVar(&listenAddr, "listen-addr", "0.0.0.0:10050", "Service listening address")
-	flag.StringVar(&logFile, "logfile", "/var/log/ksc-mcube/agent.log", "log output file")
+	flag.StringVar(&logDir, "logdir", "/var/log/ksc-mcube/", "log output directory")
+	flag.BoolVar(&logStdout, "stdout", false, "log write to stdout")
+	flag.IntVar(&verbose, "verbose", int(logrus.InfoLevel), "log verbosity: trace=6 debug=5 info=4 warning=3 error=2")
+
+	flag.Usage = func() {
+		fmt.Fprintf(flag.CommandLine.Output(), "Usage of %s [OPTIONS] agent|controller:\n", os.Args[0])
+		flag.PrintDefaults()
+	}
 }

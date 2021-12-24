@@ -1,9 +1,10 @@
-package server
+package internal
 
 import (
 	"context"
-	"log"
 	"time"
+
+	log "github.com/sirupsen/logrus"
 
 	"ksc-mcube/model"
 	"ksc-mcube/rpc/errno"
@@ -15,8 +16,7 @@ type NodeServer struct {
 }
 
 func (s *NodeServer) List(ctx context.Context, in *pb.ListRequest) (*pb.ListReply, error) {
-	log.Printf("Received: %v", in)
-
+	log.Infof("Received: %v", in)
 	nodes, err := model.ListNodes()
 	if err != nil {
 		return &pb.ListReply{Header: errno.InternalError}, nil
@@ -35,7 +35,7 @@ func (s *NodeServer) List(ctx context.Context, in *pb.ListRequest) (*pb.ListRepl
 }
 
 func (s *NodeServer) Create(ctx context.Context, in *pb.CreateRequest) (*pb.CreateReply, error) {
-	log.Printf("Received: %v", in)
+	log.Infof("Received: %v", in)
 
 	if in.Name == "" || in.Address == "" {
 		return &pb.CreateReply{Header: errno.InvalidArgument}, nil
@@ -54,7 +54,7 @@ func (s *NodeServer) Create(ctx context.Context, in *pb.CreateRequest) (*pb.Crea
 }
 
 func (s *NodeServer) Remove(ctx context.Context, in *pb.RemoveRequest) (*pb.RemoveReply, error) {
-	log.Printf("Received: %v", in)
+	log.Infof("Received: %v", in)
 	if err := model.RemoveNode(in.Ids); err != nil {
 		return &pb.RemoveReply{Header: errno.InternalError}, nil
 	}
@@ -66,7 +66,6 @@ func (s *NodeServer) Status(ctx context.Context, in *pb.StatusRequest) (*pb.Stat
 
 	nodes, err := model.ListNodes()
 	if err != nil {
-		log.Printf("query nodes: %v", err)
 		return &reply, nil
 	}
 
@@ -78,7 +77,7 @@ func (s *NodeServer) Status(ctx context.Context, in *pb.StatusRequest) (*pb.Stat
 				goto next
 			}
 		}
-		log.Printf("node ID=%v not found", nodeID)
+		log.Warnf("node ID=%v not found", nodeID)
 		reply.Header = errno.NotFound
 		return &reply, nil
 	next:
@@ -87,7 +86,7 @@ func (s *NodeServer) Status(ctx context.Context, in *pb.StatusRequest) (*pb.Stat
 	for _, node := range nodeToQuery {
 		conn, err := getAgentConn(node.Address)
 		if err != nil {
-			log.Printf("Failed to connect to agent service")
+			log.Warnf("Failed to connect to agent service")
 			reply.StatusList = append(reply.StatusList, &pb.NodeStatus{
 				NodeId: node.ID,
 				State:  int64(pb.NodeState_Offline),
@@ -100,11 +99,11 @@ func (s *NodeServer) Status(ctx context.Context, in *pb.StatusRequest) (*pb.Stat
 		defer cancel()
 		subReply, err := cli.Status(ctx, in)
 		if err != nil {
-			log.Printf("get node status ID=%v address=%v: %v", node.ID, node.Address, err)
+			log.Warnf("get node status ID=%v address=%v: %v", node.ID, node.Address, err)
 			return &reply, nil
 		}
 
-		log.Printf("subReply: %+v", subReply)
+		log.Debugf("subReply: %+v", subReply)
 		for i, _ := range subReply.StatusList {
 			subReply.StatusList[i].NodeId = node.ID
 			reply.StatusList = append(reply.StatusList, subReply.StatusList[i])

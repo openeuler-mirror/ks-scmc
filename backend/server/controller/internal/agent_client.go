@@ -1,19 +1,17 @@
-package server
+package internal
 
 import (
-	"flag"
 	"fmt"
-	"log"
+	"ksc-mcube/common"
 	"sync"
 
+	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 )
 
 var (
 	agentConnLock sync.RWMutex
 	agentConns    map[string]*grpc.ClientConn
-
-	agentServicePort uint
 )
 
 func getAgentConn(host string) (*grpc.ClientConn, error) {
@@ -26,15 +24,15 @@ func getAgentConn(host string) (*grpc.ClientConn, error) {
 
 	agentConnLock.RUnlock()
 
-	addr := fmt.Sprintf("%s:%d", host, agentServicePort)
+	addr := fmt.Sprintf("%s:%d", host, common.AgentPort)
 
 	var opts []grpc.DialOption
 	opts = append(opts, grpc.WithInsecure())
 
-	log.Printf("dial agent service: %v", addr)
+	log.Infof("dial agent service: %v", addr)
 	conn, err := grpc.Dial(addr, opts...)
 	if err != nil {
-		log.Printf("Dial agent %s: %v", addr, err)
+		log.Warnf("dial agent %s: %v", addr, err)
 		return nil, err
 	}
 
@@ -46,6 +44,5 @@ func getAgentConn(host string) (*grpc.ClientConn, error) {
 }
 
 func init() {
-	flag.UintVar(&agentServicePort, "agent-service-port", 10051, "Agent service listening port")
 	agentConns = make(map[string]*grpc.ClientConn)
 }

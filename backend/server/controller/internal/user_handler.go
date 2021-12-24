@@ -1,10 +1,10 @@
-package server
+package internal
 
 import (
 	"context"
-	"log"
 
 	"github.com/google/uuid"
+	log "github.com/sirupsen/logrus"
 	"golang.org/x/crypto/bcrypt"
 	"google.golang.org/grpc/peer"
 
@@ -18,7 +18,7 @@ type UserServer struct {
 }
 
 func (s *UserServer) Login(ctx context.Context, in *pb.LoginRequest) (*pb.LoginReply, error) {
-	log.Printf("Received: %v", in)
+	log.Infof("Received: %v", in)
 
 	// check inputs
 	if len(in.Username) < 4 || len(in.Password) < 8 {
@@ -35,7 +35,7 @@ func (s *UserServer) Login(ctx context.Context, in *pb.LoginRequest) (*pb.LoginR
 
 	// check password
 	if err := bcrypt.CompareHashAndPassword([]byte(userInfo.PasswordEn), []byte(in.Password)); err != nil {
-		log.Printf("compare password: %v", err)
+		log.Infof("compare password: %v", err)
 		return &pb.LoginReply{Header: errno.WrongPassword}, nil
 	}
 
@@ -54,12 +54,12 @@ func (s *UserServer) Login(ctx context.Context, in *pb.LoginRequest) (*pb.LoginR
 }
 
 func (s *UserServer) Logout(ctx context.Context, in *pb.LogoutRequest) (*pb.LogoutReply, error) {
-	log.Printf("Received: %v", in)
+	log.Infof("Received: %v", in)
 	return &pb.LogoutReply{Header: errno.OK}, nil
 }
 
 func (s *UserServer) Signup(ctx context.Context, in *pb.SignupRequest) (*pb.SignupReply, error) {
-	log.Printf("Received: %v", in)
+	log.Infof("Received: %v", in)
 
 	// check inputs, TODO(check character set)
 	if len(in.Username) < 4 || len(in.Password) < 8 || len(in.Role) < 4 {
@@ -69,7 +69,7 @@ func (s *UserServer) Signup(ctx context.Context, in *pb.SignupRequest) (*pb.Sign
 	// pre-process: bcrypt password
 	rawBytes, err := bcrypt.GenerateFromPassword([]byte(in.GetPassword()), 14)
 	if err != nil {
-		log.Printf("bcrypt handle password: %v", err)
+		log.Warnf("bcrypt handle password: %v", err)
 		return &pb.SignupReply{Header: errno.InternalError}, nil
 	}
 

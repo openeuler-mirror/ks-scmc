@@ -2,10 +2,10 @@ package model
 
 import (
 	"flag"
-	"log"
 	"sync"
 	"time"
 
+	log "github.com/sirupsen/logrus"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )
@@ -26,13 +26,13 @@ func getConn() (*gorm.DB, error) {
 
 	_db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	if err != nil {
-		log.Printf("connect to database: %s, error: %v", dsn, err)
+		log.Warnf("connect to database: %s, error: %v", dsn, err)
 		return nil, err
 	}
 
 	conn, err := _db.DB()
 	if err != nil {
-		log.Printf("access to database/sql: %v", err)
+		log.Warnf("access to database/sql: %v", err)
 		return nil, err
 	}
 	conn.SetMaxOpenConns(10)

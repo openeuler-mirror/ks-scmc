@@ -1,0 +1,57 @@
+syntax = "proto3";
+
+option go_package = "ksc-mcube/rpc/pb/user";
+
+package user;
+
+import "common.proto";
+
+service User {
+  rpc Signup(SignupRequest) returns (SignupReply) {}
+  rpc Login(LoginRequest) returns (LoginReply) {}
+  rpc Logout(LogoutRequest) returns (LogoutReply) {}
+  rpc UpdatePassword(UpdatePasswordRequest) returns (UpdatePasswordReply) {}
+}
+
+message SignupRequest {
+    common.RequestHeader header = 1;
+    string username = 2;
+    string password = 3;
+    string role = 4;
+}
+
+message SignupReply {
+    common.ReplyHeader header = 1;
+    // TODO userinfo
+}
+
+message LoginRequest {
+    common.RequestHeader header = 1;
+    string username = 2;
+    string password = 3;
+}
+
+message LoginReply {
+    common.ReplyHeader header = 1;
+    int64 user_id = 2;
+    string session_key = 3;
+    // TODO userinfo
+}
+
+message LogoutRequest {
+    common.RequestHeader header = 1;
+}
+
+message LogoutReply {
+    common.ReplyHeader header = 1;
+}
+
+message UpdatePasswordRequest {
+    common.ReplyHeader header = 1;
+    string password = 2;
+}
+
+message UpdatePasswordReply {
+    common.ReplyHeader header = 1;
+    bool need_relogin = 2;
+}

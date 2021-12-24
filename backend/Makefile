@@ -1,17 +1,16 @@
-AGENT = ksc-mcube-agent
-CONTROLLER = ksc-mcube-controller
+PROJECT = ksc-mcube
 RPC = rpc/pb
 
-all: $(AGENT) $(CONTROLLER) $(RPC)
+all: $(PROJECT) $(RPC)
 
-clean:
-	rm -f $(AGENT) $(CONTROLLER)
+$(PROJECT):
+	go build -o $@ $@/cmd
 
 $(RPC):
 	cd rpc/ && make
 
-$(AGENT):
-	go build -o $@ ksc-mcube/cmd/agent
+vendor:
+	go mod vendor
 
-$(CONTROLLER):
-	go build -o $@ ksc-mcube/cmd/controller
+clean:
+	rm -f $(PROJECT)

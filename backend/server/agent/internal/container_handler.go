@@ -46,6 +46,7 @@ func (s *ContainerServer) List(ctx context.Context, in *pb.ListRequest) (*pb.Lis
 			State:      c.State,
 			SizeRw:     c.SizeRw,
 			SizeRootFs: c.SizeRootFs,
+			Labels:     c.Labels,
 		}
 
 		if len(c.Names) > 0 && strings.HasPrefix(c.Names[0], "/") {
@@ -88,6 +89,7 @@ func (s *ContainerServer) Create(ctx context.Context, in *pb.CreateRequest) (*pb
 		Image:      in.Config.Image, // should check
 		Entrypoint: in.Config.Entrypoint,
 		Cmd:        in.Config.Cmd,
+		Labels:     in.Config.Labels,
 	}
 
 	if in.HostConfig != nil {

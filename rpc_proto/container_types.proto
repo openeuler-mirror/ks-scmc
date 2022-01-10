@@ -59,6 +59,7 @@ message ContainerInfo {
     string state = 6;   // "created", "running", "paused", "restarting", "removing", "exited", or "dead"
     int64 size_rw = 7;
     int64 size_root_fs = 8;
+    map<string, string> labels = 9;
 }
 
 
@@ -112,10 +113,13 @@ message ContainerConfig {
 
     string image = 5;
     string working_dir = 6;
+
     repeated string entrypoint = 7;
     repeated string cmd = 8;
 
     bool network_disabled = 9;
+
+    map<string, string> labels = 10;
 }
 
 message CpuStat {

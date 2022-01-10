@@ -80,3 +80,22 @@ func RemoveNode(ids []int64) error {
 	log.Debugf("db remove node ids=%v OK", ids)
 	return nil
 }
+
+func QueryNodeByID(id int64) (*NodeInfo, error) {
+	db, err := getConn()
+	if err != nil {
+		return nil, err
+	}
+
+	var nodeInfo NodeInfo
+	result := db.First(&nodeInfo, id)
+	if result.Error != nil {
+		log.Warnf("query node id=%v: %v", id, err)
+		return nil, translateError(result.Error)
+	} else if result.RowsAffected == 0 {
+		log.Warnf("query node id=%v not found", id)
+		return nil, ErrDBRecordNotFound
+	}
+
+	return &nodeInfo, nil
+}

@@ -9,7 +9,7 @@ import (
 	"google.golang.org/grpc/peer"
 
 	"ksc-mcube/model"
-	"ksc-mcube/rpc/errno"
+	"ksc-mcube/rpc"
 	pb "ksc-mcube/rpc/pb/user"
 )
 
@@ -18,25 +18,25 @@ type UserServer struct {
 }
 
 func (s *UserServer) Login(ctx context.Context, in *pb.LoginRequest) (*pb.LoginReply, error) {
-	log.Infof("Received: %v", in)
+	// log.Infof("Received: %v", in)
 
 	// check inputs
 	if len(in.Username) < 4 || len(in.Password) < 8 {
-		return &pb.LoginReply{Header: errno.InvalidArgument}, nil
+		return nil, rpc.ErrInvalidArgument
 	}
 
 	// database operations
 	userInfo, err := model.QueryUser(in.Username)
 	if err != nil {
-		return &pb.LoginReply{Header: errno.InternalError}, nil
+		return &pb.LoginReply{}, nil
 	} else if userInfo == nil {
-		return &pb.LoginReply{Header: errno.UserNotExist}, nil
+		return nil, rpc.ErrNotFound
 	}
 
 	// check password
 	if err := bcrypt.CompareHashAndPassword([]byte(userInfo.PasswordEn), []byte(in.Password)); err != nil {
 		log.Infof("compare password: %v", err)
-		return &pb.LoginReply{Header: errno.WrongPassword}, nil
+		return nil, rpc.ErrWrongPassword
 	}
 
 	var addr string
@@ -47,46 +47,48 @@ func (s *UserServer) Login(ctx context.Context, in *pb.LoginRequest) (*pb.LoginR
 	// UUID create session
 	sessionKey := uuid.New().String()
 	if err := model.CreateSession(userInfo.ID, sessionKey, addr); err != nil {
-		return &pb.LoginReply{Header: errno.InternalError}, nil
+		return &pb.LoginReply{}, nil
 	}
 
-	return &pb.LoginReply{Header: errno.OK, UserId: userInfo.ID, SessionKey: sessionKey}, nil
+	return &pb.LoginReply{UserId: userInfo.ID, SessionKey: sessionKey}, nil
 }
 
 func (s *UserServer) Logout(ctx context.Context, in *pb.LogoutRequest) (*pb.LogoutReply, error) {
 	log.Infof("Received: %v", in)
-	return &pb.LogoutReply{Header: errno.OK}, nil
+
+	// TODO database operation
+	return &pb.LogoutReply{}, nil
 }
 
 func (s *UserServer) Signup(ctx context.Context, in *pb.SignupRequest) (*pb.SignupReply, error) {
-	log.Infof("Received: %v", in)
+	// log.Infof("Received: %v", in)
 
 	// check inputs, TODO(check character set)
 	if len(in.Username) < 4 || len(in.Password) < 8 || len(in.Role) < 4 {
-		return &pb.SignupReply{Header: errno.InvalidArgument}, nil
+		return nil, rpc.ErrInvalidArgument
 	}
 
 	// pre-process: bcrypt password
 	rawBytes, err := bcrypt.GenerateFromPassword([]byte(in.GetPassword()), 14)
 	if err != nil {
 		log.Warnf("bcrypt handle password: %v", err)
-		return &pb.SignupReply{Header: errno.InternalError}, nil
+		return nil, rpc.ErrInternal
 	}
 
 	// database operations
 	userInfo, err := model.QueryUser(in.Username)
 	if err != nil {
-		return &pb.SignupReply{Header: errno.InternalError}, nil
+		return nil, rpc.ErrInternal
 	} else if userInfo != nil {
-		return &pb.SignupReply{Header: errno.UserAlreadyExist}, nil
+		return nil, rpc.ErrAlreadyExists
 	}
 
 	if err := model.CreateUser(in.Username, string(rawBytes), in.Role); err != nil {
-		return &pb.SignupReply{Header: errno.InternalError}, nil
+		return nil, rpc.ErrInternal
 	}
 
 	// retrive user info
 
 	// finish
-	return &pb.SignupReply{Header: errno.OK}, nil
+	return &pb.SignupReply{}, nil
 }

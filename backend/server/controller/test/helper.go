@@ -2,10 +2,13 @@ package test
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"time"
 
 	"google.golang.org/grpc"
+
+	"ksc-mcube/common"
 )
 
 func testRunner(fn func(context.Context, *grpc.ClientConn)) error {
@@ -27,7 +30,8 @@ func testRunner(fn func(context.Context, *grpc.ClientConn)) error {
 	opts = append(opts, grpc.WithInsecure())
 	opts = append(opts, grpc.WithTimeout(time.Second*5))
 
-	conn, err := grpc.Dial("127.0.0.1:10050", opts...)
+	addr := fmt.Sprintf("127.0.0.1:%d", common.ControllerPort)
+	conn, err := grpc.Dial(addr, opts...)
 	if err != nil {
 		log.Printf("grpc.Dial: %v", err)
 		return err

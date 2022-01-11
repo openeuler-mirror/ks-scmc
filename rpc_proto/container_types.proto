@@ -88,10 +88,12 @@ message DeviceMapping {
 
 message ResourceConfig {
     int64 nano_cpus = 1;    // CPU quota in units of 10e-9 CPUs
+    int64 cpu_shares = 2;   // CPU shares (relative weight vs. other containers)
 
-    int64 mem_limit = 2;   // Memory limit (in bytes)
-    int64 mem_soft_limit = 3;  // Memory soft limit (in bytes)
-    repeated DeviceMapping devices = 4; // List of devices to map inside the container
+    int64 mem_limit = 11;   // Memory limit (in bytes)
+    int64 mem_soft_limit = 12;  // Memory soft limit (in bytes)
+
+    repeated DeviceMapping devices = 101; // List of devices to map inside the container
 }
 
 message HostConfig {
@@ -123,7 +125,7 @@ message ContainerConfig {
 }
 
 message CpuStat {
-    double percentage = 1;
+    double core_used = 1;
 }
 
 message MemoryStat {
@@ -144,7 +146,7 @@ message NetworkStats {
 
 message ContainerStatus {
     string id = 1;
-    string status = 2;
+    string state = 2;
     CpuStat cpu_stat = 3;
     MemoryStat mem_stat = 4;
     BlockStat block_stat = 5;

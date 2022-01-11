@@ -1,0 +1,406 @@
+/***********************MainWindow************************/
+QWidget#widget_user
+{
+    background-color:#ffffff;
+}
+QWidget#widget_user
+{
+    border-top-color: #E4E7ED;
+    border-top-style: solid;
+    border-top-width: 1px;
+    border-bottom-color: #E4E7ED;
+    border-bottom-style: solid;
+    border-bottom-width: 1px;
+}
+
+#MainWindow
+{
+     border-top-color: #E4E7ED;
+     border-top-style: solid;
+     border-top-width: 1px;
+     background-color:#ffffff;
+}
+
+#GuideItem
+{
+    background-color:#ffffff;
+}
+
+#GuideItem:hover
+{
+    background-color:#EBEEF5;
+}
+
+QStackedWidget#stackedWidget
+{
+      border: 1px solid #E4E7ED;
+      border-top:none;
+      border-bottom:none;
+      border-right:none;
+}
+
+QLabel#label_icon
+{
+    image: url(:/images/head.svg);
+}
+
+QToolButton#btn_menu
+{
+    background-color:transparent;
+}
+QToolButton#btn_menu:pressed
+{
+    background-color:transparent;
+}
+QToolButton#btn_menu:hover
+{
+     background-color:transparent;
+}
+
+/*************************CommonPage*************************/
+QToolButton#btn_refresh
+{
+    background-color:transparent;
+}
+
+QLineEdit#lineEdit_search
+{
+    border:1px solid #E4E7ED ;
+    border-radius: 3px;
+}
+
+QTableView{
+/*    border: 1px solid  red;		/*表格外边框*/
+    border:none;
+    padding: 0px;		/*内边距*/
+    margin: 0px;			/*外边距*/
+    color: #575757;		/*表格文本的颜色*/
+    background: white;	/*表格背景色*/
+    gridline-color:	#E4E7ED;		/*网格边框*/
+    font-size: 24px;					/*表格文本大小*/
+/*    font-family: "Microsoft YaHei";		/*表格文本字体*/
+}
+QTableView::item
+{
+    padding-left:10px;
+}
+QTableView::indicator:unchecked
+{
+    image: url(:/images/check-default.png);
+}
+QTableView#tableView::indicator:checked
+{
+    image: url(:/images/checked.png);
+}
+
+
+/*************************ContainerList**********************/
+QToolButton#btnCreate,
+QPushButton#btnRun,
+QPushButton#btnStop,
+QPushButton#btnRestart,
+QPushButton#btnDelete,
+QPushButton#btnMore
+{
+    background-color:#ffffff;
+    border:1px solid #E4E7ED ;
+    border-radius: 6px;
+
+}
+QToolButton#btnCreate:hover,
+QPushButton#btnRun:hover,
+QPushButton#btnStop:hover,
+QPushButton#btnRestart:hover,
+QPushButton#btnDelete:hover,
+QPushButton#btnMore:hover
+{
+    background-color:#EBEEF5;
+}
+
+QToolButton#btnCreate:pressed,
+QPushButton#btnRun:pressed,
+QPushButton#btnStop:pressed,
+QPushButton#btnRestart:pressed,
+QPushButton#btnDelete:pressed,
+QPushButton#btnMore:pressed
+{}
+
+QToolButton#btnCreate:focus,
+QPushButton#btnRun:focus,
+QPushButton#btnStop:focus,
+QPushButton#btnRestart:focus,
+QPushButton#btnDelete:focus,
+QPushButton#btnMore:focus
+{
+    outline: none;
+}
+
+/* the subcontrols below are used only in the MenuButtonPopup mode */
+ QToolButton#btnCreate::menu-button {
+     border:none;
+     background-color:transparent;
+     left: -5px;
+ }
+
+QToolButton#btnCreate::menu-arrow {
+     image: url(:/images/arrow_n.png);
+ }
+
+/* QToolButton::menu-arrow:open {
+     top: 1px; left: 1px; /* shift it a bit */
+/* }*/
+
+
+
+QPushButton#btnMore::menu-indicator{
+    image: url(:/images/arrow_n.png);
+    subcontrol-position: right center;
+    subcontrol-origin: padding;
+    left: -5px;
+}
+
+QMenu#btnCreateMenu,
+QMenu#moreMenu,
+QMenu#addMenu,
+QMenu#moreInTableMenu
+{
+    background-color: #ffffff; /* sets background of the menu */
+    border: 1px solid #409EFF;
+    border-radius: 6px;
+}
+
+QMenu#btnCreateMenu::item ,
+QMenu#moreMenu::item,
+QMenu#addMenu::item,
+QMenu#moreInTableMenu::item
+{
+    /* sets background of menu item. set this to something non-transparent
+        if you want menu color and menu item color to be different */
+    background-color: #ffffff;
+}
+
+QMenu#btnCreateMenu::item:hover,
+QMenu#moreMenu::item:hover,
+QMenu#addMenu::item:hover,
+QMenu#moreInTableMenu::item:hover
+{
+    /* sets background of menu item. set this to something non-transparent
+        if you want menu color and menu item color to be different */
+/*    background-color: red;*/
+    color:#303133
+}
+
+QMenu#btnCreateMenu::item:selected ,
+QMenu#moreMenu::item:selected,
+QMenu#addMenu::item:selected,
+QMenu#moreInTableMenu::item:selected
+{ /* when user selects item using mouse or keyboard */
+    background-color:#EBEEF5;
+    color:#303133;
+}
+
+/************************HeaderView************************/
+HeaderView
+{
+    background-color:#EBEEF5;
+    border:none;
+    color:#303133;
+}
+
+QHeaderView::section
+{
+    border:none;
+    font-style:normal;
+    font-weight:normal;
+}
+
+/***********************ContainerSetting******************/
+#btn_confirm,#m_pBtnSave
+{
+    background-color:#409EFF;
+    border: 1px solid #409EFF;
+    border-radius: 6px;
+    color:#ffffff;
+}
+#btn_confirm:hover,#m_pBtnSave:hover
+{
+    background-color:#66B1FF;
+}
+#btn_cancel
+{
+    background-color:#ffffff;
+    border: 1px solid #E4E7ED;
+    border-radius: 6px;
+}
+#btn_cancel:hover
+{
+    background-color:#EBEEF5
+}
+
+ContainerSetting
+{
+    background-color:#ffffff;
+}
+ContainerSetting QComboBox
+{
+    border: 1px solid #E4E7ED;
+    border-radius: 6px;
+    padding-left:10px;
+}
+ContainerSetting QComboBox:drop-down
+{
+    border:none;
+    background-color:transparent;
+    padding-right:10px;
+}
+ContainerSetting QComboBox::down-arrow
+{
+    image: url(:/images/arrow_n.png);
+}
+
+ContainerSetting QLineEdit
+{
+    border:1px solid #E4E7ED;
+    border-radius:6px;
+}
+ContainerSetting QLineEdit:focus
+{
+    border:1px solid #409EFF;
+}
+
+ContainerSetting GuideItem #delBtn
+{
+    border:none;
+    background-color:transparent;
+/*    outline: none;*/
+}
+ContainerSetting #btn_add
+{
+    background-color:#0099FF;
+    color:#ffffff;
+    border:none;
+    border-radius:6px;
+}
+ContainerSetting #btn_add:hover
+{
+    background-color:#66B1FF;
+}
+ContainerSetting #btn_add:pressed
+{
+    background-color:#0099FF;
+}
+
+ContainerSetting QTabWidget::pane {
+    border:none;
+}
+
+ContainerSetting QTabWidget::tab-bar {
+   /*  left: 5px; move to the right by 5px */
+   min-height:40px;
+   background: #E5EBF6;
+   alignment: left;
+}
+
+/* Style the tab using the tab sub-control. Note that
+    it reads QTabBar _not_ QTabWidget */
+ContainerSetting QTabBar::tab {
+    background: #E5EBF6;
+    border:none;
+/*    min-width: 8ex;*/
+    padding: 10px;
+}
+
+ContainerSetting QTabBar::tab:selected {
+    color:#43A3F5;
+    border-bottom:2px solid #43A3F5;
+    outline:none;
+}
+
+/****************************Graphic*************************/
+QCheckBox#graphic_checkBox::indicator {
+    width: 30px;
+    height: 30px;
+}
+
+QCheckBox#graphic_checkBox::indicator:unchecked
+{
+    image: url(:/images/close.svg);
+}
+QCheckBox#graphic_checkBox::indicator:checked
+{
+    image: url(:/images/open.svg);
+}
+
+
+/******************************MessageDialog******************/
+MessageDialog
+{
+    background-color:#ffffff;
+}
+#widget_btn
+{
+    border-top:1px solid #E4E7ED;
+}
+
+#lab_summary
+{
+    font-size:20px;
+}
+#lab_body
+{
+    font-size:14px;
+}
+/***************************NodeList**********************/
+NodeList #btnCreate,NodeList #btnRemove
+{
+    background-color:#ffffff;
+    border:1px solid #E4E7ED ;
+    border-radius: 6px;
+}
+NodeList #btnCreate:hover,NodeList #btnRemove:hover
+{
+   background-color:#EBEEF5;
+}
+NodeList #btnCreate:focus,NodeList #btnRemove:focus
+{
+    outline: none;
+}
+
+/***************************NodeAddition******************/
+NodeAddition
+{
+    background-color:#ffffff;
+}
+NodeAddition QLineEdit
+{
+    border:1px solid #E4E7ED;
+    border-radius:6px;
+}
+NodeAddition #btn_save
+{
+    background-color:#409EFF;
+    border: 1px solid #409EFF;
+    border-radius: 6px;
+    color:#ffffff;
+}
+NodeAddition #btn_save:hover
+{
+    background-color:#66B1FF;
+}
+NodeAddition #btn_cancel
+{
+    background-color:#ffffff;
+    border: 1px solid #E4E7ED;
+    border-radius: 6px;
+}
+NodeAddition #btn_cancel:hover
+{
+    background-color:#EBEEF5;
+}
+NodeAddition #btn_save:focus,NodeAddition #btn_cancel:focus
+{
+    outline: none;
+}
+
+
+

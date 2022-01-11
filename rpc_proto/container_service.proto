@@ -38,10 +38,11 @@ message CreateRequest {
     common.RequestHeader header = 1;
     int64 node_id = 2;
     string name = 3;
+    bool enable_graphic = 4;
 
-    ContainerConfig config = 4;
-    HostConfig host_config = 5;
-    map<string, EndpointSetting> network_config = 6;
+    ContainerConfig config = 11;
+    HostConfig host_config = 12;
+    map<string, EndpointSetting> network_config = 13;
 }
 
 message CreateReply {
@@ -125,6 +126,7 @@ message RemoveRequest {
     common.RequestHeader header = 1;
     int64 node_id = 2;
     repeated string container_ids = 3;
+    bool remove_volumes = 4;
 }
 
 message RemoveReply {
@@ -135,10 +137,9 @@ message RemoveReply {
 message StatusRequest {
     common.RequestHeader header = 1;
     int64 node_id = 2;
-    string container_id = 3;
 }
 
 message StatusReply {
     common.ReplyHeader header = 1;
-    ContainerStatus status = 2;
+    repeated ContainerStatus status = 2;
 }

@@ -1,0 +1,39 @@
+<RCC>
+    <qresource prefix="/">
+        <file>style/theme.qss</file>
+        <file>images/check-default.png</file>
+        <file>images/checked.png</file>
+        <file>images/sort-down.png</file>
+        <file>images/sort-nomal.png</file>
+        <file>images/sort-up.png</file>
+        <file>images/audit-center.svg</file>
+        <file>images/container-manager.svg</file>
+        <file>images/home-page.png</file>
+        <file>images/image-manager.svg</file>
+        <file>images/node-manager.svg</file>
+        <file>images/head.svg</file>
+        <file>images/menu.svg</file>
+        <file>images/down.png</file>
+        <file>images/arrow_n.png</file>
+        <file>images/arrow_s.png</file>
+        <file>images/refresh.svg</file>
+        <file>images/terminal.svg</file>
+        <file>images/monitor.svg</file>
+        <file>images/edit.svg</file>
+        <file>images/open.svg</file>
+        <file>images/more_in_table.svg</file>
+        <file>images/edit_item.svg</file>
+        <file>images/delete_item.svg</file>
+        <file>images/delete.svg</file>
+        <file>images/close.svg</file>
+        <file>images/addition.svg</file>
+        <file>images/container-volumes.png</file>
+        <file>images/container-net-card.svg</file>
+        <file>images/container-memory.svg</file>
+        <file>images/container-high-avail.png</file>
+        <file>images/container-env.png</file>
+        <file>images/container-cpu.svg</file>
+        <file>images/add_item.svg</file>
+        <file>images/warning.png</file>
+    </qresource>
+</RCC>

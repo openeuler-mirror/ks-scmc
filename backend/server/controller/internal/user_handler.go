@@ -18,8 +18,6 @@ type UserServer struct {
 }
 
 func (s *UserServer) Login(ctx context.Context, in *pb.LoginRequest) (*pb.LoginReply, error) {
-	// log.Infof("Received: %v", in)
-
 	// check inputs
 	if len(in.Username) < 4 || len(in.Password) < 8 {
 		return nil, rpc.ErrInvalidArgument
@@ -54,15 +52,11 @@ func (s *UserServer) Login(ctx context.Context, in *pb.LoginRequest) (*pb.LoginR
 }
 
 func (s *UserServer) Logout(ctx context.Context, in *pb.LogoutRequest) (*pb.LogoutReply, error) {
-	log.Infof("Received: %v", in)
-
 	// TODO database operation
 	return &pb.LogoutReply{}, nil
 }
 
 func (s *UserServer) Signup(ctx context.Context, in *pb.SignupRequest) (*pb.SignupReply, error) {
-	// log.Infof("Received: %v", in)
-
 	// check inputs, TODO(check character set)
 	if len(in.Username) < 4 || len(in.Password) < 8 || len(in.Role) < 4 {
 		return nil, rpc.ErrInvalidArgument

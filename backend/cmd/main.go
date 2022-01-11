@@ -45,7 +45,7 @@ func main() {
 	common.InitLogger(verbose, logStdout, logFile)
 
 	var addr string
-	s := grpc.NewServer()
+	s := grpc.NewServer(common.UnaryServerInterceptor()...)
 	if mode == agentMode {
 		agent.Register(s)
 		addr = fmt.Sprintf("%s:%d", common.Host, common.AgentPort)

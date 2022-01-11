@@ -302,7 +302,7 @@ func (s *ContainerServer) Status(ctx context.Context, in *pb.StatusRequest) (*pb
 	log.Infof("Received: %v", in)
 	// reply := pb.StatusReply{}
 
-	if in.NodeId <= 0 || in.ContainerId == "" {
+	if in.NodeId <= 0 {
 		return nil, rpc.ErrInvalidArgument
 	}
 

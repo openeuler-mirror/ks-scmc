@@ -110,6 +110,28 @@ func TestContainerCreate(t *testing.T) {
 	})
 }
 
+func TestContainerCreate2(t *testing.T) {
+	testRunner(func(ctx context.Context, conn *grpc.ClientConn) {
+		cli := pb.NewContainerClient(conn)
+		request := pb.CreateRequest{
+			Header: &common.RequestHeader{},
+			NodeId: 1,
+			Name:   "gparted",
+			Config: &pb.ContainerConfig{
+				Image: "jess/gparted",
+			},
+			EnableGraphic: true,
+		}
+
+		reply, err := cli.Create(ctx, &request)
+		if err != nil {
+			t.Errorf("Create: %v", err)
+		}
+
+		t.Logf("Create reply: %+v", reply)
+	})
+}
+
 func TestContainerCreateWithCmd(t *testing.T) {
 	testRunner(func(ctx context.Context, conn *grpc.ClientConn) {
 		cli := pb.NewContainerClient(conn)
@@ -226,9 +248,8 @@ func TestContainerStatus(t *testing.T) {
 	testRunner(func(ctx context.Context, conn *grpc.ClientConn) {
 		cli := pb.NewContainerClient(conn)
 		request := pb.StatusRequest{
-			Header:      &common.RequestHeader{},
-			NodeId:      1,
-			ContainerId: "monitor-collector",
+			Header: &common.RequestHeader{},
+			NodeId: 1,
 		}
 
 		reply, err := cli.Status(ctx, &request)

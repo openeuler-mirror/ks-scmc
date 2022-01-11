@@ -1,23 +1,23 @@
-all: common user node container 
-
 INC_DIR=../../rpc_proto
 BASE_DIR=./pb
 
-common: $(INC_DIR)/common.proto
-	mkdir -p $(BASE_DIR)/$@
-	protoc -I $(INC_DIR) --go_out=$(BASE_DIR)/$@ --go_opt=paths=source_relative $^
+all: $(BASE_DIR)/common $(BASE_DIR)/user $(BASE_DIR)/node $(BASE_DIR)/container 
 
-user: $(INC_DIR)/user_service.proto
-	mkdir -p $(BASE_DIR)/$@
-	protoc -I $(INC_DIR) --go_out=$(BASE_DIR)/$@ --go_opt=paths=source_relative \
-		--go-grpc_out=$(BASE_DIR)/$@ --go-grpc_opt=paths=source_relative $^
+$(BASE_DIR)/common: $(INC_DIR)/common.proto
+	mkdir -p $@
+	protoc -I $(INC_DIR) --go_out=$@ --go_opt=paths=source_relative $^
 
-node: $(INC_DIR)/node_service.proto $(INC_DIR)/node_types.proto
-	mkdir -p $(BASE_DIR)/$@
-	protoc -I $(INC_DIR) --go_out=$(BASE_DIR)/$@ --go_opt=paths=source_relative \
-		--go-grpc_out=$(BASE_DIR)/$@ --go-grpc_opt=paths=source_relative $^
+$(BASE_DIR)/user: $(INC_DIR)/user_service.proto
+	mkdir -p $@
+	protoc -I $(INC_DIR) --go_out=$@ --go_opt=paths=source_relative \
+		--go-grpc_out=$@ --go-grpc_opt=paths=source_relative $^
 
-container: $(INC_DIR)/container_service.proto $(INC_DIR)/container_types.proto
-	mkdir -p $(BASE_DIR)/$@
-	protoc -I $(INC_DIR) --go_out=$(BASE_DIR)/$@ --go_opt=paths=source_relative \
-		--go-grpc_out=$(BASE_DIR)/$@ --go-grpc_opt=paths=source_relative $^
+$(BASE_DIR)/node: $(INC_DIR)/node_service.proto $(INC_DIR)/node_types.proto
+	mkdir -p $@
+	protoc -I $(INC_DIR) --go_out=$@ --go_opt=paths=source_relative \
+		--go-grpc_out=$@ --go-grpc_opt=paths=source_relative $^
+
+$(BASE_DIR)/container: $(INC_DIR)/container_service.proto $(INC_DIR)/container_types.proto
+	mkdir -p $@
+	protoc -I $(INC_DIR) --go_out=$@ --go_opt=paths=source_relative \
+		--go-grpc_out=$@ --go-grpc_opt=paths=source_relative $^

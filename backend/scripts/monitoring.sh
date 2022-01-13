@@ -1,23 +1,22 @@
-docker run -d -p 8086:8086 --name influxdb \
-    -v influxdb:/var/lib/influxdb \
-    -v influxdb2:/var/lib/influxdb2 \
-    -e DOCKER_INFLUXDB_INIT_USERNAME=root \
-    -e DOCKER_INFLUXDB_INIT_PASSWORD=root \
-    -e DOCKER_INFLUXDB_INIT_ORG=my-org \
-    -e DOCKER_INFLUXDB_INIT_BUCKET=my-bucket \
-    influxdb:2.0
 
-docker run -d \
-    --restart=always \
-    -p 8083:8083 -p 8086:8086 \
-    --expose 8090 --expose 8099 \
-    --name influxdb tutum/influxdb
+#####################
+INFLUX_DATA="/var/lib/influxdb"
+mkdir -p ${INFLUX_DATA}
+docker run -d -p 8086:8086 \
+      -v ${INFLUX_DATA}:${INFLUX_DATA} \
+      --name=influxdb \
+      --restart=unless-stopped \
+      influxdb:1.8.10
 
-# CREATE DATABASE "cadvisor"
+docker exec -it influxdb /bin/bash
+influx
+> CREATE DATABASE "cadvisor";
+> CREATE RETENTION POLICY "cadvisor_3d" ON cadvisor DURATION 3d REPLICATION 1 DEFAULT;
+#####################
 
-VERSION=v0.36.0 # use the latest release version from https://github.com/google/cadvisor/releases
+VERSION=v0.36.0
 docker run -d -p 8080:8080 --name=cadvisor \
-    --restart=always \
+    --restart=unless-stopped \
     --volume=/:/rootfs:ro \
     --volume=/var/run:/var/run:ro \
     --volume=/sys:/sys:ro \
@@ -26,7 +25,9 @@ docker run -d -p 8080:8080 --name=cadvisor \
     --privileged \
     --device=/dev/kmsg \
     --link influxdb:influxdb \
-    gcr.io/cadvisor/cadvisor:$VERSION -storage_driver=influxdb -storage_driver_db=cadvisor -storage_driver_host=influxdb:8086
+    google/cadvisor:$VERSION \
+        -storage_driver=influxdb -storage_driver_db=cadvisor -storage_driver_host=influxdb:8086 \
+        -disable_metrics=udp,advtcp,sched,process,tcp,percpu
 
 
 docker run -d --name grafana \

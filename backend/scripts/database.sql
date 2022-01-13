@@ -1,6 +1,11 @@
 CREATE DATABASE IF NOT EXISTS `ksc-mcube`
 CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;	-- utf8mb4_0900_ai_ci utf8_general_ci
 
+GRANT ALL PRIVILEGES ON `ksc-mcube`.*
+TO 'ksc-mcube'@'localhost'
+IDENTIFIED BY '%7hXnBx!ZUqR';
+FLUSH PRIVILEGES;
+
 USE `ksc-mcube`;
 
 CREATE TABLE IF NOT EXISTS `user_infos` (

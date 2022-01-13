@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+option go_package = "ksc-mcube/rpc/pb/image";
+
+package image;
+
+message ImageInfo {
+    string name = 1;    // repo + tag
+    string repo = 2;
+    string tag = 3;
+    string digest = 4;
+}

@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+option go_package = "ksc-mcube/rpc/pb/network";
+
+package network;
+
+message Subnet {
+    string addr = 1;
+    int32 prefix_len = 2;
+}
+
+message RealNetworkInterface {
+    int64 node_id = 1;
+}
+
+message BridgeNetworkInterface {
+    int64 node_id = 1;
+    string name = 2;
+    Subnet subnet = 3;
+    Subnet ip_range = 4;
+    string gateway = 5;
+}

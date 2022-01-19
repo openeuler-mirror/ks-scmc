@@ -16,7 +16,7 @@ service Network {
 message ListRequest {
     common.RequestHeader header = 1;
 
-    repeated int64 node_ids = 2;
+    int64 node_id = 2;
 }
 
 message ListReply {

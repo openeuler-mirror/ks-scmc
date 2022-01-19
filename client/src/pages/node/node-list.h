@@ -3,7 +3,7 @@
 
 #include <QWidget>
 #include "common/common-page.h"
-
+#include "common/info-worker.h"
 class NodeAddition;
 class NodeList : public CommonPage
 {
@@ -17,10 +17,12 @@ private slots:
     void onCreateNode();
     void onRemoveNode();
     void onMonitor(int row);
+    void getListResult(QPair<grpc::Status, node::ListReply> reply);
 
 private:
     void initButtons();
     void initTable();
+    void getNodeList();
 
 private:
     NodeAddition *m_nodeAddition;

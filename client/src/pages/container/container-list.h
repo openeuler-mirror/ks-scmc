@@ -5,7 +5,7 @@
 #include <QStandardItemModel>
 #include <QWidget>
 #include "common/common-page.h"
-
+#include "common/info-worker.h"
 enum OPERATION_BUTTOM
 {
     OPERATION_BUTTOM_RUN,
@@ -46,11 +46,15 @@ private slots:
     void onEdit(int row);
     void onTerminal(int row);
 
+    void getNodeListResult(QPair<grpc::Status, node::ListReply> reply);
+    void getContainerListResult(QPair<grpc::Status, container::ListReply> reply);
+
 private:
     void initButtons();
     void initTable();
     void initContianerSetting(ContainerSetting *window, ContainerSettingType type);
     void insertContainerInfo();
+    void getContainerList();
 
 private:
     QMenu *m_createMenu;
@@ -59,6 +63,7 @@ private:
     QMap<int, QPushButton *> m_opBtnMap;
     ContainerSetting *m_createCTSetting;
     ContainerSetting *m_editCTSetting;
+    std::vector<int64_t> m_vecNodeId;
 };
 
 #endif  // CONTAINERLIST_H

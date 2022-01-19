@@ -20,10 +20,12 @@ public:
     virtual ~CommonPage();
     virtual void updateInfo(QString keyword = "") = 0;
     void setBusy(bool status);
+    void clearTable();
     void addOperationButton(QToolButton *);
     void addOperationButtons(QList<QPushButton *>);
-    void setTableColAndRow(int col, int row);
-    void setTableItem(int col, int row, QStandardItem *item, bool checkable = false);
+    void setTableColNum(int num);
+    void setTableRowNum(int num);
+    void setTableItem(int col, int row, QStandardItem *item);
     void setTableItems(int row, QList<QStandardItem *> items);
     void setTableActions(int col, QStringList actionIcons);
     void setSortableCol(QList<int> cols);

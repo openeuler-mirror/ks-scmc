@@ -57,11 +57,18 @@ message ContainerInfo {
     string image_id = 4;
     string command = 5;
     string state = 6;   // "created", "running", "paused", "restarting", "removing", "exited", or "dead"
-    int64 size_rw = 7;
-    int64 size_root_fs = 8;
-    map<string, string> labels = 9;
+    int64 created = 7;
+    int64 size_rw = 8;
+    int64 size_root_fs = 9;
+    map<string, string> labels = 10;
+
+    ResourceStat resource_stat = 101;
 }
 
+message ContainerIdList {
+    int64 node_id = 1;
+    repeated string container_ids = 2;
+}
 
 message Mount {
     string type = 1;    // "bind" "volume" "tmpfs" "npipe"
@@ -144,7 +151,7 @@ message NetworkStats {
     uint64 tx = 2;
 }
 
-message ContainerStatus {
+message ResourceStat {
     string id = 1;
     string state = 2;
     CpuStat cpu_stat = 3;

@@ -1,7 +1,4 @@
 set(RPC_INCLUDE_DIRS "../rpc/")
-set(GRPC_LIBRARIES "/usr/lib64/libgrpc++.so.1.31.0")
-set(GRPC_REFLECTION_LIBRARIES "/usr/lib64/libgrpc++_reflection.so.1.31.0")
-set(PROTOBUF_LIBRARIES "/usr/lib64/libprotobuf.so.23.0.3")
 set(PAGE_HEAD_DIR "pages/container/")
 
 file(GLOB_RECURSE RESOURCES "../data/*.qrc")
@@ -29,8 +26,9 @@ target_include_directories(grpc-client PRIVATE
         ${PAGE_HEAD_DIR})
 
 target_link_libraries(grpc-client 
-	${GRPC_LIBRARIES} 
-	${GRPC_REFLECTION_LIBRARIES} 
-	${PROTOBUF_LIBRARIES}
+    grpc++
+	grpc++_reflection
+	gpr
+	protobuf
 	Qt5::Widgets
 	${KLOG_QT5_LIBRARIES})

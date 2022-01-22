@@ -42,13 +42,19 @@ private slots:
 
     void getNodeListResult(QPair<grpc::Status, node::ListReply> reply);
     void getContainerListResult(QPair<grpc::Status, container::ListReply> reply);
+    void getContainerStartResult(QPair<grpc::Status, container::StartReply> reply);
+    void getContainerStopResult(QPair<grpc::Status, container::StopReply> reply);
+    void getContainerRestartResult(QPair<grpc::Status, container::RestartReply> reply);
+    void getContainerRemoveResult(QPair<grpc::Status, container::RemoveReply> reply);
 
 private:
     void initButtons();
     void initTable();
+    void initConnect();
     void insertContainerInfo();
     void getContainerList();
     void getContainerStatus();
+    void getCheckId(std::map<int64_t, std::vector<std::string> > &ids);
 
 private:
     QMenu *m_createMenu;

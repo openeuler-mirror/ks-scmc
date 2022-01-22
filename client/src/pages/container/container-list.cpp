@@ -18,6 +18,7 @@ ContainerList::ContainerList(QWidget *parent)
     initButtons();
     //初始化表格
     initTable();
+    initConnect();
 }
 
 ContainerList::~ContainerList()
@@ -54,27 +55,34 @@ void ContainerList::onBtnCreate()
 void ContainerList::onBtnRun()
 {
     KLOG_INFO() << "onBtnRun";
-    QList<QMap<QString, QVariant>> info = getCheckedItemInfo(0);
-    foreach (auto idMap, info)
-    {
-        KLOG_INFO() << idMap.value(NODE_ID).toInt();
-        KLOG_INFO() << idMap.value(CONTAINER_ID).toString();
-    }
+    std::map<int64_t, std::vector<std::string>> ids;
+    getCheckId(ids);
+    InfoWorker::getInstance().startContainer(ids);
 }
 
 void ContainerList::onBtnStop()
 {
     KLOG_INFO() << "onBtnStop";
+
+    std::map<int64_t, std::vector<std::string>> ids;
+    getCheckId(ids);
+    InfoWorker::getInstance().stopContainer(ids);
 }
 
 void ContainerList::onBtnRestart()
 {
     KLOG_INFO() << "onBtnRestart";
+    std::map<int64_t, std::vector<std::string>> ids;
+    getCheckId(ids);
+    InfoWorker::getInstance().restartContainer(ids);
 }
 
 void ContainerList::onBtnDelete()
 {
     KLOG_INFO() << "onBtnDelete";
+    std::map<int64_t, std::vector<std::string>> ids;
+    getCheckId(ids);
+    InfoWorker::getInstance().removeContainer(ids);
 }
 
 void ContainerList::onActCopyConfig()
@@ -137,7 +145,6 @@ void ContainerList::getNodeListResult(QPair<grpc::Status, node::ListReply> reply
         if (!m_vecNodeId.empty())
         {
             InfoWorker::getInstance().listContainer(m_vecNodeId, true);
-            connect(&InfoWorker::getInstance(), &InfoWorker::listContainerFinished, this, &ContainerList::getContainerListResult);
         }
     }
     else
@@ -176,19 +183,37 @@ void ContainerList::getContainerListResult(QPair<grpc::Status, container::ListRe
                 QStandardItem *itemNodeAddress = new QStandardItem(i.node_address().data());
                 itemNodeAddress->setTextAlignment(Qt::AlignCenter);
 
-                setTableItems(row, 2, QList<QStandardItem *>() << itemStatus << itemImage << itemNodeAddress);
 
-                //                if (i.info().has_resource_stat())
-                //                {
-                //                    if (i.info().resource_stat().has_cpu_stat())
-                //                    {
-                //                        double cpuStat = i.info().resource_stat().cpu_stat().core_used().data();
-                //                        QString str = QString::number(cpuStat * 100, 'f', 2);
-                //                        QStandardItem *itemCpu = new QStandardItem(str);
-                //                        itemCpu->setTextAlignment(Qt::AlignCenter);
-                //                        setTableItem(5, row, itemCpu);
-                //                    }
-                //                }
+
+                std::string strCpuPct = "-";
+                std::string strMemPct = "-";
+
+                if (i.info().has_resource_stat())
+                {
+                    if (i.info().resource_stat().has_cpu_stat())
+                    {
+                        char str[128]{};
+                        sprintf(str, "%0.1f%%", i.info().resource_stat().cpu_stat().core_used()*100);
+                        strCpuPct = std::string(str);
+                    }
+
+                    if (i.info().resource_stat().has_mem_stat())
+                    {
+                        double used = i.info().resource_stat().mem_stat().used()/1048576;
+                        char str[128]{};
+                        sprintf(str, "%0.0fMB", used);
+                        strMemPct = std::string(str);
+                    }
+                }
+
+                QStandardItem *itemCpu= new QStandardItem(strCpuPct.data());
+                itemCpu->setTextAlignment(Qt::AlignCenter);
+                QStandardItem *itemMem = new QStandardItem(strMemPct.data());
+                QStandardItem *itemDisk = new QStandardItem("-");
+                itemDisk->setTextAlignment(Qt::AlignCenter);
+                itemMem->setTextAlignment(Qt::AlignCenter);
+                setTableItems(row, 2, QList<QStandardItem *>() << itemStatus << itemImage << itemNodeAddress
+                                                               << itemCpu << itemMem << itemDisk);
 
                 row++;
             }
@@ -197,6 +222,46 @@ void ContainerList::getContainerListResult(QPair<grpc::Status, container::ListRe
     else
     {
         setTableDefaultContent();
+    }
+}
+
+void ContainerList::getContainerStartResult(QPair<grpc::Status, container::StartReply> reply)
+{
+    KLOG_INFO() << reply.first.error_code() << reply.first.error_message().data();
+    if (reply.first.ok())
+    {
+        getContainerList();
+        return ;
+    }
+}
+
+void ContainerList::getContainerStopResult(QPair<grpc::Status, container::StopReply> reply)
+{
+    KLOG_INFO() << reply.first.error_code() << reply.first.error_message().data();
+    if (reply.first.ok())
+    {
+        getContainerList();
+        return ;
+    }
+}
+
+void ContainerList::getContainerRestartResult(QPair<grpc::Status, container::RestartReply> reply)
+{
+    KLOG_INFO() << reply.first.error_code() << reply.first.error_message().data();
+    if (reply.first.ok())
+    {
+        getContainerList();
+        return ;
+    }
+}
+
+void ContainerList::getContainerRemoveResult(QPair<grpc::Status, container::RemoveReply> reply)
+{
+    KLOG_INFO() << reply.first.error_code() << reply.first.error_message().data();
+    if (reply.first.ok())
+    {
+        getContainerList();
+        return ;
     }
 }
 
@@ -278,6 +343,16 @@ void ContainerList::initTable()
     connect(this, &ContainerList::sigEdit, this, &ContainerList::onEdit);
 }
 
+void ContainerList::initConnect()
+{
+    connect(&InfoWorker::getInstance(), &InfoWorker::listNodeFinished, this, &ContainerList::getNodeListResult);
+    connect(&InfoWorker::getInstance(), &InfoWorker::listContainerFinished, this, &ContainerList::getContainerListResult);
+    connect(&InfoWorker::getInstance(), &InfoWorker::startContainerFinished, this, &ContainerList::getContainerStartResult);
+    connect(&InfoWorker::getInstance(), &InfoWorker::stopContainerFinished, this, &ContainerList::getContainerStopResult);
+    connect(&InfoWorker::getInstance(), &InfoWorker::restartContainerFinished, this, &ContainerList::getContainerRestartResult);
+    connect(&InfoWorker::getInstance(), &InfoWorker::removeContainerFinished, this, &ContainerList::getContainerRemoveResult);
+}
+
 void ContainerList::insertContainerInfo()
 {
 }
@@ -285,12 +360,38 @@ void ContainerList::insertContainerInfo()
 void ContainerList::getContainerList()
 {
     InfoWorker::getInstance().listNode();
-    connect(&InfoWorker::getInstance(), &InfoWorker::listNodeFinished, this, &ContainerList::getNodeListResult);
+}
+
+void ContainerList::getCheckId(std::map<int64_t, std::vector<std::string>> &ids)
+{
+    QList<QMap<QString, QVariant>> info = getCheckedItemInfo(0);
+    int64_t node_id{};
+
+    foreach (auto idMap, info)
+    {
+        KLOG_INFO() << idMap.value(NODE_ID).toInt();
+        KLOG_INFO() << idMap.value(CONTAINER_ID).toString();
+
+        node_id = idMap.value(NODE_ID).toInt();
+        std::map<int64_t, std::vector<std::string>>::iterator iter = ids.find(node_id);
+        if (iter == ids.end())
+        {
+            std::vector<std::string> container_ids;
+            container_ids.push_back(idMap.value(CONTAINER_ID).toString().toStdString());
+            ids.insert(std::pair<int64_t, std::vector<std::string>>(node_id, container_ids));
+        }
+        else
+        {
+            ids[node_id].push_back(idMap.value(CONTAINER_ID).toString().toStdString());
+        }
+    }
+
 }
 
 void ContainerList::updateInfo(QString keyword)
 {
     KLOG_INFO() << "containerList updateInfo";
+    initConnect();
     //gRPC->拿数据->填充内容
     getContainerList();
     if (!keyword.isEmpty())

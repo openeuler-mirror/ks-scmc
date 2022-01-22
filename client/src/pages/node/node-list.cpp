@@ -3,9 +3,14 @@
 #include "node-addition.h"
 #include "rpc.h"
 
+#define NODE_ID "node id"
+
 NodeList::NodeList(QWidget *parent) : CommonPage(parent),
                                       m_nodeAddition(nullptr)
 {
+    m_mapStatus.insert(std::pair<int64_t, std::string>(0, tr("Offline").toStdString()));
+    m_mapStatus.insert(std::pair<int64_t, std::string>(1, tr("Unknown").toStdString()));
+    m_mapStatus.insert(std::pair<int64_t, std::string>(10, tr("Online").toStdString()));
     initButtons();
     initTable();
 }
@@ -22,6 +27,7 @@ NodeList::~NodeList()
 void NodeList::updateInfo(QString keyword)
 {
     KLOG_INFO() << "NodeList updateInfo";
+    initNodeConnect();
     getNodeList();
 }
 
@@ -31,6 +37,7 @@ void NodeList::onCreateNode()
     {
         m_nodeAddition = new NodeAddition();
         m_nodeAddition->show();
+        connect(m_nodeAddition,&NodeAddition::sigSave,this,&NodeList::onSaveSlot);
         connect(m_nodeAddition, &NodeAddition::destroyed,
                 [=] {
                     KLOG_INFO() << " m_nodeAdditiong destroy";
@@ -42,6 +49,16 @@ void NodeList::onCreateNode()
 
 void NodeList::onRemoveNode()
 {
+    KLOG_INFO() << "onRemoveNode";
+    QList<QMap<QString, QVariant>> info = getCheckedItemInfo(0);
+    std::vector<int64_t> node_ids;
+    foreach (auto &idMap, info)
+    {
+        KLOG_INFO() << idMap.value(NODE_ID).toInt();
+        node_ids.push_back(idMap.value(NODE_ID).toInt());
+    }
+
+    InfoWorker::getInstance().removeNode(node_ids);
 }
 
 void NodeList::onMonitor(int row)
@@ -49,9 +66,107 @@ void NodeList::onMonitor(int row)
     KLOG_INFO() << row;
 }
 
+void NodeList::onSaveSlot(QMap<QString, QString> Info)
+{
+    KLOG_INFO() << "name" << Info["Node Name"] << "ip" << Info["Node IP"];
+    node::CreateRequest request;
+    request.set_name(Info["Node Name"].toStdString());
+    request.set_address(Info["Node IP"].toStdString());
+    InfoWorker::getInstance().createNode(request);
+}
+
 void NodeList::getListResult(QPair<grpc::Status, node::ListReply> reply)
 {
     KLOG_INFO() << reply.second.nodes_size();
+    if (reply.first.ok())
+    {
+        int size = reply.second.nodes_size();
+        if (size <= 0)
+            return ;
+
+        setTableRowNum(size);
+        int row = 0;
+        QMap<QString, QVariant> idMap;
+        for (auto node : reply.second.nodes())
+        {
+            KLOG_INFO() << "nodeid:" << node.id();
+            qint64 nodeId = node.id();
+            idMap.insert(NODE_ID, nodeId);
+
+            QStandardItem *itemName = new QStandardItem(node.name().data());
+            itemName->setData(QVariant::fromValue(idMap));
+            itemName->setCheckable(true);
+
+            QStandardItem *itemIp = new QStandardItem(node.address().data());
+            itemIp->setTextAlignment(Qt::AlignCenter);
+
+            std::string state = m_mapStatus[1];
+            std::string strCntrCnt = "-/-";
+            std::string strCpuPct = "-";
+            std::string strMemPct = "-";
+            if (node.has_status())
+            {
+                state = m_mapStatus[node.status().state()];
+                auto &status = node.status();
+                if (status.has_container_stat())
+                    strCntrCnt = std::to_string(status.container_stat().running()) + "/" + std::to_string(status.container_stat().total());
+
+                if (status.has_cpu_stat())
+                {
+                    char str[128]{};
+                    sprintf(str, "%0.1f%%", status.cpu_stat().used()*100);
+                    strCpuPct = std::string(str);
+                }
+
+                if (status.has_mem_stat())
+                {
+                    char str[128]{};
+                    sprintf(str, "%0.1f%%", status.mem_stat().used_percentage());
+                    strMemPct = std::string(str);
+                }
+            }
+
+            QStandardItem *itemStatus = new QStandardItem(state.data());
+            itemStatus->setTextAlignment(Qt::AlignCenter);
+            QStandardItem *itemCntrCnt = new QStandardItem(strCntrCnt.data());
+            itemCntrCnt->setTextAlignment(Qt::AlignCenter);
+            QStandardItem *itemCpu= new QStandardItem(strCpuPct.data());
+            itemCpu->setTextAlignment(Qt::AlignCenter);
+            QStandardItem *itemMem = new QStandardItem(strMemPct.data());
+            itemMem->setTextAlignment(Qt::AlignCenter);
+            QStandardItem *itemDisk = new QStandardItem("-");
+            itemDisk->setTextAlignment(Qt::AlignCenter);
+
+            setTableItem(row, 0, itemName);
+            setTableItems(row, 2, QList<QStandardItem *>() << itemStatus << itemIp << itemCntrCnt
+                                                        << itemCpu << itemMem << itemDisk);
+            row++;
+
+        }
+    }
+    else
+    {
+        setTableDefaultContent();
+    }
+}
+
+void NodeList::getCreateResult(QPair<grpc::Status, node::CreateReply> reply)
+{
+    KLOG_INFO() << reply.first.error_code() << reply.first.error_message().data();
+    if (reply.first.ok())
+    {
+        getNodeList();
+        return ;
+    }
+}
+
+void NodeList::getRemoveResult(QPair<grpc::Status, node::RemoveReply> reply)
+{
+    KLOG_INFO() << reply.first.error_code() << reply.first.error_message().data();
+    if (reply.first.ok())
+    {
+        getNodeList();
+    }
 }
 
 void NodeList::initButtons()
@@ -83,21 +198,21 @@ void NodeList::initTable()
                                     QString(tr("Disk"))};
     setHeaderSections(tableHHeaderDate);
     setTableColNum(tableHHeaderDate.size());
-
+    QList<int> sortablCol = {0, 2};
+    setSortableCol(sortablCol);
     setTableActions(1, QStringList() << ":/images/monitor.svg");
 
-    setTableRowNum(2);
-    QStandardItem *item = new QStandardItem("a");
-    QStandardItem *itemB = new QStandardItem("b");
-    setTableItem(0, 0, item);
-    setTableItem(0, 1, itemB);
-    setSortableCol(QList<int>() << 0);
-
     connect(this, &NodeList::sigMonitor, this, &NodeList::onMonitor);
+}
+
+void NodeList::initNodeConnect()
+{
+    connect(&InfoWorker::getInstance(), &InfoWorker::listNodeFinished, this, &NodeList::getListResult);
+    connect(&InfoWorker::getInstance(), &InfoWorker::createNodeFinished, this, &NodeList::getCreateResult);
+    connect(&InfoWorker::getInstance(), &InfoWorker::removeNodeFinished, this, &NodeList::getRemoveResult);
 }
 
 void NodeList::getNodeList()
 {
     InfoWorker::getInstance().listNode();
-    connect(&InfoWorker::getInstance(), &InfoWorker::listNodeFinished, this, &NodeList::getListResult);
 }

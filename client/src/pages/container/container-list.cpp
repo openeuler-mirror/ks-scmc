@@ -5,10 +5,11 @@
 #include <QLabel>
 #include <QMouseEvent>
 #include <QStandardItem>
+#include "common/message-dialog.h"
 #include "container-setting.h"
-
 #define NODE_ID "node id"
 #define CONTAINER_ID "container id"
+#define ACTION_COL 1
 
 ContainerList::ContainerList(QWidget *parent)
     : CommonPage(parent),
@@ -41,13 +42,16 @@ void ContainerList::onBtnCreate()
     if (!m_createCTSetting)
     {
         m_createCTSetting = new ContainerSetting(CONTAINER_SETTING_TYPE_CONTAINER_CREATE);
-        //initContianerSetting(m_createCTSetting, CONTAINER_SETTING_TYPE_CREATE);
         m_createCTSetting->show();
         connect(m_createCTSetting, &ContainerSetting::destroyed,
                 [=] {
                     KLOG_INFO() << "create container setting destroy";
                     m_createCTSetting->deleteLater();
                     m_createCTSetting = nullptr;
+                });
+        connect(m_createCTSetting, &ContainerSetting::sigUpdateContainer,
+                [=] {
+                    getContainerList();
                 });
     }
 }
@@ -63,7 +67,6 @@ void ContainerList::onBtnRun()
 void ContainerList::onBtnStop()
 {
     KLOG_INFO() << "onBtnStop";
-
     std::map<int64_t, std::vector<std::string>> ids;
     getCheckId(ids);
     InfoWorker::getInstance().stopContainer(ids);
@@ -82,7 +85,20 @@ void ContainerList::onBtnDelete()
     KLOG_INFO() << "onBtnDelete";
     std::map<int64_t, std::vector<std::string>> ids;
     getCheckId(ids);
-    InfoWorker::getInstance().removeContainer(ids);
+    if (!ids.empty())
+    {
+        auto ret = MessageDialog::message(tr("Delete Container"),
+                                          tr("Are you sure you want to delete the container?"),
+                                          tr("It can't be recovered after deletion.Are you sure you want to continue?"),
+                                          ":/images/warning.png",
+                                          MessageDialog::StandardButton::Yes | MessageDialog::StandardButton::Cancel);
+        if (ret == MessageDialog::StandardButton::Yes)
+        {
+            InfoWorker::getInstance().removeContainer(ids);
+        }
+        else
+            KLOG_INFO() << "cancel";
+    }
 }
 
 void ContainerList::onActCopyConfig()
@@ -117,11 +133,20 @@ void ContainerList::onEdit(int row)
     {
         m_editCTSetting = new ContainerSetting(CONTAINER_SETTING_TYPE_CONTAINER_EDIT);
         m_editCTSetting->show();
+        auto item = getRowItem(row);
+        QPair<int64_t, QString> ids = {item->data().toMap().value(NODE_ID).toInt(),
+                                       item->data().toMap().value(CONTAINER_ID).toString()};
+        m_editCTSetting->setContainerNodeIds(ids);
+        getContainerInfo(item->data().toMap());
         connect(m_editCTSetting, &ContainerSetting::destroyed,
                 [=] {
                     KLOG_INFO() << " edit container setting destroy";
                     m_editCTSetting->deleteLater();
                     m_editCTSetting = nullptr;
+                });
+        connect(m_editCTSetting, &ContainerSetting::sigUpdateContainer,
+                [=] {
+                    getContainerList();
                 });
     }
 }
@@ -131,11 +156,12 @@ void ContainerList::onTerminal(int row)
     KLOG_INFO() << row;
 }
 
-void ContainerList::getNodeListResult(QPair<grpc::Status, node::ListReply> reply)
+void ContainerList::getNodeListResult(const QPair<grpc::Status, node::ListReply> &reply)
 {
     KLOG_INFO() << "getNodeListResult";
     if (reply.first.ok())
     {
+        setOpBtnEnabled(true);
         m_vecNodeId.clear();
         for (auto n : reply.second.nodes())
         {
@@ -148,120 +174,122 @@ void ContainerList::getNodeListResult(QPair<grpc::Status, node::ListReply> reply
         }
     }
     else
-        setTableDefaultContent();
+    {
+        setOpBtnEnabled(false);
+        setTableDefaultContent(QList<int>() << ACTION_COL, "-");
+    }
 }
 
-void ContainerList::getContainerListResult(QPair<grpc::Status, container::ListReply> reply)
+void ContainerList::getContainerListResult(const QPair<grpc::Status, container::ListReply> &reply)
 {
     KLOG_INFO() << "getContainerListResult";
     if (reply.first.ok())
     {
-        clearTable();
         int size = reply.second.containers_size();
         KLOG_INFO() << "container size:" << size;
-        if (size > 0)
+        if (size < 1)
+            return;
+
+        clearTable();
+        setOpBtnEnabled(true);
+        int row = 0;
+        QMap<QString, QVariant> idMap;
+        for (auto i : reply.second.containers())
         {
-            int row = 0;
-            QMap<QString, QVariant> idMap;
-            for (auto i : reply.second.containers())
+            qint64 nodeId = i.node_id();
+            idMap.insert(NODE_ID, nodeId);
+            idMap.insert(CONTAINER_ID, i.info().id().data());
+
+            QStandardItem *itemName = new QStandardItem(i.info().name().data());
+            itemName->setData(QVariant::fromValue(idMap));
+            itemName->setCheckable(true);
+            setTableItem(row, 0, itemName);
+
+            QStandardItem *itemStatus = new QStandardItem(i.info().state().data());
+            itemStatus->setTextAlignment(Qt::AlignCenter);
+
+            QStandardItem *itemImage = new QStandardItem(i.info().image().data());
+            itemImage->setTextAlignment(Qt::AlignCenter);
+
+            QStandardItem *itemNodeAddress = new QStandardItem(i.node_address().data());
+            itemNodeAddress->setTextAlignment(Qt::AlignCenter);
+
+            std::string strCpuPct = "-";
+            std::string strMemPct = "-";
+
+            if (i.info().has_resource_stat())
             {
-                qint64 nodeId = i.node_id();
-                idMap.insert(NODE_ID, nodeId);
-                idMap.insert(CONTAINER_ID, i.info().id().data());
-
-                QStandardItem *itemName = new QStandardItem(i.info().name().data());
-                itemName->setData(QVariant::fromValue(idMap));
-                itemName->setCheckable(true);
-                setTableItem(row, 0, itemName);
-
-                QStandardItem *itemStatus = new QStandardItem(i.info().state().data());
-                itemStatus->setTextAlignment(Qt::AlignCenter);
-
-                QStandardItem *itemImage = new QStandardItem(i.info().image().data());
-                itemImage->setTextAlignment(Qt::AlignCenter);
-
-                QStandardItem *itemNodeAddress = new QStandardItem(i.node_address().data());
-                itemNodeAddress->setTextAlignment(Qt::AlignCenter);
-
-
-
-                std::string strCpuPct = "-";
-                std::string strMemPct = "-";
-
-                if (i.info().has_resource_stat())
+                if (i.info().resource_stat().has_cpu_stat())
                 {
-                    if (i.info().resource_stat().has_cpu_stat())
-                    {
-                        char str[128]{};
-                        sprintf(str, "%0.1f%%", i.info().resource_stat().cpu_stat().core_used()*100);
-                        strCpuPct = std::string(str);
-                    }
-
-                    if (i.info().resource_stat().has_mem_stat())
-                    {
-                        double used = i.info().resource_stat().mem_stat().used()/1048576;
-                        char str[128]{};
-                        sprintf(str, "%0.0fMB", used);
-                        strMemPct = std::string(str);
-                    }
+                    char str[128]{};
+                    sprintf(str, "%0.1f%%", i.info().resource_stat().cpu_stat().core_used() * 100);
+                    strCpuPct = std::string(str);
                 }
 
-                QStandardItem *itemCpu= new QStandardItem(strCpuPct.data());
-                itemCpu->setTextAlignment(Qt::AlignCenter);
-                QStandardItem *itemMem = new QStandardItem(strMemPct.data());
-                QStandardItem *itemDisk = new QStandardItem("-");
-                itemDisk->setTextAlignment(Qt::AlignCenter);
-                itemMem->setTextAlignment(Qt::AlignCenter);
-                setTableItems(row, 2, QList<QStandardItem *>() << itemStatus << itemImage << itemNodeAddress
-                                                               << itemCpu << itemMem << itemDisk);
-
-                row++;
+                if (i.info().resource_stat().has_mem_stat())
+                {
+                    double used = i.info().resource_stat().mem_stat().used() / 1048576;
+                    char str[128]{};
+                    sprintf(str, "%0.0fMB", used);
+                    strMemPct = std::string(str);
+                }
             }
+
+            QStandardItem *itemCpu = new QStandardItem(strCpuPct.data());
+            itemCpu->setTextAlignment(Qt::AlignCenter);
+            QStandardItem *itemMem = new QStandardItem(strMemPct.data());
+            QStandardItem *itemDisk = new QStandardItem("-");
+            itemDisk->setTextAlignment(Qt::AlignCenter);
+            itemMem->setTextAlignment(Qt::AlignCenter);
+            setTableItems(row, 2, QList<QStandardItem *>() << itemStatus << itemImage << itemNodeAddress << itemCpu << itemMem << itemDisk);
+
+            row++;
         }
     }
     else
     {
-        setTableDefaultContent();
+        setTableDefaultContent(QList<int>() << ACTION_COL, "-");
+        setOpBtnEnabled(false);
     }
 }
 
-void ContainerList::getContainerStartResult(QPair<grpc::Status, container::StartReply> reply)
+void ContainerList::getContainerStartResult(const QPair<grpc::Status, container::StartReply> &reply)
 {
     KLOG_INFO() << reply.first.error_code() << reply.first.error_message().data();
     if (reply.first.ok())
     {
         getContainerList();
-        return ;
+        return;
     }
 }
 
-void ContainerList::getContainerStopResult(QPair<grpc::Status, container::StopReply> reply)
+void ContainerList::getContainerStopResult(const QPair<grpc::Status, container::StopReply> &reply)
 {
     KLOG_INFO() << reply.first.error_code() << reply.first.error_message().data();
     if (reply.first.ok())
     {
         getContainerList();
-        return ;
+        return;
     }
 }
 
-void ContainerList::getContainerRestartResult(QPair<grpc::Status, container::RestartReply> reply)
+void ContainerList::getContainerRestartResult(const QPair<grpc::Status, container::RestartReply> &reply)
 {
     KLOG_INFO() << reply.first.error_code() << reply.first.error_message().data();
     if (reply.first.ok())
     {
         getContainerList();
-        return ;
+        return;
     }
 }
 
-void ContainerList::getContainerRemoveResult(QPair<grpc::Status, container::RemoveReply> reply)
+void ContainerList::getContainerRemoveResult(const QPair<grpc::Status, container::RemoveReply> &reply)
 {
     KLOG_INFO() << reply.first.error_code() << reply.first.error_message().data();
     if (reply.first.ok())
     {
         getContainerList();
-        return ;
+        return;
     }
 }
 
@@ -294,7 +322,20 @@ void ContainerList::initButtons()
     {
         QString name = iter.value();
         QPushButton *btn = new QPushButton(this);
-        btn->setObjectName(QString("btn%1").arg(name));
+        if (name == tr("More"))
+        {
+            KLOG_INFO() << name;
+            btn->setObjectName("btnMore");
+        }
+        else
+        {
+            btn->setObjectName("btn");
+            btn->setStyleSheet("#btn{background-color:#ffffff;"
+                               "border:1px solid #E4E7ED;"
+                               "border-radius: 6px;}"
+                               "#btn:hover{ background-color:#EBEEF5;}"
+                               "#btn:focus{outline:none;}");
+        }
         btn->setText(name);
         btn->setFixedSize(QSize(100, 40));
         m_opBtnMap.insert(iter.key(), btn);
@@ -318,6 +359,7 @@ void ContainerList::initButtons()
     connect(m_opBtnMap[OPERATION_BUTTOM_DELETE], &QPushButton::clicked, this, &ContainerList::onBtnDelete);
 
     addOperationButtons(m_opBtnMap.values());
+    setOpBtnEnabled(false);
 }
 
 void ContainerList::initTable()
@@ -334,10 +376,11 @@ void ContainerList::initTable()
     setHeaderSections(tableHHeaderDate);
     QList<int> sortablCol = {0, 3};
     setSortableCol(sortablCol);
-    setTableActions(1, QStringList() << ":/images/monitor.svg"
-                                     << ":/images/edit.svg"
-                                     << ":/images/terminal.svg"
-                                     << ":/images/more_in_table.svg");
+    setTableActions(ACTION_COL, QStringList() << ":/images/monitor.svg"
+                                              << ":/images/edit.svg"
+                                              << ":/images/terminal.svg"
+                                              << ":/images/more_in_table.svg");
+    setTableDefaultContent(QList<int>() << ACTION_COL, "-");
 
     connect(this, &ContainerList::sigMonitor, this, &ContainerList::onMonitor);
     connect(this, &ContainerList::sigEdit, this, &ContainerList::onEdit);
@@ -353,13 +396,14 @@ void ContainerList::initConnect()
     connect(&InfoWorker::getInstance(), &InfoWorker::removeContainerFinished, this, &ContainerList::getContainerRemoveResult);
 }
 
-void ContainerList::insertContainerInfo()
-{
-}
-
 void ContainerList::getContainerList()
 {
     InfoWorker::getInstance().listNode();
+}
+
+void ContainerList::getContainerInfo(QMap<QString, QVariant> itemData)
+{
+    InfoWorker::getInstance().containerInspect(itemData.value(NODE_ID).toInt(), itemData.value(CONTAINER_ID).toString().toStdString());
 }
 
 void ContainerList::getCheckId(std::map<int64_t, std::vector<std::string>> &ids)
@@ -385,15 +429,17 @@ void ContainerList::getCheckId(std::map<int64_t, std::vector<std::string>> &ids)
             ids[node_id].push_back(idMap.value(CONTAINER_ID).toString().toStdString());
         }
     }
-
 }
 
 void ContainerList::updateInfo(QString keyword)
 {
     KLOG_INFO() << "containerList updateInfo";
-    initConnect();
-    //gRPC->拿数据->填充内容
-    getContainerList();
-    if (!keyword.isEmpty())
-        KLOG_INFO() << keyword;
+    clearText();
+    InfoWorker::getInstance().disconnect();
+    if (keyword.isEmpty())
+    {
+        initConnect();
+        //gRPC->拿数据->填充内容
+        getContainerList();
+    }
 }

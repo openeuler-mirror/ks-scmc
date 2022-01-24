@@ -15,8 +15,8 @@ class HighAvailabilityPage : public QWidget
 public:
     explicit HighAvailabilityPage(QWidget *parent = nullptr);
     ~HighAvailabilityPage();
-    void setHighAvailInfo();
-    void getRestartPolicy(container::HostConfig *cfg);
+    void setRestartPolicy(container::HostConfig *cfg);
+    void getRestartPolicy(container::RestartPolicy *cfg);
 
 private slots:
     void onCbActivated(QString text);

@@ -19,7 +19,7 @@ set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 # They need to be set before the find_package(Qt5 ...) call.
 
 find_package(PkgConfig REQUIRED)
-find_package(Qt5 COMPONENTS Widgets REQUIRED)
+find_package(Qt5 COMPONENTS Widgets REQUIRED LinguistTools)
 pkg_search_module(KLOG_QT5 REQUIRED klog-qt5)
 
 include(GNUInstallDirs)

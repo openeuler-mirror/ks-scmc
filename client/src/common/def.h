@@ -28,35 +28,12 @@ enum ACTION_BUTTON_TYPE
     ACTION_BUTTON_TYPE_MENU
 };
 
-struct CPUInfo
+enum ErrorCode
 {
-    qint64 totalCore;
-    qint64 schedulingPriority;
+    NO_ERROR = 0,
+    INPUT_NULL_ERROR,
+    CONFIG_ARG_ERROR,
+    INPUT_ARG_ERROR
 };
 
-struct MemoryInfo
-{
-    qint64 softLimit;
-    qint64 maxLimit;
-};
-
-struct NetworkInfo
-{
-};
-
-struct EnvsInfo
-{
-};
-
-struct GraphicInfo
-{
-};
-
-struct VolumesInfo
-{
-};
-
-struct HighAvailabilityInfo
-{
-};
 #endif  // DEF_H

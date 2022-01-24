@@ -133,7 +133,7 @@ void GuideItem::enterEvent(QEvent *event)
 
 void GuideItem::leaveEvent(QEvent *event)
 {
-    if (m_delBtn && !m_delBtnVisible)
+    if (m_delBtn)
         m_delBtn->setVisible(false);
 }
 

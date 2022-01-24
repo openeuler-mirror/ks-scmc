@@ -23,6 +23,7 @@ public:
     void clearTable();
     void addOperationButton(QToolButton *);
     void addOperationButtons(QList<QPushButton *>);
+    void setOpBtnEnabled(bool enabled);
     void setTableColNum(int num);
     void setTableRowNum(int num);
     void setTableItem(int row, int col, QStandardItem *item);
@@ -30,12 +31,15 @@ public:
     void setTableActions(int col, QStringList actionIcons);
     void setSortableCol(QList<int> cols);
     void setHeaderSections(QStringList names);
-    void setTableDefaultContent();
+    void setTableDefaultContent(QList<int> actionCol, QString text);
+    void clearText();
     int getTableRowCount();
+    QStandardItem *getRowItem(int row);
     QList<QMap<QString, QVariant>> getCheckedItemInfo(int col);
 
 private:
     void initUI();
+    void adjustTableSize();
 
 signals:
     void sigMonitor(int row);
@@ -44,6 +48,7 @@ signals:
     void sigRun(QModelIndex index);
     void sigStop(QModelIndex index);
     void sigRestart(QModelIndex index);
+    void sigTableHeightChanged(int height);
 
 private slots:
     void onMonitor(int row);
@@ -53,6 +58,7 @@ private slots:
     void onActStop(QModelIndex index);
     void onActRestart(QModelIndex index);
     void search();
+    void refresh();
     void onHeaderCkbTog(bool toggled);
 
 private:
@@ -60,6 +66,8 @@ private:
     QString m_keyword;
     QStandardItemModel *m_model;
     HeaderView *m_headerView;
+    QTimer *m_timer;
+    int m_actionCol;
 };
 
 #endif  // COMMONPAGE_H

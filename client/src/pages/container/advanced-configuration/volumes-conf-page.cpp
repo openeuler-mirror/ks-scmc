@@ -14,13 +14,18 @@ VolumesConfPage::~VolumesConfPage()
     delete ui;
 }
 
-void VolumesConfPage::getVolumeInfo(container::HostConfig *cfg)
+ErrorCode VolumesConfPage::getVolumeInfo(container::HostConfig *cfg)
 {
     if (cfg)
     {
+        int count = 0;
         auto itemList = m_configTable->getAllData();
         for (auto item : itemList)
         {
+            if (item->m_firstColVal.isEmpty() && item->m_secondColVal.isEmpty())
+            {
+                continue;
+            }
             KLOG_INFO() << "container path:" << item->m_firstColVal
                         << "host path: " << item->m_secondColVal
                         << "permission: " << item->m_thirdColVal;
@@ -30,8 +35,16 @@ void VolumesConfPage::getVolumeInfo(container::HostConfig *cfg)
             mount->set_target(item->m_firstColVal.toStdString());
             mount->set_source(item->m_secondColVal.toStdString());
             mount->set_read_only(item->m_thirdColVal);
+            count++;
         }
+        if (count == 0)
+        {
+            return INPUT_NULL_ERROR;
+        }
+        else
+            return NO_ERROR;
     }
+    return CONFIG_ARG_ERROR;
 }
 
 void VolumesConfPage::initUI()

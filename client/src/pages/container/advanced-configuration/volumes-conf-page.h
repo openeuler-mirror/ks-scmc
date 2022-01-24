@@ -3,6 +3,7 @@
 
 #include <QWidget>
 #include "common/configtable.h"
+#include "common/def.h"
 #include "common/info-worker.h"
 namespace Ui
 {
@@ -16,7 +17,7 @@ class VolumesConfPage : public QWidget
 public:
     explicit VolumesConfPage(QWidget *parent = nullptr);
     ~VolumesConfPage();
-    void getVolumeInfo(container::HostConfig *cfg);
+    ErrorCode getVolumeInfo(container::HostConfig *cfg);
 
 private:
     void initUI();

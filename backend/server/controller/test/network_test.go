@@ -13,8 +13,8 @@ func TestNetworkList(t *testing.T) {
 	testRunner(func(ctx context.Context, conn *grpc.ClientConn) {
 		cli := pb.NewNetworkClient(conn)
 		request := pb.ListRequest{
-			Header:  &common.RequestHeader{},
-			NodeIds: []int64{1},
+			Header: &common.RequestHeader{},
+			NodeId: 1,
 		}
 
 		reply, err := cli.List(ctx, &request)

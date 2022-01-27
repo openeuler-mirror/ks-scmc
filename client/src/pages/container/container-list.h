@@ -15,12 +15,6 @@ enum OPERATION_BUTTOM
     OPERATION_BUTTOM_MORE
 };
 
-enum ContainerSettingType
-{
-    CONTAINER_SETTING_TYPE_CREATE,
-    CONTAINER_SETTING_TYPE_EDIT
-};
-
 class ContainerSetting;
 class ContainerList : public CommonPage
 {
@@ -52,9 +46,9 @@ private slots:
 private:
     void initButtons();
     void initTable();
-    void initContianerSetting(ContainerSetting *window, ContainerSettingType type);
     void insertContainerInfo();
     void getContainerList();
+    void getContainerStatus();
 
 private:
     QMenu *m_createMenu;

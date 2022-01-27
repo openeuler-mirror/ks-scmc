@@ -25,12 +25,14 @@ public:
     void addOperationButtons(QList<QPushButton *>);
     void setTableColNum(int num);
     void setTableRowNum(int num);
-    void setTableItem(int col, int row, QStandardItem *item);
-    void setTableItems(int row, QList<QStandardItem *> items);
+    void setTableItem(int row, int col, QStandardItem *item);
+    void setTableItems(int row, int col, QList<QStandardItem *> items);
     void setTableActions(int col, QStringList actionIcons);
     void setSortableCol(QList<int> cols);
     void setHeaderSections(QStringList names);
-    QList<QMap<QString, QVariant>> getCheckedRowInfo();
+    void setTableDefaultContent();
+    int getTableRowCount();
+    QList<QMap<QString, QVariant>> getCheckedItemInfo(int col);
 
 private:
     void initUI();
@@ -58,7 +60,6 @@ private:
     QString m_keyword;
     QStandardItemModel *m_model;
     HeaderView *m_headerView;
-    QList<QMap<QString, QVariant>> m_checkedRowInfo;  //containerId,nodeId
 };
 
 #endif  // COMMONPAGE_H

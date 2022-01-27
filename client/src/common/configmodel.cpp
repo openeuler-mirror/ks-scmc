@@ -46,7 +46,7 @@ QVariant ConfigModel::headerData(int section, Qt::Orientation orientation, int r
 {
     if (section >= m_listHead.size())
     {
-        qDebug() <<__func__ << __LINE__ << ", section:" << section << ", size:" << m_listHead.size();
+        qDebug() << __func__ << __LINE__ << ", section:" << section << ", size:" << m_listHead.size();
         return QVariant();
     }
 
@@ -91,7 +91,7 @@ bool ConfigModel::setData(const QModelIndex &index, const QVariant &value, int r
 {
     if (role != Qt::EditRole || !value.isValid() || !index.isValid() || index.row() >= m_listData.count())
     {
-        qDebug()<<__func__<<__LINE__<<"param err";
+        qDebug() << __func__ << __LINE__ << "param err";
         return false;
     }
 
@@ -162,4 +162,3 @@ void ConfigModel::ShowTableinfo()
     beginResetModel();
     endResetModel();
 }
-

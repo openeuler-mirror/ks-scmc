@@ -2,7 +2,7 @@
 #define GRAPHICCONFPAGE_H
 
 #include <QWidget>
-
+#include "common/info-worker.h"
 namespace Ui
 {
 class GraphicConfPage;
@@ -16,6 +16,7 @@ public:
     explicit GraphicConfPage(QWidget *parent = nullptr);
     ~GraphicConfPage();
     void setGraphicInfo();
+    void getGraphicInfo(container::CreateRequest *request);
 
 private:
     Ui::GraphicConfPage *ui;

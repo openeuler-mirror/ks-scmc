@@ -13,6 +13,7 @@
 #include "base-configuration/memory-conf-page.h"
 #include "base-configuration/network-conf-page.h"
 #include "common/guide-item.h"
+
 #include "common/message-dialog.h"
 #include "ui_container-setting.h"
 
@@ -24,13 +25,19 @@
 #define VOLUMES "Volumes"
 #define HIGH_AVAILABILITY "High availability"
 
-ContainerSetting::ContainerSetting(QWidget *parent) : QWidget(parent),
-                                                      ui(new Ui::ContainerSetting),
-                                                      m_netWorkCount(0)
+#define NODE_ID "node id"
+#define NODE_ADDRESS "node address"
+ContainerSetting::ContainerSetting(ContainerSettingType type, QWidget *parent) : QWidget(parent),
+                                                                                 ui(new Ui::ContainerSetting),
+                                                                                 m_netWorkCount(0),
+                                                                                 m_type(type)
 {
     ui->setupUi(this);
+    getNodeInfo();
     initUI();
     setAttribute(Qt::WA_DeleteOnClose);
+    connect(&InfoWorker::getInstance(), &InfoWorker::listNodeFinished, this, &ContainerSetting::getNodeListResult);
+    connect(&InfoWorker::getInstance(), &InfoWorker::createContainerFinished, this, &ContainerSetting::getCreateContainerResult);
 }
 
 ContainerSetting::~ContainerSetting()
@@ -68,6 +75,7 @@ bool ContainerSetting::eventFilter(QObject *obj, QEvent *ev)
 
 void ContainerSetting::initUI()
 {
+    initSummaryUI();
     ui->tabWidget->setStyleSheet(QString("QTabWidget::tab-bar{width:%1px;}").arg(this->geometry().width() + 20));
     ui->tabWidget->setFocusPolicy(Qt::NoFocus);
     ui->btn_add->setIcon(QIcon(":/images/addition.svg"));
@@ -119,6 +127,42 @@ void ContainerSetting::initUI()
 
     connect(ui->listwidget_base_config, &QListWidget::itemClicked, this, &ContainerSetting::onItemClicked);
     connect(ui->listWidget_advanced_config, &QListWidget::itemClicked, this, &ContainerSetting::onItemClicked);
+    connect(ui->btn_confirm, &QToolButton::clicked, this, &ContainerSetting::onConfirm);
+    connect(ui->btn_cancel, &QToolButton::clicked, this, &ContainerSetting::close);
+    connect(ui->cb_node, &QComboBox::currentTextChanged, this, &ContainerSetting::onNodeSelectedChanged);
+}
+
+void ContainerSetting::initSummaryUI()
+{
+    switch (m_type)
+    {
+    case CONTAINER_SETTING_TYPE_CONTAINER_CREATE:
+    {
+        m_cbImage = new QComboBox(this);
+        m_cbImage->setFixedSize(QSize(200, 30));
+        QGridLayout *layout = dynamic_cast<QGridLayout *>(ui->page_container->layout());
+        layout->addWidget(m_cbImage, 2, 1);
+        m_cbImage->addItems(QStringList() << "bitnami/mysql:5.7"
+                                          << "hello-world"
+                                          << "busybox"
+                                          << "jess/gparted");
+        ui->stackedWidget->setCurrentWidget(ui->page_container);
+        break;
+    }
+    case CONTAINER_SETTING_TYPE_CONTAINER_EDIT:
+    {
+        m_labImage = new QLabel(this);
+        QGridLayout *layout = dynamic_cast<QGridLayout *>(ui->page_container->layout());
+        layout->addWidget(m_labImage, 2, 1);
+        ui->stackedWidget->setCurrentWidget(ui->page_container);
+        break;
+    }
+    case CONTAINER_SETTING_TYPE_TEMPLATE_CREATE:
+    case CONTAINER_SETTING_TYPE_TEMPLATE_EDIT:
+        ui->stackedWidget->setCurrentWidget(ui->page_template);
+    default:
+        break;
+    }
 }
 
 GuideItem *ContainerSetting::createGuideItem(QListWidget *parent, QString text, int type, QString icon)
@@ -147,7 +191,7 @@ GuideItem *ContainerSetting::createGuideItem(QListWidget *parent, QString text, 
 
 void ContainerSetting::initBaseConfPages()
 {
-    CPUConfPage *cpuInfoPage = new CPUConfPage(ui->tab_base_config);
+    CPUConfPage *cpuInfoPage = new CPUConfPage(m_totalCPU, ui->tab_base_config);
     m_baseConfStack->addWidget(cpuInfoPage);
 
     MemoryConfPage *memoryConfPage = new MemoryConfPage(ui->tab_base_config);
@@ -155,13 +199,6 @@ void ContainerSetting::initBaseConfPages()
 
     NetworkConfPage *networkConfPage = new NetworkConfPage(ui->tab_base_config);
     m_baseConfStack->addWidget(networkConfPage);
-
-    QList<QComboBox *> comboboxs = memoryConfPage->findChildren<QComboBox *>();
-    foreach (QComboBox *cb, comboboxs)
-    {
-        cb->addItems(QStringList() << "MB"
-                                   << "GB");
-    }
 }
 
 void ContainerSetting::initAdvancedConfPages()
@@ -205,6 +242,11 @@ void ContainerSetting::updateRemovableItem(QString itemText)
             }
         }
     }
+}
+
+void ContainerSetting::getNodeInfo()
+{
+    InfoWorker::getInstance().listNode();
 }
 
 void ContainerSetting::popupMessageDialog()
@@ -299,4 +341,81 @@ void ContainerSetting::onDelItem(QWidget *sender)
         }
         row++;
     }
+}
+
+void ContainerSetting::onConfirm()
+{
+    container::CreateRequest request;
+    request.set_node_id(m_nodeInfo.key(ui->cb_node->currentText()));
+    request.set_name(ui->lineEdit_name->text().toStdString());
+    auto cntrCfg = request.mutable_config();
+    cntrCfg->set_image(m_cbImage->currentText().toStdString());
+
+    //cpu
+    auto hostCfg = request.mutable_host_config();
+    auto cpuPage = qobject_cast<CPUConfPage *>(m_baseConfStack->widget(TAB_CONFIG_GUIDE_ITEM_TYPE_CPU));
+    cpuPage->getCPUInfo(hostCfg);
+
+    //memory
+    auto memoryPage = qobject_cast<MemoryConfPage *>(m_baseConfStack->widget(TAB_CONFIG_GUIDE_ITEM_TYP_MEMORY));
+    memoryPage->getMemoryInfo(hostCfg);
+
+    //network card
+    auto networkPage = qobject_cast<NetworkConfPage *>(m_baseConfStack->widget(TAB_CONFIG_GUIDE_ITEM_TYP_NETWORK_CARD));
+    networkPage->getNetworkInfo(&request);
+
+    //env
+    auto envPage = qobject_cast<EnvsConfPage *>(m_advancedConfStack->widget(TAB_CONFIG_GUIDE_ITEM_TYP_ITEM_ENVS));
+    envPage->getEnvInfo(cntrCfg);
+
+    //Graph
+    auto graphicPage = qobject_cast<GraphicConfPage *>(m_advancedConfStack->widget(TAB_CONFIG_GUIDE_ITEM_TYPDE_ITEM_GRAPHIC));
+    graphicPage->getGraphicInfo(&request);
+
+    //High
+    auto highAvailabilityPage = qobject_cast<HighAvailabilityPage *>(m_advancedConfStack->widget(TAB_CONFIG_GUIDE_ITEM_TYP_HIGH_AVAILABILITY));
+    highAvailabilityPage->getRestartPolicy(hostCfg);
+
+    InfoWorker::getInstance().createContainer(request);
+}
+
+void ContainerSetting::onCancel()
+{
+}
+
+void ContainerSetting::onNodeSelectedChanged(QString newStr)
+{
+    auto networkPage = qobject_cast<NetworkConfPage *>(m_baseConfStack->widget(TAB_CONFIG_GUIDE_ITEM_TYP_NETWORK_CARD));
+    networkPage->updateNetworkInfo(m_nodeInfo.key(newStr));
+}
+
+void ContainerSetting::getNodeListResult(QPair<grpc::Status, node::ListReply> reply)
+{
+    KLOG_INFO() << "getNodeListResult";
+    if (reply.first.ok())
+    {
+        m_nodeInfo.clear();
+        for (auto n : reply.second.nodes())
+        {
+            m_nodeInfo.insert(n.id(), QString("%1").arg(n.address().data()));
+            ui->cb_node->addItem(QString("%1").arg(n.address().data()));
+            m_totalCPU = n.status().cpu_stat().total();
+        }
+        auto iter = m_nodeInfo.begin();
+        onNodeSelectedChanged(iter.value());
+
+        KLOG_INFO() << "total cpu = " << m_totalCPU;
+    }
+}
+
+void ContainerSetting::getCreateContainerResult(QPair<grpc::Status, container::CreateReply> reply)
+{
+    KLOG_INFO() << "getCreateContainerResult";
+    if (reply.first.ok())
+    {
+        KLOG_INFO() << "create container successful!";
+        close();
+    }
+    else
+        KLOG_DEBUG() << QString::fromStdString(reply.first.error_message());
 }

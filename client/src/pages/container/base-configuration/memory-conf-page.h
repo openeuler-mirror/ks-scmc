@@ -1,8 +1,11 @@
 #ifndef MEMORYCONFPAGE_H
 #define MEMORYCONFPAGE_H
 
+#include <QComboBox>
+#include <QLineEdit>
 #include <QWidget>
 #include "common/def.h"
+#include "common/info-worker.h"
 namespace Ui
 {
 class MemoryConfPage;
@@ -16,7 +19,10 @@ public:
     explicit MemoryConfPage(QWidget *parent = nullptr);
     ~MemoryConfPage();
     void setMemoryInfo(MemoryInfo memoryInfo);
-    MemoryInfo getMemoryInfo();
+    void getMemoryInfo(container::HostConfig *cfg);
+
+private:
+    qlonglong getLimitData(QLineEdit *inputWidget, QComboBox *unitWidget);
 
 private:
     Ui::MemoryConfPage *ui;

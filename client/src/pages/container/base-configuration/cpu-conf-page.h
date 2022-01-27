@@ -3,6 +3,7 @@
 
 #include <QWidget>
 #include "common/def.h"
+#include "common/info-worker.h"
 namespace Ui
 {
 class CPUConfPage;
@@ -13,13 +14,14 @@ class CPUConfPage : public QWidget
     Q_OBJECT
 
 public:
-    explicit CPUConfPage(QWidget *parent = nullptr);
+    explicit CPUConfPage(double totalCPU, QWidget *parent = nullptr);
     ~CPUConfPage();
     void setCPUInfo(CPUInfo cpuInfo);
-    CPUInfo getCPUInfo();
+    void getCPUInfo(container::HostConfig *);
 
 private:
     Ui::CPUConfPage *ui;
+    double m_totalCPU;
 };
 
 #endif  // CPUCONFPAGE_H

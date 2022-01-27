@@ -18,6 +18,25 @@ type NodeServer struct {
 	pb.UnimplementedNodeServer
 }
 
+func getNodeStatus(node *model.NodeInfo) (*pb.StatusReply, error) {
+	conn, err := getAgentConn(node.Address)
+	if err != nil {
+		log.Warnf("Failed to connect to agent service, node=%+v", node)
+		return nil, rpc.ErrInternal
+	}
+
+	cli := pb.NewNodeClient(conn)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*2)
+	defer cancel()
+	r, err := cli.Status(ctx, &pb.StatusRequest{})
+	if err != nil {
+		log.Warnf("get node status ID=%v address=%v: %v", node.ID, node.Address, err)
+		return nil, rpc.ErrInternal
+	}
+
+	return r, nil
+}
+
 func (s *NodeServer) List(ctx context.Context, in *pb.ListRequest) (*pb.ListReply, error) {
 	reply := pb.ListReply{}
 
@@ -27,11 +46,18 @@ func (s *NodeServer) List(ctx context.Context, in *pb.ListRequest) (*pb.ListRepl
 	}
 
 	for _, node := range nodes {
+		r, _ := getNodeStatus(&node)
+		var s *pb.NodeStatus
+		if r != nil && len(r.StatusList) > 0 {
+			s = r.StatusList[0]
+		}
+
 		reply.Nodes = append(reply.Nodes, &pb.NodeInfo{
 			Id:      node.ID,
 			Name:    node.Name,
 			Address: node.Address,
 			Comment: node.Comment,
+			Status:  s,
 		})
 	}
 	return &reply, nil

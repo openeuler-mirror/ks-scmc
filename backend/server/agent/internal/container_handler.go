@@ -27,6 +27,11 @@ func (s *ContainerServer) List(ctx context.Context, in *pb.ListRequest) (*pb.Lis
 		return nil, rpc.ErrInternal
 	}
 
+	stats, err := getContainerStats()
+	if err != nil {
+		log.Warnf("getContainerStats: %v", err)
+	}
+
 	opts := types.ContainerListOptions{All: in.GetListAll(), Size: true}
 	containers, err := cli.ContainerList(context.Background(), opts)
 	if err != nil {
@@ -35,7 +40,6 @@ func (s *ContainerServer) List(ctx context.Context, in *pb.ListRequest) (*pb.Lis
 	}
 
 	for _, c := range containers {
-		log.Debugf("%+v", c)
 		info := pb.ContainerInfo{
 			Id:         c.ID,
 			Image:      c.Image,
@@ -45,11 +49,23 @@ func (s *ContainerServer) List(ctx context.Context, in *pb.ListRequest) (*pb.Lis
 			SizeRw:     c.SizeRw,
 			SizeRootFs: c.SizeRootFs,
 			Labels:     c.Labels,
+			Created:    c.Created,
 		}
 
-		if len(c.Names) > 0 && strings.HasPrefix(c.Names[0], "/") {
-			info.Name = c.Names[0][1:]
+		// 参考docker cli实现 去掉link特性连接的其他容器名
+		for _, name := range c.Names {
+			if strings.HasPrefix(name, "/") && len(strings.Split(name[1:], "/")) == 1 {
+				info.Name = name[1:]
+				break
+			}
 		}
+
+		if stats != nil {
+			if stat, ok := stats[c.ID]; ok {
+				info.ResourceStat = stat
+			}
+		}
+
 		reply.Containers = append(reply.Containers, &pb.NodeContainer{Info: &info})
 	}
 
@@ -172,13 +188,17 @@ func (s *ContainerServer) Create(ctx context.Context, in *pb.CreateRequest) (*pb
 func (s *ContainerServer) Start(ctx context.Context, in *pb.StartRequest) (*pb.StartReply, error) {
 	reply := pb.StartReply{}
 
+	if (len(in.Ids)) <= 0 || len(in.Ids[0].ContainerIds) <= 0 {
+		return nil, rpc.ErrInvalidArgument
+	}
+
 	cli, err := dockerCli()
 	if err != nil {
 		return nil, rpc.ErrInternal
 	}
 
 	opts := types.ContainerStartOptions{}
-	for _, id := range in.ContainerIds {
+	for _, id := range in.Ids[0].ContainerIds {
 		if err := cli.ContainerStart(context.Background(), id, opts); err != nil {
 			log.Warnf("ContainerStart: id=%v %v", id, err)
 			return nil, rpc.ErrInternal
@@ -192,13 +212,16 @@ func (s *ContainerServer) Start(ctx context.Context, in *pb.StartRequest) (*pb.S
 
 func (s *ContainerServer) Stop(ctx context.Context, in *pb.StopRequest) (*pb.StopReply, error) {
 	reply := pb.StopReply{}
+	if (len(in.Ids)) <= 0 || len(in.Ids[0].ContainerIds) <= 0 {
+		return nil, rpc.ErrInvalidArgument
+	}
 
 	cli, err := dockerCli()
 	if err != nil {
 		return nil, rpc.ErrInternal
 	}
 
-	for _, id := range in.ContainerIds {
+	for _, id := range in.Ids[0].ContainerIds {
 		if err := cli.ContainerStop(context.Background(), id, nil); err != nil { // TODO timeout
 			log.Warnf("ContainerStop: id=%v %v", id, err)
 			return nil, rpc.ErrInternal
@@ -211,13 +234,16 @@ func (s *ContainerServer) Stop(ctx context.Context, in *pb.StopRequest) (*pb.Sto
 
 func (s *ContainerServer) Kill(ctx context.Context, in *pb.KillRequest) (*pb.KillReply, error) {
 	reply := pb.KillReply{}
+	if (len(in.Ids)) <= 0 || len(in.Ids[0].ContainerIds) <= 0 {
+		return nil, rpc.ErrInvalidArgument
+	}
 
 	cli, err := dockerCli()
 	if err != nil {
 		return nil, rpc.ErrInternal
 	}
 
-	for _, id := range in.ContainerIds {
+	for _, id := range in.Ids[0].ContainerIds {
 		if err := cli.ContainerKill(context.Background(), id, ""); err != nil { // TODO signal
 			log.Warnf("ContainerKill: id=%v %v", id, err)
 			return nil, rpc.ErrInternal
@@ -230,13 +256,16 @@ func (s *ContainerServer) Kill(ctx context.Context, in *pb.KillRequest) (*pb.Kil
 
 func (s *ContainerServer) Restart(ctx context.Context, in *pb.RestartRequest) (*pb.RestartReply, error) {
 	reply := pb.RestartReply{}
+	if (len(in.Ids)) <= 0 || len(in.Ids[0].ContainerIds) <= 0 {
+		return nil, rpc.ErrInvalidArgument
+	}
 
 	cli, err := dockerCli()
 	if err != nil {
 		return nil, rpc.ErrInternal
 	}
 
-	for _, id := range in.ContainerIds {
+	for _, id := range in.Ids[0].ContainerIds {
 		if err := cli.ContainerRestart(context.Background(), id, nil); err != nil { // TODO timeout
 			log.Warnf("ContainerRestart: id=%v %v", id, err)
 			return nil, rpc.ErrInternal
@@ -290,6 +319,9 @@ func (s *ContainerServer) Update(ctx context.Context, in *pb.UpdateRequest) (*pb
 
 func (s *ContainerServer) Remove(ctx context.Context, in *pb.RemoveRequest) (*pb.RemoveReply, error) {
 	reply := pb.RemoveReply{}
+	if (len(in.Ids)) <= 0 || len(in.Ids[0].ContainerIds) <= 0 {
+		return nil, rpc.ErrInvalidArgument
+	}
 
 	cli, err := dockerCli()
 	if err != nil {
@@ -300,7 +332,7 @@ func (s *ContainerServer) Remove(ctx context.Context, in *pb.RemoveRequest) (*pb
 		RemoveVolumes: in.RemoveVolumes,
 	}
 
-	for _, id := range in.ContainerIds {
+	for _, id := range in.Ids[0].ContainerIds {
 		if err := cli.ContainerRemove(context.Background(), id, opts); err != nil {
 			log.Warnf("ContainerRemove: id=%v %v", id, err)
 			return nil, rpc.ErrInternal
@@ -352,6 +384,20 @@ func (s *ContainerServer) Inspect(ctx context.Context, in *pb.InspectRequest) (*
 			}
 		}
 	}
+	if info.HostConfig != nil {
+		reply.HostConfig = &pb.HostConfig{
+			RestartPolicy: &pb.RestartPolicy{
+				Name:     info.HostConfig.RestartPolicy.Name,
+				MaxRetry: int32(info.HostConfig.RestartPolicy.MaximumRetryCount),
+			},
+			ResourceConfig: &pb.ResourceConfig{
+				NanoCpus:     info.HostConfig.Resources.NanoCPUs,
+				CpuShares:    info.HostConfig.Resources.CPUShares,
+				MemLimit:     info.HostConfig.Resources.Memory,
+				MemSoftLimit: info.HostConfig.Resources.MemoryReservation,
+			},
+		}
+	}
 	if info.NetworkSettings.Networks != nil {
 		reply.NetworkSettings = make(map[string]*pb.EndpointSetting)
 		for k, v := range info.NetworkSettings.Networks {
@@ -376,40 +422,6 @@ func (s *ContainerServer) Inspect(ctx context.Context, in *pb.InspectRequest) (*
 			Target:   m.Destination,
 			ReadOnly: !m.RW,
 		})
-	}
-
-	return &reply, nil
-}
-
-func (s *ContainerServer) Status(ctx context.Context, in *pb.StatusRequest) (*pb.StatusReply, error) {
-	reply := pb.StatusReply{}
-
-	cli, err := dockerCli()
-	if err != nil {
-		return nil, rpc.ErrInternal
-	}
-
-	opts := types.ContainerListOptions{All: true, Size: true}
-	containers, err := cli.ContainerList(context.Background(), opts)
-	if err != nil {
-		log.Warnf("ContainerList: %v", err)
-		return nil, rpc.ErrInternal
-	}
-
-	m := make(map[string]*pb.ContainerStatus, len(containers))
-
-	for _, c := range containers {
-		m[c.ID] = &pb.ContainerStatus{
-			Id:    c.ID,
-			State: c.State,
-		}
-
-	}
-
-	containerStats(m)
-	reply.Status = make([]*pb.ContainerStatus, 0, len(containers))
-	for _, v := range m {
-		reply.Status = append(reply.Status, v)
 	}
 
 	return &reply, nil

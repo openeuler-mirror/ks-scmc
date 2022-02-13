@@ -359,10 +359,11 @@ func (s *ContainerServer) Inspect(ctx context.Context, in *pb.InspectRequest) (*
 
 	reply.Info = &pb.ContainerInfo{
 		Id:    info.ID,
-		Name:  info.Name,
+		Name:  strings.TrimPrefix(info.Name, "/"),
 		Image: info.Image,
 		State: info.State.Status,
 	}
+
 	if info.Config != nil {
 		reply.Config = &pb.ContainerConfig{
 			Hostname:        info.Config.Hostname,
@@ -373,6 +374,7 @@ func (s *ContainerServer) Inspect(ctx context.Context, in *pb.InspectRequest) (*
 			Entrypoint:      info.Config.Entrypoint,
 			Cmd:             info.Config.Cmd,
 			NetworkDisabled: info.Config.NetworkDisabled,
+			Labels:          info.Config.Labels,
 		}
 		if len(info.Config.Env) > 0 {
 			reply.Config.Env = make(map[string]string, len(info.Config.Env))

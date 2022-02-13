@@ -1,11 +1,6 @@
 CREATE DATABASE IF NOT EXISTS `ksc-mcube`
 CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;	-- utf8mb4_0900_ai_ci utf8_general_ci
 
-GRANT ALL PRIVILEGES ON `ksc-mcube`.*
-TO 'ksc-mcube'@'localhost'
-IDENTIFIED BY '%7hXnBx!ZUqR';
-FLUSH PRIVILEGES;
-
 USE `ksc-mcube`;
 
 CREATE TABLE IF NOT EXISTS `user_infos` (
@@ -46,6 +41,7 @@ CREATE TABLE IF NOT EXISTS `node_infos` (
   `updated_at` INT(20) NOT NULL DEFAULT 0
 ) ENGINE=InnoDB AUTO_INCREMENT=1;
 
+/*
 CREATE TABLE IF NOT EXISTS `image_infos` (
   `id` BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
   `name` VARCHAR(255) NOT NULL DEFAULT '' UNIQUE,
@@ -57,3 +53,4 @@ CREATE TABLE IF NOT EXISTS `image_infos` (
   `created_at` INT(20) NOT NULL DEFAULT 0,
   `updated_at` INT(20) NOT NULL DEFAULT 0
 ) ENGINE=InnoDB AUTO_INCREMENT=1;
+*/

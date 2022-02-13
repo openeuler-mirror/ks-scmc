@@ -25,4 +25,11 @@ docker run -d -p 8080:8080 --name=cadvisor \
 
 yum install -y mysql5-server mysql5
 
+systemctl enable --now mysqld.service
+
 mysql -uroot < ./database.sql
+
+cp ksc-mcube-controller.service ksc-mcube-agent.service /usr/lib/systemd/system/
+
+systemctl enable --now ksc-mcube-agent.service
+systemctl enable --now ksc-mcube-controller.service

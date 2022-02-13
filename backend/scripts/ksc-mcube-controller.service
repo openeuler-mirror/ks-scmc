@@ -1,10 +1,8 @@
 [Unit]
-Description=KylinSec Magic Cube controller service
+Description=KylinSec security magic Cube controller service
 
 [Service]
-PIDFile=/var/lib/ksc-mcube/controller.pid
-
-ExecStart=/usr/bin/ksc-mcube -verbose=5 controller
+ExecStart=bash -c "/usr/bin/ksc-mcube-server $(cat /etc/ksc-mcube/server.flags) controller"
 
 Restart=on-failure
 

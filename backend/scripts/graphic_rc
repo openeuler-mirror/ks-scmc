@@ -1,0 +1,5 @@
+#!/usr/bin/bash
+
+source $HOME/.bashrc
+
+access-container-gui ${CONTAINER_NAME}

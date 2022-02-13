@@ -60,7 +60,6 @@ func (s *ContainerServer) List(ctx context.Context, in *pb.ListRequest) (*pb.Lis
 		}
 	}
 
-	log.Infof("container size=%d", len(reply.Containers))
 	return &reply, nil
 }
 

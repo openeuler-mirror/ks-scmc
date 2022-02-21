@@ -22,7 +22,7 @@ const containerNameChars = `[a-zA-Z0-9][a-zA-Z0-9_.-]`
 var containerNamePattern = regexp.MustCompile(`^` + containerNameChars + `+$`)
 
 func containerGraphicSetup(containerName string, config *container.Config, hostConfig *container.HostConfig) error {
-	hostPath := filepath.Join(common.GraphicConfigBaseDir, containerName)
+	hostPath := filepath.Join(common.Config.Agent.ContainerExtraDataBasedir, containerName)
 	socketDir := filepath.Join(hostPath, "socket")
 	if err := os.MkdirAll(socketDir, 0755); err != nil {
 		log.Warnf("mkdir %v: %v", socketDir, err)

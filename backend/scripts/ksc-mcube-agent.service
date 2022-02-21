@@ -2,7 +2,7 @@
 Description=KylinSec security magic Cube agent service
 
 [Service]
-ExecStart=bash -c "/usr/bin/ksc-mcube-server $(cat /etc/ksc-mcube/server.flags) agent"
+ExecStart=/usr/bin/ksc-mcube-server agent /etc/ksc-mcube/server.toml
 
 Restart=on-failure
 

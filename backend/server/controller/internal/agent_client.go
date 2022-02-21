@@ -24,7 +24,7 @@ func getAgentConn(host string) (*grpc.ClientConn, error) {
 
 	agentConnLock.RUnlock()
 
-	addr := fmt.Sprintf("%s:%d", host, common.AgentPort)
+	addr := fmt.Sprintf("%s:%d", host, common.Config.Agent.Port)
 
 	var opts []grpc.DialOption
 	opts = append(opts, grpc.WithInsecure())

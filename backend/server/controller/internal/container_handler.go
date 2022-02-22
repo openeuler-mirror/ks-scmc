@@ -68,7 +68,7 @@ func (s *ContainerServer) Create(ctx context.Context, in *pb.CreateRequest) (*pb
 
 	nodeInfo, err := model.QueryNodeByID(in.NodeId)
 	if err != nil {
-		if err == model.ErrDBRecordNotFound {
+		if err == model.ErrRecordNotFound {
 			return nil, rpc.ErrNotFound
 		}
 		return nil, rpc.ErrInternal
@@ -109,8 +109,8 @@ func (s *ContainerServer) Start(ctx context.Context, in *pb.StartRequest) (*pb.S
 
 		nodeInfo, err := model.QueryNodeByID(nodeId)
 		if err != nil {
-			if err == model.ErrDBRecordNotFound {
-				log.Warnf("start container ErrDBRecordNotFound")
+			if err == model.ErrRecordNotFound {
+				log.Warnf("start container ErrRecordNotFound")
 				continue
 			}
 			log.Warnf("start container ErrInternal")
@@ -164,8 +164,8 @@ func (s *ContainerServer) Stop(ctx context.Context, in *pb.StopRequest) (*pb.Sto
 
 		nodeInfo, err := model.QueryNodeByID(nodeId)
 		if err != nil {
-			if err == model.ErrDBRecordNotFound {
-				log.Warnf("stop container ErrDBRecordNotFound")
+			if err == model.ErrRecordNotFound {
+				log.Warnf("stop container ErrRecordNotFound")
 				continue
 			}
 			log.Warnf("stop container ErrInternal")
@@ -218,8 +218,8 @@ func (s *ContainerServer) Kill(ctx context.Context, in *pb.KillRequest) (*pb.Kil
 
 		nodeInfo, err := model.QueryNodeByID(nodeId)
 		if err != nil {
-			if err == model.ErrDBRecordNotFound {
-				log.Warnf("kill container ErrDBRecordNotFound")
+			if err == model.ErrRecordNotFound {
+				log.Warnf("kill container ErrRecordNotFound")
 				continue
 			}
 			log.Warnf("kill container ErrInternal")
@@ -273,8 +273,8 @@ func (s *ContainerServer) Restart(ctx context.Context, in *pb.RestartRequest) (*
 
 		nodeInfo, err := model.QueryNodeByID(nodeId)
 		if err != nil {
-			if err == model.ErrDBRecordNotFound {
-				log.Warnf("restart container ErrDBRecordNotFound")
+			if err == model.ErrRecordNotFound {
+				log.Warnf("restart container ErrRecordNotFound")
 				continue
 			}
 			log.Warnf("restart container ErrInternal")
@@ -329,8 +329,8 @@ func (s *ContainerServer) Remove(ctx context.Context, in *pb.RemoveRequest) (*pb
 
 		nodeInfo, err := model.QueryNodeByID(nodeId)
 		if err != nil {
-			if err == model.ErrDBRecordNotFound {
-				log.Warnf("remove container ErrDBRecordNotFound")
+			if err == model.ErrRecordNotFound {
+				log.Warnf("remove container ErrRecordNotFound")
 				continue
 			}
 			log.Warnf("remove container ErrInternal")
@@ -376,7 +376,7 @@ func (s *ContainerServer) Inspect(ctx context.Context, in *pb.InspectRequest) (*
 
 	nodeInfo, err := model.QueryNodeByID(in.NodeId)
 	if err != nil {
-		if err == model.ErrDBRecordNotFound {
+		if err == model.ErrRecordNotFound {
 			return nil, rpc.ErrNotFound
 		}
 		return nil, rpc.ErrInternal
@@ -409,7 +409,7 @@ func (s *ContainerServer) Status(ctx context.Context, in *pb.StatusRequest) (*pb
 
 	nodeInfo, err := model.QueryNodeByID(in.NodeId)
 	if err != nil {
-		if err == model.ErrDBRecordNotFound {
+		if err == model.ErrRecordNotFound {
 			return nil, rpc.ErrNotFound
 		}
 		return nil, rpc.ErrInternal
@@ -440,7 +440,7 @@ func (s *ContainerServer) Update(ctx context.Context, in *pb.UpdateRequest) (*pb
 
 	nodeInfo, err := model.QueryNodeByID(in.NodeId)
 	if err != nil {
-		if err == model.ErrDBRecordNotFound {
+		if err == model.ErrRecordNotFound {
 			return nil, rpc.ErrNotFound
 		}
 		return nil, rpc.ErrInternal

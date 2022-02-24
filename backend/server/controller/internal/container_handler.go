@@ -463,3 +463,29 @@ func (s *ContainerServer) Update(ctx context.Context, in *pb.UpdateRequest) (*pb
 	log.Debugf("Update container agent reply: %+v", agentReply)
 	return agentReply, nil
 }
+
+func (s *ContainerServer) MonitorHistory(ctx context.Context, in *pb.MonitorHistoryRequest) (*pb.MonitorHistoryReply, error) {
+	nodeInfo, err := model.QueryNodeByID(in.NodeId)
+	if err != nil {
+		if err == model.ErrRecordNotFound {
+			return nil, rpc.ErrNotFound
+		}
+		return nil, rpc.ErrInternal
+	}
+
+	conn, err := getAgentConn(nodeInfo.Address)
+	if err != nil {
+		return nil, rpc.ErrInternal
+	}
+
+	cli := pb.NewContainerClient(conn)
+	ctx_, cancel := context.WithTimeout(context.Background(), time.Second*10)
+	defer cancel()
+	agentReply, err := cli.MonitorHistory(ctx_, in)
+	if err != nil {
+		log.Warnf("monitor history: %v", err)
+		return nil, err
+	}
+
+	return agentReply, nil
+}

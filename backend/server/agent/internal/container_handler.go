@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"strings"
+	"time"
 
 	"ksc-mcube/rpc"
 	pb "ksc-mcube/rpc/pb/container"
@@ -427,4 +428,47 @@ func (s *ContainerServer) Inspect(ctx context.Context, in *pb.InspectRequest) (*
 	}
 
 	return &reply, nil
+}
+
+func (s *ContainerServer) MonitorHistory(ctx context.Context, in *pb.MonitorHistoryRequest) (*pb.MonitorHistoryReply, error) {
+	now := time.Now()
+	if in.StartTime >= in.EndTime || in.StartTime < now.Add(-time.Hour*24).Unix() || in.StartTime > now.Unix() {
+		log.Info("MonitorHistory invalid time args")
+		return nil, rpc.ErrInvalidArgument
+	}
+
+	containerName := in.ContainerId
+	if in.ContainerId == "" {
+		containerName = "/"
+	}
+
+	// in order to get container name, for influxdb query
+	if containerName != "/" {
+		cli, err := dockerCli()
+		if err != nil {
+			return nil, rpc.ErrInternal
+		}
+
+		r, err := cli.ContainerInspect(context.Background(), in.ContainerId)
+		if err != nil {
+			log.Warnf("MonitorHistory inspect container error=%v", err)
+			return nil, rpc.ErrInternal
+		}
+
+		containerName = strings.TrimPrefix(r.Name, "/")
+	}
+
+	switch in.DataType {
+	case "cpu":
+		return influxdbQueryCPU(containerName, in.StartTime, in.EndTime)
+	case "memory":
+		return influxdbQueryMemory(containerName, in.StartTime, in.EndTime)
+	case "disk":
+		return influxdbQueryDisk(containerName, in.StartTime, in.EndTime)
+	default:
+		log.Infof("MonitorHistory invalid data_type=%v", in.DataType)
+		return nil, rpc.ErrInvalidArgument
+	}
+
+	// return &pb.MonitorHistoryReply{}, nil
 }

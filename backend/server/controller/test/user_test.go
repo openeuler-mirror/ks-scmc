@@ -46,3 +46,17 @@ func TestUserLogin(t *testing.T) {
 		t.Logf("Login reply: %v", reply)
 	})
 }
+
+func TestUserLogout(t *testing.T) {
+	testRunner(func(ctx context.Context, conn *grpc.ClientConn) {
+		cli := pb.NewUserClient(conn)
+		request := pb.LogoutRequest{}
+
+		reply, err := cli.Logout(ctx, &request)
+		if err != nil {
+			t.Errorf("Logout: %v", err)
+		}
+
+		t.Logf("Logout reply: %v", reply)
+	})
+}

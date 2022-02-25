@@ -35,7 +35,7 @@ message LoginRequest {
 message LoginReply {
     common.ReplyHeader header = 1;
     int64 user_id = 2;
-    string session_key = 3;
+    string auth_key = 3;
     // TODO userinfo
 }
 

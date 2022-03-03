@@ -1,5 +1,5 @@
-PROJECT = ksc-mcube
-BINARY  = ksc-mcube-server
+PROJECT = ks-scmc
+BINARY  = ks-scmc-server
 RPC     = rpc/pb
 DESTDIR :=
 PREFIX  := /usr
@@ -9,7 +9,7 @@ ETC     := /etc
 all: $(BINARY)
 
 $(BINARY): $(RPC)
-	go build -o $@ $(PROJECT)/cmd
+	go build scmc/cmd/$@
 
 .PHONY: $(RPC)
 $(RPC):
@@ -34,7 +34,7 @@ clean:
 .PHONY: install
 install:
 	install -d $(DESTDIR)$(ETC)/$(PROJECT)/
-	install -d $(DESTDIR)$(VAR)/lib/$(PROJECT)/{containers}
+	install -d $(DESTDIR)$(VAR)/lib/$(PROJECT)/containers
 	install -d $(DESTDIR)$(VAR)/log/$(PROJECT)/
 	install -d $(DESTDIR)$(PREFIX)/bin/
 	install -m 755 $(BINARY) $(DESTDIR)$(PREFIX)/bin/

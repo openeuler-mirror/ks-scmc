@@ -9,7 +9,7 @@ if [[ $# -ne 1 ]]; then
 fi
 
 CONTAINER_NAME="$1"
-BASE_DIR="/var/lib/ksc-mcube/containers"
+BASE_DIR="/var/lib/ks-scmc/containers"
 
 SOCK_DIR=${BASE_DIR}/${CONTAINER_NAME}/socket
 AUTH_FILE=${BASE_DIR}/${CONTAINER_NAME}/xauth/Xauthority

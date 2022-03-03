@@ -8,7 +8,7 @@ import (
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 
-	"ksc-mcube/common"
+	"scmc/common"
 )
 
 var (

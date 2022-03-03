@@ -29,7 +29,7 @@ systemctl enable --now mysqld.service
 
 mysql -uroot < ./database.sql
 
-cp ksc-mcube-controller.service ksc-mcube-agent.service /usr/lib/systemd/system/
+cp ks-scmc-controller.service ks-scmc-agent.service /usr/lib/systemd/system/
 
-systemctl enable --now ksc-mcube-agent.service
-systemctl enable --now ksc-mcube-controller.service
+systemctl enable --now ks-scmc-agent.service
+systemctl enable --now ks-scmc-controller.service

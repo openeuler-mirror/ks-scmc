@@ -11,10 +11,10 @@ import (
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/peer"
 
-	"ksc-mcube/model"
-	"ksc-mcube/rpc"
-	pb "ksc-mcube/rpc/pb/user"
-	"ksc-mcube/server"
+	"scmc/model"
+	"scmc/rpc"
+	pb "scmc/rpc/pb/user"
+	"scmc/server"
 )
 
 type UserServer struct {

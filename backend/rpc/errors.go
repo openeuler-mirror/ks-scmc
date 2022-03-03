@@ -4,7 +4,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	pb "ksc-mcube/rpc/pb/common"
+	pb "scmc/rpc/pb/common"
 )
 
 var (

@@ -6,8 +6,8 @@ import (
 
 	"google.golang.org/grpc"
 
-	common "ksc-mcube/rpc/pb/common"
-	pb "ksc-mcube/rpc/pb/image"
+	common "scmc/rpc/pb/common"
+	pb "scmc/rpc/pb/image"
 )
 
 func TestImageList(t *testing.T) {

@@ -2,11 +2,12 @@ package test
 
 import (
 	"context"
-	common "ksc-mcube/rpc/pb/common"
-	pb "ksc-mcube/rpc/pb/image"
 	"testing"
 
 	"google.golang.org/grpc"
+
+	common "ksc-mcube/rpc/pb/common"
+	pb "ksc-mcube/rpc/pb/image"
 )
 
 func TestImageList(t *testing.T) {

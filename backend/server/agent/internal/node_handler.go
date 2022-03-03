@@ -4,9 +4,9 @@ import (
 	"context"
 	"runtime"
 
-	pb "ksc-mcube/rpc/pb/node"
-
 	"github.com/shirou/gopsutil/mem"
+
+	pb "ksc-mcube/rpc/pb/node"
 )
 
 type NodeServer struct {

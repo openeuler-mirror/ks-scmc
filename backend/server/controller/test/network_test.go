@@ -2,11 +2,12 @@ package test
 
 import (
 	"context"
-	common "ksc-mcube/rpc/pb/common"
-	pb "ksc-mcube/rpc/pb/network"
 	"testing"
 
 	"google.golang.org/grpc"
+
+	common "ksc-mcube/rpc/pb/common"
+	pb "ksc-mcube/rpc/pb/network"
 )
 
 func TestNetworkList(t *testing.T) {

@@ -1,10 +1,10 @@
 package rpc
 
 import (
-	pb "ksc-mcube/rpc/pb/common"
-
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+
+	pb "ksc-mcube/rpc/pb/common"
 )
 
 var (

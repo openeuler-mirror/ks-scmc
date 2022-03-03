@@ -7,9 +7,9 @@ import (
 
 	"google.golang.org/grpc"
 
-	"ksc-mcube/common"
-	"ksc-mcube/server/agent"
-	"ksc-mcube/server/controller"
+	"scmc/common"
+	"scmc/server/agent"
+	"scmc/server/controller"
 )
 
 const (

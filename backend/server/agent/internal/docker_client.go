@@ -8,7 +8,7 @@ import (
 	"github.com/docker/docker/errdefs"
 	log "github.com/sirupsen/logrus"
 
-	"ksc-mcube/rpc"
+	"scmc/rpc"
 )
 
 var (

@@ -6,12 +6,12 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/keepalive"
 
-	"ksc-mcube/rpc/pb/container"
-	"ksc-mcube/rpc/pb/image"
-	"ksc-mcube/rpc/pb/network"
-	"ksc-mcube/rpc/pb/node"
-	"ksc-mcube/server"
-	"ksc-mcube/server/agent/internal"
+	"scmc/rpc/pb/container"
+	"scmc/rpc/pb/image"
+	"scmc/rpc/pb/network"
+	"scmc/rpc/pb/node"
+	"scmc/server"
+	"scmc/server/agent/internal"
 )
 
 func Server() (*grpc.Server, error) {

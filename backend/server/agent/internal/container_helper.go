@@ -9,7 +9,7 @@ import (
 	"github.com/docker/docker/api/types/mount"
 	log "github.com/sirupsen/logrus"
 
-	"ksc-mcube/common"
+	"scmc/common"
 )
 
 const (

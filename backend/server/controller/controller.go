@@ -7,14 +7,14 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/keepalive"
 
-	"ksc-mcube/common"
-	"ksc-mcube/rpc/pb/container"
-	"ksc-mcube/rpc/pb/image"
-	"ksc-mcube/rpc/pb/network"
-	"ksc-mcube/rpc/pb/node"
-	"ksc-mcube/rpc/pb/user"
-	"ksc-mcube/server"
-	"ksc-mcube/server/controller/internal"
+	"scmc/common"
+	"scmc/rpc/pb/container"
+	"scmc/rpc/pb/image"
+	"scmc/rpc/pb/network"
+	"scmc/rpc/pb/node"
+	"scmc/rpc/pb/user"
+	"scmc/server"
+	"scmc/server/controller/internal"
 )
 
 func Server() (*grpc.Server, error) {

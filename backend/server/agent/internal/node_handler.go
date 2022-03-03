@@ -6,7 +6,7 @@ import (
 
 	"github.com/shirou/gopsutil/mem"
 
-	pb "ksc-mcube/rpc/pb/node"
+	pb "scmc/rpc/pb/node"
 )
 
 type NodeServer struct {

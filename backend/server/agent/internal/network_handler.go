@@ -8,8 +8,8 @@ import (
 	"github.com/docker/docker/api/types"
 	log "github.com/sirupsen/logrus"
 
-	"ksc-mcube/rpc"
-	pb "ksc-mcube/rpc/pb/network"
+	"scmc/rpc"
+	pb "scmc/rpc/pb/network"
 )
 
 type NetworkServer struct {

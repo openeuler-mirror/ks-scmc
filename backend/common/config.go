@@ -71,7 +71,7 @@ var Config struct {
 }
 
 func setDefault() {
-	viper.SetDefault("log.basedir", "/var/log/ksc-mcube")
+	viper.SetDefault("log.basedir", "/var/log/ks-scmc")
 	viper.SetDefault("log.level", "info")
 	viper.SetDefault("log.stdout", false)
 
@@ -79,7 +79,7 @@ func setDefault() {
 
 	viper.SetDefault("agent.host", "0.0.0.0")
 	viper.SetDefault("agent.port", 10051)
-	viper.SetDefault("agent.container-extra-data-basedir", "/var/lib/ksc-mcube/containers")
+	viper.SetDefault("agent.container-extra-data-basedir", "/var/lib/ks-scmc/containers")
 
 	viper.SetDefault("controller.host", "0.0.0.0")
 	viper.SetDefault("controller.port", 10050)
@@ -87,7 +87,7 @@ func setDefault() {
 	viper.SetDefault("mysql.addr", "127.0.0.1:3306")
 	viper.SetDefault("mysql.user", "root")
 	viper.SetDefault("mysql.password", "12345678")
-	viper.SetDefault("mysql.db", "ksc-mcube")
+	viper.SetDefault("mysql.db", "ks-scmc")
 
 	viper.SetDefault("cadvisor.addr", "127.0.0.1:8080")
 

@@ -7,9 +7,9 @@ import (
 	client "github.com/influxdata/influxdb1-client/v2"
 	log "github.com/sirupsen/logrus"
 
-	"ksc-mcube/common"
-	"ksc-mcube/rpc"
-	pb "ksc-mcube/rpc/pb/container"
+	"scmc/common"
+	"scmc/rpc"
+	pb "scmc/rpc/pb/container"
 )
 
 /*

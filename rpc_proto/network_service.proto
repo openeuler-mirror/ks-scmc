@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-option go_package = "ksc-mcube/rpc/pb/network";
+option go_package = "scmc/rpc/pb/network";
 
 package network;
 

@@ -1,1 +1,0 @@
-./ks-scmc -stdout=1 -verbose=5 agent

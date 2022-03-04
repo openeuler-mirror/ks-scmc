@@ -1,8 +1,10 @@
 backend/vendor/***
-backend/ksc-mcube-server
+backend/ks-scmc-server
 ***/*.pb.go
 
 client/.vscode
 client/build
 ***/*.pb.h
 ***/*.pb.cc
+
+ks-scmc-*.tar.gz

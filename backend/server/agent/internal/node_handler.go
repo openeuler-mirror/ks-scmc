@@ -20,32 +20,39 @@ func (s *NodeServer) Status(ctx context.Context, in *pb.StatusRequest) (*pb.Stat
 	if err != nil {
 		reply.StatusList = append(reply.StatusList, &pb.NodeStatus{State: int64(pb.NodeState_Unknown)})
 	} else {
-		var MemTotal, memUsed, memFree uint64
-		var memUsedPct float64
+		var memStat *pb.MemoryStat
 		memInfo, err := mem.VirtualMemory()
 		if err == nil {
-			MemTotal = memInfo.Total
-			memUsed = memInfo.Used
-			memFree = memInfo.Free
-			memUsedPct = memInfo.UsedPercent
+			memStat = &pb.MemoryStat{
+				Total:          memInfo.Total / megaBytes,
+				Used:           memInfo.Used / megaBytes,
+				Free:           memInfo.Free / megaBytes,
+				UsedPercentage: memInfo.UsedPercent,
+			}
 		}
 
-		cpuNum := float64(runtime.NumCPU())
-		cpuCoreUsed, _ := cpuUsage()
-		cpuUsagePercent := cpuCoreUsed / cpuNum
+		cpuStat := &pb.CpuStat{
+			Total: float64(runtime.NumCPU()),
+		}
+		cpuStat.Used, _ = cpuUsage()
+		cpuStat.UsedPercentage = cpuStat.Used / cpuStat.Total
 
-		var cntrTotal, cntrRunning int64
-		cntrInfo, err := cli.Info(context.Background())
+		var containerStat *pb.ContainerStat
+		dockerInfo, err := cli.Info(context.Background())
 		if err == nil {
-			cntrTotal = int64(cntrInfo.Containers)
-			cntrRunning = int64(cntrInfo.ContainersRunning)
+			containerStat = &pb.ContainerStat{
+				Running: int64(dockerInfo.ContainersRunning),
+				Total:   int64(dockerInfo.Containers),
+			}
 		}
+
+		// TODO disk usage
 
 		reply.StatusList = append(reply.StatusList, &pb.NodeStatus{
 			State:         int64(pb.NodeState_Online),
-			ContainerStat: &pb.ContainerStat{Total: cntrTotal, Running: cntrRunning},
-			CpuStat:       &pb.CpuStat{Total: cpuNum, Used: cpuCoreUsed, UsedPercentage: cpuUsagePercent},
-			MemStat:       &pb.MemoryStat{Total: MemTotal, Used: memUsed, Free: memFree, UsedPercentage: memUsedPct},
+			ContainerStat: containerStat,
+			CpuStat:       cpuStat,
+			MemStat:       memStat,
 		})
 	}
 

@@ -17,6 +17,33 @@ import (
 	"scmc/server"
 )
 
+func generatePassword(input string) ([]byte, error) {
+	return bcrypt.GenerateFromPassword([]byte(input), 14)
+}
+
+func getUserFromContext(ctx context.Context) (string, string, bool) {
+	md, ok := metadata.FromIncomingContext(ctx)
+	if !ok {
+		log.Infof("get metadata from incoming context failed")
+		return "", "", false
+	}
+
+	values := md["authorization"]
+	if len(values) == 0 {
+		log.Infof("'authorization' not exist in request metadata.")
+		return "", "", false
+	}
+
+	authorization := values[0]
+	i := strings.IndexRune(authorization, ':')
+	if i == -1 {
+		log.Infof("invalid authorization metadata: %v", authorization)
+		return "", "", false
+	}
+
+	return authorization[:i], authorization[i+1:], true
+}
+
 type UserServer struct {
 	pb.UnimplementedUserServer
 }
@@ -30,14 +57,17 @@ func (s *UserServer) Login(ctx context.Context, in *pb.LoginRequest) (*pb.LoginR
 	// database operations
 	userInfo, err := model.QueryUser(in.Username)
 	if err != nil {
-		return &pb.LoginReply{}, nil
+		if err == model.ErrRecordNotFound {
+			return nil, rpc.ErrNotFound
+		}
+		return nil, rpc.ErrInternal
 	} else if userInfo == nil {
 		return nil, rpc.ErrNotFound
 	}
 
 	// check password
-	if err := bcrypt.CompareHashAndPassword([]byte(userInfo.PasswordEn), []byte(in.Password)); err != nil {
-		log.Infof("compare password: %v", err)
+	if err := userInfo.CheckPassword(in.Password); err != nil {
+		log.Infof("check password: %v", err)
 		return nil, rpc.ErrWrongPassword
 	}
 
@@ -97,9 +127,9 @@ func (s *UserServer) Signup(ctx context.Context, in *pb.SignupRequest) (*pb.Sign
 	}
 
 	// pre-process: bcrypt password
-	rawBytes, err := bcrypt.GenerateFromPassword([]byte(in.GetPassword()), 14)
+	rawBytes, err := generatePassword(in.Password)
 	if err != nil {
-		log.Warnf("bcrypt handle password: %v", err)
+		log.Warnf("generatePassword: %v", err)
 		return nil, rpc.ErrInternal
 	}
 
@@ -119,4 +149,47 @@ func (s *UserServer) Signup(ctx context.Context, in *pb.SignupRequest) (*pb.Sign
 
 	// finish
 	return &pb.SignupReply{}, nil
+}
+
+func (s *UserServer) UpdatePassword(ctx context.Context, in *pb.UpdatePasswordRequest) (*pb.UpdatePasswordReply, error) {
+	userID, _, ok := getUserFromContext(ctx)
+	if !ok {
+		return nil, rpc.ErrInternal
+	}
+
+	if in.OldPassword == "" || len(in.NewPassword) < 8 {
+		return nil, rpc.ErrInvalidArgument
+	}
+
+	userInfo, err := model.QueryUserByID(userID)
+	if err != nil {
+		if err == model.ErrRecordNotFound {
+			return nil, rpc.ErrNotFound
+		}
+		return nil, rpc.ErrInternal
+	} else if userInfo == nil {
+		return nil, rpc.ErrNotFound
+	}
+
+	if err := userInfo.CheckPassword(in.OldPassword); err != nil {
+		log.Infof("check password: %v", err)
+		return nil, rpc.ErrWrongPassword
+	}
+
+	if in.NewPassword == in.OldPassword {
+		log.Infof("new password identical to old one")
+		return nil, rpc.ErrInvalidArgument
+	}
+
+	rawBytes, err := generatePassword(in.NewPassword)
+	if err != nil {
+		log.Warnf("generatePassword: %v", err)
+		return nil, rpc.ErrInternal
+	}
+
+	if err := userInfo.UpdatePassword(string(rawBytes)); err != nil {
+		return nil, rpc.ErrInternal
+	}
+
+	return &pb.UpdatePasswordReply{}, nil
 }

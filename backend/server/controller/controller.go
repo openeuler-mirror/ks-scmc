@@ -21,7 +21,6 @@ func Server() (*grpc.Server, error) {
 	opts := []grpc.ServerOption{
 		grpc.ChainUnaryInterceptor(
 			server.NewAuthInterceptor().Unary(),
-			server.NewLogInterceptor().Unary(),
 		),
 		grpc.KeepaliveEnforcementPolicy(keepalive.EnforcementPolicy{
 			MinTime:             10 * time.Second, // If a client pings more than once every 10 seconds, terminate the connection

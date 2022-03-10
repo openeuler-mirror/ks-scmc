@@ -126,6 +126,7 @@ func (s *ContainerServer) Create(ctx context.Context, in *pb.CreateRequest) (*pb
 			IpcMode:     container.IpcMode(in.HostConfig.IpcMode),
 			Mounts:      mounts,
 			Privileged:  in.HostConfig.Privileged,
+			StorageOpt:  in.HostConfig.StorageOpt,
 		}
 
 		if in.HostConfig.RestartPolicy != nil {
@@ -352,9 +353,9 @@ func (s *ContainerServer) Inspect(ctx context.Context, in *pb.InspectRequest) (*
 		return nil, rpc.ErrInternal
 	}
 
-	info, err := cli.ContainerInspect(context.Background(), in.ContainerId)
+	info, _, err := cli.ContainerInspectWithRaw(context.Background(), in.ContainerId, true)
 	if err != nil {
-		log.Warnf("ContainerInspect: %v", err)
+		log.Warnf("ContainerInspectWithRaw: %v", err)
 		return nil, transDockerError(err)
 	}
 
@@ -399,6 +400,12 @@ func (s *ContainerServer) Inspect(ctx context.Context, in *pb.InspectRequest) (*
 				MemLimit:     info.HostConfig.Resources.Memory,
 				MemSoftLimit: info.HostConfig.Resources.MemoryReservation,
 			},
+		}
+		if len(info.HostConfig.StorageOpt) > 0 {
+			reply.HostConfig.StorageOpt = make(map[string]string, len(info.HostConfig.StorageOpt))
+			for k, v := range info.HostConfig.StorageOpt {
+				reply.HostConfig.StorageOpt[k] = v
+			}
 		}
 	}
 	if info.NetworkSettings.Networks != nil {

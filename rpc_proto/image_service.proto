@@ -4,68 +4,97 @@ option go_package = "scmc/rpc/pb/image";
 
 package image;
 
-import "common.proto";
-import "image_types.proto";
-
 service Image {
   rpc List(ListRequest) returns (ListReply) {}
-  rpc Upload(UploadRequest) returns (UploadReply) {}
-  rpc Update(UpdateRequest) returns (UpdateReply) {}
-  rpc Download(DownloadRequest) returns (DownloadReply) {}
-  rpc Check(CheckRequest) returns (CheckReply) {}
+  rpc ListDB(ListDBRequest) returns (ListDBReply) {}
+  rpc Upload(stream UploadRequest) returns (UploadReply) {}
+  rpc Update(stream UpdateRequest) returns (UpdateReply) {}
+  rpc Download(DownloadRequest) returns (stream DownloadReply) {}
+  rpc Approve(ApproveRequest) returns (ApproveReply) {}
   rpc Remove(RemoveRequest) returns (RemoveReply) {}
 }
 
 message ListRequest {
-    common.RequestHeader header = 1;
-    int64 node_id = 2;
+    int64 node_id = 1;
 }
 
 message ListReply {
-    common.ReplyHeader header = 1;
-    repeated ImageInfo images = 2;
+    repeated ImageInfo images = 1;
+}
+
+message ListDBRequest {}
+
+message ListDBReply {
+    repeated ImageDBInfo images = 1;
 }
 
 message UploadRequest {
-    common.RequestHeader header = 1;
-    int64 node_id = 2;
+    UploadInfo info = 1;
+    bytes chunk_data = 2;
 }
 
 message UploadReply {
-    common.ReplyHeader header = 1;
+    int64 image_id = 1; //in db
 }
 
 message UpdateRequest {
-    common.RequestHeader header = 1;
-    int64 node_id = 2;
+    int64 image_id = 1;
+    UploadInfo info = 2;
+    bytes chunk_data = 3;
 }
 
-message UpdateReply {
-    common.ReplyHeader header = 1;
-}
+message UpdateReply {}
 
 message DownloadRequest {
-    common.RequestHeader header = 1;
-    int64 node_id = 2;
+    int64 image_id = 1;
 }
 
 message DownloadReply {
-    common.ReplyHeader header = 1;
+    UploadInfo info = 1;
+    bytes chunk_data = 2;
 }
 
-message CheckRequest {
-    common.RequestHeader header = 1;
-    int64 node_id = 2;
+message ApproveRequest {
+    int64 image_id = 1;
+    bool approve = 2;
+    string reject_reason = 3;
 }
 
-message CheckReply {
-    common.ReplyHeader header = 1;
-}
+message ApproveReply {}
 
 message RemoveRequest {
-    common.RequestHeader header = 1;
+    repeated int64 image_ids = 1;
 }
 
 message RemoveReply {
-    common.ReplyHeader header = 1;
+    repeated string ok_ids = 1;
+}
+
+/***** DATA TYPES *****/
+
+message ImageInfo {
+    string name = 1;    // repo + tag
+    string repo = 2;
+    string tag = 3;
+    string digest = 4;
+}
+
+message ImageDBInfo {
+    int64 id = 1;
+    string name = 2;
+    string version = 3;
+    string description = 4;
+    bool check_status = 5;
+    int32 approval_status = 6;  // 0:待审批 1:审批拒绝 2:审批通过
+    int64 create_at = 7;
+    int64 update_at = 8;
+}
+
+message UploadInfo {
+    string name = 1;    // repo + tag
+    string version = 2;
+    string type = 3;
+    string checksum = 4;
+    string description = 5;
+    int64 size = 6;
 }

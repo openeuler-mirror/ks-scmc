@@ -19,8 +19,11 @@ func (m *AgentConfig) Addr() string {
 }
 
 type ControllerConfig struct {
-	Host string `mapstructure:"host"`
-	Port uint   `mapstructure:"port"`
+	Host        string `mapstructure:"host"`
+	Port        uint   `mapstructure:"port"`
+	VirtualIP   string `mapstructure:"virtual-ip"`
+	ImageDir    string `mapstructure:"image-dir"`
+	ImageSigner string `mapstructure:"image-signer"`
 	// cert
 }
 
@@ -33,6 +36,7 @@ type MySQLConfig struct {
 	User     string `mapstructure:"user"`
 	Password string `mapstructure:"password"`
 	DB       string `mapstructure:"db"`
+	Debug    bool   `mapstructure:"debug"`
 }
 
 func (m *MySQLConfig) DSN() string {
@@ -60,6 +64,23 @@ type TLSConfig struct {
 	ServerKey  string `mapstructure:"server_key"`
 }
 
+type VirtualNicConfig struct {
+	Name         string `mapstructure:"name"`
+	IpAddr       string `mapstructure:"ipaddr"`
+	ContainerIfs string `mapstructure:"container_ifs"`
+}
+
+type NetworkConfig struct {
+	JsonFile string `mapstructure:"json_file"`
+}
+
+type RegistryConfig struct {
+	Secure   bool   `mapstructure:"secure"`
+	Addr     string `mapstructure:"addr"`
+	Username string `mapstructure:"username"`
+	Password string `mapstructure:"password"`
+}
+
 var Config struct {
 	Log        LogConfig        `mapstructure:"log"`
 	TLS        TLSConfig        `mapstructure:"tls"`
@@ -68,6 +89,8 @@ var Config struct {
 	MySQL      MySQLConfig      `mapstructure:"mysql"`
 	CAdvisor   ServiceConfig    `mapstructure:"cadvisor"`
 	InfluxDB   ServiceConfig    `mapstructure:"influxdb"`
+	Network    NetworkConfig    `mapstructure:"network"`
+	Registry   RegistryConfig   `mapstructure:"registry"`
 }
 
 func setDefault() {
@@ -83,15 +106,25 @@ func setDefault() {
 
 	viper.SetDefault("controller.host", "0.0.0.0")
 	viper.SetDefault("controller.port", 10050)
+	viper.SetDefault("controller.image-dir", "/var/lib/ks-scmc/images")
+	viper.SetDefault("controller.image-signer", "/var/lib/ks-scmc/images/public-key.txt")
 
 	viper.SetDefault("mysql.addr", "127.0.0.1:3306")
 	viper.SetDefault("mysql.user", "root")
 	viper.SetDefault("mysql.password", "12345678")
 	viper.SetDefault("mysql.db", "ks-scmc")
+	viper.SetDefault("mysql.debug", false)
 
 	viper.SetDefault("cadvisor.addr", "127.0.0.1:8080")
 
 	viper.SetDefault("influxdb.addr", "127.0.0.1:8086")
+
+	viper.SetDefault("network.json_file", "/var/lib/ks-scmc/networks/container-ipaddr.json")
+
+	viper.SetDefault("registry.secure", false)
+	viper.SetDefault("registry.addr", "127.0.0.1:5000")
+	viper.SetDefault("registry.username", "")
+	viper.SetDefault("registry.password", "")
 }
 
 func LoadConfig(path string) error {

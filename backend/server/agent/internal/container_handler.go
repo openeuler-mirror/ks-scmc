@@ -3,6 +3,7 @@ package internal
 import (
 	"context"
 	"fmt"
+	"runtime"
 	"strings"
 	"time"
 
@@ -10,8 +11,10 @@ import (
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/mount"
 	"github.com/docker/docker/api/types/network"
+	"github.com/shirou/gopsutil/mem"
 	log "github.com/sirupsen/logrus"
 
+	"scmc/model"
 	"scmc/rpc"
 	pb "scmc/rpc/pb/container"
 )
@@ -86,6 +89,29 @@ func (s *ContainerServer) Create(ctx context.Context, in *pb.CreateRequest) (*pb
 		return nil, rpc.ErrInternal
 	}
 
+	list, err := cli.ImageList(context.Background(), types.ImageListOptions{})
+	if err != nil {
+		log.Warnf("ImageList: %v", err)
+		return nil, transDockerError(err)
+	}
+
+	imageExist := false
+	for _, image := range list {
+		for _, s := range image.RepoTags {
+			if s == in.Config.Image {
+				imageExist = true
+				break
+			}
+		}
+	}
+
+	if !imageExist {
+		if err = model.Pull(in.Config.Image); err != nil {
+			log.Errorf("pull image[%v] err: %v", in.Config.Image, err)
+			return nil, rpc.ErrInternal
+		}
+	}
+
 	var (
 		envs          []string
 		mounts        []mount.Mount
@@ -125,7 +151,7 @@ func (s *ContainerServer) Create(ctx context.Context, in *pb.CreateRequest) (*pb
 			AutoRemove:  in.HostConfig.AutoRemove,
 			IpcMode:     container.IpcMode(in.HostConfig.IpcMode),
 			Mounts:      mounts,
-			Privileged:  in.HostConfig.Privileged,
+			Privileged:  false, // force no privilege
 			StorageOpt:  in.HostConfig.StorageOpt,
 		}
 
@@ -154,18 +180,51 @@ func (s *ContainerServer) Create(ctx context.Context, in *pb.CreateRequest) (*pb
 		}
 	}
 
+	// do not use docker default bridge network
+	// networkConfig := &network.NetworkingConfig{
+	// 	EndpointsConfig: map[string]*network.EndpointSettings{"none": {}},
+	// }
+
+	containerNet := make(map[string]*model.ContainerNetwork)
+	virtualInfo := make(map[string]*model.VirNicInfo)
 	if len(in.NetworkConfig) > 0 {
 		networkConfig = &network.NetworkingConfig{
 			EndpointsConfig: make(map[string]*network.EndpointSettings, len(in.NetworkConfig)),
 		}
-		for k, v := range in.NetworkConfig {
-			networkConfig.EndpointsConfig[k] = &network.EndpointSettings{
+		for _, v := range in.NetworkConfig {
+			virinfo := getVirNicInfo(v.Interface)
+			containerIP := v.IpAddress
+			masklen := virinfo.IPMaskLen
+			nextIP := virinfo.MinAvailableIP
+			if v.IpMask != "" {
+				masklen = model.TransMask(v.IpMask)
+			}
+
+			if v.IpAddress == "" {
+				containerIP, nextIP = assignIP(v.Interface, virinfo)
+			} else {
+				if conflic := model.IsConflict(v.Interface, v.IpAddress, masklen); conflic {
+					return nil, rpc.ErrInvalidArgument
+				}
+			}
+
+			networkConfig.EndpointsConfig[v.Interface] = &network.EndpointSettings{
 				IPAMConfig: &network.EndpointIPAMConfig{},
 			}
-			if v.IpamConfig != nil {
-				networkConfig.EndpointsConfig[k].IPAMConfig.IPv4Address = v.IpamConfig.Ipv4Address
-				networkConfig.EndpointsConfig[k].IPAMConfig.IPv6Address = v.IpamConfig.Ipv6Address
-				networkConfig.EndpointsConfig[k].MacAddress = v.MacAddress
+
+			networkConfig.EndpointsConfig[v.Interface].IPAMConfig.IPv4Address = containerIP
+			networkConfig.EndpointsConfig[v.Interface].IPAddress = containerIP
+			networkConfig.EndpointsConfig[v.Interface].IPPrefixLen = masklen
+			networkConfig.EndpointsConfig[v.Interface].MacAddress = v.MacAddress
+			networkConfig.EndpointsConfig[v.Interface].Gateway = v.Gateway
+			containerNet[v.Interface] = &model.ContainerNetwork{
+				IpAddress: containerIP,
+				MaskLen:   masklen,
+			}
+			virtualInfo[v.Interface] = &model.VirNicInfo{
+				IPAddress:      virinfo.IPAddress,
+				IPMaskLen:      virinfo.IPMaskLen,
+				MinAvailableIP: nextIP,
 			}
 		}
 	}
@@ -182,6 +241,19 @@ func (s *ContainerServer) Create(ctx context.Context, in *pb.CreateRequest) (*pb
 		log.Warnf("ContainerCreate: %v", err)
 		return nil, transDockerError(err)
 	}
+
+	for k, v := range containerNet {
+		v.ForShell = fmt.Sprintf("%s/%s/%s/%d", body.ID, k, v.IpAddress, v.MaskLen)
+	}
+	cntrs := make(map[string]*model.ContainerNic)
+	cntrs[body.ID] = &model.ContainerNic{
+		ContainerNetworks: containerNet,
+	}
+	netinfo := &model.NetworkInfo{
+		Containers: cntrs,
+		VirtualNic: virtualInfo,
+	}
+	model.AddJSON(body.ID, netinfo)
 
 	reply.ContainerId = body.ID
 	return &reply, nil
@@ -205,6 +277,7 @@ func (s *ContainerServer) Start(ctx context.Context, in *pb.StartRequest) (*pb.S
 			log.Warnf("ContainerStart: id=%v %v", id, err)
 			return nil, rpc.ErrInternal
 		}
+
 		reply.OkIds = append(reply.OkIds, id)
 	}
 
@@ -340,6 +413,7 @@ func (s *ContainerServer) Remove(ctx context.Context, in *pb.RemoveRequest) (*pb
 			return nil, rpc.ErrInternal
 		}
 		reply.OkIds = append(reply.OkIds, id)
+		model.DelContainerNetInfo(id)
 	}
 
 	return &reply, nil
@@ -408,22 +482,8 @@ func (s *ContainerServer) Inspect(ctx context.Context, in *pb.InspectRequest) (*
 			}
 		}
 	}
-	if info.NetworkSettings.Networks != nil {
-		reply.NetworkSettings = make(map[string]*pb.EndpointSetting)
-		for k, v := range info.NetworkSettings.Networks {
-			reply.NetworkSettings[k] = &pb.EndpointSetting{
-				NetworkId:           v.NetworkID,
-				EndpointId:          v.EndpointID,
-				Gateway:             v.Gateway,
-				IpAddress:           v.IPAddress,
-				IpPrefixLen:         int32(v.IPPrefixLen),
-				Ipv6Gateway:         v.IPv6Gateway,
-				GlobalIpv6Address:   v.GlobalIPv6Address,
-				GlobalIpv6PrefixLen: int32(v.GlobalIPv6PrefixLen),
-				MacAddress:          v.MacAddress,
-			}
-		}
-	}
+
+	// TODO retrive network infomation
 
 	for _, m := range info.Mounts {
 		reply.Mounts = append(reply.Mounts, &pb.Mount{
@@ -439,43 +499,56 @@ func (s *ContainerServer) Inspect(ctx context.Context, in *pb.InspectRequest) (*
 
 func (s *ContainerServer) MonitorHistory(ctx context.Context, in *pb.MonitorHistoryRequest) (*pb.MonitorHistoryReply, error) {
 	now := time.Now()
-	if in.StartTime >= in.EndTime || in.StartTime < now.Add(-time.Hour*24).Unix() || in.StartTime > now.Unix() {
+	if in.StartTime >= in.EndTime || in.StartTime > now.Unix() || in.Interval < 1 || in.StartTime < now.Add(-time.Hour*24*10).Unix() {
 		log.Info("MonitorHistory invalid time args")
 		return nil, rpc.ErrInvalidArgument
 	}
 
-	containerName := in.ContainerId
-	if in.ContainerId == "" {
-		containerName = "/"
+	containerName := "/" // query influxdb need container name, "/" for query the host
+
+	numCPU := float64(runtime.NumCPU())
+	memInfo, err := mem.VirtualMemory()
+	if err != nil {
+		log.Infof("VirtualMemory err=%v", err)
+		return nil, err
 	}
 
-	// in order to get container name, for influxdb query
-	if containerName != "/" {
+	rscLimit := pb.ResourceLimit{
+		CpuLimit:    numCPU,
+		MemoryLimit: float64(memInfo.Total) / megaBytes,
+	}
+
+	if in.ContainerId != "" {
 		cli, err := dockerCli()
 		if err != nil {
 			return nil, rpc.ErrInternal
 		}
-
-		r, err := cli.ContainerInspect(context.Background(), in.ContainerId)
+		info, err := cli.ContainerInspect(context.Background(), in.ContainerId)
 		if err != nil {
-			log.Warnf("MonitorHistory inspect container error=%v", err)
-			return nil, rpc.ErrInternal
+			log.Infof("ContainerInspect:  %v", err)
+			return nil, transDockerError(err)
 		}
 
-		containerName = strings.TrimPrefix(r.Name, "/")
+		containerName = strings.TrimPrefix(info.Name, "/")
+		if info.HostConfig != nil {
+			if info.HostConfig.NanoCPUs > 0 {
+				rscLimit.CpuLimit = float64(info.HostConfig.NanoCPUs) / 1e9
+			}
+			if info.HostConfig.Memory > 0 {
+				rscLimit.MemoryLimit = float64(info.HostConfig.Memory) / megaBytes
+			}
+			if info.HostConfig.MemoryReservation > 0 {
+				rscLimit.MemorySoftLimit = float64(info.HostConfig.MemoryReservation) / megaBytes
+			}
+		}
 	}
 
-	switch in.DataType {
-	case "cpu":
-		return influxdbQueryCPU(containerName, in.StartTime, in.EndTime)
-	case "memory":
-		return influxdbQueryMemory(containerName, in.StartTime, in.EndTime)
-	case "disk":
-		return influxdbQueryDisk(containerName, in.StartTime, in.EndTime)
-	default:
-		log.Infof("MonitorHistory invalid data_type=%v", in.DataType)
-		return nil, rpc.ErrInvalidArgument
+	r, err := influxdbQuery(in.StartTime, in.EndTime, uint(in.Interval), containerName)
+	if err != nil {
+		log.Infof("query influxdb error=%v", err)
+		return nil, rpc.ErrInternal
 	}
 
-	// return &pb.MonitorHistoryReply{}, nil
+	r.RscLimit = &rscLimit
+	return r, nil
 }

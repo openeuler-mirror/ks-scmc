@@ -6,7 +6,6 @@ import (
 
 	"google.golang.org/grpc"
 
-	common "scmc/rpc/pb/common"
 	pb "scmc/rpc/pb/user"
 )
 
@@ -14,7 +13,6 @@ func TestUserSignup(t *testing.T) {
 	testRunner(func(ctx context.Context, conn *grpc.ClientConn) {
 		cli := pb.NewUserClient(conn)
 		request := pb.SignupRequest{
-			Header:   &common.RequestHeader{},
 			Username: "test",
 			Password: "12345678",
 			Role:     "test",
@@ -33,7 +31,6 @@ func TestUserLogin(t *testing.T) {
 	testRunner(func(ctx context.Context, conn *grpc.ClientConn) {
 		cli := pb.NewUserClient(conn)
 		request := pb.LoginRequest{
-			Header:   &common.RequestHeader{},
 			Username: "test",
 			Password: "12345678",
 		}

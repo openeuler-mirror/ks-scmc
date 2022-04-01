@@ -6,16 +6,13 @@ import (
 
 	"google.golang.org/grpc"
 
-	common "scmc/rpc/pb/common"
 	pb "scmc/rpc/pb/node"
 )
 
 func TestNodeList(t *testing.T) {
 	testRunner(func(ctx context.Context, conn *grpc.ClientConn) {
 		cli := pb.NewNodeClient(conn)
-		request := pb.ListRequest{
-			Header: &common.RequestHeader{},
-		}
+		request := pb.ListRequest{}
 
 		reply, err := cli.List(ctx, &request)
 		if err != nil {
@@ -30,7 +27,6 @@ func TestNodeCreate(t *testing.T) {
 	testRunner(func(ctx context.Context, conn *grpc.ClientConn) {
 		cli := pb.NewNodeClient(conn)
 		request := pb.CreateRequest{
-			Header:  &common.RequestHeader{},
 			Name:    "test",
 			Address: "10.200.12.181",
 			Comment: "123",
@@ -49,8 +45,7 @@ func TestNodeRemove(t *testing.T) {
 	testRunner(func(ctx context.Context, conn *grpc.ClientConn) {
 		cli := pb.NewNodeClient(conn)
 		request := pb.RemoveRequest{
-			Header: &common.RequestHeader{},
-			Ids:    []int64{1},
+			Ids: []int64{1},
 		}
 
 		reply, err := cli.Remove(ctx, &request)
@@ -66,7 +61,6 @@ func TestNodeStatus(t *testing.T) {
 	testRunner(func(ctx context.Context, conn *grpc.ClientConn) {
 		cli := pb.NewNodeClient(conn)
 		request := pb.StatusRequest{
-			Header:  &common.RequestHeader{},
 			NodeIds: []int64{1},
 		}
 
@@ -76,5 +70,40 @@ func TestNodeStatus(t *testing.T) {
 		}
 
 		t.Logf("Status reply: %v", reply)
+	})
+}
+
+func TestUpdateNode(t *testing.T) {
+	testRunner(func(ctx context.Context, conn *grpc.ClientConn) {
+		cli := pb.NewNodeClient(conn)
+		request := pb.UpdateRequest{
+			NodeId:  1,
+			Comment: "12345678",
+			RscLimit: &pb.ResourceLimit{
+				CpuLimit:    1.0,
+				MemoryLimit: 2048,
+			},
+		}
+
+		reply, err := cli.Update(ctx, &request)
+		if err != nil {
+			t.Errorf("UpdateNode: %v", err)
+		} else {
+			t.Logf("UpdateNode reply: %v", reply)
+		}
+	})
+}
+
+func TestListLog(t *testing.T) {
+	testRunner(func(ctx context.Context, conn *grpc.ClientConn) {
+		cli := pb.NewNodeClient(conn)
+		request := pb.ListLogRequest{}
+
+		reply, err := cli.ListLog(ctx, &request)
+		if err != nil {
+			t.Errorf("ListLog: %v", err)
+		} else {
+			t.Logf("ListLog reply: %v", reply)
+		}
 	})
 }

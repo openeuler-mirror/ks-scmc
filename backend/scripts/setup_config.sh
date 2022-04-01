@@ -2,18 +2,19 @@
 
 cd $(dirname $0)
 
-DB_PASSWD=$(< /dev/urandom tr -dc _A-Z-a-z-0-9 | head -c16)
+# default mysql password
+DB_PASSWD="5-Kwf86i5fq33bjs"
 
 # create database
-mysql -uroot < ./database.sql
+# mysql -uroot < ./database.sql
 
 # grant user permission
-mysql -uroot << EOF
-GRANT ALL PRIVILEGES ON \`ks-scmc\`.*
-TO 'ks-scmc'@'localhost'
-IDENTIFIED BY '${DB_PASSWD}';
-FLUSH PRIVILEGES;
-EOF
+# mysql -uroot << EOF
+# GRANT ALL PRIVILEGES ON \`ks-scmc\`.*
+# TO 'ks-scmc'@'%'
+# IDENTIFIED BY '${DB_PASSWD}';
+# FLUSH PRIVILEGES;
+# EOF
 
 # server config file
 cat << EOF > $1

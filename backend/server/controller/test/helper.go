@@ -63,3 +63,32 @@ func testRunner(fn func(context.Context, *grpc.ClientConn)) error {
 	fn(ctx, conn)
 	return nil
 }
+
+func initTestRunner() (context.Context, *grpc.ClientConn, error) {
+	var opts []grpc.DialOption
+
+	if false {
+		creds, err := loadTLSCredentials()
+		if err != nil {
+			log.Fatalf("load tls error=%v", err)
+		}
+		opts = append(opts, grpc.WithTransportCredentials(creds))
+	} else {
+		opts = append(opts, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	}
+
+	conn, err := grpc.Dial("127.0.0.1:10050", opts...)
+	if err != nil {
+		log.Printf("grpc.Dial: %v", err)
+		return nil, nil, err
+	}
+
+	ctx := context.TODO()
+
+	// ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+	// ctx = metadata.AppendToOutgoingContext(ctx, "authorization", "")
+
+	// defer cancel()
+	// fn(ctx, conn)
+	return ctx, conn, nil
+}

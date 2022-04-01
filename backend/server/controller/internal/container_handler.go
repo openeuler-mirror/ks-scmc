@@ -2,6 +2,8 @@ package internal
 
 import (
 	"context"
+	"encoding/json"
+	"errors"
 	"time"
 
 	log "github.com/sirupsen/logrus"
@@ -44,9 +46,9 @@ func (s *ContainerServer) List(ctx context.Context, in *pb.ListRequest) (*pb.Lis
 		}
 
 		cli := pb.NewContainerClient(conn)
-		ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+		ctx_, cancel := context.WithTimeout(context.Background(), time.Second*10)
 		defer cancel()
-		subReply, err := cli.List(ctx, in)
+		subReply, err := cli.List(ctx_, in)
 		if err != nil {
 			log.Warnf("get container list ID=%v address=%v: %v", node.ID, node.Address, err)
 			return nil, rpc.ErrInternal
@@ -488,4 +490,91 @@ func (s *ContainerServer) MonitorHistory(ctx context.Context, in *pb.MonitorHist
 	}
 
 	return agentReply, nil
+}
+
+func (s *ContainerServer) ListTemplate(ctx context.Context, in *pb.ListTemplateRequest) (*pb.ListTemplateReply, error) {
+	reply := &pb.ListTemplateReply{}
+
+	pageinfo, templates, err := model.ListTemplate(ctx, in.PerPage, in.NextPage)
+	if err != nil {
+		return nil, err
+	}
+	reply.CurPage = pageinfo.CurPage
+	reply.PerPage = pageinfo.PerPage
+	reply.TotalPages = pageinfo.TotalPages
+	reply.TotalRows = pageinfo.TotalRows
+
+	for _, template := range templates {
+		// log.Println(template.Id, template.Name, template.Config_json)
+		var containerConfig *pb.ContainerConfigs
+		json.Unmarshal([]byte(template.Config_json), &containerConfig)
+		templatestruct := pb.ContainerTemplate{Id: template.Id, Conf: containerConfig}
+		reply.Data = append(reply.Data, &templatestruct)
+	}
+
+	return reply, nil
+}
+
+func (s *ContainerServer) CreateTemplate(ctx context.Context, in *pb.CreateTemplateRequest) (*pb.CreateTemplateReply, error) {
+	reply := pb.CreateTemplateReply{}
+	if data := in.GetData(); data != nil {
+		id := data.GetId()
+		if id < 0 {
+			reply.Id = -1
+			return &reply, errors.New("id error")
+		}
+		name := data.GetConf().Name
+		confbyte, err := json.Marshal(data.Conf)
+		if err != nil {
+			return nil, err
+		}
+
+		id, err = model.CreateTemplate(ctx, id, name, confbyte)
+		if err != nil {
+			log.Println(err)
+		}
+		reply.Id = id
+	} else {
+		return nil, errors.New("request is null")
+	}
+
+	return &reply, nil
+}
+
+func (s *ContainerServer) UpdateTemplate(ctx context.Context, in *pb.UpdateTemplateRequest) (*pb.UpdateTemplateReply, error) {
+	reply := pb.UpdateTemplateReply{}
+	if data := in.GetData(); data != nil {
+		id := data.GetId()
+		if id < 1 {
+			return &reply, errors.New("id error")
+		}
+		name := data.GetConf().Name
+		confbyte, err := json.Marshal(data.Conf)
+		if err != nil {
+			return nil, err
+		}
+		err = model.UpdateTemplate(ctx, id, name, confbyte)
+		if err != nil {
+			log.Println(err)
+		}
+
+	} else {
+		return nil, errors.New("request is null")
+	}
+
+	return &reply, nil
+}
+
+func (s *ContainerServer) RemoveTemplate(ctx context.Context, in *pb.RemoveTemplateRequest) (*pb.RemoveTemplateReply, error) {
+	reply := pb.RemoveTemplateReply{}
+	if ids := in.GetIds(); ids != nil {
+		err := model.RemoveTemplate(ctx, in.Ids)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		return nil, errors.New("request is null")
+	}
+
+	return &reply, nil
 }

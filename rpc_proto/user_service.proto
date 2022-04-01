@@ -4,9 +4,6 @@ option go_package = "scmc/rpc/pb/user";
 
 package user;
 
-import "common.proto";
-import "user_types.proto";
-
 service User {
   rpc Signup(SignupRequest) returns (SignupReply) {}
   rpc Login(LoginRequest) returns (LoginReply) {}
@@ -15,44 +12,35 @@ service User {
 }
 
 message SignupRequest {
-    common.RequestHeader header = 1;
-    string username = 2;
-    string password = 3;
-    string role = 4;
+    string username = 1;
+    string password = 2;
+    string role = 3;
 }
 
 message SignupReply {
-    common.ReplyHeader header = 1;
     // TODO userinfo
 }
 
 message LoginRequest {
-    common.RequestHeader header = 1;
-    string username = 2;
-    string password = 3;
-}
-
-message LoginReply {
-    common.ReplyHeader header = 1;
-    int64 user_id = 2;
-    string auth_key = 3;
-    // TODO userinfo
-}
-
-message LogoutRequest {
-    common.RequestHeader header = 1;
-}
-
-message LogoutReply {
-    common.ReplyHeader header = 1;
-}
-
-message UpdatePasswordRequest {
-    common.ReplyHeader header = 1;
+    string username = 1;
     string password = 2;
 }
 
+message LoginReply {
+    int64 user_id = 1;
+    string auth_key = 2;
+    // TODO userinfo
+}
+
+message LogoutRequest {}
+
+message LogoutReply {}
+
+message UpdatePasswordRequest {
+    string old_password = 1;
+    string new_password = 2;
+}
+
 message UpdatePasswordReply {
-    common.ReplyHeader header = 1;
-    bool need_relogin = 2;
+    bool need_relogin = 1;
 }

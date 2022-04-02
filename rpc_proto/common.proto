@@ -7,29 +7,54 @@ package common;
 enum Errno {
     // system level
     // https://grpc.github.io/grpc/core/md_doc_statuscodes.html
-    OK                  = 0;    // 成功
-    Canceled            = 1;
-    Unknown             = 2;    // 未知错误
-    InvalidArgument     = 3;    // 客户端参数错误
-    DeadlineExceeded    = 4;
-    NotFound            = 5;    // 资源不存在
-    AlreadyExists       = 6;    // 资源已存在
-    PermissionDenied    = 7;    // 无权限操作
-    ResourceExhausted   = 8;
-    FailedPrecondition  = 9;
-    Aborted             = 10;
-    OutOfRange          = 11;
-    Unimplemented       = 12;   // 接口未实现
-    Internal            = 13;   // 内部错误
-    Unavailable         = 14;
-    DataLoss            = 15;
-    Unauthenticated     = 16;   // 认证失败
+    OK                 = 0;  // 成功
+    Canceled           = 1;
+    Unknown            = 2;  // 未知错误
+    InvalidArgument    = 3;  // 客户端参数错误
+    DeadlineExceeded   = 4;
+    NotFound           = 5;  // 资源不存在
+    AlreadyExists      = 6;  // 资源已存在
+    PermissionDenied   = 7;  // 无权限操作
+    ResourceExhausted  = 8;
+    FailedPrecondition = 9;
+    Aborted            = 10;
+    OutOfRange         = 11;
+    Unimplemented      = 12;  // 接口未实现
+    Internal           = 13;  // 内部错误
+    Unavailable        = 14;
+    DataLoss           = 15;
+    Unauthenticated    = 16;  // 认证失败
 
     // user related
-    UserAlreadyExist    = 201;  // AlreadyExists
-    UserNotExist        = 202;  // NotFound
-    WrongPassword       = 203;
-    InvalidSession      = 204;  // Unauthenticated
-    SessionExpired      = 205;  // Unauthenticated
-    NoPermission        = 206;  // PermissionDenied
+    UserAlreadyExist = 201;  // AlreadyExists
+    UserNotExist     = 202;  // NotFound
+    WrongPassword    = 203;
+    InvalidSession   = 204;  // Unauthenticated
+    SessionExpired   = 205;  // Unauthenticated
+    NoPermission     = 206;  // PermissionDenied
+}
+
+message FileProtect {
+    string path      = 1;
+    bool   writeable = 2;  // 允许写操作 (false:不可写不可删除 true:允许写不可删除)
+}
+
+message FileProtectList {
+    bool                 on    = 1;
+    repeated FileProtect files = 2;
+}
+
+message NetworkRule {
+    string          chain     = 1;  // IN OUT FORWARD
+    repeated string protocols = 2;  // tcp, udp, icmp
+    string          src_addr  = 3;  // e.g. 192.168.10.3 192.168.120.0/24
+    uint32          src_port  = 4;  // 0 for all ports
+    string          dest_addr = 5;
+    uint32          dest_port = 6;
+    string          action    = 7;  // ACCEPT DROP REJECT
+}
+
+message NetworkRuleList {
+    int32                mode  = 1;  // 0:关闭 1:黑名单 2:白名单
+    repeated NetworkRule rules = 2;
 }

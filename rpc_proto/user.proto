@@ -1,0 +1,145 @@
+syntax = "proto3";
+
+option go_package = "scmc/rpc/pb/user";
+
+package user;
+
+service User {
+    rpc Signup(SignupRequest) returns (SignupReply) {}
+    rpc Login(LoginRequest) returns (LoginReply) {}
+    rpc Logout(LogoutRequest) returns (LogoutReply) {}
+    rpc UpdatePassword(UpdatePasswordRequest) returns (UpdatePasswordReply) {}
+
+    // 管理员用户/角色管理
+    rpc ListUser(ListUserRequest) returns (ListUserReply) {}        // 用户列表
+    rpc CreateUser(CreateUserRequest) returns (CreateUserReply) {}  // 创建新用户
+    rpc UpdateUser(UpdateUserRequest) returns (UpdateUserReply) {}  // 更新用户信息
+    rpc RemoveUser(RemoveUserRequest) returns (RemoveUserReply) {}  // 删除用户
+    rpc ListRole(ListRoleRequest) returns (ListRoleReqply) {}       // 用户角色列表
+    rpc CreateRole(CreateRoleRequest) returns (CreateRoleReply) {}  // 创建新角色
+    rpc UpdateRole(UpdateRoleRequest) returns (UpdateRoleReply) {}  // 更新角色信息
+    rpc RemoveRole(RemoveRoleRequest) returns (RemoveRoleReply) {}  // 删除角色
+}
+
+message SignupRequest {
+    string username = 1;
+    string password = 2;
+    string role     = 3;
+}
+
+message SignupReply {
+    // TODO userinfo
+}
+
+message LoginRequest {
+    string username = 1;
+    string password = 2;
+}
+
+message LoginReply {
+    int64  user_id  = 1;
+    string auth_key = 2;
+    // TODO userinfo
+}
+
+message LogoutRequest {}
+
+message LogoutReply {}
+
+message UpdatePasswordRequest {
+    string old_password = 1;
+    string new_password = 2;
+}
+
+message UpdatePasswordReply {
+    bool need_relogin = 1;
+}
+
+message ListUserRequest {}  // 可能还需要分页参数
+
+message ListUserReply {
+    repeated UserInfo users = 1;
+}
+
+message CreateUserRequest {
+    UserInfo user_info = 1;
+}
+
+message CreateUserReply {}
+
+message UpdateUserRequest {
+    UserInfo user_info = 1;
+}
+
+message UpdateUserReply {}
+
+message RemoveUserRequest {
+    int64 user_id = 1;
+    // repeated int64 user_ids = 1; 批量删除
+}
+
+message RemoveUserReply {}
+
+message ListRoleRequest {}  // 可能还需要分页参数
+
+message ListRoleReqply {
+    repeated UserRole roles = 1;
+}
+
+message CreateRoleRequest {
+    UserRole role_info = 1;
+}
+
+message CreateRoleReply {}
+
+message UpdateRoleRequest {
+    UserRole role_info = 1;
+}
+
+message UpdateRoleReply {}
+
+message RemoveRoleRequest {
+    int64 role_id = 1;
+}
+
+message RemoveRoleReply {}
+
+/***** DATA TYPES *****/
+
+enum PERMISSION {
+    // 待定
+    NONE      = 0;
+    USER      = 1;  // 用户管理
+    NODE      = 2;  // 节点管理
+    IMAGE     = 3;  // 镜像管理
+    CONTAINER = 4;  // 容器管理
+}
+
+message Permission {
+    int64  id    = 1;  // enum PERMISSION
+    string name  = 2;
+    bool   read  = 3;  // 允许查看
+    bool   write = 4;  // 允许修改
+}
+
+message UserRole {
+    int64               id          = 1;
+    string              name        = 2;
+    bool                is_editable = 3;  // 是否可更新删除
+    int64               create_at   = 4;
+    int64               update_at   = 5;
+    repeated Permission perms       = 11;
+}
+
+message UserInfo {
+    int64    id          = 1;
+    string   login_name  = 2;  // 登录名(唯一)
+    string   real_name   = 3;  // 真实姓名
+    string   password    = 4;  // 用于创建或修改密码
+    bool     is_active   = 5;  // 激活状态
+    bool     is_editable = 6;  // 是否可更新删除
+    int64    role_id     = 7;  // 用于更新用户角色
+    int64    create_at   = 8;
+    int64    update_at   = 9;
+    UserRole role_info   = 21;
+}

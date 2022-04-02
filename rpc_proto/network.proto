@@ -1,0 +1,80 @@
+syntax = "proto3";
+
+option go_package = "scmc/rpc/pb/network";
+
+package network;
+
+service Network {
+    rpc List(ListRequest) returns (ListReply) {}
+    rpc Connect(ConnectRequest) returns (ConnectReply) {}
+    rpc Disconnect(DisconnectRequest) returns (DisconnectReply) {}
+
+    // not implemented
+    rpc Create(CreateRequest) returns (CreateReply) {}
+    rpc Remove(RemoveRequest) returns (RemoveReply) {}
+}
+
+message ListRequest {
+    int64 node_id = 1;
+}
+
+message ListReply {
+    repeated NetworkInterface real_ifs    = 1;
+    repeated NetworkInterface virtual_ifs = 2;
+}
+
+message ConnectRequest {
+    int64  node_id      = 1;  // required
+    string interface    = 2;  // required
+    string container_id = 3;  // required
+    string ip_address   = 4;  // required
+    string ip_mask      = 5;
+    string mac_address  = 6;
+    string gateway      = 7;
+}
+
+message ConnectReply {}
+
+message DisconnectRequest {
+    int64  node_id      = 1;  // required
+    string interface    = 2;  // required
+    string container_id = 3;  // required
+}
+
+message DisconnectReply {}
+
+message CreateRequest {}
+
+message CreateReply {}
+
+message RemoveRequest {}
+
+message RemoveReply {}
+
+/***** DATA TYPES *****/
+
+message NetworkInterface {
+    int64  node_id     = 1;
+    string name        = 2;
+    string bind_real   = 3;  // 关联的物理网卡
+    string ip_address  = 4;
+    string ip_mask     = 5;
+    int32  ip_mask_len = 6;
+    string gateway     = 7;
+    string mac_address = 8;
+
+    bool is_up   = 21;  // 是否启用
+    bool is_real = 22;  // 是否物理网卡
+
+    repeated ContainerNetwork containers = 31;
+}
+
+message ContainerNetwork {
+    string interface    = 1;
+    string container_id = 2;
+    string ip_address   = 3;
+    string ip_mask      = 4;
+    int32  ip_mask_len  = 5;
+    string gateway      = 6;
+    string mac_address  = 7;
+}

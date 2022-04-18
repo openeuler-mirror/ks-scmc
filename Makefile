@@ -6,23 +6,17 @@ TAR_FILE = $(PROJECT)-$(VERSION).tar.gz
 backend:
 	cd backend && make
 
-.PHONY: client
-client:
-	cd client && ./build.sh
-
-all: backend client
+all: backend
 
 clean:
 	cd backend && make clean && cd -
-	cd client && make clean && cd -
 
 install:
 	cd backend && make install && cd -
-	cd client && make install && cd -
 
 rpm: clean
 	rm -f $(TAR_FILE)
-	tar -zcf $(TAR_FILE) backend/ client/ rpc_proto/ Makefile
+	tar -zcf $(TAR_FILE) backend/ rpc_proto/ Makefile
 	cp $(TAR_FILE) ~/rpmbuild/SOURCES/
 	cp $(PROJECT).spec ~/rpmbuild/SPECS/
 	cd ~/rpmbuild/SPECS/

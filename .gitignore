@@ -8,3 +8,5 @@ client/build
 ***/*.pb.cc
 
 ks-scmc-*.tar.gz
+
+.vscode

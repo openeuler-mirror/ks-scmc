@@ -1,11 +1,4 @@
-backend/vendor/***
 backend/ks-scmc-server
-***/*.pb.go
-
-client/.vscode
-client/build
-***/*.pb.h
-***/*.pb.cc
 
 ks-scmc-*.tar.gz
 

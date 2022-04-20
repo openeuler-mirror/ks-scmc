@@ -9,12 +9,11 @@ License:        LGPLv2+
 Group:          Tools/Container/Docker
 
 Name:           ks-scmc
-Version:        1.0
+Version:        1.0.0
 Release:        1%{?dist}
-URL:            http://gitlab.kylinos.com.cn/va/%{name}
+URL:            http://gitlab.kylinos.com.cn/os/%{name}
 Source0:        %{name}-%{version}.tar.gz
 
-%package server
 Summary:       KylinSec security container magic cube server package
 BuildRequires: pkgconfig(systemd) git golang make coreutils protobuf-compiler systemd
 Requires: docker-ce mysql5-server mysql5 coreutils bash socat systemd
@@ -25,33 +24,24 @@ Requires: docker-ce mysql5-server mysql5 coreutils bash socat systemd
 %description
 KylinSec security container magic cube provides simply, effecient and secure container management.
 
-%description server
-KylinSec security container magic cube backend server.
-
 %prep
 %autosetup -c -n %{name}-%{version}
 
 %build
-cd backend && make env && make && cd -
+cd backend && make && cd -
 
 %install
 cd backend && make DESTDIR=$RPM_BUILD_ROOT install && cd -
 
-%post server
-%systemd_post mysqld.service
-systemctl enable --now mysqld.service
-
-bash /etc/%{name}/setup_config.sh /etc/%{name}/server.toml
+%post
 %systemd_post %{name}-agent.service
 %systemd_post %{name}-controller.service
-systemctl enable --now %{name}-agent.service
-systemctl enable --now %{name}-controller.service
 
-%preun server
+%preun
 %systemd_preun %{name}-agent.service
 %systemd_preun %{name}-controller.service
 
-%files server
+%files
 %defattr(-,root,root)
 %{_bindir}/%{name}-server
 %{_unitdir}/%{name}-agent.service
@@ -65,5 +55,5 @@ systemctl enable --now %{name}-controller.service
 %{_sysconfdir}/%{name}/database.sql
 
 %changelog
-* Tue Feb 15 2022 Haotian Chen <chenhaotian@kylinos.com.cn> - 1.0.0-1.ky3
-- KYOS-F: KylinSec security container magic cube server package.
+* Wed Apr 20 2022 Haotian Chen <chenhaotian@kylinos.com.cn> - 1.0.0-1.ky3
+- KYOS-F: initial setup for ks-scmc. (#48150)

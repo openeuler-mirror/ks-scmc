@@ -28,6 +28,7 @@ require (
 	github.com/shirou/gopsutil v2.21.11+incompatible
 	github.com/sirupsen/logrus v1.8.1
 	github.com/spf13/viper v1.4.0
+	github.com/stretchr/testify v1.7.0
 	github.com/theupdateframework/notary v0.7.0 // indirect
 	github.com/uudashr/gopkgs/v2 v2.1.2 // indirect
 	github.com/vishvananda/netlink v1.1.1-0.20201029203352-d40f9887b852

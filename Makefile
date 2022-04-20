@@ -1,5 +1,5 @@
 PROJECT = ks-scmc
-VERSION = 1.0
+VERSION = 1.0.0
 TAR_FILE = $(PROJECT)-$(VERSION).tar.gz
 
 .PHONY: backend

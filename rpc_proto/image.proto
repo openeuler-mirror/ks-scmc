@@ -79,6 +79,7 @@ message ImageInfo {
     string repo   = 2;
     string tag    = 3;
     string digest = 4;
+    int64  size   = 5;  // unit: bytes
 }
 
 message ImageDBInfo {
@@ -88,12 +89,13 @@ message ImageDBInfo {
     string description     = 4;
     int32  verify_status   = 5;  // 0:验签失败 1:异常 2:验签成功
     int32  approval_status = 6;  // 0:待审批 1:审批拒绝 2:审批通过
-    int64  create_at       = 7;
-    int64  update_at       = 8;
+    int64  size            = 7;  // unit: bytes
+    int64  create_at       = 21;
+    int64  update_at       = 22;
 }
 
 message UploadInfo {
-    string name        = 1;  // repo + tag
+    string name        = 1;
     string version     = 2;
     string type        = 3;
     string checksum    = 4;

@@ -15,7 +15,7 @@ service User {
     rpc CreateUser(CreateUserRequest) returns (CreateUserReply) {}  // 创建新用户
     rpc UpdateUser(UpdateUserRequest) returns (UpdateUserReply) {}  // 更新用户信息
     rpc RemoveUser(RemoveUserRequest) returns (RemoveUserReply) {}  // 删除用户
-    rpc ListRole(ListRoleRequest) returns (ListRoleReqply) {}       // 用户角色列表
+    rpc ListRole(ListRoleRequest) returns (ListRoleReply) {}        // 用户角色列表
     rpc CreateRole(CreateRoleRequest) returns (CreateRoleReply) {}  // 创建新角色
     rpc UpdateRole(UpdateRoleRequest) returns (UpdateRoleReply) {}  // 更新角色信息
     rpc RemoveRole(RemoveRoleRequest) returns (RemoveRoleReply) {}  // 删除角色
@@ -55,7 +55,8 @@ message UpdatePasswordReply {
     bool need_relogin = 1;
 }
 
-message ListUserRequest {}  // 可能还需要分页参数
+message ListUserRequest {
+}
 
 message ListUserReply {
     repeated UserInfo users = 1;
@@ -74,15 +75,15 @@ message UpdateUserRequest {
 message UpdateUserReply {}
 
 message RemoveUserRequest {
-    int64 user_id = 1;
-    // repeated int64 user_ids = 1; 批量删除
+    repeated int64 user_ids = 1;
 }
 
 message RemoveUserReply {}
 
-message ListRoleRequest {}  // 可能还需要分页参数
+message ListRoleRequest {
+}
 
-message ListRoleReqply {
+message ListRoleReply {
     repeated UserRole roles = 1;
 }
 
@@ -107,27 +108,46 @@ message RemoveRoleReply {}
 /***** DATA TYPES *****/
 
 enum PERMISSION {
-    // 待定
-    NONE      = 0;
-    USER      = 1;  // 用户管理
-    NODE      = 2;  // 节点管理
-    IMAGE     = 3;  // 镜像管理
-    CONTAINER = 4;  // 容器管理
+    NONE = 0;
+
+    // 系统
+    SYS_INFO_READ  = 1;   // 系统-概要-查看
+    SYS_INFO_WRITE = 2;   // 系统-概要-管理(保留设计)
+    SYS_PERM_READ  = 11;  // 系统-权限-查看
+    SYS_PERM_WRITE = 12;  // 系统-权限-管理
+
+    // 容器
+    CONTAINER_INFO_READ  = 1001;  // 容器-信息-查看
+    CONTAINER_INFO_WRITE = 1002;  // 容器-信息-管理
+    CONTAINER_TEMP_READ  = 1031;  // 容器-模板-查看
+    CONTAINER_TEMP_WRITE = 1032;  // 容器-模板-管理
+
+    // 节点
+    NODE_INFO_READ  = 2001;  // 节点-信息-查看
+    NODE_INFO_WRITE = 2002;  // 节点-信息-管理
+
+    // 镜像
+    IMAGE_INFO_READ  = 3001;  // 镜像-信息-查看
+    IMAGE_INFO_WRITE = 3002;  // 镜像-信息-管理
+
+    // 审计
+    AUDIT_APPROVE_READ  = 4001;  // 审计-审核-查看
+    AUDIT_APPROVE_WRITE = 4002;  // 审计-审核-查看
+    AUTID_WARN_READ     = 4011;  // 审计-告警-查看
+    AUTID_LOG_READ      = 4021;  // 审计-日志-查看
 }
 
 message Permission {
-    int64  id    = 1;  // enum PERMISSION
-    string name  = 2;
-    bool   read  = 3;  // 允许查看
-    bool   write = 4;  // 允许修改
+    int32 id    = 1;  // enum PERMISSION
+    bool  allow = 2;
 }
 
 message UserRole {
     int64               id          = 1;
     string              name        = 2;
-    bool                is_editable = 3;  // 是否可更新删除
-    int64               create_at   = 4;
-    int64               update_at   = 5;
+    bool                is_editable = 3;  // 是否可更新删除, 初始化后不可更改
+    int64               created_at  = 4;
+    int64               updated_at  = 5;
     repeated Permission perms       = 11;
 }
 
@@ -137,9 +157,9 @@ message UserInfo {
     string   real_name   = 3;  // 真实姓名
     string   password    = 4;  // 用于创建或修改密码
     bool     is_active   = 5;  // 激活状态
-    bool     is_editable = 6;  // 是否可更新删除
+    bool     is_editable = 6;  // 是否可更新删除, 初始化后不可更改
     int64    role_id     = 7;  // 用于更新用户角色
-    int64    create_at   = 8;
-    int64    update_at   = 9;
+    int64    created_at  = 8;
+    int64    updated_at  = 9;
     UserRole role_info   = 21;
 }

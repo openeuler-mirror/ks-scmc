@@ -1,0 +1,100 @@
+syntax = "proto3";
+
+option go_package = "scmc/rpc/pb/security";
+
+package security;
+
+service Security {
+    // 进程保护
+    rpc ListProcProtection(ListProcProtectionRequest) returns (ListProcProtectionReply) {}
+    rpc UpdateProcProtection(UpdateProcProtectionRequest) returns (UpdateProcProtectionReply) {}
+
+    // 文件保护
+    rpc ListFileProtection(ListFileProtectionRequest) returns (ListFileProtectionReply) {}
+    rpc UpdateFileProtection(UpdateFileProtectionRequest) returns (UpdateFileProtectionReply) {}
+
+    rpc LoadSecurityConfig(LoadSecurityConfigRequset) returns (LoadSecurityConfigReply) {}
+}
+
+enum PROC_PROTECTION {
+    NONE           = 0;
+    EXEC_WHITELIST = 1;  // 进程白名单
+    NET_WHITELIST  = 2;  // 网络进程白名单
+}
+
+message ListProcProtectionRequest {
+    int64  node_id         = 1;  // 必填
+    string container_id    = 2;  // 必填
+    int64  protection_type = 3;  // PROC_PROTECTION 必填
+}
+
+message ListProcProtectionReply {
+    bool            is_on    = 1;
+    repeated string exe_list = 2;
+}
+
+message UpdateProcProtectionRequest {
+    int64           node_id         = 1;  // 必填
+    string          container_id    = 2;  // 必填
+    int64           protection_type = 3;  // PROC_PROTECTION 必填
+    bool            is_on           = 4;  // 开关
+    repeated string to_append       = 5;  // 新增保护程序列表
+    repeated string to_remove       = 6;  // 删除保护程序列表
+}
+
+message UpdateProcProtectionReply {}
+
+message ListFileProtectionRequest {
+    int64  node_id      = 1;  // 必填
+    string container_id = 2;  // 选填
+}
+
+message ListFileProtectionReply {
+    bool            is_on     = 1;
+    repeated string file_list = 2;
+}
+
+message UpdateFileProtectionRequest {
+    int64           node_id      = 1;  // 必填
+    string          container_id = 2;  // 选填
+    bool            is_on        = 3;  // 开关
+    repeated string to_append    = 4;  // 新增保护文件列表
+    repeated string to_remove    = 5;  // 删除保护文件列表
+}
+
+message UpdateFileProtectionReply {}
+
+message LoadSecurityConfigRequset {
+    repeated FullSeucirytConfig configs = 1;
+}
+
+message LoadSecurityConfigReply {
+}
+
+message ProcProtection {
+    int64           protection_type = 1;  // PROC_PROTECTION 必填
+    bool            is_on           = 2;  // 开关
+    repeated string exe_list        = 3;
+}
+
+message FileProtection {
+    bool            is_on     = 1;
+    repeated string file_list = 2;
+}
+
+message FullSeucirytConfig {
+    string         containerId      = 1;
+    ProcProtection proc_protections = 2;
+    FileProtection file_protections = 3;
+}
+
+message NetworkRule {
+    repeated string protocols = 1;  // tcp, udp, icmp
+    string          addr      = 2;  // e.g. 192.168.10.3 192.168.120.0/24
+    uint32          port      = 3;  // 0 for all ports
+}
+
+message NetworkRuleList {
+    bool                 is_on = 1;  // 0:关闭 1:白名单
+    repeated NetworkRule rules = 2;
+}

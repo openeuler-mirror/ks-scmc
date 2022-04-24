@@ -3,6 +3,7 @@ syntax = "proto3";
 option go_package = "scmc/rpc/pb/container";
 
 import "common.proto";
+import "security.proto";
 
 package container;
 
@@ -18,19 +19,107 @@ service Container {
     rpc Kill(KillRequest) returns (KillReply) {}
     rpc Status(StatusRequest) returns (StatusReply) {}
 
+    // 容器备份客户端接口
+    rpc CreateBackup(CreateBackupRequest) returns (CreateBackupReply) {}  // 创建备份
+    rpc UpdateBackup(UpdateBackupRequest) returns (UpdateBackupReply) {}  // 更新备份描述
+    rpc ResumeBackup(ResumeBackupRequest) returns (ResumeBackupReply) {}  // 恢复备份
+    rpc RemoveBackup(RemoveBackupRequest) returns (RemoveBackupReply) {}  // 删除备份
+    rpc ListBackup(ListBackupRequest) returns (ListBackupReply) {}        // 备份列表
+
+    // 容器备份内部接口
+    rpc AddBackupJob(AddBackupJobRequest) returns (AddBackupJobReply) {}
+    rpc GetBackupJob(GetBackupJobRequest) returns (GetBackupJobReply) {}
+    rpc DelBackupJob(DelBackupJobRequest) returns (DelBackupJobReply) {}
+
     rpc ListTemplate(ListTemplateRequest) returns (ListTemplateReply) {}
     rpc CreateTemplate(CreateTemplateRequest) returns (CreateTemplateReply) {}
     rpc UpdateTemplate(UpdateTemplateRequest) returns (UpdateTemplateReply) {}
     rpc RemoveTemplate(RemoveTemplateRequest) returns (RemoveTemplateReply) {}
+    rpc InspectTemplate(InspectTemplateRequest) returns (InspectTemplateReply) {}
 
     // 监控历史数据查询
     rpc MonitorHistory(MonitorHistoryRequest) returns (MonitorHistoryReply) {}
+}
 
-    // 安全配置
-    rpc UpdateProcProtect(UpdateProcProtectRequest) returns (UpdateProcProtectReply) {}           // 进程白名单/黑名单
-    rpc UpdateNetProcProtect(UpdateNetProcProtectRequest) returns (UpdateNetProcProtectReply) {}  // 网络进程白名单
-    rpc UpdateFileProtect(UpdateFileProtectRequest) returns (UpdateFileProtectReply) {}           // 文件保护
-    rpc UpdateNetworkRule(UpdateNetworkRuleRequest) returns (UpdateNetworkRuleReply) {}           // 网络访问规则
+message CreateBackupRequest {
+    int64  node_id      = 1;
+    string container_id = 2;
+    string backup_desc  = 3;
+}
+
+message CreateBackupReply {}
+
+message UpdateBackupRequest {
+    int64  id          = 1;
+    string backup_desc = 2;
+}
+
+message UpdateBackupReply {}
+
+message ResumeBackupRequest {
+    // for client
+    int64  node_id      = 1;
+    string container_id = 2;
+    int64  backup_id    = 3;
+
+    // for agent service
+    string         image_ref       = 11;
+    SecurityConfig security_config = 12;
+    // string backup_name = 12;
+}
+
+message ResumeBackupReply {
+    string container_id = 1;  // 生成新容器id
+}
+
+message RemoveBackupRequest {
+    // for client
+    int64 id = 1;
+
+    // for agent service
+    string image_id = 11;
+}
+
+message RemoveBackupReply {}
+
+message ListBackupRequest {
+    int64  node_id      = 1;
+    string container_id = 2;
+}
+
+message ListBackupReply {
+    repeated ContainerBackup data = 1;
+}
+
+message AddBackupJobRequest {
+    int64  id           = 1;
+    string container_id = 2;
+    string backup_name  = 3;
+}
+
+message AddBackupJobReply {
+    string file_path = 1;
+}
+
+message GetBackupJobRequest {
+    int64 id = 1;
+}
+
+message DelBackupJobRequest {
+    int64 id = 1;
+}
+
+message DelBackupJobReply {}
+
+message GetBackupJobReply {
+    int64  id           = 1;
+    string container_id = 2;
+    string backup_name  = 3;
+    string image_ref    = 4;
+    string image_id     = 5;
+    int64  image_size   = 6;
+    int64  status       = 7;  // 参考 BACKUP_STATUS 定义
+    int64  updated_at   = 8;
 }
 
 message ListRequest {
@@ -43,13 +132,8 @@ message ListReply {
 }
 
 message CreateRequest {
-    int64  node_id        = 1;
-    string name           = 2;
-    bool   enable_graphic = 3;
-
-    ContainerConfig        config         = 11;
-    HostConfig             host_config    = 12;
-    repeated NetworkConfig network_config = 13;
+    int64            node_id = 1;
+    ContainerConfigs configs = 2;
 }
 
 message CreateReply {
@@ -63,11 +147,7 @@ message InspectRequest {
 }
 
 message InspectReply {
-    ContainerInfo          info           = 1;
-    HostConfig             host_config    = 2;
-    repeated Mount         mounts         = 3;
-    ContainerConfig        config         = 4;
-    repeated NetworkConfig network_config = 5;
+    ContainerConfigs configs = 1;
 }
 
 message StartRequest {
@@ -103,10 +183,12 @@ message RestartReply {
 }
 
 message UpdateRequest {
-    int64          node_id         = 1;
-    string         container_id    = 2;
-    ResourceConfig resource_config = 3;
-    RestartPolicy  restart_policy  = 4;
+    int64                  node_id         = 1;
+    string                 container_id    = 2;
+    ResourceLimit          resource_limit  = 3;
+    RestartPolicy          restart_policy  = 4;
+    repeated NetworkConfig networks        = 5;
+    SecurityConfig         security_config = 6;
 }
 
 message UpdateReply {}
@@ -143,7 +225,7 @@ message MonitorHistoryReply {
     repeated MonitorSample net_rx       = 4;
     repeated MonitorSample net_tx       = 5;
 
-    ResourceLimit rsc_limit = 11;   // 资源使用限制
+    ResourceLimit rsc_limit = 11;  // 资源使用限制
 }
 
 message ListTemplateRequest {
@@ -181,37 +263,13 @@ message RemoveTemplateRequest {
 
 message RemoveTemplateReply {}
 
-message UpdateProcProtectRequest {
-    int64           node_id      = 1;
-    int64           container_id = 2;
-    ProcProtectList proc_protect = 3;
+message InspectTemplateRequest {
+    int64 id = 1;
 }
 
-message UpdateProcProtectReply {}
-
-message UpdateNetProcProtectRequest {
-    int64           node_id          = 1;
-    int64           container_id     = 2;
-    ProcProtectList net_proc_protect = 3;
+message InspectTemplateReply {
+    ContainerTemplate data = 1;
 }
-
-message UpdateNetProcProtectReply {}
-
-message UpdateFileProtectRequest {
-    int64                  node_id      = 1;
-    int64                  container_id = 2;
-    common.FileProtectList file_protect = 3;
-}
-
-message UpdateFileProtectReply {}
-
-message UpdateNetworkRuleRequest {
-    int64                  node_id      = 1;
-    int64                  container_id = 2;
-    common.NetworkRuleList network_rule = 3;
-}
-
-message UpdateNetworkRuleReply {}
 
 /***** DATA TYPES *****/
 
@@ -257,6 +315,9 @@ message ContainerInfo {
 message ContainerIdList {
     int64           node_id       = 1;
     repeated string container_ids = 2;
+
+    // for agent service remove container
+    repeated string backup_image_ids = 11;
 }
 
 message Mount {
@@ -282,65 +343,29 @@ message DeviceMapping {
     string cgroup_permissions = 3;
 }
 
-message ResourceConfig {
-    int64 nano_cpus  = 1;  // CPU quota in units of 10e-9 CPUs
-    int64 cpu_shares = 2;  // CPU shares (relative weight vs. other containers)
-
-    int64 mem_limit      = 11;  // Memory limit (in bytes)
-    int64 mem_soft_limit = 12;  // Memory soft limit (in bytes)
-
-    repeated DeviceMapping devices = 101;  // List of devices to map inside the container
-}
-
-message HostConfig {
-    string          network_mode   = 1;
-    RestartPolicy   restart_policy = 2;
-    bool            auto_remove    = 3;
-    bool            privileged     = 4;
-    string          ipc_mode       = 5;  // "", "none", "private", "shareable", "container: <_name-or-ID_>", "host"
-    repeated Mount  mounts         = 6;
-    repeated string masked_paths   = 7;
-    repeated string readonly_paths = 8;
-
-    ResourceConfig      resource_config = 31;
-    map<string, string> storage_opt     = 32;  // disk quota(k=size, v=1G)
-}
-
-message ContainerConfig {
-    string              hostname    = 1;
-    string              domain_name = 2;
-    string              user        = 3;  // user user:group
-    map<string, string> env         = 4;
-
-    string image       = 5;  // required
-    string working_dir = 6;
-
-    repeated string entrypoint = 7;
-    repeated string cmd        = 8;
-
-    bool network_disabled = 9;
-
-    map<string, string> labels = 10;
-}
-
 message CpuStat {
     double core_used = 1;
 }
 
 message MemoryStat {
-    uint64 used       = 1;
-    uint64 limit      = 2;
+    double used       = 1;
+    double limit      = 2;
     double percentage = 3;
 }
 
 message BlockStat {
-    uint64 read  = 1;
-    uint64 write = 2;
+    double read  = 1;
+    double write = 2;
+}
+
+message DiskStat {
+    double used  = 1;
+    double limit = 2;
 }
 
 message NetworkStats {
-    uint64 rx = 1;
-    uint64 tx = 2;
+    double rx = 1;
+    double tx = 2;
 }
 
 message ResourceStat {
@@ -348,8 +373,9 @@ message ResourceStat {
     string       state      = 2;
     CpuStat      cpu_stat   = 3;
     MemoryStat   mem_stat   = 4;
-    BlockStat    block_stat = 5;
-    NetworkStats net_stat   = 6;
+    DiskStat     disk_stat  = 5;
+    BlockStat    block_stat = 6;
+    NetworkStats net_stat   = 7;
 }
 
 message MonitorSample {
@@ -358,52 +384,54 @@ message MonitorSample {
 }
 
 message NetworkConfig {
-    string interface    = 1;  // required
-    string container_id = 2;  // required
-    string ip_address   = 3;  // required
-    string ip_mask      = 4;
-    string mac_address  = 5;
-    string gateway      = 6;
+    string interface     = 1;  // required
+    string container_id  = 2;  // required
+    string ip_address    = 3;  // required
+    int32  ip_prefix_len = 4;
+    string mac_address   = 5;
+    string gateway       = 6;
 }
 
 message ResourceLimit {
-    double cpu_limit         = 1;   // CPU使用核心数限制
-    int64  cpu_prio          = 2;   // CPU优先级
+    double cpu_limit         = 1;   // CPU使用核心数限制; NanoCPUs = cpus * 10e9
+    int64  cpu_prio          = 2;   // CPU优先级(0-10)
     double memory_limit      = 11;  // 内存限制 单位MB
     double memory_soft_limit = 12;  // 内存软限制 单位MB 数值低于memory_limit
     double disk_limit        = 21;  // 磁盘使用限制 单位MB
 }
 
 message SecurityConfig {
-    bool network_host_enabled     = 1;  // 宿主机网络可联通
-    bool network_external_enabled = 2;  // 宿主机外部可联通
-    bool cmd_operate_enabled      = 3;  // 运行命令行操作
+    bool disable_external_network = 1;  // 禁止访问外部网络
+    bool disable_cmd_operation    = 2;  // 禁止命令行控制容器(启停控制)
 
-    ProcProtectList        proc_protect     = 11;  // 进程白名单
-    ProcProtectList        net_proc_protect = 12;  // 网络进程白名单
-    common.FileProtectList file_protect     = 13;  // 文件防篡改保护
-    common.NetworkRuleList network_rule     = 14;  // 网络访问规则
-
-    // to be extended
+    security.ProcProtection  proc_protection  = 11;  // 进程保护
+    security.ProcProtection  nproc_protection = 12;  // 网络进程保护
+    security.FileProtection  file_protection  = 13;  // 文件防篡改保护
+    security.NetworkRuleList network_rule     = 14;  // 网络访问规则
 }
 
 message ContainerConfigs {
-    string name            = 1;  // required 容器名 不支持中文字符
-    string desc            = 2;  // 描述信息 支持中文
-    string image           = 3;  // required 镜像
-    string hostname        = 4;
-    string domain_name     = 5;
-    string user            = 6;  // user | user:group
-    bool   graphic_enabled = 7;  // 支持图形界面访问
-    bool   privileged      = 8;
+    string container_id   = 1;  // 展示用
+    string uuid           = 2;  // 内部使用 labels[KS_SCMC_UUID]
+    string name           = 3;  // 容器名 必填 不支持中文字符
+    string status         = 4;
+    string desc           = 5;  // 描述信息 支持中文 对应LABELS[KS_SCMC_DESC]
+    string image          = 6;  // 必填 镜像
+    bool   enable_graphic = 7;  // 开启图形化 对应LABELS[KS_SCMC_GRAPHIC]
+    // hostname
+    // domain_name
+    // user
+    // working_dir
+    // entrypoint
+    // cmd
 
-    map<string, string> env    = 30;  // 环境变量
-    repeated Mount      mounts = 31;  // 挂载目录
+    repeated Mount         mounts         = 21;  // 共享目录
+    repeated NetworkConfig networks       = 22;  // 网络信息
+    map<string, string>    envs           = 23;  // 环境变量
+    RestartPolicy          restart_policy = 24;  // 重启策略(高可用)
+    ResourceLimit          resouce_limit  = 25;
 
-    RestartPolicy          restart_policy = 40;  // 重启策略(高可用)
-    ResourceLimit          resource_limit = 41;  // 资源使用限制
-    repeated NetworkConfig network_conf   = 42;  // 网络配置
-    SecurityConfig         security_conf  = 43;  // 安全配置
+    SecurityConfig security_config = 31;  // 安全配置
 }
 
 message ContainerTemplate {
@@ -411,7 +439,22 @@ message ContainerTemplate {
     ContainerConfigs conf = 2;
 }
 
-message ProcProtectList {
-    int32           mode     = 1;  // 0:关 1:白名单模式 2:黑名单模式
-    repeated string exe_path = 2;
+enum BACKUP_STATUS {
+    ONGOING = 0;  // 备份中
+    SUCCEED = 1;  // 成功
+    FAILED  = 2;  // 失败
+}
+
+message ContainerBackup {
+    int64  id           = 1;
+    int64  node_id      = 2;
+    string container_id = 3;
+    string uuid         = 4;
+    string backup_name  = 5;
+    string backup_desc  = 6;
+    string image_ref    = 7;   // 备份镜像
+    string image_id     = 8;   // 备份镜像id
+    int64  image_size   = 9;   // 备份镜像大小
+    int64  status       = 10;  // 参考 BACKUP_STATUS 定义
+    int64  created_at   = 21;
 }

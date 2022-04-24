@@ -30,7 +30,11 @@ func dockerCli() (*client.Client, error) {
 	}
 
 	var err error
-	cli, err = client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
+	cli, err = client.NewClientWithOpts(
+		client.FromEnv,
+		client.WithAPIVersionNegotiation(),
+		client.WithHTTPHeaders(map[string]string{"AuthZ-User": "KS-SCMC-SERVICE"}),
+	)
 	if err != nil {
 		log.Warnf("try to connect to container daemon: %v", err)
 		return nil, err

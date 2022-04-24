@@ -14,7 +14,6 @@ type UserInfo struct {
 	ID         int64 `gorm:"primaryKey"`
 	Username   string
 	PasswordEn string
-	Role       string
 	CreatedAt  int64 `gorm:"autoCreateTime"`
 	UpdatedAt  int64 `gorm:"autoUpdateTime"`
 }
@@ -48,13 +47,13 @@ type UserSession struct {
 	UpdatedAt  int64 `gorm:"autoUpdateTime"`
 }
 
-func CreateUser(username, password, role string) error {
+func CreateUser(username, password string) error {
 	db, err := getConn()
 	if err != nil {
 		return err
 	}
 
-	userInfo := UserInfo{Username: username, PasswordEn: password, Role: role}
+	userInfo := UserInfo{Username: username, PasswordEn: password}
 	result := db.Create(&userInfo)
 
 	if result.Error != nil {

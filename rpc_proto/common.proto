@@ -33,28 +33,3 @@ enum Errno {
     SessionExpired   = 205;  // Unauthenticated
     NoPermission     = 206;  // PermissionDenied
 }
-
-message FileProtect {
-    string path      = 1;
-    bool   writeable = 2;  // 允许写操作 (false:不可写不可删除 true:允许写不可删除)
-}
-
-message FileProtectList {
-    bool                 on    = 1;
-    repeated FileProtect files = 2;
-}
-
-message NetworkRule {
-    string          chain     = 1;  // IN OUT FORWARD
-    repeated string protocols = 2;  // tcp, udp, icmp
-    string          src_addr  = 3;  // e.g. 192.168.10.3 192.168.120.0/24
-    uint32          src_port  = 4;  // 0 for all ports
-    string          dest_addr = 5;
-    uint32          dest_port = 6;
-    string          action    = 7;  // ACCEPT DROP REJECT
-}
-
-message NetworkRuleList {
-    int32                mode  = 1;  // 0:关闭 1:黑名单 2:白名单
-    repeated NetworkRule rules = 2;
-}

@@ -134,7 +134,7 @@ func (s *UserServer) Logout(ctx context.Context, in *pb.LogoutRequest) (*pb.Logo
 
 func (s *UserServer) Signup(ctx context.Context, in *pb.SignupRequest) (*pb.SignupReply, error) {
 	// check inputs, TODO(check character set)
-	if len(in.Username) < 4 || len(in.Password) < 8 || len(in.Role) < 4 {
+	if len(in.Username) < 4 || len(in.Password) < 8 {
 		return nil, rpc.ErrInvalidArgument
 	}
 
@@ -153,7 +153,7 @@ func (s *UserServer) Signup(ctx context.Context, in *pb.SignupRequest) (*pb.Sign
 		return nil, rpc.ErrAlreadyExists
 	}
 
-	if err := model.CreateUser(in.Username, string(rawBytes), in.Role); err != nil {
+	if err := model.CreateUser(in.Username, string(rawBytes)); err != nil {
 		return nil, rpc.ErrInternal
 	}
 

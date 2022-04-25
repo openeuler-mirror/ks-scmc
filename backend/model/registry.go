@@ -64,7 +64,10 @@ func newRegistryClient() (*registryClient, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &registryClient{r}, nil
+
+	cli := &registryClient{r}
+	cli.Logf = log.Debugf
+	return cli, nil
 }
 
 // Copy from "github.com/heroku/docker-registry-client/registry"
@@ -275,7 +278,33 @@ func pullImage(cli *client.Client, repoTag string) (io.ReadCloser, error) {
 	})
 }
 
-func Pull(repoTag string) error {
+func IsImageExist(repoTag string) (bool, error) {
+	strs := strings.Split(repoTag, ":")
+	if len(strs) != 2 {
+		return false, nil
+	}
+
+	repo, tag := strs[0], strs[1]
+	cli, err := newRegistryClient()
+	if err != nil {
+		return false, err
+	}
+
+	tags, err := cli.Tags(repo)
+	if err != nil {
+		return false, err
+	}
+
+	for _, t := range tags {
+		if t == tag {
+			return true, nil
+		}
+	}
+
+	return false, nil
+}
+
+func PullImage(repoTag string) error {
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	if err != nil {
 		log.Errorf("try to connect to container daemon: %v", err)
@@ -374,7 +403,7 @@ func CheckImagePush() {
 		return
 	}
 
-	images := make(map[string]string)
+	images := make(map[string]struct{})
 	repositories, err := hub.Repositories()
 	if err != nil {
 		log.Warnf("get repositories err:%v", err)
@@ -384,12 +413,12 @@ func CheckImagePush() {
 		tags, _ := hub.Tags(repository)
 		for _, tag := range tags {
 			k := repository + ":" + tag
-			images[k] = "exist"
+			images[k] = struct{}{}
 		}
 	}
 
 	for _, info := range imageInfo {
-		k := info.Name + ":" + info.Version
+		k := imageRepoPrefix + info.Name + ":" + info.Version
 		if _, ok := images[k]; !ok {
 			log.Infof("[%v] is not in registry, now push[%v]", k, info.FilePath)
 			p := imagePush{

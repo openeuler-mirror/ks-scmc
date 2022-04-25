@@ -71,7 +71,8 @@ type VirtualNicConfig struct {
 }
 
 type NetworkConfig struct {
-	JsonFile string `mapstructure:"json_file"`
+	IPtablesJsonFile string `mapstructure:"iptables_json_file"`
+	IPtablesPath     string `mapstructure:"iptables_path"`
 }
 
 type RegistryConfig struct {
@@ -119,7 +120,8 @@ func setDefault() {
 
 	viper.SetDefault("influxdb.addr", "127.0.0.1:8086")
 
-	viper.SetDefault("network.json_file", "/var/lib/ks-scmc/networks/container-ipaddr.json")
+	viper.SetDefault("network.iptables_json_file", "/var/lib/ks-scmc/networks/iptables/enable.json")
+	viper.SetDefault("network.iptables_path", "/var/lib/ks-scmc/networks/iptables")
 
 	viper.SetDefault("registry.secure", false)
 	viper.SetDefault("registry.addr", "127.0.0.1:5000")

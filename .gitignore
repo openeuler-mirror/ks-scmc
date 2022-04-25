@@ -1,5 +1,13 @@
 backend/ks-scmc-server
+backend/ks-scmc-authz
 
 ks-scmc-*.tar.gz
 
 .vscode
+
+
+# comment off when coding, comment on when you need to merge code
+# backend/go.mod
+# backend/go.sum
+# backend/vendor/
+# backend/rpc/pb/***

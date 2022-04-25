@@ -35,33 +35,26 @@ type ImageServer struct {
 }
 
 func (s *ImageServer) List(ctx context.Context, in *pb.ListRequest) (*pb.ListReply, error) {
-	if in.NodeId <= 0 {
-		return nil, rpc.ErrInvalidArgument
+	images, err := model.ListImages()
+	if err != nil {
+		log.Warnf("Failed to get images list: %v", err)
+		return nil, rpc.ErrInternal
 	}
 
-	nodeInfo, err := model.QueryNodeByID(in.NodeId)
-	if err != nil {
-		if err == model.ErrRecordNotFound {
-			return nil, rpc.ErrNotFound
+	reply := pb.ListReply{}
+	for _, image := range images {
+		if image.ApprovalStatus != model.ApprovalPass {
+			continue
 		}
-		return nil, rpc.ErrInternal
+		reply.Images = append(reply.Images, &pb.ImageInfo{
+			Name: image.Name + ":" + image.Version,
+			Repo: image.Name,
+			Tag:  image.Version,
+			Size: image.FileSize,
+		})
 	}
 
-	conn, err := getAgentConn(nodeInfo.Address)
-	if err != nil {
-		return nil, rpc.ErrInternal
-	}
-
-	cli := pb.NewImageClient(conn)
-	ctx_, cancel := context.WithTimeout(context.Background(), time.Second*10)
-	defer cancel()
-	reply, err := cli.List(ctx_, in)
-	if err != nil {
-		log.Warnf("image list: %v", err)
-		return nil, rpc.ErrInternal
-	}
-
-	return reply, nil
+	return &reply, nil
 }
 
 func (s *ImageServer) ListDB(ctx context.Context, in *pb.ListDBRequest) (*pb.ListDBReply, error) {
@@ -80,6 +73,7 @@ func (s *ImageServer) ListDB(ctx context.Context, in *pb.ListDBRequest) (*pb.Lis
 			Description:    image.Description,
 			VerifyStatus:   image.VerifyStatus,
 			ApprovalStatus: image.ApprovalStatus,
+			Size:           image.FileSize,
 			UpdateAt:       image.UpdatedAt,
 		})
 	}

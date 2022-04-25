@@ -6,6 +6,7 @@ import (
 	"errors"
 	"time"
 
+	"github.com/google/uuid"
 	log "github.com/sirupsen/logrus"
 
 	"scmc/model"
@@ -54,7 +55,6 @@ func (s *ContainerServer) List(ctx context.Context, in *pb.ListRequest) (*pb.Lis
 			return nil, rpc.ErrInternal
 		}
 
-		// log.Debugf("subReply: %+v", subReply)
 		for i := range subReply.Containers {
 			subReply.Containers[i].NodeId = node.ID
 			subReply.Containers[i].NodeAddress = node.Address
@@ -66,7 +66,9 @@ func (s *ContainerServer) List(ctx context.Context, in *pb.ListRequest) (*pb.Lis
 }
 
 func (s *ContainerServer) Create(ctx context.Context, in *pb.CreateRequest) (*pb.CreateReply, error) {
-	// reply := pb.CreateReply{}
+	if in.Configs == nil {
+		return nil, rpc.ErrInvalidArgument
+	}
 
 	nodeInfo, err := model.QueryNodeByID(in.NodeId)
 	if err != nil {
@@ -81,16 +83,29 @@ func (s *ContainerServer) Create(ctx context.Context, in *pb.CreateRequest) (*pb
 		return nil, rpc.ErrInternal
 	}
 
+	uuid := uuid.New().String()
+	containerConfigs, err := model.CreateContainerConfigs(nodeInfo.ID, uuid, "", "")
+	if err != nil {
+		log.Infof("Create1: CreateContainerConfigs err=%v", err)
+		return nil, rpc.ErrInternal
+	}
+	in.Configs.Uuid = uuid
+
 	cli := pb.NewContainerClient(conn)
 	ctx_, cancel := context.WithTimeout(context.Background(), time.Second*10)
 	defer cancel()
 	agentReply, err := cli.Create(ctx_, in)
 	if err != nil {
-		log.Warnf("create container: %v", err)
+		log.Warnf("Create1 container: %v", err)
 		return nil, err
+		// TODO remove containerConfigs
 	}
 
-	log.Debugf("create container agent reply: %+v", agentReply)
+	containerConfigs.ContainerID = agentReply.ContainerId
+	if err := model.UpdateContainerConfigs(containerConfigs); err != nil {
+		log.Infof("Create1: UpdateContainerConfigs uuid=%s container_id=%s err=%v", uuid, agentReply.ContainerId, err)
+		// still return OK
+	}
 	return agentReply, nil
 }
 
@@ -137,13 +152,11 @@ func (s *ContainerServer) Start(ctx context.Context, in *pb.StartRequest) (*pb.S
 			},
 		}
 
-		agentReply, err := cli.Start(ctx_, &request)
+		_, err = cli.Start(ctx_, &request)
 		if err != nil {
 			log.Warnf("start container ErrInternal: %v", err)
 			continue
 		}
-
-		log.Debugf("start container agent reply: %+v", agentReply)
 	}
 
 	return &reply, nil
@@ -192,13 +205,11 @@ func (s *ContainerServer) Stop(ctx context.Context, in *pb.StopRequest) (*pb.Sto
 			},
 		}
 
-		agentReply, err := cli.Stop(ctx_, &request)
+		_, err = cli.Stop(ctx_, &request)
 		if err != nil {
 			log.Warnf("stop container ErrInternal: %v", err)
 			continue
 		}
-
-		log.Debugf("stop container agent reply: %+v", agentReply)
 	}
 
 	return &reply, nil
@@ -246,13 +257,11 @@ func (s *ContainerServer) Kill(ctx context.Context, in *pb.KillRequest) (*pb.Kil
 			},
 		}
 
-		agentReply, err := cli.Kill(ctx_, &request)
+		_, err = cli.Kill(ctx_, &request)
 		if err != nil {
 			log.Warnf("kill container ErrInternal: %v", err)
 			continue
 		}
-
-		log.Debugf("kill container agent reply: %+v", agentReply)
 	}
 
 	return &reply, nil
@@ -301,13 +310,11 @@ func (s *ContainerServer) Restart(ctx context.Context, in *pb.RestartRequest) (*
 			},
 		}
 
-		agentReply, err := cli.Restart(ctx_, &request)
+		_, err = cli.Restart(ctx_, &request)
 		if err != nil {
 			log.Warnf("restart container ErrInternal: %v", err)
 			continue
 		}
-
-		log.Debugf("restart container agent reply: %+v", agentReply)
 	}
 
 	return &reply, nil
@@ -357,21 +364,17 @@ func (s *ContainerServer) Remove(ctx context.Context, in *pb.RemoveRequest) (*pb
 			},
 		}
 
-		agentReply, err := cli.Remove(ctx_, &request)
+		_, err = cli.Remove(ctx_, &request)
 		if err != nil {
 			log.Warnf("remove container ErrInternal: %v", err)
 			continue
 		}
-
-		log.Debugf("remove container agent reply: %+v", agentReply)
 	}
 
 	return &reply, nil
 }
 
 func (s *ContainerServer) Inspect(ctx context.Context, in *pb.InspectRequest) (*pb.InspectReply, error) {
-	// reply := pb.InspectReply{}
-
 	if in.NodeId <= 0 || in.ContainerId == "" {
 		return nil, rpc.ErrInvalidArgument
 	}
@@ -395,10 +398,9 @@ func (s *ContainerServer) Inspect(ctx context.Context, in *pb.InspectRequest) (*
 	agentReply, err := cli.Inspect(ctx_, in)
 	if err != nil {
 		log.Warnf("Inspect container: %v", err)
-		return nil, rpc.ErrInternal
+		return nil, err
 	}
 
-	log.Debugf("Inspect container agent reply: %+v", agentReply)
 	return agentReply, nil
 }
 
@@ -428,10 +430,9 @@ func (s *ContainerServer) Status(ctx context.Context, in *pb.StatusRequest) (*pb
 	agentReply, err := cli.Status(ctx_, in)
 	if err != nil {
 		log.Warnf("Status container: %v", err)
-		return nil, rpc.ErrInternal
+		return nil, err
 	}
 
-	log.Debugf("Status container agent reply: %+v", agentReply)
 	return agentReply, nil
 }
 
@@ -459,10 +460,9 @@ func (s *ContainerServer) Update(ctx context.Context, in *pb.UpdateRequest) (*pb
 	agentReply, err := cli.Update(ctx_, in)
 	if err != nil {
 		log.Warnf("Update container: %v", err)
-		return nil, rpc.ErrInternal
+		return nil, err
 	}
 
-	log.Debugf("Update container agent reply: %+v", agentReply)
 	return agentReply, nil
 }
 
@@ -507,7 +507,7 @@ func (s *ContainerServer) ListTemplate(ctx context.Context, in *pb.ListTemplateR
 	for _, template := range templates {
 		// log.Println(template.Id, template.Name, template.Config_json)
 		var containerConfig *pb.ContainerConfigs
-		json.Unmarshal([]byte(template.Config_json), &containerConfig)
+		json.Unmarshal([]byte(template.ConfigJSON), &containerConfig)
 		templatestruct := pb.ContainerTemplate{Id: template.Id, Conf: containerConfig}
 		reply.Data = append(reply.Data, &templatestruct)
 	}
@@ -574,6 +574,37 @@ func (s *ContainerServer) RemoveTemplate(ctx context.Context, in *pb.RemoveTempl
 		}
 	} else {
 		return nil, errors.New("request is null")
+	}
+
+	return &reply, nil
+}
+
+func (*ContainerServer) InspectTemplate(ctx context.Context, in *pb.InspectTemplateRequest) (*pb.InspectTemplateReply, error) {
+	if in.Id <= 0 {
+		log.Infof("InspectTemplate invalid id=%v", in.Id)
+		return nil, rpc.ErrInvalidArgument
+	}
+
+	data, err := model.FindTemplate(in.Id)
+	if err != nil {
+		log.Infof("model.FindTemplate err=%v", err)
+		if err == model.ErrRecordNotFound {
+			return nil, rpc.ErrNotFound
+		}
+		return nil, rpc.ErrInternal
+	}
+
+	var c pb.ContainerConfigs
+	if err := json.Unmarshal([]byte(data.ConfigJSON), &c); err != nil {
+		log.Warnf("parse json string '%s' err=%v", data.ConfigJSON, err)
+		return nil, rpc.ErrInternal
+	}
+
+	reply := pb.InspectTemplateReply{
+		Data: &pb.ContainerTemplate{
+			Id:   data.Id,
+			Conf: &c,
+		},
 	}
 
 	return &reply, nil

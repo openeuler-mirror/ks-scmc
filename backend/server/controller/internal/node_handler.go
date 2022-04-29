@@ -28,11 +28,17 @@ func (s *NodeServer) List(ctx context.Context, in *pb.ListRequest) (*pb.ListRepl
 	for _, node := range nodes {
 		s, _ := getNodeStatus(&node)
 		reply.Nodes = append(reply.Nodes, &pb.NodeInfo{
-			Id:      node.ID,
-			Name:    node.Name,
-			Address: node.Address,
-			Comment: node.Comment,
-			Status:  s,
+			Id:         node.ID,
+			Name:       node.Name,
+			Address:    node.Address,
+			Comment:    node.Comment,
+			UnreadWarn: node.UnreadWarn,
+			RscLimit: &pb.ResourceLimit{
+				CpuLimit:    node.CpuLimit,
+				MemoryLimit: node.MemoryLimit,
+				DiskLimit:   node.DiskLimit,
+			},
+			Status: s,
 		})
 	}
 	return &reply, nil

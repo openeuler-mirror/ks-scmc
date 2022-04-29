@@ -4,8 +4,11 @@ import (
 	"context"
 	"runtime"
 
+	"github.com/shirou/gopsutil/disk"
 	"github.com/shirou/gopsutil/mem"
+	log "github.com/sirupsen/logrus"
 
+	"scmc/rpc"
 	pb "scmc/rpc/pb/node"
 )
 
@@ -13,48 +16,67 @@ type NodeServer struct {
 	pb.UnimplementedNodeServer
 }
 
-func (s *NodeServer) Status(ctx context.Context, in *pb.StatusRequest) (*pb.StatusReply, error) {
-	reply := pb.StatusReply{}
-
+func nodeStatus() (*pb.NodeStatus, error) {
 	cli, err := dockerCli()
 	if err != nil {
-		reply.StatusList = append(reply.StatusList, &pb.NodeStatus{State: int64(pb.NodeState_Unknown)})
-	} else {
-		var memStat *pb.MemoryStat
-		memInfo, err := mem.VirtualMemory()
-		if err == nil {
-			memStat = &pb.MemoryStat{
-				Total:          memInfo.Total / megaBytes,
-				Used:           memInfo.Used / megaBytes,
-				Free:           memInfo.Free / megaBytes,
-				UsedPercentage: memInfo.UsedPercent,
-			}
-		}
-
-		cpuStat := &pb.CpuStat{
-			Total: float64(runtime.NumCPU()),
-		}
-		cpuStat.Used, _ = cpuUsage()
-		cpuStat.UsedPercentage = cpuStat.Used / cpuStat.Total
-
-		var containerStat *pb.ContainerStat
-		dockerInfo, err := cli.Info(context.Background())
-		if err == nil {
-			containerStat = &pb.ContainerStat{
-				Running: int64(dockerInfo.ContainersRunning),
-				Total:   int64(dockerInfo.Containers),
-			}
-		}
-
-		// TODO disk usage
-
-		reply.StatusList = append(reply.StatusList, &pb.NodeStatus{
-			State:         int64(pb.NodeState_Online),
-			ContainerStat: containerStat,
-			CpuStat:       cpuStat,
-			MemStat:       memStat,
-		})
+		return &pb.NodeStatus{State: int64(pb.NodeState_Unknown)}, nil
 	}
 
-	return &reply, nil
+	var ret = pb.NodeStatus{
+		State: int64(pb.NodeState_Online),
+	}
+
+	if memInfo, err := mem.VirtualMemory(); err != nil {
+		log.Infof("VirtualMemory err=%v", err)
+	} else {
+		ret.MemStat = &pb.MemoryStat{
+			Total:          memInfo.Total / megaBytes,
+			Used:           memInfo.Used / megaBytes,
+			Free:           memInfo.Free / megaBytes,
+			UsedPercentage: memInfo.UsedPercent,
+		}
+	}
+
+	if cpuUsage, err := cpuUsage(); err != nil {
+		log.Infof("cpuUsage err=%v", err)
+	} else {
+		ret.CpuStat = &pb.CpuStat{
+			Total: float64(runtime.NumCPU()),
+			Used:  cpuUsage,
+		}
+		ret.CpuStat.UsedPercentage = ret.CpuStat.Used / ret.CpuStat.Total
+	}
+
+	if diskUsage, err := disk.Usage("/"); err != nil {
+		log.Infof("disk.Usage err=%v", err)
+	} else {
+		ret.DiskStat = &pb.DiskStat{
+			Total:          diskUsage.Total,
+			Free:           diskUsage.Free,
+			Used:           diskUsage.Used,
+			UsedPercentage: diskUsage.UsedPercent,
+		}
+	}
+
+	dockerInfo, err := cli.Info(context.Background())
+	if err == nil {
+		ret.ContainerStat = &pb.ContainerStat{
+			Running: int64(dockerInfo.ContainersRunning),
+			Total:   int64(dockerInfo.Containers),
+		}
+	}
+
+	return &ret, nil
+}
+
+func (*NodeServer) Status(ctx context.Context, in *pb.StatusRequest) (*pb.StatusReply, error) {
+	s, err := nodeStatus()
+	if err != nil {
+		log.Infof("nodeStatus err=%v", err)
+		return nil, rpc.ErrInternal
+	}
+
+	return &pb.StatusReply{
+		StatusList: []*pb.NodeStatus{s},
+	}, nil
 }

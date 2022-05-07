@@ -12,6 +12,9 @@ type AgentConfig struct {
 	Host                      string `mapstructure:"host"`
 	Port                      uint   `mapstructure:"port"`
 	ContainerExtraDataBasedir string `mapstructure:"container-extra-data-basedir"`
+	ContainerBackupBasedir    string `mapstructure:"container-backup-basedir"`
+	OpensnitchRuleDir         string `mapstructure:"opensnitch-rule-dir"`
+	AuthzSock                 string `mapstructure:"authz-sock"`
 }
 
 func (m *AgentConfig) Addr() string {
@@ -106,6 +109,9 @@ func setDefault() {
 	viper.SetDefault("agent.host", "0.0.0.0")
 	viper.SetDefault("agent.port", 10051)
 	viper.SetDefault("agent.container-extra-data-basedir", "/var/lib/ks-scmc/containers")
+	viper.SetDefault("agent.container-backup-basedir", "/var/lib/ks-scmc/backups")
+	viper.SetDefault("agent.opensnitch-rule-dir", "/etc/opensnitchd/rules")
+	viper.SetDefault("agent.authz-sock", "/var/lib/ks-scmc/authz.sock")
 
 	viper.SetDefault("controller.host", "0.0.0.0")
 	viper.SetDefault("controller.port", 10050)

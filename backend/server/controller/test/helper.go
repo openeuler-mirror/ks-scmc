@@ -57,7 +57,7 @@ func testRunner(fn func(context.Context, *grpc.ClientConn)) error {
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
-	ctx = metadata.AppendToOutgoingContext(ctx, "authorization", "")
+	ctx = metadata.AppendToOutgoingContext(ctx, "authorization", "1000:fjkdafjkldkl")
 
 	defer cancel()
 	fn(ctx, conn)

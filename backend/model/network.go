@@ -155,11 +155,11 @@ func getEnableStatus(who string) bool {
 	return false
 }
 
-func ContainerIPtablesFile(containerId string) string {
+func ContainerIPtablesFile(containerId string) (string, string) {
 	fileInfoList, err := ioutil.ReadDir(iptablesPath())
 	if err != nil {
 		log.Warnf("readdir err: %v", err)
-		return ""
+		return "", ""
 	}
 
 	for i := range fileInfoList {
@@ -168,12 +168,12 @@ func ContainerIPtablesFile(containerId string) string {
 		if len(array) == 2 {
 			if array[0] == containerId || array[1] == containerId {
 				log.Debugf("fileName:%v, containerId:%v", fileName, containerId)
-				return iptablesPath() + "/" + fileName
+				return iptablesPath() + "/" + fileName, fileName
 			}
 		}
 	}
 
-	return ""
+	return "", ""
 }
 
 func TransMask(mask string) int {
@@ -416,7 +416,7 @@ func AddRule(who int, containerId string, pid int, chain string, info RuleInfo) 
 	fullRule := fmt.Sprintf("-A %s %s", chain, rule)
 	fileName := nodeIPtablesFile()
 	if who == OperateContainer {
-		fileName = ContainerIPtablesFile(containerId)
+		fileName, _ = ContainerIPtablesFile(containerId)
 	}
 	var cmd string
 	if who == OperateNode {
@@ -458,7 +458,7 @@ func DelRule(who int, containerId string, pid int, chain string, info RuleInfo) 
 	fullRule := fmt.Sprintf("-A %s %s", chain, rule)
 	fileName := nodeIPtablesFile()
 	if who == OperateContainer {
-		fileName = ContainerIPtablesFile(containerId)
+		fileName, _ = ContainerIPtablesFile(containerId)
 	}
 	linNum, err := getRuleLineNumber(fullRule, fileName)
 	if err != nil {
@@ -493,7 +493,7 @@ func ModifyRule(who int, containerId string, pid int, oldchain string, oldRule R
 
 	fileName := nodeIPtablesFile()
 	if who == OperateContainer {
-		fileName = ContainerIPtablesFile(containerId)
+		fileName, _ = ContainerIPtablesFile(containerId)
 	}
 	oldFullRule := fmt.Sprintf("-A %s %s", oldchain, old)
 	linNum, err := getRuleLineNumber(oldFullRule, fileName)
@@ -525,19 +525,32 @@ func ContainerRemveIPtables(file string) {
 
 func ContainerWhitelistInitialization(containerIdName string, pid int) error {
 	enable := getEnableStatus(containerIdName)
+	fileName := iptablesPath() + "/" + containerIdName
+	var chainCmd string
 	if enable {
-		fileName := iptablesPath() + "/" + containerIdName
-		cmd := fmt.Sprintf("ls -l %s > /dev/null 2>&1", fileName)
-		_, err := callShell(cmd)
-		if err != nil {
-			cmd = fmt.Sprintf("echo '*filter\n:INPUT DROP [0:0]\n:FORWARD ACCEPT [0:0]\n:OUTPUT ACCEPT [0:0]\n%s\nCOMMIT' > %s; nsenter -t %d -n iptables-restore %s", inputRule, fileName, pid, fileName)
-		} else {
-			cmd = fmt.Sprintf("grep -xe \"%s\" %s || echo '*filter\n:INPUT DROP [0:0]\n:FORWARD ACCEPT [0:0]\n:OUTPUT ACCEPT [0:0]\n%s\nCOMMIT' > %s && nsenter -t %d -n iptables-restore %s", inputRule, fileName, inputRule, fileName, pid, fileName)
-		}
+		chainCmd = fmt.Sprintf("echo '*filter\n:INPUT DROP [0:0]\n:FORWARD ACCEPT [0:0]\n:OUTPUT ACCEPT [0:0]\n%s\nCOMMIT' > %s", inputRule, fileName)
+	} else {
+		chainCmd = fmt.Sprintf("echo '*filter\n:INPUT ACCEPT [0:0]\n:FORWARD ACCEPT [0:0]\n:OUTPUT ACCEPT [0:0]\n%s\nCOMMIT' > %s", inputRule, fileName)
+	}
 
-		if _, err := callShell(cmd); err != nil {
-			return err
+	cmd := fmt.Sprintf("ls -l %s > /dev/null 2>&1", fileName)
+	_, err := callShell(cmd)
+	if err != nil {
+		if enable {
+			cmd = fmt.Sprintf("%s; nsenter -t %d -n iptables-restore %s", chainCmd, pid, fileName)
+		} else {
+			return nil
 		}
+	} else {
+		if enable {
+			cmd = fmt.Sprintf("grep -xe \"%s\" %s || %s && nsenter -t %d -n iptables-restore %s", inputRule, fileName, chainCmd, pid, fileName)
+		} else {
+			cmd = fmt.Sprintf("grep -xe \"%s\" %s || %s && nsenter -t %d -n iptables-restore %s", inputRule, fileName, chainCmd, pid, fileName)
+		}
+	}
+
+	if _, err := callShell(cmd); err != nil {
+		return err
 	}
 
 	return nil
@@ -629,4 +642,86 @@ func EnableNodeIPtables(linkifs string) error {
 	}
 
 	return updateJSON("Node", true)
+}
+
+func ruleToCmd(filePath, fileName string, isOn bool, rules []NetworkRule) string {
+	var chainCmd string
+	if isOn {
+		chainCmd = fmt.Sprintf("echo '*filter\n:INPUT DROP [0:0]\n:FORWARD ACCEPT [0:0]\n:OUTPUT ACCEPT [0:0]\n")
+		updateJSON(fileName, true)
+	} else {
+		chainCmd = fmt.Sprintf("echo '*filter\n:INPUT ACCEPT [0:0]\n:FORWARD ACCEPT [0:0]\n:OUTPUT ACCEPT [0:0]\n")
+		updateJSON(fileName, false)
+	}
+
+	var allRule string
+	for _, rule := range rules {
+		var curRule string
+		var prestr string = "-A INPUT "
+		var sufstr string = " -j ACCEPT"
+		var addrstr string
+		if rule.Addr != "" {
+			addr := net.ParseIP(rule.Addr)
+			if addr == nil {
+				addrstr = "-s " + rule.Addr
+			} else {
+				addrstr = "-s " + rule.Addr + "/32"
+			}
+		}
+
+		//多个协议情况处理
+		for _, protocol := range rule.Protocols {
+			if protocol != "" {
+				var arr []string
+				arr = append(arr, prestr)
+				arr = append(arr, addrstr)
+				str := "-p " + protocol
+				arr = append(arr, str)
+				if protocol == "TCP" || protocol == "UDP" || protocol == "tcp" || protocol == "udp" {
+					if rule.Port != 0 {
+						str = fmt.Sprintf("--sport %d", rule.Port)
+						arr = append(arr, str)
+					}
+				}
+				arr = append(arr, sufstr)
+				res := strings.Join(arr, " ") + "\n"
+				curRule = curRule + res
+			}
+		}
+
+		//只有ip没有协议情况处理
+		if curRule == "" && addrstr != "" {
+			curRule = prestr + " " + addrstr + sufstr + "\n"
+		}
+
+		allRule = allRule + curRule
+	}
+
+	cmd := fmt.Sprintf("%s%s\n%sCOMMIT' > %s", chainCmd, inputRule, allRule, filePath)
+
+	return cmd
+}
+
+func AddContainerIPtablesFile(containerIdName string, isOn bool, rules []NetworkRule) error {
+	filePath := iptablesPath() + "/" + containerIdName
+	cmd := ruleToCmd(filePath, containerIdName, isOn, rules)
+	if _, err := callShell(cmd); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func UpdateContainerIPtablesFile(containerId string, isOn bool, rules []NetworkRule, pid int) error {
+	filePath, fileName := ContainerIPtablesFile(containerId)
+	cmd := ruleToCmd(filePath, fileName, isOn, rules)
+	if pid != 0 {
+		cmd = fmt.Sprintf("%s; nsenter -t %d -n iptables-restore %s", cmd, pid, filePath)
+	}
+
+	if _, err := callShell(cmd); err != nil {
+		return err
+	}
+
+	return nil
 }

@@ -54,3 +54,8 @@ func containerGraphicSetup(containerName string, config *container.Config, hostC
 
 	return nil
 }
+
+func removeContainerGraphicSetup(containerName string) error {
+	hostPath := filepath.Join(common.Config.Agent.ContainerExtraDataBasedir, containerName)
+	return os.RemoveAll(hostPath)
+}

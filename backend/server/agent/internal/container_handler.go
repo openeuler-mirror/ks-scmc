@@ -140,28 +140,28 @@ func (s *ContainerServer) List(ctx context.Context, in *pb.ListRequest) (*pb.Lis
 	return &reply, nil
 }
 
-func (s *ContainerServer) Create(ctx context.Context, in *pb.CreateRequest) (*pb.CreateReply, error) {
-	if in.Configs == nil || in.Configs.Image == "" || !containerNamePattern.MatchString(in.Configs.Name) {
-		return nil, rpc.ErrInvalidArgument
+func (s *ContainerServer) create(configs *pb.ContainerConfigs) (string, error) {
+	if configs == nil || configs.Image == "" || !containerNamePattern.MatchString(configs.Name) {
+		return "", rpc.ErrInvalidArgument
 	}
 
 	cli, err := dockerCli()
 	if err != nil {
-		return nil, rpc.ErrInternal
+		return "", rpc.ErrInternal
 	}
 
-	if err := ensureImage(cli, in.Configs.Image); err != nil {
+	if err := ensureImage(cli, configs.Image); err != nil {
 		if _, ok := status.FromError(err); ok {
-			return nil, err
+			return "", err
 		}
-		return nil, rpc.ErrInternal
+		return "", rpc.ErrInternal
 	}
 
 	config := container.Config{
-		Image: in.Configs.Image, // should check
+		Image: configs.Image,
 		Labels: map[string]string{
-			"KS_SCMC_DESC": in.Configs.Desc,
-			"KS_SCMC_UUID": in.Configs.Uuid,
+			"KS_SCMC_DESC": configs.Desc,
+			"KS_SCMC_UUID": configs.Uuid,
 		},
 	}
 	hostConfig := container.HostConfig{
@@ -169,59 +169,58 @@ func (s *ContainerServer) Create(ctx context.Context, in *pb.CreateRequest) (*pb
 	}
 	var networkConfig *network.NetworkingConfig
 
-	for k, v := range in.Configs.Envs {
+	for k, v := range configs.Envs {
 		config.Env = append(config.Env, fmt.Sprintf("%s=%s", k, v))
 	}
-	config.Env = append(config.Env, fmt.Sprintf("KS_SCMC_UUID=%s", in.Configs.Uuid))
+	config.Env = append(config.Env, fmt.Sprintf("KS_SCMC_UUID=%s", configs.Uuid))
 
-	if in.Configs.EnableGraphic {
-		if err := containerGraphicSetup(in.Configs.Name, &config, &hostConfig); err != nil {
+	if configs.EnableGraphic {
+		if err := containerGraphicSetup(configs.Name, &config, &hostConfig); err != nil {
 			log.Infof("containerGraphicSetup err=%v", err)
-			return nil, rpc.ErrInternal
+			return "", rpc.ErrInternal
 		}
 		config.Labels["KS_SCMC_GRAPHIC"] = "1"
 	}
 
-	for _, m := range in.Configs.Mounts {
+	for _, m := range configs.Mounts {
 		hostConfig.Mounts = append(hostConfig.Mounts, mount.Mount{
 			Type:     mount.Type(m.Type),
 			Source:   m.Source,
 			Target:   m.Target,
 			ReadOnly: m.ReadOnly,
-			// Consistency: mount.Consistency(m.Consistency),
 		})
 	}
 
-	if in.Configs.RestartPolicy != nil {
-		hostConfig.RestartPolicy.Name = in.Configs.RestartPolicy.Name
-		hostConfig.RestartPolicy.MaximumRetryCount = int(in.Configs.RestartPolicy.MaxRetry)
+	if configs.RestartPolicy != nil {
+		hostConfig.RestartPolicy.Name = configs.RestartPolicy.Name
+		hostConfig.RestartPolicy.MaximumRetryCount = int(configs.RestartPolicy.MaxRetry)
 	}
 
-	if in.Configs.ResouceLimit != nil {
+	if configs.ResouceLimit != nil {
 		hostConfig.Resources = container.Resources{
-			NanoCPUs:          int64(in.Configs.ResouceLimit.CpuLimit * 10e9),
-			CPUShares:         toCPUShares(in.Configs.ResouceLimit.CpuPrio),
-			Memory:            int64(in.Configs.ResouceLimit.MemoryLimit * megaBytes),
-			MemoryReservation: int64(in.Configs.ResouceLimit.MemorySoftLimit * megaBytes),
+			NanoCPUs:          int64(configs.ResouceLimit.CpuLimit * 10e9),
+			CPUShares:         toCPUShares(configs.ResouceLimit.CpuPrio),
+			Memory:            int64(configs.ResouceLimit.MemoryLimit * megaBytes),
+			MemoryReservation: int64(configs.ResouceLimit.MemorySoftLimit * megaBytes),
 		}
 
-		if in.Configs.ResouceLimit.DiskLimit > 0.0 {
-			config.Labels["KS_SCMC_DISK_LIMIT"] = fmt.Sprintf("%f", in.Configs.ResouceLimit.DiskLimit)
+		if configs.ResouceLimit.DiskLimit > 0.0 {
+			config.Labels["KS_SCMC_DISK_LIMIT"] = fmt.Sprintf("%f", configs.ResouceLimit.DiskLimit)
 			hostConfig.StorageOpt = map[string]string{
-				"size": fmt.Sprintf("%fM", in.Configs.ResouceLimit.DiskLimit),
+				"size": fmt.Sprintf("%fM", configs.ResouceLimit.DiskLimit),
 			}
 		}
 	}
 
 	var networkConfigCreate *network.NetworkingConfig
-	if len(in.Configs.Networks) > 0 {
+	if len(configs.Networks) > 0 {
 		networkConfig = &network.NetworkingConfig{
-			EndpointsConfig: make(map[string]*network.EndpointSettings, len(in.Configs.Networks)),
+			EndpointsConfig: make(map[string]*network.EndpointSettings, len(configs.Networks)),
 		}
-		for _, v := range in.Configs.Networks {
+		for _, v := range configs.Networks {
 			if v.IpAddress != "" {
-				if !checkConfilt(v.Interface, v.IpAddress, int(v.IpPrefixLen)) {
-					return nil, rpc.ErrInvalidArgument
+				if !checkConflict(v.Interface, v.IpAddress, int(v.IpPrefixLen)) {
+					return "", rpc.ErrInvalidArgument
 				}
 			}
 
@@ -236,22 +235,22 @@ func (s *ContainerServer) Create(ctx context.Context, in *pb.CreateRequest) (*pb
 			networkConfig.EndpointsConfig[v.Interface].Gateway = v.Gateway
 		}
 
-		ifs := in.Configs.Networks[0].Interface
+		ifs := configs.Networks[0].Interface
 		networkConfigCreate = &network.NetworkingConfig{
 			EndpointsConfig: make(map[string]*network.EndpointSettings, 1),
 		}
 		networkConfigCreate.EndpointsConfig[ifs] = networkConfig.EndpointsConfig[ifs]
 	}
 
-	body, err := cli.ContainerCreate(context.Background(), &config, &hostConfig, networkConfigCreate, nil, in.Configs.Name)
+	body, err := cli.ContainerCreate(context.Background(), &config, &hostConfig, networkConfigCreate, nil, configs.Name)
 	if err != nil {
 		log.Warnf("ContainerCreate: %v", err)
-		return nil, transDockerError(err)
+		return "", transDockerError(err)
 	}
 
-	if len(in.Configs.Networks) > 1 {
-		for i := 1; i < len(in.Configs.Networks); i++ {
-			ifs := in.Configs.Networks[i].Interface
+	if len(configs.Networks) > 1 {
+		for i := 1; i < len(configs.Networks); i++ {
+			ifs := configs.Networks[i].Interface
 			network := networkConfig.EndpointsConfig[ifs]
 			err = cli.NetworkConnect(context.Background(), ifs, body.ID, network)
 			if err != nil {
@@ -260,10 +259,73 @@ func (s *ContainerServer) Create(ctx context.Context, in *pb.CreateRequest) (*pb
 		}
 	}
 
-	reply := pb.CreateReply{
-		ContainerId: body.ID,
+	if configs.SecurityConfig != nil {
+		security := configs.SecurityConfig
+		if security.ProcProtection != nil {
+			exeHashList, err := generateMD5Slice(body.ID, security.ProcProtection.ExeList)
+			if err != nil {
+				return body.ID, rpc.ErrSomeConfigFailed
+			}
+			if err := model.UpdateWhiteList(body.ID, security.ProcProtection.IsOn, exeHashList, []string{}); err != nil {
+				log.Warnf("UpdateWhiteList %v err: %v", body.ID, err)
+				return body.ID, rpc.ErrSomeConfigFailed
+			}
+		}
+
+		if configs.SecurityConfig.NprocProtection != nil {
+			nProcProtection := configs.SecurityConfig.NprocProtection
+			var inRule = &model.ProcProtection{
+				Type:    int32(nProcProtection.GetProtectionType()),
+				IsOn:    nProcProtection.GetIsOn(),
+				ExeList: nProcProtection.GetExeList(),
+			}
+
+			if err := model.SaveOpensnitchRule(inRule, body.ID, configs.Uuid); err != nil {
+				return body.ID, rpc.ErrSomeConfigFailed
+			}
+		}
+
+		if security.FileProtection != nil {
+			if err := model.UpdateFileAccess(body.ID, security.FileProtection.IsOn, security.FileProtection.FileList, []string{}); err != nil {
+				log.Warnf("UpdateFileAccess %v err: %v", body.ID, err)
+				return body.ID, rpc.ErrSomeConfigFailed
+			}
+		}
+
+		if security.DisableCmdOperation {
+			if err := model.AddSensitiveContainers(configs.Name, body.ID); err != nil {
+				log.Warnf("AddSensitiveContainers err=%v", err)
+				return body.ID, rpc.ErrSomeConfigFailed
+			}
+		}
+
+		if security.NetworkRule != nil {
+			var rules []model.NetworkRule
+			if security.NetworkRule.Rules != nil {
+				for _, v := range security.NetworkRule.Rules {
+					rule := model.NetworkRule{
+						Protocols: v.Protocols,
+						Addr:      v.Addr,
+						Port:      v.Port,
+					}
+					rules = append(rules, rule)
+				}
+			}
+
+			fileName := body.ID + "-" + configs.Name
+			if err := model.AddContainerIPtablesFile(fileName, security.NetworkRule.IsOn, rules); err != nil {
+				log.Warnf("AddContainerIPtablesFile %v err: %v", body.ID, err)
+				return body.ID, rpc.ErrSomeConfigFailed
+			}
+		}
 	}
-	return &reply, nil
+
+	return body.ID, nil
+}
+
+func (s *ContainerServer) Create(ctx context.Context, in *pb.CreateRequest) (*pb.CreateReply, error) {
+	id, err := s.create(in.Configs)
+	return &pb.CreateReply{ContainerId: id}, err
 }
 
 func (s *ContainerServer) Start(ctx context.Context, in *pb.StartRequest) (*pb.StartReply, error) {
@@ -365,6 +427,12 @@ func (s *ContainerServer) Update(ctx context.Context, in *pb.UpdateRequest) (*pb
 		return nil, rpc.ErrInvalidArgument
 	}
 
+	inspectConfigs, err := s.inspect(in.ContainerId)
+	if err != nil {
+		log.Warnf("inspect container=%v err=%v", in.ContainerId, err)
+		return nil, rpc.ErrInternal
+	}
+
 	cli, err := dockerCli()
 	if err != nil {
 		return nil, rpc.ErrInternal
@@ -393,11 +461,15 @@ func (s *ContainerServer) Update(ctx context.Context, in *pb.UpdateRequest) (*pb
 		return nil, transDockerError(err)
 	}
 
+	var containerPid int
 	if in.Networks != nil {
 		info, err := cli.ContainerInspect(context.Background(), in.ContainerId)
 		if err != nil {
-			log.Warnf("ContainerInspectWithRaw: %v", err)
+			log.Warnf("ContainerInspect: %v", err)
 			return nil, transDockerError(err)
+		}
+		if info.State != nil {
+			containerPid = info.State.Pid
 		}
 
 		if info.NetworkSettings != nil {
@@ -466,6 +538,88 @@ func (s *ContainerServer) Update(ctx context.Context, in *pb.UpdateRequest) (*pb
 		}
 	}
 
+	if err := model.CleanFileAccess(in.ContainerId); err != nil {
+		log.Warnf("%v CleanFileAccess err:%v", in.ContainerId, err)
+		return nil, err
+	}
+	if err := model.CleanWhiteList(in.ContainerId); err != nil {
+		log.Warnf("%v CleanWhiteList err:%v", in.ContainerId, err)
+		return nil, err
+	}
+
+	if in.SecurityConfig != nil {
+		security := in.SecurityConfig
+		if security.ProcProtection != nil {
+			exeHashList, err := generateMD5Slice(in.ContainerId, security.ProcProtection.ExeList)
+			if err != nil {
+				return nil, err
+			}
+			if err := model.UpdateWhiteList(in.ContainerId, security.ProcProtection.IsOn, exeHashList, []string{}); err != nil {
+				log.Warnf("UpdateWhiteList %v err: %v", in.ContainerId, err)
+				return nil, err
+			}
+		}
+
+		if in.SecurityConfig != nil {
+			if in.SecurityConfig.NprocProtection != nil {
+				var inRule = &model.ProcProtection{
+					Type:    int32(in.SecurityConfig.NprocProtection.ProtectionType),
+					IsOn:    in.SecurityConfig.NprocProtection.IsOn,
+					ExeList: in.SecurityConfig.NprocProtection.ExeList,
+				}
+
+				if err := model.SaveOpensnitchRule(inRule, in.ContainerId, inspectConfigs.Uuid); err != nil {
+					return nil, err
+				}
+			}
+		}
+
+		if security.FileProtection != nil {
+			if err := model.UpdateFileAccess(in.ContainerId, security.FileProtection.IsOn, security.FileProtection.FileList, []string{}); err != nil {
+				log.Warnf("UpdateFileAccess %v err: %v", in.ContainerId, err)
+				return nil, err
+			}
+		}
+
+		if security.DisableCmdOperation {
+			if err := model.AddSensitiveContainers(inspectConfigs.Name, inspectConfigs.ContainerId); err != nil {
+				log.Warnf("AddSensitiveContainers err=%v", err)
+				return nil, rpc.ErrInternal
+			}
+		} else {
+			if err := model.DelSensitiveContainers(inspectConfigs.Name, inspectConfigs.ContainerId); err != nil {
+				log.Warnf("DelSensitiveContainers err=%v", err)
+				return nil, rpc.ErrInternal
+			}
+		}
+
+		if security.NetworkRule != nil {
+			var rules []model.NetworkRule
+			if security.NetworkRule.Rules != nil {
+				for _, v := range security.NetworkRule.Rules {
+					rule := model.NetworkRule{
+						Protocols: v.Protocols,
+						Addr:      v.Addr,
+						Port:      v.Port,
+					}
+					rules = append(rules, rule)
+				}
+			}
+
+			if containerPid == 0 {
+				info, err := cli.ContainerInspect(context.Background(), in.ContainerId)
+				if err == nil && info.State != nil {
+					containerPid = info.State.Pid
+				}
+			}
+
+			if err := model.UpdateContainerIPtablesFile(in.ContainerId, security.NetworkRule.IsOn, rules, containerPid); err != nil {
+				log.Warnf("UpdateContainerIPtablesFile %v err: %v", in.ContainerId, err)
+				return nil, err
+			}
+		}
+	}
+
 	if len(body.Warnings) > 0 {
 		log.Infof("ContainerUpdate result warnings: %v", body.Warnings)
 	}
@@ -485,10 +639,50 @@ func (s *ContainerServer) Remove(ctx context.Context, in *pb.RemoveRequest) (*pb
 	}
 
 	opts := types.ContainerRemoveOptions{
-		RemoveVolumes: in.RemoveVolumes,
+		RemoveVolumes: true,
+	}
+
+	for _, id := range in.Ids[0].BackupImageIds {
+		if _, err := cli.ImageRemove(context.Background(), id, types.ImageRemoveOptions{}); err != nil {
+			log.Warnf("remove backup image=%v err=%v", id, err)
+			return nil, rpc.ErrInternal
+		}
 	}
 
 	for _, id := range in.Ids[0].ContainerIds {
+		configs, err := s.inspect(id)
+		if err != nil {
+			log.Warnf("inspect container=%v err=%v", id, err)
+			return nil, rpc.ErrInternal
+		}
+
+		if err := model.CleanFileAccess(id); err != nil {
+			log.Warnf("CleanFileAccess container=%v err=%v", id, err)
+			return nil, rpc.ErrInternal
+		}
+		if err := model.CleanWhiteList(id); err != nil {
+			log.Warnf("CleanWhiteList container=%v err=%v", id, err)
+			return nil, rpc.ErrInternal
+		}
+
+		if err := model.RemoveOpensnitchRule(id); err != nil {
+			log.Warnf("RemoveOpensnitchRule container=%v err=%v", id, err)
+			return nil, rpc.ErrInternal
+		}
+
+		if err := removeContainerGraphicSetup(id); err != nil {
+			log.Warnf("removeContainerGraphicSetup container=%v err=%v", id, err)
+			return nil, rpc.ErrInternal
+		}
+
+		fileName := id + "-" + configs.Name
+		model.ContainerRemveIPtables(fileName)
+
+		if err := model.DelSensitiveContainers(configs.Name, id); err != nil {
+			log.Warnf("DelSensitiveContainers err=%v", err)
+			return nil, rpc.ErrInternal
+		}
+
 		if err := cli.ContainerRemove(context.Background(), id, opts); err != nil {
 			log.Warnf("ContainerRemove: id=%v %v", id, err)
 			return nil, rpc.ErrInternal
@@ -499,60 +693,57 @@ func (s *ContainerServer) Remove(ctx context.Context, in *pb.RemoveRequest) (*pb
 	return &reply, nil
 }
 
-func (s *ContainerServer) Inspect(ctx context.Context, in *pb.InspectRequest) (*pb.InspectReply, error) {
-
+func (s *ContainerServer) inspect(id string) (*pb.ContainerConfigs, error) {
 	cli, err := dockerCli()
 	if err != nil {
 		return nil, rpc.ErrInternal
 	}
 
-	info, _, err := cli.ContainerInspectWithRaw(context.Background(), in.ContainerId, true)
+	info, _, err := cli.ContainerInspectWithRaw(context.Background(), id, true)
 	if err != nil {
 		log.Warnf("ContainerInspectWithRaw: %v", err)
 		return nil, transDockerError(err)
 	}
 
-	image := info.Image
-	if info.Config != nil {
-		image = info.Config.Image
-	}
-
-	reply := pb.InspectReply{
-		Configs: &pb.ContainerConfigs{
-			ContainerId:  info.ID,
-			Name:         strings.TrimPrefix(info.Name, "/"),
-			Image:        image,
-			ResouceLimit: &pb.ResourceLimit{},
-		},
+	configs := &pb.ContainerConfigs{
+		ContainerId:  info.ID,
+		Name:         strings.TrimPrefix(info.Name, "/"),
+		Image:        info.Image,
+		ResouceLimit: &pb.ResourceLimit{},
 	}
 
 	if info.State != nil {
-		reply.Configs.Status = info.State.Status
+		configs.Status = info.State.Status
 	}
 
 	if info.Config != nil {
+		configs.Image = info.Config.Image
 		if v, ok := info.Config.Labels["KS_SCMC_DESC"]; ok {
-			reply.Configs.Desc = v
+			configs.Desc = v
 		}
 
 		if v, ok := info.Config.Labels["KS_SCMC_GRAPHIC"]; ok {
 			if v == "1" {
-				reply.Configs.EnableGraphic = true
+				configs.EnableGraphic = true
 			}
 		}
 
+		if v, ok := info.Config.Labels["KS_SCMC_UUID"]; ok {
+			configs.Uuid = v
+		}
+
 		if len(info.Config.Env) > 0 {
-			reply.Configs.Envs = make(map[string]string, len(info.Config.Env))
+			configs.Envs = make(map[string]string, len(info.Config.Env))
 			for _, e := range info.Config.Env {
 				parts := strings.SplitN(e, "=", 2)
 				if len(parts) >= 2 {
-					reply.Configs.Envs[parts[0]] = parts[1]
+					configs.Envs[parts[0]] = parts[1]
 				}
 			}
 		}
 
 		for _, m := range info.Mounts {
-			reply.Configs.Mounts = append(reply.Configs.Mounts, &pb.Mount{
+			configs.Mounts = append(configs.Mounts, &pb.Mount{
 				Type:     string(m.Type),
 				Source:   m.Source,
 				Target:   m.Destination,
@@ -562,12 +753,12 @@ func (s *ContainerServer) Inspect(ctx context.Context, in *pb.InspectRequest) (*
 	}
 
 	if info.HostConfig != nil {
-		reply.Configs.RestartPolicy = &pb.RestartPolicy{
+		configs.RestartPolicy = &pb.RestartPolicy{
 			Name:     info.HostConfig.RestartPolicy.Name,
 			MaxRetry: int32(info.HostConfig.RestartPolicy.MaximumRetryCount),
 		}
 
-		reply.Configs.ResouceLimit = &pb.ResourceLimit{
+		configs.ResouceLimit = &pb.ResourceLimit{
 			CpuLimit:        float64(info.HostConfig.Resources.NanoCPUs) / 10e9,
 			CpuPrio:         fromCPUShares(info.HostConfig.Resources.CPUShares),
 			MemoryLimit:     float64(info.HostConfig.Resources.Memory) / megaBytes,
@@ -575,7 +766,7 @@ func (s *ContainerServer) Inspect(ctx context.Context, in *pb.InspectRequest) (*
 		}
 
 		if s, ok := info.HostConfig.StorageOpt["size"]; ok {
-			fmt.Sscanf(s, "%fM", &reply.Configs.ResouceLimit.DiskLimit)
+			fmt.Sscanf(s, "%fM", &configs.ResouceLimit.DiskLimit)
 		}
 	}
 
@@ -584,7 +775,7 @@ func (s *ContainerServer) Inspect(ctx context.Context, in *pb.InspectRequest) (*
 			if k == "bridge" {
 				continue // "bridge" 是默认创建的网络连接, 需要忽略
 			}
-			reply.Configs.Networks = append(reply.Configs.Networks, &pb.NetworkConfig{
+			configs.Networks = append(configs.Networks, &pb.NetworkConfig{
 				Interface:   k,
 				ContainerId: info.ID,
 				IpAddress:   m.IPAddress,
@@ -595,8 +786,15 @@ func (s *ContainerServer) Inspect(ctx context.Context, in *pb.InspectRequest) (*
 		}
 	}
 
-	return &reply, nil
+	return configs, nil
+}
 
+func (s *ContainerServer) Inspect(ctx context.Context, in *pb.InspectRequest) (*pb.InspectReply, error) {
+	configs, err := s.inspect(in.ContainerId)
+	if err != nil {
+		return nil, err
+	}
+	return &pb.InspectReply{Configs: configs}, nil
 }
 
 func (s *ContainerServer) MonitorHistory(ctx context.Context, in *pb.MonitorHistoryRequest) (*pb.MonitorHistoryReply, error) {
@@ -653,4 +851,93 @@ func (s *ContainerServer) MonitorHistory(ctx context.Context, in *pb.MonitorHist
 
 	r.RscLimit = &rscLimit
 	return r, nil
+}
+
+func (*ContainerServer) RemoveBackup(ctx context.Context, in *pb.RemoveBackupRequest) (*pb.RemoveBackupReply, error) {
+	cli, err := dockerCli()
+	if err != nil {
+		return nil, rpc.ErrInternal
+	}
+
+	if _, err := cli.ImageRemove(context.Background(), in.ImageId, types.ImageRemoveOptions{}); err != nil {
+		log.Warnf("remove image=%v err=%v", in.ImageId, err)
+		return nil, rpc.ErrInternal
+	}
+
+	return &pb.RemoveBackupReply{}, nil
+}
+
+func (s *ContainerServer) ResumeBackup(ctx context.Context, in *pb.ResumeBackupRequest) (*pb.ResumeBackupReply, error) {
+	cli, err := dockerCli()
+	if err != nil {
+		return nil, rpc.ErrInternal
+	}
+
+	// inspect container
+	configs, err := s.inspect(in.ContainerId)
+	if err != nil {
+		log.Warnf("inspect container=%v err=%v", in.ContainerId, err)
+		return nil, rpc.ErrInternal
+	}
+
+	// remove old container
+	if err := cli.ContainerRemove(context.Background(), in.ContainerId, types.ContainerRemoveOptions{RemoveVolumes: true, Force: true}); err != nil {
+		log.Warnf("remove container=%v err=%v", in.ContainerId, err)
+		return nil, rpc.ErrInternal
+	}
+
+	// create new contaienr
+	configs.Image = in.ImageRef
+	configs.SecurityConfig = in.SecurityConfig
+	id, err := s.create(configs)
+	if err != nil {
+		log.Warnf("create container err=%v", err)
+		return nil, rpc.ErrInternal
+	}
+
+	return &pb.ResumeBackupReply{ContainerId: id}, nil
+}
+
+func (s *ContainerServer) AddBackupJob(ctx context.Context, in *pb.AddBackupJobRequest) (*pb.AddBackupJobReply, error) {
+	if in.Id <= 0 || in.ContainerId == "" || in.BackupName == "" {
+		return nil, rpc.ErrInvalidArgument
+	}
+
+	if err := model.AddContainerBackupJob(in.Id, in.ContainerId, in.BackupName); err != nil {
+		log.Infof("model.AddContainerBackupJob err=%v", err)
+		return nil, rpc.ErrInternal
+	}
+
+	return &pb.AddBackupJobReply{}, nil
+}
+
+func (s *ContainerServer) GetBackupJob(ctx context.Context, in *pb.GetBackupJobRequest) (*pb.GetBackupJobReply, error) {
+	if in.Id <= 0 {
+		return nil, rpc.ErrInvalidArgument
+	}
+
+	job := model.GetContainerBackupJob(in.Id)
+	if job == nil {
+		log.Infof("model.GetContainerBackupJob id=%v not exist", in.Id)
+		return nil, rpc.ErrNotFound
+	}
+
+	return &pb.GetBackupJobReply{
+		Id:          job.ID,
+		ContainerId: job.ContainerID,
+		BackupName:  job.BackupName,
+		ImageRef:    job.ImageRef,
+		ImageId:     job.ImageID,
+		ImageSize:   job.ImageSize,
+		Status:      job.Status,
+	}, nil
+}
+
+func (s *ContainerServer) DelBackupJob(ctx context.Context, in *pb.DelBackupJobRequest) (*pb.DelBackupJobReply, error) {
+	if in.Id <= 0 {
+		return nil, rpc.ErrInvalidArgument
+	}
+
+	model.DelContainerBackupJob(in.Id)
+	return &pb.DelBackupJobReply{}, nil
 }

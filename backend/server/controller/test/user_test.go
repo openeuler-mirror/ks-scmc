@@ -257,7 +257,7 @@ func TestRemoveUser(t *testing.T) {
 			args: args{
 				ctx: ctx,
 				req: &pb.RemoveUserRequest{
-					UserId: 1018,
+					//					UserId: 1018,
 				},
 			},
 		},
@@ -266,7 +266,7 @@ func TestRemoveUser(t *testing.T) {
 			args: args{
 				ctx: ctx,
 				req: &pb.RemoveUserRequest{
-					UserId: 10184,
+					//					UserId: 10184,
 				},
 			},
 		},

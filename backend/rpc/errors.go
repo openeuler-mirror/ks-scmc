@@ -26,6 +26,7 @@ var (
 	ErrDataLoss           = status.Error(codes.DataLoss, "unknown")
 	ErrUnauthenticated    = status.Error(codes.Unauthenticated, "用户请求未认证")
 	ErrWrongPassword      = status.Error(codes.Code(pb.Errno_WrongPassword), "密码错误")
+	ErrSomeConfigFailed   = status.Error(codes.Internal, "容器已创建, 部分配置失败")
 	ErrInvalidImage       = status.Error(codes.Internal, "无效的镜像")
 
 // ErrUserNotExist

@@ -4,15 +4,16 @@ import (
 	"context"
 	"fmt"
 	"net"
+	"os"
+	"scmc/common"
 	"scmc/model"
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/events"
-	"github.com/sirupsen/logrus"
 	log "github.com/sirupsen/logrus"
 )
 
-func checkConfilt(ifs, ipAddr string, masklen int) bool {
+func checkConflict(ifs, ipAddr string, masklen int) bool {
 	cli, err := dockerCli()
 	if err != nil {
 		return false
@@ -96,15 +97,17 @@ func ContainerWhiteCongig() error {
 					model.ContainerWhitelistInitialization(fileName, info.State.Pid)
 				}
 			}
-		case "destroy":
-			{
-				var name string
-				if e.Actor.Attributes != nil {
-					name = e.Actor.Attributes["name"]
-				}
-				fileName := e.ID + "-" + name
-				model.ContainerRemveIPtables(fileName)
-			}
+			/*
+				case "destroy":
+					{
+						var name string
+						if e.Actor.Attributes != nil {
+							name = e.Actor.Attributes["name"]
+						}
+						fileName := e.ID + "-" + name
+						model.ContainerRemveIPtables(fileName)
+					}
+			*/
 		}
 	}
 
@@ -114,7 +117,7 @@ func ContainerWhiteCongig() error {
 			case evt := <-eventq:
 				eventProcessor(evt)
 			case err := <-errq:
-				logrus.Errorf("error getting events from daemon: %v", err)
+				log.Errorf("error getting events from daemon: %v", err)
 				return
 			}
 		}
@@ -173,6 +176,17 @@ func getLinkIfs() []string {
 }
 
 func NodeWhitelistConfig() error {
+	IPtablesPath := common.Config.Network.IPtablesPath
+	_, err := os.Stat(IPtablesPath)
+	if err != nil {
+		if os.IsNotExist(err) {
+			err := os.MkdirAll(IPtablesPath, 0666)
+			if err != nil {
+				log.Warnf("mkdir %v err: %v", IPtablesPath, err)
+			}
+		}
+	}
+
 	linkifs := getLinkIfs()
 	for _, ifs := range linkifs {
 		model.NodeWhitelistInitialization(ifs)

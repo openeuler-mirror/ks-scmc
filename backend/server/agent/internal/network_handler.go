@@ -116,8 +116,7 @@ func (s *NetworkServer) Connect(ctx context.Context, in *pb.ConnectRequest) (*pb
 		return nil, rpc.ErrInternal
 	}
 
-	var config *network.EndpointSettings
-	config = &network.EndpointSettings{
+	var config = &network.EndpointSettings{
 		NetworkID:   in.Interface,
 		Gateway:     in.Gateway,
 		IPAddress:   in.IpAddress,

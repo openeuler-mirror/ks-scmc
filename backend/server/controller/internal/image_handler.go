@@ -283,7 +283,7 @@ func (s *ImageServer) Upload(stream pb.Image_UploadServer) error {
 	imageInfo := model.ImageInfo{
 		Name:         req.Info.Name,
 		Version:      req.Info.Version,
-		Description:  req.Info.Version,
+		Description:  req.Info.Description,
 		FileSize:     req.Info.Size,
 		FileType:     req.Info.Type,
 		CheckSum:     req.Info.Checksum,
@@ -320,7 +320,13 @@ func (s *ImageServer) Update(stream pb.Image_UpdateServer) error {
 		return rpc.ErrUnknown
 	}
 
-	if req.Info == nil || req.Sign == nil {
+	if req.Info == nil {
+		return rpc.ErrInvalidArgument
+	}
+	if req.Info.Size != 0 && req.Sign == nil {
+		return rpc.ErrInvalidArgument
+	}
+	if req.Info.Size == 0 && req.Sign != nil {
 		return rpc.ErrInvalidArgument
 	}
 
@@ -329,9 +335,9 @@ func (s *ImageServer) Update(stream pb.Image_UpdateServer) error {
 		return err
 	}
 
-	fileName := fmt.Sprintf("%s/%s_%s%s", imageDir(), req.Info.Name, req.Info.Version, req.Info.Type)
-	signFileName := fmt.Sprintf("%s/%s_%s.sign", imageDir(), req.Info.Name, req.Info.Version)
-	{
+	var fileName, signFileName string
+	if req.Sign != nil && req.Sign.Size != 0 {
+		signFileName = fmt.Sprintf("%s/%s_%s.sign", imageDir(), req.Info.Name, req.Info.Version)
 		signfile, err := os.Create(signFileName)
 		if err != nil {
 			log.Errorf("cannot create file %v: %v", signFileName, err)
@@ -358,46 +364,47 @@ func (s *ImageServer) Update(stream pb.Image_UpdateServer) error {
 			return rpc.ErrInternal
 		}
 	}
-
-	file, err := os.Create(fileName)
-	if err != nil {
-		log.Errorf("cannot create file: %v", fileName)
-		return rpc.ErrInternal
-	}
-	defer file.Close()
-
-	var imageSize int64
-	for {
-		err := contextError(stream.Context())
+	if req.Info.Size != 0 {
+		fileName = fmt.Sprintf("%s/%s_%s%s", imageDir(), req.Info.Name, req.Info.Version, req.Info.Type)
+		file, err := os.Create(fileName)
 		if err != nil {
-			return err
-		}
-
-		req, err := stream.Recv()
-		if err == io.EOF {
-			log.Infof("no more data")
-			break
-		}
-		if err != nil {
-			log.Errorf("cannot receive chunk data: %v", err)
-			return rpc.ErrUnknown
-		}
-
-		size := len(req.ChunkData)
-		imageSize += int64(size)
-		if imageSize > maxImageSize || imageSize > req.Info.Size {
-			log.Errorf("image is too large: [%v] > [%v] || [%v]", imageSize, maxImageSize, req.Info.Size)
-			return rpc.ErrInvalidArgument
-		}
-		// write slowly
-		time.Sleep(time.Millisecond)
-		_, err = file.Write(req.ChunkData)
-		if err != nil {
-			log.Errorf("cannot write chunk data to file: %v", err)
+			log.Errorf("cannot create file: %v", fileName)
 			return rpc.ErrInternal
 		}
-	}
+		defer file.Close()
 
+		var imageSize int64
+		for {
+			err := contextError(stream.Context())
+			if err != nil {
+				return err
+			}
+
+			req, err := stream.Recv()
+			if err == io.EOF {
+				log.Infof("no more data")
+				break
+			}
+			if err != nil {
+				log.Errorf("cannot receive chunk data: %v", err)
+				return rpc.ErrUnknown
+			}
+
+			size := len(req.ChunkData)
+			imageSize += int64(size)
+			if imageSize > maxImageSize || imageSize > req.Info.Size {
+				log.Errorf("image is too large: [%v] > [%v] || [%v]", imageSize, maxImageSize, req.Info.Size)
+				return rpc.ErrInvalidArgument
+			}
+			// write slowly
+			time.Sleep(time.Millisecond)
+			_, err = file.Write(req.ChunkData)
+			if err != nil {
+				log.Errorf("cannot write chunk data to file: %v", err)
+				return rpc.ErrInternal
+			}
+		}
+	}
 	/*
 		if err = getHash(fileName, req.Info.Checksum); err != nil {
 			tmpErr := os.Remove(fileName)
@@ -406,32 +413,35 @@ func (s *ImageServer) Update(stream pb.Image_UpdateServer) error {
 		}
 	*/
 
-	verifyStatus := signVerify(signFileName, fileName)
-	imaegId := getImageID(fileName)
-	if imaegId == "" {
-		log.Warnf("the image id of image file %v is wrong ", fileName)
-		return rpc.ErrInvalidArgument
-	}
+	if fileName != "" && signFileName != "" {
+		verifyStatus := signVerify(signFileName, fileName)
+		imaegId := getImageID(fileName)
+		if imaegId == "" {
+			log.Warnf("the image id of image file %v is wrong ", fileName)
+			return rpc.ErrInvalidArgument
+		}
 
-	log.Printf("imaegId: [%v]", imaegId)
+		log.Printf("imaegId: [%v]", imaegId)
+		if img.FilePath != fileName {
+			err = os.Remove(img.FilePath)
+			log.Debugf("db update and remove old image file %v: %v", img.FilePath, err)
+		}
 
-	if img.FilePath != fileName {
-		err = os.Remove(img.FilePath)
-		log.Debugf("db update and remove old image file %v: %v", img.FilePath, err)
-	}
+		if img.SignPath != signFileName {
+			err = os.Remove(img.SignPath)
+			log.Debugf("db update and remove old image sign %v: %v", img.SignPath, err)
+		}
 
-	if img.SignPath != signFileName {
-		err = os.Remove(img.SignPath)
-		log.Debugf("db update and remove old image sign %v: %v", img.SignPath, err)
+		img.FileSize = req.Info.Size
+		img.CheckSum = req.Info.Checksum
+		img.ImageId = imaegId
+		img.FilePath = fileName
+		img.SignPath = signFileName
+		img.VerifyStatus = verifyStatus
 	}
 
 	img.Description = req.Info.Description
-	img.FileSize = req.Info.Size
-	img.CheckSum = req.Info.Checksum
-	img.ImageId = imaegId
-	img.FilePath = fileName
-	img.SignPath = signFileName
-	img.VerifyStatus = verifyStatus
+
 	err = model.UpadteImage(img)
 	if err != nil {
 		return rpc.ErrInternal
@@ -488,7 +498,6 @@ func (s *ImageServer) Download(in *pb.DownloadRequest, stream pb.Image_DownloadS
 
 	reader := bufio.NewReader(file)
 	buffer := make([]byte, 1024*1024)
-	size := 0
 	for {
 		n, err := reader.Read(buffer)
 
@@ -501,13 +510,11 @@ func (s *ImageServer) Download(in *pb.DownloadRequest, stream pb.Image_DownloadS
 			return rpc.ErrInternal
 		}
 
-		size += n
 		reply := &pb.DownloadReply{
 			ChunkData: buffer[:n],
 		}
 
-		err = stream.Send(reply)
-		if err != nil {
+		if err = stream.Send(reply); err != nil {
 			log.Errorf("Send image file fail: %v", err)
 			return rpc.ErrInternal
 		}

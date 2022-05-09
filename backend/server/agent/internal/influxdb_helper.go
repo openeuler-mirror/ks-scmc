@@ -56,7 +56,8 @@ func influxdbQuery(start, end int64, interval uint, containerName string) (*pb.M
 		Addr: "http://" + common.Config.InfluxDB.Addr,
 	})
 	if err != nil {
-		log.Fatalf("get influxdb client error=%v", err)
+		log.Warnf("get influxdb client error=%v", err)
+		return nil, err
 	}
 	defer cli.Close()
 
@@ -77,9 +78,11 @@ func influxdbQuery(start, end int64, interval uint, containerName string) (*pb.M
 
 	response, err := cli.Query(q)
 	if err != nil {
-		log.Fatalf("influxdb query error=%v", err)
+		log.Warnf("influxdb query error=%v", err)
+		return nil, err
 	} else if response.Error() != nil {
-		log.Fatalf("influxdb query error=%v", response.Error())
+		log.Warnf("influxdb query error=%v", response.Error())
+		return nil, response.Error()
 	}
 
 	var reply pb.MonitorHistoryReply

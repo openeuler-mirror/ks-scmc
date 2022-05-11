@@ -11,6 +11,7 @@ import (
 	"scmc/model"
 	"scmc/rpc/pb/container"
 	"scmc/rpc/pb/image"
+	"scmc/rpc/pb/logging"
 	"scmc/rpc/pb/network"
 	"scmc/rpc/pb/node"
 	"scmc/rpc/pb/user"
@@ -20,9 +21,10 @@ import (
 
 func Server() (*grpc.Server, error) {
 	opts := []grpc.ServerOption{
-		grpc.ChainUnaryInterceptor(
-			server.NewAuthInterceptor().Unary(),
-		),
+		grpc.ChainUnaryInterceptor(server.NewLogInterceptor(true).Unary()),
+		grpc.ChainUnaryInterceptor(server.NewAuthInterceptor().Unary()),
+		// grpc.ChainStreamInterceptor(server.NewLogInterceptor().Streams()),
+		grpc.ChainStreamInterceptor(server.NewAuthInterceptor().Streams()),
 		grpc.KeepaliveEnforcementPolicy(keepalive.EnforcementPolicy{
 			MinTime:             10 * time.Second, // If a client pings more than once every 10 seconds, terminate the connection
 			PermitWithoutStream: true,             // Allow pings even when there are no active streams
@@ -50,8 +52,9 @@ func Server() (*grpc.Server, error) {
 	network.RegisterNetworkServer(s, &internal.NetworkServer{})
 	node.RegisterNodeServer(s, &internal.NodeServer{})
 	user.RegisterUserServer(s, &internal.UserServer{})
+	logging.RegisterLoggingServer(s, &internal.LoggingServer{})
 
-	// go internal.Watchdog()
+	go internal.Watchdog()
 	go internal.RuntimeLogWriter()
 	go model.PushImgae()
 

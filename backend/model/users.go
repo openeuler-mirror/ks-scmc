@@ -1,6 +1,7 @@
 package model
 
 import (
+	"context"
 	"time"
 
 	log "github.com/sirupsen/logrus"
@@ -13,7 +14,11 @@ const sessionLivePeriod = time.Minute * 10
 type UserInfo struct {
 	ID         int64 `gorm:"primaryKey"`
 	Username   string
+	RealName   string
 	PasswordEn string
+	IsActive   bool
+	IsEditable bool
+	RoleID     int64
 	CreatedAt  int64 `gorm:"autoCreateTime"`
 	UpdatedAt  int64 `gorm:"autoUpdateTime"`
 }
@@ -47,25 +52,77 @@ type UserSession struct {
 	UpdatedAt  int64 `gorm:"autoUpdateTime"`
 }
 
-func CreateUser(username, password string) error {
+func CreateUser(ctx context.Context, userInfo *UserInfo) error {
 	db, err := getConn()
 	if err != nil {
 		return err
 	}
 
-	userInfo := UserInfo{Username: username, PasswordEn: password}
-	result := db.Create(&userInfo)
-
-	if result.Error != nil {
-		log.Warnf("db create user: %v", result.Error)
-		return result.Error
+	if result := db.WithContext(ctx).Create(&userInfo); result.Error != nil {
+		return translateError(result.Error)
 	}
 
-	log.Debugf("db create user id=%v", userInfo.ID)
 	return nil
 }
 
-func QueryUser(username string) (*UserInfo, error) {
+func UpdateUser(ctx context.Context, userInfo *UserInfo) error {
+	db, err := getConn()
+	if err != nil {
+		return err
+	}
+
+	if result := db.WithContext(ctx).Save(userInfo); result.Error != nil {
+		return result.Error
+	}
+
+	return nil
+}
+
+func RemoveUser(ctx context.Context, userId int64) error {
+	db, err := getConn()
+	if err != nil {
+		return err
+	}
+
+	if result := db.WithContext(ctx).Delete(&UserInfo{}, userId); result.Error != nil {
+		return result.Error
+	}
+
+	return nil
+}
+
+func RemoveUsers(users []*UserInfo) error {
+	db, err := getConn()
+	if err != nil {
+		return err
+	}
+
+	result := db.Delete(&users)
+	if result.Error != nil {
+		log.Warnf("db delete users err=%v", err)
+		return result.Error
+	}
+
+	return nil
+}
+
+func ListUser() ([]*UserInfo, error) {
+	db, err := getConn()
+	if err != nil {
+		return nil, err
+	}
+
+	var users []*UserInfo
+	result := db.Find(&users)
+	if result.Error != nil {
+		log.Warnf("db get users err=%v", err)
+		return nil, translateError(result.Error)
+	}
+
+	return users, nil
+}
+
+func QueryUser(ctx context.Context, username string) (*UserInfo, error) {
 	db, err := getConn()
 	if err != nil {
 		return nil, err
@@ -85,7 +142,7 @@ func QueryUser(username string) (*UserInfo, error) {
 	return &userInfo, nil
 }
 
-func QueryUserByID(id string) (*UserInfo, error) {
+func QueryUserByID(id interface{}) (*UserInfo, error) {
 	db, err := getConn()
 	if err != nil {
 		return nil, err
@@ -103,6 +160,22 @@ func QueryUserByID(id string) (*UserInfo, error) {
 		return nil, nil
 	}
 	return &userInfo, nil
+}
+
+func QueryUsers(ids []int64) ([]*UserInfo, error) {
+	db, err := getConn()
+	if err != nil {
+		return nil, err
+	}
+
+	var users []*UserInfo
+	result := db.Find(&users, "id IN ?", ids)
+	if result.Error != nil {
+		log.Warnf("db query user: %v", result.Error)
+		return nil, result.Error
+	}
+
+	return users, nil
 }
 
 func CreateSession(userID int64, sessionKey, source string) error {
@@ -195,3 +268,17 @@ func UpdatePermission() {
 func QuerySession(userID int64) (*UserSession, error) {
 }
 */
+
+func QueryRoleByUserID(userID interface{}) (*UserRole, error) {
+	userInfo, err := QueryUserByID(userID)
+	if err != nil {
+		return nil, err
+
+	}
+
+	userRole, err := QueryRoleById(context.TODO(), userInfo.RoleID)
+	if err != nil {
+		return nil, err
+	}
+	return userRole, nil
+}

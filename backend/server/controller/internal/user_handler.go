@@ -2,6 +2,7 @@ package internal
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"strings"
 
@@ -18,7 +19,7 @@ import (
 )
 
 func generatePassword(input string) ([]byte, error) {
-	return bcrypt.GenerateFromPassword([]byte(input), 14)
+	return bcrypt.GenerateFromPassword([]byte(input), bcrypt.DefaultCost)
 }
 
 func getUserFromContext(ctx context.Context) (string, string, bool) {
@@ -55,7 +56,7 @@ func (s *UserServer) Login(ctx context.Context, in *pb.LoginRequest) (*pb.LoginR
 	}
 
 	// database operations
-	userInfo, err := model.QueryUser(in.Username)
+	userInfo, err := model.QueryUser(ctx, in.Username)
 	if err != nil {
 		if err == model.ErrRecordNotFound {
 			return nil, rpc.ErrNotFound
@@ -79,14 +80,9 @@ func (s *UserServer) Login(ctx context.Context, in *pb.LoginRequest) (*pb.LoginR
 	// UUID create session
 	sessionKey := uuid.New().String()
 	if err := model.CreateSession(userInfo.ID, sessionKey, addr); err != nil {
+		log.Warn("create seccion err: %v", err)
 		return &pb.LoginReply{}, nil
 	}
-
-	appendRuntimeLog(&model.RuntimeLog{
-		Level:     1,
-		EventType: model.EventUserLogin,
-		Username:  in.Username,
-	})
 
 	return &pb.LoginReply{
 		UserId:  userInfo.ID,
@@ -95,26 +91,11 @@ func (s *UserServer) Login(ctx context.Context, in *pb.LoginRequest) (*pb.LoginR
 }
 
 func (s *UserServer) Logout(ctx context.Context, in *pb.LogoutRequest) (*pb.LogoutReply, error) {
-	md, ok := metadata.FromIncomingContext(ctx)
+	userID, accessToken, ok := getUserFromContext(ctx)
 	if !ok {
-		log.Infof("get metadata from incoming context failed")
 		return nil, rpc.ErrInternal
 	}
 
-	values := md["authorization"]
-	if len(values) == 0 {
-		log.Infof("'authorization' not exist in request metadata.")
-		return nil, rpc.ErrInternal
-	}
-
-	authorization := values[0]
-	i := strings.IndexRune(authorization, ':')
-	if i == -1 {
-		log.Infof("invalid authorization metadata: %v", authorization)
-		return nil, rpc.ErrInternal
-	}
-
-	userID, accessToken := authorization[:i], authorization[i+1:]
 	err := model.RemoveSession(userID, accessToken)
 	if err != nil && err != model.ErrRecordNotFound {
 		log.Infof("database error=%v", err)
@@ -122,12 +103,6 @@ func (s *UserServer) Logout(ctx context.Context, in *pb.LogoutRequest) (*pb.Logo
 	} else if err == model.ErrRecordNotFound {
 		return nil, rpc.ErrNotFound
 	}
-
-	appendRuntimeLog(&model.RuntimeLog{
-		Level:     1,
-		EventType: model.EventUserLogout,
-		Username:  userID,
-	})
 
 	return &pb.LogoutReply{}, nil
 }
@@ -146,14 +121,19 @@ func (s *UserServer) Signup(ctx context.Context, in *pb.SignupRequest) (*pb.Sign
 	}
 
 	// database operations
-	userInfo, err := model.QueryUser(in.Username)
+	userInfo, err := model.QueryUser(ctx, in.Username)
 	if err != nil && err != model.ErrRecordNotFound {
 		return nil, rpc.ErrInternal
 	} else if userInfo != nil {
 		return nil, rpc.ErrAlreadyExists
 	}
 
-	if err := model.CreateUser(in.Username, string(rawBytes)); err != nil {
+	var newUserInfo *model.UserInfo = &model.UserInfo{
+		Username:   in.Username,
+		RealName:   in.Username,
+		PasswordEn: string(rawBytes),
+	}
+	if err := model.CreateUser(ctx, newUserInfo); err != nil {
 		return nil, rpc.ErrInternal
 	}
 
@@ -164,7 +144,7 @@ func (s *UserServer) Signup(ctx context.Context, in *pb.SignupRequest) (*pb.Sign
 }
 
 func (s *UserServer) UpdatePassword(ctx context.Context, in *pb.UpdatePasswordRequest) (*pb.UpdatePasswordReply, error) {
-	userID, _, ok := getUserFromContext(ctx)
+	userID, accessToken, ok := getUserFromContext(ctx)
 	if !ok {
 		return nil, rpc.ErrInternal
 	}
@@ -203,5 +183,298 @@ func (s *UserServer) UpdatePassword(ctx context.Context, in *pb.UpdatePasswordRe
 		return nil, rpc.ErrInternal
 	}
 
-	return &pb.UpdatePasswordReply{}, nil
+	if err := model.RemoveSession(userID, accessToken); err != nil {
+		log.Info("UpdatePassword user_id=%d, RemoveSession err=%v", userID, err)
+	}
+
+	return &pb.UpdatePasswordReply{NeedRelogin: true}, nil
+}
+
+// 用户列表
+func (s *UserServer) ListUser(ctx context.Context, in *pb.ListUserRequest) (*pb.ListUserReply, error) {
+	users, err := model.ListUser()
+	if err != nil {
+		log.Errorf("ListUser err=%v", err)
+		return nil, rpc.ErrInternal
+	}
+
+	roles, err := model.ListRole()
+	if err != nil {
+		log.Errorf("ListRole err=%v", err)
+		return nil, rpc.ErrInternal
+	}
+
+	rolesMap := make(map[int64]*model.UserRole, len(roles))
+	for i := 0; i < len(roles); i++ {
+		r := roles[i]
+		rolesMap[r.ID] = r
+	}
+
+	reply := pb.ListUserReply{}
+	for _, userinfo := range users {
+		u := &pb.UserInfo{
+			Id:         userinfo.ID,
+			LoginName:  userinfo.Username,
+			RealName:   userinfo.RealName,
+			IsActive:   userinfo.IsActive,
+			IsEditable: userinfo.IsEditable,
+			RoleId:     userinfo.RoleID,
+			CreatedAt:  userinfo.CreatedAt,
+			UpdatedAt:  userinfo.UpdatedAt,
+		}
+
+		if r, ok := rolesMap[u.RoleId]; ok {
+			u.RoleInfo = &pb.UserRole{
+				Id:   r.ID,
+				Name: r.Name,
+			}
+		}
+		reply.Users = append(reply.Users, u)
+	}
+
+	return &reply, nil
+}
+
+// 创建新用户
+func (s *UserServer) CreateUser(ctx context.Context, in *pb.CreateUserRequest) (*pb.CreateUserReply, error) {
+	if in.UserInfo == nil {
+		return nil, rpc.ErrInvalidArgument
+	} else if len(in.UserInfo.LoginName) < 4 || len(in.UserInfo.Password) < 8 || in.UserInfo.RoleId <= 0 {
+		return nil, rpc.ErrInvalidArgument
+	}
+
+	if _, err := model.QueryRoleById(ctx, in.UserInfo.RoleId); err != nil {
+		log.Warnf("QueryRoleById: %v", err)
+		if err == model.ErrRecordNotFound {
+			return nil, rpc.ErrInvalidArgument
+		}
+		return nil, rpc.ErrInternal
+	}
+
+	rawBytes, err := generatePassword(in.UserInfo.Password)
+	if err != nil {
+		log.Warnf("generatePassword: %v", err)
+		return nil, rpc.ErrInternal
+	}
+
+	userInfo := &model.UserInfo{
+		Username:   in.UserInfo.LoginName,
+		RealName:   in.UserInfo.RealName,
+		PasswordEn: string(rawBytes),
+		IsActive:   in.UserInfo.IsActive,
+		IsEditable: in.UserInfo.IsEditable,
+		RoleID:     in.UserInfo.RoleId,
+	}
+
+	if err := model.CreateUser(ctx, userInfo); err != nil {
+		log.Warnf("createUser: %v", err)
+		if err == model.ErrDuplicateKey {
+			return nil, rpc.ErrAlreadyExists
+		}
+
+		return nil, rpc.ErrInternal
+	}
+	return &pb.CreateUserReply{}, nil
+}
+
+// 更新用户信息
+func (s *UserServer) UpdateUser(ctx context.Context, in *pb.UpdateUserRequest) (*pb.UpdateUserReply, error) {
+	if in.UserInfo != nil {
+		return nil, rpc.ErrInvalidArgument
+	} else if len(in.UserInfo.LoginName) < 4 || len(in.UserInfo.Password) < 8 || in.UserInfo.RoleId <= 0 {
+		return nil, rpc.ErrInvalidArgument
+	}
+
+	userInfo, err := model.QueryUserByID(in.UserInfo.Id)
+	if err != nil {
+		if err == model.ErrRecordNotFound {
+			return nil, rpc.ErrNotFound
+		}
+		return nil, rpc.ErrInternal
+	} else if userInfo == nil {
+		return nil, rpc.ErrNotFound
+	}
+
+	userInfo.IsActive = in.UserInfo.IsActive
+	if len(in.UserInfo.RealName) > 0 {
+		userInfo.RealName = in.UserInfo.RealName
+	}
+	if len(in.UserInfo.Password) > 0 {
+		rawBytes, err := generatePassword(in.UserInfo.Password)
+		if err != nil {
+			log.Warnf("generatePassword: %v", err)
+			return nil, rpc.ErrInternal
+		}
+		userInfo.PasswordEn = string(rawBytes)
+	}
+	if in.UserInfo.RoleId > 0 {
+		if _, err := model.QueryRoleById(ctx, in.UserInfo.RoleId); err != nil {
+			log.Warnf("QueryRoleById: %v", err)
+			if err == model.ErrRecordNotFound {
+				return nil, rpc.ErrNotFound
+			}
+			return nil, rpc.ErrInternal
+		}
+		userInfo.RoleID = in.UserInfo.RoleId
+	}
+
+	if err := model.UpdateUser(ctx, userInfo); err != nil {
+		log.Warnf("updateUser: %v", err)
+		if err == model.ErrRecordNotFound {
+			return nil, rpc.ErrNotFound
+		}
+		return nil, rpc.ErrInternal
+	}
+	return &pb.UpdateUserReply{}, nil
+}
+
+// 删除用户
+func (s *UserServer) RemoveUser(ctx context.Context, in *pb.RemoveUserRequest) (*pb.RemoveUserReply, error) {
+	if len(in.UserIds) <= 0 {
+		log.Info("RemoveUser no input user_ids")
+		return nil, rpc.ErrInvalidArgument
+	}
+
+	for _, i := range in.UserIds {
+		if i <= 0 {
+			log.Infof("RemoveUser get invalid user_id=%v", i)
+			return nil, rpc.ErrInvalidArgument
+		}
+	}
+
+	users, err := model.QueryUsers(in.UserIds)
+	if err != nil {
+		log.Infof("QueryUsers err=%v", err)
+		return nil, rpc.ErrInternal
+	}
+
+	for _, u := range users {
+		if !u.IsEditable {
+			log.Infof("RemoveUser user_id=%v not editable", u.ID)
+			return nil, rpc.ErrInvalidArgument
+		}
+	}
+
+	err = model.RemoveUsers(users)
+	if err != nil {
+		log.Infof("RemoveUser user_ids=%v db err=%v", in.UserIds, err)
+		return nil, rpc.ErrInternal
+	}
+
+	return &pb.RemoveUserReply{}, nil
+}
+
+// 用户角色列表
+func (s *UserServer) ListRole(ctx context.Context, in *pb.ListRoleRequest) (*pb.ListRoleReply, error) {
+	roles, err := model.ListRole()
+
+	if err != nil {
+		log.Errorf("ListUser err=%v", err)
+		return nil, rpc.ErrInternal
+	}
+
+	var reply pb.ListRoleReply
+	for _, r := range roles {
+		var perms []*pb.Permission
+		json.Unmarshal([]byte(r.PermsJson), &perms)
+
+		reply.Roles = append(reply.Roles, &pb.UserRole{
+			Id:         r.ID,
+			Name:       r.Name,
+			IsEditable: r.IsEditable,
+			Perms:      perms,
+			CreatedAt:  r.CreatedAt,
+			UpdatedAt:  r.UpdatedAt,
+		})
+	}
+
+	return &reply, nil
+
+}
+
+// 创建新角色
+func (s *UserServer) CreateRole(ctx context.Context, in *pb.CreateRoleRequest) (*pb.CreateRoleReply, error) {
+	if in.RoleInfo == nil {
+		return nil, rpc.ErrInvalidArgument
+	} else if in.RoleInfo.Id < 0 || len(in.RoleInfo.Name) < 4 || len(in.RoleInfo.Perms) == 0 {
+		return nil, rpc.ErrInvalidArgument
+	}
+
+	permsJSON, err := json.Marshal(in.RoleInfo.Perms)
+	if err != nil {
+		log.Warnf("marshal perms json err=%v", err)
+		return nil, rpc.ErrInternal
+	}
+
+	role := &model.UserRole{
+		Name:       in.RoleInfo.Name,
+		IsEditable: in.RoleInfo.IsEditable,
+		PermsJson:  string(permsJSON),
+	}
+
+	if err := model.CreateRole(ctx, role); err != nil {
+		log.Warnf("createUser: %v", err)
+		if err == model.ErrDuplicateKey {
+			return nil, rpc.ErrAlreadyExists
+		}
+		return nil, rpc.ErrInternal
+	}
+
+	return &pb.CreateRoleReply{}, nil
+}
+
+// 更新角色信息
+func (s *UserServer) UpdateRole(ctx context.Context, in *pb.UpdateRoleRequest) (*pb.UpdateRoleReply, error) {
+	if in.RoleInfo == nil {
+		return nil, rpc.ErrInvalidArgument
+	} else if in.RoleInfo.Id < 0 || len(in.RoleInfo.Name) < 4 || len(in.RoleInfo.Perms) == 0 {
+		return nil, rpc.ErrInvalidArgument
+	}
+
+	// trailer := metadata.Pairs("role", roleInfo.Name)
+	// grpc.SendHeader(ctx, trailer)
+	// grpc.SetTrailer(ctx, trailer)
+	// md, ok := metadata.FromIncomingContext(ctx)
+	// fmt.Println(md)
+	// if ok {
+	// 	fmt.Println(md["role"])
+	// }
+
+	role, err := model.QueryRoleById(ctx, in.RoleInfo.Id)
+	if err != nil && err != model.ErrRecordNotFound {
+		log.Warnf("db query role: %v", err)
+		return nil, rpc.ErrInternal
+	} else if err == model.ErrRecordNotFound {
+		return nil, rpc.ErrNotFound
+	}
+
+	permsJSON, err := json.Marshal(in.RoleInfo.Perms)
+	if err != nil {
+		log.Warnf("marshal perms json err=%v", err)
+		return nil, rpc.ErrInternal
+	}
+
+	role.Name = in.RoleInfo.Name
+	role.PermsJson = string(permsJSON)
+
+	if err = model.UpdateRole(ctx, role); err != nil {
+		log.Warnf("role UpdateRole err: %v", err)
+		return nil, err
+	}
+
+	return &pb.UpdateRoleReply{}, nil
+}
+
+// 删除角色
+func (s *UserServer) RemoveRole(ctx context.Context, in *pb.RemoveRoleRequest) (*pb.RemoveRoleReply, error) {
+	if in.RoleId <= 0 {
+		return nil, rpc.ErrInvalidArgument
+	}
+
+	err := model.RemoveRole(ctx, in.RoleId)
+	if err != nil {
+		log.Warnf("db remove role: %v", err)
+		return nil, err
+	}
+	return &pb.RemoveRoleReply{}, nil
 }

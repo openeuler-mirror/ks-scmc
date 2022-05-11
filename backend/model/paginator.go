@@ -72,15 +72,109 @@ type Pager struct {
 	TotalPages int64
 }
 
+type query struct {
+	Q    string
+	Args []interface{}
+}
+
+func (c *query) And(q string, args ...interface{}) {
+	if len(q) > 0 {
+		if len(c.Q) > 0 {
+			c.Q += " AND "
+		}
+		c.Q += q
+		c.Args = append(c.Args, args...)
+	}
+}
+
+func (c *query) Or(q string, args ...interface{}) {
+	if len(q) > 0 {
+		if len(c.Q) > 0 {
+			c.Q += " OR "
+		}
+		c.Q += q
+		c.Args = append(c.Args, args...)
+	}
+}
+
+type queries struct {
+	Where  *query
+	Select *query
+	Join   *query
+	Order  interface{}
+	Model  interface{}
+}
+
 // return fixed `pageSize`, `pageNo`, error
-func PageQuery(pageSize, pageNo int64, model, condition, order, data interface{}) (*Pager, error) {
+// func PageQuery(pageSize, pageNo int64, cond *query, model, order, data interface{}) (*Pager, error) {
+func PageQuery(pageSize, pageNo int64, qs queries, data interface{}) (*Pager, error) {
+	db, err := getConn()
+	if err != nil {
+		return nil, err
+	}
+
+	db = db.Model(qs.Model)
+	if qs.Where != nil {
+		db = db.Where(qs.Where.Q, qs.Where.Args...)
+	}
+
+	var totalRows int64
+	result := db.Count(&totalRows)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+
+	if pageSize <= 0 {
+		pageSize = 10
+	} else if pageSize > 50 {
+		pageSize = 50
+	}
+
+	totalPages := int64(math.Ceil(float64(totalRows) / float64(pageSize)))
+	if pageNo <= 0 {
+		pageNo = 1
+	}
+	if pageNo > totalPages {
+		pageNo = totalPages
+	}
+
+	if qs.Join != nil {
+		db = db.Joins(qs.Join.Q, qs.Join.Args...)
+	}
+	if qs.Select != nil {
+		db = db.Select(qs.Select.Q, qs.Select.Args...)
+	}
+	if qs.Order != nil {
+		db = db.Order(qs.Order)
+	}
+
+	db = db.Offset(int(pageSize * (pageNo - 1))).Limit(int(pageSize))
+	if qs.Select != nil || qs.Join != nil {
+		result = db.Scan(data)
+	} else {
+		result = db.Find(data)
+	}
+
+	if result.Error != nil {
+		log.Warnf("pageQuery err=%v", result.Error)
+		return nil, translateError(result.Error)
+	}
+	return &Pager{
+		PageSize:   pageSize,
+		PageNo:     pageNo,
+		TotalPages: totalPages,
+	}, nil
+}
+
+func PaginatorQuery(pageSize, pageNo int64, model, data, order, condition interface{}, args ...interface{}) (*Pager, error) {
 	db, err := getConn()
 	if err != nil {
 		return nil, err
 	}
 
 	var totalRows int64
-	result := db.Model(model).Where(condition).Count(&totalRows)
+
+	result := db.Model(model).Where(condition, args...).Count(&totalRows)
 	if result.Error != nil {
 		return nil, result.Error
 	}
@@ -100,7 +194,7 @@ func PageQuery(pageSize, pageNo int64, model, condition, order, data interface{}
 	}
 
 	offset := pageSize * (pageNo - 1)
-	if result := db.Where(condition).Order(order).Offset(int(offset)).Limit(int(pageSize)).Find(data); result.Error != nil {
+	if result := db.Where(condition, args...).Order(order).Offset(int(offset)).Limit(int(pageSize)).Find(data); result.Error != nil {
 		log.Warnf("pageQuery err=%v", result.Error)
 		return nil, translateError(result.Error)
 	}

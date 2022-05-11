@@ -400,24 +400,6 @@ func TestCreateTemplate(t *testing.T) {
 		})
 	}
 
-	// testRunner(func(ctx context.Context, conn *grpc.ClientConn) {
-	// 	cli := pb.NewContainerClient(conn)
-	// 	request := pb.CreateTemplateRequest{
-	// 		Data: &pb.ContainerTemplate{
-	// 			Id: 1,
-	// 			Conf: &pb.ContainerConfigs{
-	// 				Name:  "sean1",
-	// 				Image: "aaaaa:v1",
-	// 			},
-	// 		},
-	// 	}
-	// 	reply, err := cli.CreateTemplate(ctx, &request)
-	// 	if err != nil {
-	// 		t.Errorf("Update: %v", err)
-	// 	}
-
-	// 	t.Logf("Update reply: %+v", reply)
-	// })
 }
 
 func TestUpdateTemplate(t *testing.T) {
@@ -547,26 +529,6 @@ func TestListemplate(t *testing.T) {
 		})
 	}
 
-	// testRunner(func(ctx context.Context, conn *grpc.ClientConn) {
-	// 	cli := pb.NewContainerClient(conn)
-	// 	request := pb.ListTemplateRequest{
-	// 		NextPage: 3,
-	// 		PerPage:  4,
-	// 		CurPage:  0,
-	// 	}
-	// 	reply, err := cli.ListTemplate(ctx, &request)
-	// 	if err != nil {
-	// 		log.Fatalln(err)
-	// 	}
-	// 	for _, re := range reply.Data {
-	// 		fmt.Printf("id: %v,   config: %v\n", re.Id, re.Conf)
-	// 	}
-	// 	if err != nil {
-	// 		t.Errorf("Update: %v", err)
-	// 	}
-
-	// 	t.Logf("Update reply: %+v", reply)
-	// })
 }
 
 func TestRemovetemplate(t *testing.T) {

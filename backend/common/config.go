@@ -24,6 +24,8 @@ type ControllerConfig struct {
 	VirtualIP   string `mapstructure:"virtual-ip"`
 	ImageDir    string `mapstructure:"image-dir"`
 	ImageSigner string `mapstructure:"image-signer"`
+	CheckAuth   bool   `mapstructure:"check-auth"`
+	CheckPerm   bool   `mapstructure:"check-perm"`
 	// cert
 }
 
@@ -109,6 +111,8 @@ func setDefault() {
 	viper.SetDefault("controller.port", 10050)
 	viper.SetDefault("controller.image-dir", "/var/lib/ks-scmc/images")
 	viper.SetDefault("controller.image-signer", "/var/lib/ks-scmc/images/public-key.txt")
+	viper.SetDefault("controller.check-auth", true)
+	viper.SetDefault("controller.check-perm", true)
 
 	viper.SetDefault("mysql.addr", "127.0.0.1:3306")
 	viper.SetDefault("mysql.user", "root")
@@ -127,6 +131,7 @@ func setDefault() {
 	viper.SetDefault("registry.addr", "127.0.0.1:5000")
 	viper.SetDefault("registry.username", "")
 	viper.SetDefault("registry.password", "")
+
 }
 
 func LoadConfig(path string) error {

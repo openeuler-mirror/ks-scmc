@@ -16,9 +16,7 @@ import (
 
 func Server() (*grpc.Server, error) {
 	opts := []grpc.ServerOption{
-		grpc.ChainUnaryInterceptor(
-			server.NewLogInterceptor().Unary(),
-		),
+		grpc.ChainUnaryInterceptor(server.NewLogInterceptor(false).Unary()),
 		grpc.KeepaliveEnforcementPolicy(keepalive.EnforcementPolicy{
 			MinTime:             10 * time.Second, // If a client pings more than once every 10 seconds, terminate the connection
 			PermitWithoutStream: true,             // Allow pings even when there are no active streams

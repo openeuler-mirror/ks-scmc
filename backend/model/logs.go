@@ -2,51 +2,49 @@ package model
 
 import (
 	log "github.com/sirupsen/logrus"
-)
-
-const (
-	EventCreateNode       = "EVENT_CREATE_NODE"
-	EventUpdateNode       = "EVENT_UPDATE_NODE"
-	EventRemoveNode       = "EVENT_REMOVE_NODE"
-	EventCreateContainer  = "EVENT_CREATE_CONTAINER"
-	EventStartContainer   = "EVENT_START_CONTAINER"
-	EventStopContainer    = "EVENT_STOP_CONTAINER"
-	EventRemoveContainer  = "EVENT_REMOVE_CONTAINER"
-	EventRestartContainer = "EVENT_RESTART_CONTAINER"
-	EventUploadImage      = "EVENT_UPLOAD_IMAGE"
-	EventDownloadImage    = "EVENT_DOWNLOAD_IMAGE"
-	EventApproveImage     = "EVENT_APPROVE_IMAGE"
-	EventRemoveImage      = "EVENT_REMOVE_IMAGE"
-	EventUserLogin        = "EVENT_USER_LOGIN"
-	EventUserLogout       = "EVENT_USER_LOGOUT"
-	EventCreateUser       = "EVENT_CREATE_USER"
-	EventUpdateUser       = "EVENT_UPDATE_USER"
-	EventRemoveUser       = "EVENT_REMOVE_USER"
-	EventCreateRole       = "EVENT_CREATE_ROLE"
-	EventUpdateRole       = "EVENT_UPDATE_ROLE"
-	EventRemoveRole       = "EVENT_REMOVE_ROLE"
-
-	// node offline
-	// node resource overload
-	// illegal image
-	// illegal container
+	"gorm.io/gorm"
 )
 
 type RuntimeLog struct {
+	ID          int64 `gorm:"primaryKey"`
+	EventType   int64
+	EventType_  string `gorm:"column:event_type_"`
+	EventModule int64
+	NodeId      int64
+	NodeInfo    string
+	UserID      int64
+	Target      string
+	Detail      string
+	StatusCode  int64
+	Error       string
+	CreatedAt   int64 `gorm:"autoCreateTime"`
+	UpdatedAt   int64 `gorm:"autoUpdateTime"`
+}
+
+type RuntimeLogs struct {
+	RuntimeLog
+	Username string
+}
+
+func (RuntimeLogs) TableName() string {
+	return "runtime_logs"
+}
+
+type WarnLog struct {
 	ID            int64 `gorm:"primaryKey"`
-	Level         int8
+	EventType     int64
+	EventModule   int64
 	NodeId        int64
 	NodeInfo      string
+	ContainerID   string
 	ContainerName string
-	EventType     string
-	Username      string
 	Detail        string
-	HaveRead      int8
+	HaveRead      bool
 	CreatedAt     int64 `gorm:"autoCreateTime"`
 	UpdatedAt     int64 `gorm:"autoUpdateTime"`
 }
 
-func CreateLog(logs []RuntimeLog) error {
+func CreateRuntimeLog(logs []*RuntimeLog) error {
 	db, err := getConn()
 	if err != nil {
 		return err
@@ -54,20 +52,131 @@ func CreateLog(logs []RuntimeLog) error {
 
 	result := db.Create(&logs)
 	if result.Error != nil {
-		log.Errorf("db create log %v", result.Error)
+		log.Errorf("db runtime log %v", result.Error)
 		return translateError(result.Error)
 	}
 
 	return nil
 }
 
-func ListLog(pageSize, pageNo int64, condition interface{}) (*Pager, []RuntimeLog, error) {
+func ListRuntimeLog(pageSize, pageNo int64, startTime, endTime, nodeID, eventModule int64) (*Pager, []*RuntimeLogs, error) {
+	qs := queries{
+		Where:  &query{},
+		Select: &query{"runtime_logs.*, user_infos.username AS username", nil},
+		Join:   &query{"LEFT JOIN user_infos ON runtime_logs.user_id = user_infos.id", nil},
+		Model:  &RuntimeLogs{},
+		Order:  "runtime_logs.id ASC",
+	}
 
-	var data []RuntimeLog
-	pager, err := PageQuery(pageSize, pageNo, &RuntimeLog{}, condition, "id desc", &data)
+	if startTime > 0 && startTime < endTime {
+		qs.Where.And("(runtime_logs.created_at BETWEEN ? AND ?)", startTime, endTime)
+	}
+	if nodeID > 0 {
+		qs.Where.And("node_id = ?", nodeID)
+	}
+	if eventModule > 0 {
+		qs.Where.And("event_module = ?", eventModule)
+	}
+
+	var data []*RuntimeLogs
+	pager, err := PageQuery(pageSize, pageNo, qs, &data)
 	if err != nil {
 		return nil, nil, err
 	}
 
 	return pager, data, nil
+}
+
+func CreateWarnLog(logs []*WarnLog) error {
+	if len(logs) == 0 {
+		return nil
+	}
+
+	nodeCnt := make(map[int64]int)
+	for _, l := range logs {
+		nodeCnt[l.NodeId] += 1
+	}
+
+	db, err := getConn()
+	if err != nil {
+		return err
+	}
+
+	return db.Transaction(func(tx *gorm.DB) error {
+		if err := tx.Create(&logs).Error; err != nil {
+			log.Warnf("db create warn log %v", err)
+			return translateError(err)
+		}
+
+		for nodeID, c := range nodeCnt {
+			if err := tx.Model(&NodeInfo{}).Where("id = ?", nodeID).Update("unread_warn = unread_warn + ?", c).Error; err != nil {
+				log.Warnf("db increase unread_warn %v", err)
+				return translateError(err)
+			}
+		}
+
+		return nil
+	})
+}
+
+func ListWarnLog(pageSize, pageNo int64, nodeID, eventModule int64) (*Pager, []*WarnLog, error) {
+	qs := queries{
+		Where: &query{},
+		Model: &WarnLog{},
+		Order: "id ASC",
+	}
+
+	if nodeID > 0 {
+		qs.Where.And("node_id = ?", nodeID)
+	}
+	if eventModule > 0 {
+		qs.Where.And("event_module = ?", eventModule)
+	}
+
+	var data []*WarnLog
+	pager, err := PageQuery(pageSize, pageNo, qs, &data)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return pager, data, nil
+}
+
+func SetWarnLogRead(ids []int64) error {
+	var data []*WarnLog
+
+	db, err := getConn()
+	if err != nil {
+		return err
+	}
+
+	if err := db.Find(&data, "id IN ?", ids).Error; err != nil {
+		log.Warnf("SetWarnLogRead query data %v", err)
+		return translateError(err)
+	}
+
+	nodeCnt := make(map[int64]int)
+	for _, l := range data {
+		if l.HaveRead {
+			continue
+		}
+
+		nodeCnt[l.NodeId] += 1
+	}
+
+	return db.Transaction(func(tx *gorm.DB) error {
+		if err := tx.Model(&WarnLog{}).Where("id IN ?", ids).Update("have_read", 1).Error; err != nil {
+			log.Warnf("db create warn log %v", err)
+			return translateError(err)
+		}
+
+		for nodeID, c := range nodeCnt {
+			if err := tx.Model(&NodeInfo{}).Where("id = ?", nodeID).Update("unread_warn = unread_warn + ?", c).Error; err != nil {
+				log.Warnf("db increase unread_warn %v", err)
+				return translateError(err)
+			}
+		}
+
+		return nil
+	})
 }

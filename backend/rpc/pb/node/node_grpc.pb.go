@@ -23,8 +23,6 @@ type NodeClient interface {
 	Remove(ctx context.Context, in *RemoveRequest, opts ...grpc.CallOption) (*RemoveReply, error)
 	Status(ctx context.Context, in *StatusRequest, opts ...grpc.CallOption) (*StatusReply, error)
 	Update(ctx context.Context, in *UpdateRequest, opts ...grpc.CallOption) (*UpdateReply, error)
-	ListLog(ctx context.Context, in *ListLogRequest, opts ...grpc.CallOption) (*ListLogReply, error)
-	UpdateLog(ctx context.Context, in *UpdateLogRequest, opts ...grpc.CallOption) (*UpdateLogReply, error)
 	// 安全配置
 	UpdateFileProtect(ctx context.Context, in *UpdateFileProtectRequest, opts ...grpc.CallOption) (*UpdateFileProtectReply, error)
 	UpdateNetworkRule(ctx context.Context, in *UpdateNetworkRuleRequest, opts ...grpc.CallOption) (*UpdateNetworkRuleReply, error)
@@ -83,24 +81,6 @@ func (c *nodeClient) Update(ctx context.Context, in *UpdateRequest, opts ...grpc
 	return out, nil
 }
 
-func (c *nodeClient) ListLog(ctx context.Context, in *ListLogRequest, opts ...grpc.CallOption) (*ListLogReply, error) {
-	out := new(ListLogReply)
-	err := c.cc.Invoke(ctx, "/node.Node/ListLog", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *nodeClient) UpdateLog(ctx context.Context, in *UpdateLogRequest, opts ...grpc.CallOption) (*UpdateLogReply, error) {
-	out := new(UpdateLogReply)
-	err := c.cc.Invoke(ctx, "/node.Node/UpdateLog", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 func (c *nodeClient) UpdateFileProtect(ctx context.Context, in *UpdateFileProtectRequest, opts ...grpc.CallOption) (*UpdateFileProtectReply, error) {
 	out := new(UpdateFileProtectReply)
 	err := c.cc.Invoke(ctx, "/node.Node/UpdateFileProtect", in, out, opts...)
@@ -128,8 +108,6 @@ type NodeServer interface {
 	Remove(context.Context, *RemoveRequest) (*RemoveReply, error)
 	Status(context.Context, *StatusRequest) (*StatusReply, error)
 	Update(context.Context, *UpdateRequest) (*UpdateReply, error)
-	ListLog(context.Context, *ListLogRequest) (*ListLogReply, error)
-	UpdateLog(context.Context, *UpdateLogRequest) (*UpdateLogReply, error)
 	// 安全配置
 	UpdateFileProtect(context.Context, *UpdateFileProtectRequest) (*UpdateFileProtectReply, error)
 	UpdateNetworkRule(context.Context, *UpdateNetworkRuleRequest) (*UpdateNetworkRuleReply, error)
@@ -154,12 +132,6 @@ func (UnimplementedNodeServer) Status(context.Context, *StatusRequest) (*StatusR
 }
 func (UnimplementedNodeServer) Update(context.Context, *UpdateRequest) (*UpdateReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Update not implemented")
-}
-func (UnimplementedNodeServer) ListLog(context.Context, *ListLogRequest) (*ListLogReply, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method ListLog not implemented")
-}
-func (UnimplementedNodeServer) UpdateLog(context.Context, *UpdateLogRequest) (*UpdateLogReply, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method UpdateLog not implemented")
 }
 func (UnimplementedNodeServer) UpdateFileProtect(context.Context, *UpdateFileProtectRequest) (*UpdateFileProtectReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateFileProtect not implemented")
@@ -270,42 +242,6 @@ func _Node_Update_Handler(srv interface{}, ctx context.Context, dec func(interfa
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Node_ListLog_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ListLogRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(NodeServer).ListLog(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/node.Node/ListLog",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(NodeServer).ListLog(ctx, req.(*ListLogRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Node_UpdateLog_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(UpdateLogRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(NodeServer).UpdateLog(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/node.Node/UpdateLog",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(NodeServer).UpdateLog(ctx, req.(*UpdateLogRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 func _Node_UpdateFileProtect_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(UpdateFileProtectRequest)
 	if err := dec(in); err != nil {
@@ -368,14 +304,6 @@ var Node_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Update",
 			Handler:    _Node_Update_Handler,
-		},
-		{
-			MethodName: "ListLog",
-			Handler:    _Node_ListLog_Handler,
-		},
-		{
-			MethodName: "UpdateLog",
-			Handler:    _Node_UpdateLog_Handler,
 		},
 		{
 			MethodName: "UpdateFileProtect",

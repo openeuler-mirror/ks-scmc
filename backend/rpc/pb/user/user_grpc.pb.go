@@ -27,7 +27,7 @@ type UserClient interface {
 	CreateUser(ctx context.Context, in *CreateUserRequest, opts ...grpc.CallOption) (*CreateUserReply, error)
 	UpdateUser(ctx context.Context, in *UpdateUserRequest, opts ...grpc.CallOption) (*UpdateUserReply, error)
 	RemoveUser(ctx context.Context, in *RemoveUserRequest, opts ...grpc.CallOption) (*RemoveUserReply, error)
-	ListRole(ctx context.Context, in *ListRoleRequest, opts ...grpc.CallOption) (*ListRoleReqply, error)
+	ListRole(ctx context.Context, in *ListRoleRequest, opts ...grpc.CallOption) (*ListRoleReply, error)
 	CreateRole(ctx context.Context, in *CreateRoleRequest, opts ...grpc.CallOption) (*CreateRoleReply, error)
 	UpdateRole(ctx context.Context, in *UpdateRoleRequest, opts ...grpc.CallOption) (*UpdateRoleReply, error)
 	RemoveRole(ctx context.Context, in *RemoveRoleRequest, opts ...grpc.CallOption) (*RemoveRoleReply, error)
@@ -113,8 +113,8 @@ func (c *userClient) RemoveUser(ctx context.Context, in *RemoveUserRequest, opts
 	return out, nil
 }
 
-func (c *userClient) ListRole(ctx context.Context, in *ListRoleRequest, opts ...grpc.CallOption) (*ListRoleReqply, error) {
-	out := new(ListRoleReqply)
+func (c *userClient) ListRole(ctx context.Context, in *ListRoleRequest, opts ...grpc.CallOption) (*ListRoleReply, error) {
+	out := new(ListRoleReply)
 	err := c.cc.Invoke(ctx, "/user.User/ListRole", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -162,7 +162,7 @@ type UserServer interface {
 	CreateUser(context.Context, *CreateUserRequest) (*CreateUserReply, error)
 	UpdateUser(context.Context, *UpdateUserRequest) (*UpdateUserReply, error)
 	RemoveUser(context.Context, *RemoveUserRequest) (*RemoveUserReply, error)
-	ListRole(context.Context, *ListRoleRequest) (*ListRoleReqply, error)
+	ListRole(context.Context, *ListRoleRequest) (*ListRoleReply, error)
 	CreateRole(context.Context, *CreateRoleRequest) (*CreateRoleReply, error)
 	UpdateRole(context.Context, *UpdateRoleRequest) (*UpdateRoleReply, error)
 	RemoveRole(context.Context, *RemoveRoleRequest) (*RemoveRoleReply, error)
@@ -197,7 +197,7 @@ func (UnimplementedUserServer) UpdateUser(context.Context, *UpdateUserRequest) (
 func (UnimplementedUserServer) RemoveUser(context.Context, *RemoveUserRequest) (*RemoveUserReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RemoveUser not implemented")
 }
-func (UnimplementedUserServer) ListRole(context.Context, *ListRoleRequest) (*ListRoleReqply, error) {
+func (UnimplementedUserServer) ListRole(context.Context, *ListRoleRequest) (*ListRoleReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListRole not implemented")
 }
 func (UnimplementedUserServer) CreateRole(context.Context, *CreateRoleRequest) (*CreateRoleReply, error) {

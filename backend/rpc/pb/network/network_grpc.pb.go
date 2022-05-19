@@ -21,6 +21,11 @@ type NetworkClient interface {
 	List(ctx context.Context, in *ListRequest, opts ...grpc.CallOption) (*ListReply, error)
 	Connect(ctx context.Context, in *ConnectRequest, opts ...grpc.CallOption) (*ConnectReply, error)
 	Disconnect(ctx context.Context, in *DisconnectRequest, opts ...grpc.CallOption) (*DisconnectReply, error)
+	ListIPtables(ctx context.Context, in *ListIPtablesRequest, opts ...grpc.CallOption) (*ListIPtablesReply, error)
+	EnableIPtables(ctx context.Context, in *EnableIPtablesRequest, opts ...grpc.CallOption) (*EnableIPtablesReply, error)
+	CreateIPtables(ctx context.Context, in *CreateIPtablesRequest, opts ...grpc.CallOption) (*CreateIPtablesReply, error)
+	ModifyIPtables(ctx context.Context, in *ModifyIPtablesRequest, opts ...grpc.CallOption) (*ModifyIPtablesReply, error)
+	RemoveIPtables(ctx context.Context, in *RemoveIPtablesRequest, opts ...grpc.CallOption) (*RemoveIPtablesReply, error)
 	// not implemented
 	Create(ctx context.Context, in *CreateRequest, opts ...grpc.CallOption) (*CreateReply, error)
 	Remove(ctx context.Context, in *RemoveRequest, opts ...grpc.CallOption) (*RemoveReply, error)
@@ -61,6 +66,51 @@ func (c *networkClient) Disconnect(ctx context.Context, in *DisconnectRequest, o
 	return out, nil
 }
 
+func (c *networkClient) ListIPtables(ctx context.Context, in *ListIPtablesRequest, opts ...grpc.CallOption) (*ListIPtablesReply, error) {
+	out := new(ListIPtablesReply)
+	err := c.cc.Invoke(ctx, "/network.Network/ListIPtables", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *networkClient) EnableIPtables(ctx context.Context, in *EnableIPtablesRequest, opts ...grpc.CallOption) (*EnableIPtablesReply, error) {
+	out := new(EnableIPtablesReply)
+	err := c.cc.Invoke(ctx, "/network.Network/EnableIPtables", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *networkClient) CreateIPtables(ctx context.Context, in *CreateIPtablesRequest, opts ...grpc.CallOption) (*CreateIPtablesReply, error) {
+	out := new(CreateIPtablesReply)
+	err := c.cc.Invoke(ctx, "/network.Network/CreateIPtables", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *networkClient) ModifyIPtables(ctx context.Context, in *ModifyIPtablesRequest, opts ...grpc.CallOption) (*ModifyIPtablesReply, error) {
+	out := new(ModifyIPtablesReply)
+	err := c.cc.Invoke(ctx, "/network.Network/ModifyIPtables", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *networkClient) RemoveIPtables(ctx context.Context, in *RemoveIPtablesRequest, opts ...grpc.CallOption) (*RemoveIPtablesReply, error) {
+	out := new(RemoveIPtablesReply)
+	err := c.cc.Invoke(ctx, "/network.Network/RemoveIPtables", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *networkClient) Create(ctx context.Context, in *CreateRequest, opts ...grpc.CallOption) (*CreateReply, error) {
 	out := new(CreateReply)
 	err := c.cc.Invoke(ctx, "/network.Network/Create", in, out, opts...)
@@ -86,6 +136,11 @@ type NetworkServer interface {
 	List(context.Context, *ListRequest) (*ListReply, error)
 	Connect(context.Context, *ConnectRequest) (*ConnectReply, error)
 	Disconnect(context.Context, *DisconnectRequest) (*DisconnectReply, error)
+	ListIPtables(context.Context, *ListIPtablesRequest) (*ListIPtablesReply, error)
+	EnableIPtables(context.Context, *EnableIPtablesRequest) (*EnableIPtablesReply, error)
+	CreateIPtables(context.Context, *CreateIPtablesRequest) (*CreateIPtablesReply, error)
+	ModifyIPtables(context.Context, *ModifyIPtablesRequest) (*ModifyIPtablesReply, error)
+	RemoveIPtables(context.Context, *RemoveIPtablesRequest) (*RemoveIPtablesReply, error)
 	// not implemented
 	Create(context.Context, *CreateRequest) (*CreateReply, error)
 	Remove(context.Context, *RemoveRequest) (*RemoveReply, error)
@@ -104,6 +159,21 @@ func (UnimplementedNetworkServer) Connect(context.Context, *ConnectRequest) (*Co
 }
 func (UnimplementedNetworkServer) Disconnect(context.Context, *DisconnectRequest) (*DisconnectReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Disconnect not implemented")
+}
+func (UnimplementedNetworkServer) ListIPtables(context.Context, *ListIPtablesRequest) (*ListIPtablesReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListIPtables not implemented")
+}
+func (UnimplementedNetworkServer) EnableIPtables(context.Context, *EnableIPtablesRequest) (*EnableIPtablesReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method EnableIPtables not implemented")
+}
+func (UnimplementedNetworkServer) CreateIPtables(context.Context, *CreateIPtablesRequest) (*CreateIPtablesReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateIPtables not implemented")
+}
+func (UnimplementedNetworkServer) ModifyIPtables(context.Context, *ModifyIPtablesRequest) (*ModifyIPtablesReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ModifyIPtables not implemented")
+}
+func (UnimplementedNetworkServer) RemoveIPtables(context.Context, *RemoveIPtablesRequest) (*RemoveIPtablesReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RemoveIPtables not implemented")
 }
 func (UnimplementedNetworkServer) Create(context.Context, *CreateRequest) (*CreateReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Create not implemented")
@@ -178,6 +248,96 @@ func _Network_Disconnect_Handler(srv interface{}, ctx context.Context, dec func(
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Network_ListIPtables_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListIPtablesRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(NetworkServer).ListIPtables(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/network.Network/ListIPtables",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(NetworkServer).ListIPtables(ctx, req.(*ListIPtablesRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Network_EnableIPtables_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(EnableIPtablesRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(NetworkServer).EnableIPtables(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/network.Network/EnableIPtables",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(NetworkServer).EnableIPtables(ctx, req.(*EnableIPtablesRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Network_CreateIPtables_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateIPtablesRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(NetworkServer).CreateIPtables(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/network.Network/CreateIPtables",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(NetworkServer).CreateIPtables(ctx, req.(*CreateIPtablesRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Network_ModifyIPtables_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ModifyIPtablesRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(NetworkServer).ModifyIPtables(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/network.Network/ModifyIPtables",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(NetworkServer).ModifyIPtables(ctx, req.(*ModifyIPtablesRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Network_RemoveIPtables_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RemoveIPtablesRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(NetworkServer).RemoveIPtables(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/network.Network/RemoveIPtables",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(NetworkServer).RemoveIPtables(ctx, req.(*RemoveIPtablesRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _Network_Create_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(CreateRequest)
 	if err := dec(in); err != nil {
@@ -232,6 +392,26 @@ var Network_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Disconnect",
 			Handler:    _Network_Disconnect_Handler,
+		},
+		{
+			MethodName: "ListIPtables",
+			Handler:    _Network_ListIPtables_Handler,
+		},
+		{
+			MethodName: "EnableIPtables",
+			Handler:    _Network_EnableIPtables_Handler,
+		},
+		{
+			MethodName: "CreateIPtables",
+			Handler:    _Network_CreateIPtables_Handler,
+		},
+		{
+			MethodName: "ModifyIPtables",
+			Handler:    _Network_ModifyIPtables_Handler,
+		},
+		{
+			MethodName: "RemoveIPtables",
+			Handler:    _Network_RemoveIPtables_Handler,
 		},
 		{
 			MethodName: "Create",

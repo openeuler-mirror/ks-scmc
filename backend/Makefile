@@ -1,5 +1,5 @@
 PROJECT = ks-scmc
-BINARY  = ks-scmc-server
+BINARY  = ks-scmc-server ks-scmc-authz
 RPC     = rpc/pb
 DESTDIR :=
 PREFIX  := /usr
@@ -8,7 +8,7 @@ ETC     := /etc
 
 all: $(BINARY)
 
-$(BINARY):
+$(BINARY): $(RPC)
 	go build -ldflags="-s -w" scmc/cmd/$@
 
 .PHONY: $(RPC)
@@ -32,5 +32,6 @@ clean:
 
 .PHONY: install
 install:
-	install -m 755 -D $(BINARY) $(DESTDIR)$(PREFIX)/bin/$(BINARY)
+	mkdir -p $(DESTDIR)$(PREFIX)/bin
+	install -m 755 -D $(BINARY) $(DESTDIR)$(PREFIX)/bin
 	cd scripts/ && make install

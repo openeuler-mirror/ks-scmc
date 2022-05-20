@@ -59,15 +59,16 @@ func (s *LoggingServer) ListWarn(ctx context.Context, in *pb.ListWarnRequest) (*
 	var reply pb.ListWarnReply
 	for _, w := range data {
 		reply.Logs = append(reply.Logs, &pb.WarnLog{
-			Id:          w.ID,
-			NodeId:      w.NodeId,
-			NodeInfo:    w.NodeInfo,
-			EventType:   w.EventType,
-			EventModule: w.EventModule,
-			Detail:      w.Detail,
-			HaveRead:    w.HaveRead,
-			CreatedAt:   w.CreatedAt,
-			UpdatedAt:   w.UpdatedAt,
+			Id:            w.ID,
+			NodeId:        w.NodeId,
+			NodeInfo:      w.NodeInfo,
+			EventType:     w.EventType,
+			EventModule:   w.EventModule,
+			ContainerName: w.ContainerName,
+			Detail:        w.Detail,
+			HaveRead:      w.HaveRead,
+			CreatedAt:     w.CreatedAt,
+			UpdatedAt:     w.UpdatedAt,
 		})
 	}
 	reply.PageNo = p.PageNo

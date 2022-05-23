@@ -1,0 +1,16 @@
+{
+    "role_info": {
+        "name": "secadm_r",
+        "is_editable": true,
+        "perms": [
+            {
+                "id": 11,
+                "allow": true
+            },
+            {
+                "id": 12,
+                "allow": true
+            }
+        ]
+    }
+}

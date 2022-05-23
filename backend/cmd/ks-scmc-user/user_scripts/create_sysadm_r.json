@@ -1,0 +1,48 @@
+{
+    "role_info": {
+        "name": "sysadm_r",
+        "is_editable": true,
+        "perms": [
+            {
+                "id": 1,
+                "allow": true
+            },
+            {
+                "id": 2,
+                "allow": true
+            },
+            {
+                "id": 1001,
+                "allow": true
+            },
+            {
+                "id": 1002,
+                "allow": true
+            },
+            {
+                "id": 1031,
+                "allow": true
+            },
+            {
+                "id": 1032,
+                "allow": true
+            },
+            {
+                "id": 2001,
+                "allow": true
+            },
+            {
+                "id": 2002,
+                "allow": true
+            },
+            {
+                "id": 3001,
+                "allow": true
+            },
+            {
+                "id": 3002,
+                "allow": true
+            }
+        ]
+    }
+}

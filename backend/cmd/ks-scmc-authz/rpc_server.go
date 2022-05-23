@@ -2,7 +2,9 @@ package main
 
 import (
 	"context"
+	"log"
 	"net"
+	"os"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -29,14 +31,23 @@ func (s *AuthzServer) UpdateConfig(ctx context.Context, in *pb.UpdateConfigReque
 }
 
 func initRPCServer(sockAddr string) error {
+	os.Remove(sockAddr) // avoid error "bind: address already in use"
 	lis, err := net.Listen("unix", sockAddr)
 	if err != nil {
-		return nil
+		log.Printf("listen socket=%v err=%v", sockAddr, err)
+		return err
 	}
 
 	s := grpc.NewServer()
 	pb.RegisterAuthzServer(s, &AuthzServer{})
-	go s.Serve(lis)
+	go func() {
+		err = s.Serve(lis)
+	}()
+
+	if err != nil {
+		log.Printf("init rpc server err=%v", err)
+		return err
+	}
 
 	return nil
 }

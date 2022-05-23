@@ -42,17 +42,16 @@ func (p *AuthZPlugin) AuthZReq(req authorization.Request) authorization.Response
 		return authorization.Response{Allow: true}
 	}
 
-	uriParts := strings.Split(reqURI.String(), "/")
-	// log.Printf("request %+v, uri parts %v", req, uriParts)
+	uriParts := strings.Split(reqURI.String(), "/") // [0]='' [1]=version [2]module(container/image/...)
+	// log.Printf("URI=%s, uri parts %v", reqURI.String(), uriParts)
 
-	if (req.RequestMethod == "POST" || req.RequestMethod == "PUT") && len(uriParts) >= 4 {
-		module := uriParts[2]
-		if module == "containers" {
+	if (req.RequestMethod == "POST" || req.RequestMethod == "PUT") && len(uriParts) >= 5 {
+		if uriParts[2] == "containers" {
 			id, action := uriParts[3], uriParts[4]
 			if p.actionNeedCheck(action) && p.containerNeedCheck(id) {
 				user := req.User
-				if user == "" {
-					if value, ok := req.RequestHeaders["AuthZ-User"]; ok {
+				if strings.Trim(user, " \n\t") == "" {
+					if value, ok := req.RequestHeaders["Authz-User"]; ok {
 						user = value
 					}
 				}

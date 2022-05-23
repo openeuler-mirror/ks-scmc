@@ -24,7 +24,6 @@ service User {
 message SignupRequest {
     string username = 1;
     string password = 2;
-    string role     = 3;
 }
 
 message SignupReply {
@@ -66,13 +65,17 @@ message CreateUserRequest {
     UserInfo user_info = 1;
 }
 
-message CreateUserReply {}
+message CreateUserReply {
+    UserInfo user_info = 1;
+}
 
 message UpdateUserRequest {
     UserInfo user_info = 1;
 }
 
-message UpdateUserReply {}
+message UpdateUserReply {
+    UserInfo user_info = 1;
+}
 
 message RemoveUserRequest {
     repeated int64 user_ids = 1;
@@ -80,8 +83,7 @@ message RemoveUserRequest {
 
 message RemoveUserReply {}
 
-message ListRoleRequest {
-}
+message ListRoleRequest {}
 
 message ListRoleReply {
     repeated UserRole roles = 1;
@@ -91,13 +93,17 @@ message CreateRoleRequest {
     UserRole role_info = 1;
 }
 
-message CreateRoleReply {}
+message CreateRoleReply {
+    UserRole role_info = 1;
+}
 
 message UpdateRoleRequest {
     UserRole role_info = 1;
 }
 
-message UpdateRoleReply {}
+message UpdateRoleReply {
+    UserRole role_info = 1;
+}
 
 message RemoveRoleRequest {
     int64 role_id = 1;
@@ -132,7 +138,7 @@ enum PERMISSION {
 
     // 审计
     AUDIT_APPROVE_READ  = 4001;  // 审计-审核-查看
-    AUDIT_APPROVE_WRITE = 4002;  // 审计-审核-查看
+    AUDIT_APPROVE_WRITE = 4002;  // 审计-审核-管理
     AUTID_WARN_READ     = 4011;  // 审计-告警-查看
     AUTID_LOG_READ      = 4021;  // 审计-日志-查看
 }

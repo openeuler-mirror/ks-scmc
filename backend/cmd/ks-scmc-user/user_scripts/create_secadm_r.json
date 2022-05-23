@@ -10,6 +10,26 @@
             {
                 "id": 12,
                 "allow": true
+            },
+            {
+                "id": 1001,
+                "allow": true
+            },
+            {
+                "id": 1041,
+                "allow": true
+            },
+            {
+                "id": 1043,
+                "allow": true
+            },
+            {
+                "id": 3001,
+                "allow": true
+            },
+            {
+                "id": 4002,
+                "allow": true
             }
         ]
     }

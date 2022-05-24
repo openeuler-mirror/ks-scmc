@@ -1,0 +1,36 @@
+[log]
+basedir = "/var/log/ks-scmc"
+level   = "info"
+stdout  = false
+
+[tls]
+enable = false
+ca = ""
+server_cert = ""
+server_key = ""
+
+[agent]
+host = "0.0.0.0"
+port = 10051
+
+[controller]
+host = "0.0.0.0"
+port = 10050
+check-auth = true
+check-perm = true
+
+[mysql]
+addr = "localhost:3306"
+user = "ks-scmc"
+password = ""
+db = "ks-scmc"
+
+[cadvisor]
+addr = "127.0.0.1:8080"
+
+[influxdb]
+addr = "127.0.0.1:8086"
+
+[registry]
+secure = false
+addr = "127.0.0.1:5000"

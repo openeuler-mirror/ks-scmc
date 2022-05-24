@@ -68,14 +68,14 @@ func CreateUser(ctx context.Context, userInfo *UserInfo) error {
 func UpdateUser(ctx context.Context, userInfo *UserInfo) error {
 	db, err := getConn()
 	if err != nil {
-		return err
+		return  err
 	}
 
 	if result := db.WithContext(ctx).Save(userInfo); result.Error != nil {
 		return result.Error
 	}
 
-	return nil
+	return  nil
 }
 
 func RemoveUser(ctx context.Context, userId int64) error {

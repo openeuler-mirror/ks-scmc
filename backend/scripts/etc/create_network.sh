@@ -57,18 +57,24 @@ check_subnet() {
 }
 
 get_bridge_param() {
-    echo "请输入容器桥接网卡名后缀"
+    echo "请输入容器桥接网卡名后缀, 小于5位，数字和字母"
     while true
     do
         read bridgeNicSuffix
-        if [[ "x$bridgeNicSuffix" == "x" ]]; then
-            echo "请重新输入"
-        else
-            break
+        if [[ "x$bridgeNicSuffix" != "x" ]]; then
+            num=`echo "$bridgeNicSuffix" | wc -L`
+            if [[ $num -lt 5 ]]; then
+                echo "$bridgeNicSuffix" | grep -q '[^a-zA-Z0-9]'
+                if [[ $? -eq 1 ]]; then
+                    break
+                fi
+            fi
         fi
+
+        echo "请重新输入"
     done
 
-    echo "请输入容器桥接网卡网段(建议与物理网卡不同网段)"
+    echo "请输入容器桥接网卡网段(建议与物理网卡不同网段)，例如：172.21.1.0/24"
     while true
     do
         read bridgeSubnet
@@ -82,21 +88,27 @@ get_bridge_param() {
         echo "网段不符合要求请重新输入(ip/mask)"
     done
 
-    bridgeNicName="bridge${bridgeNicSuffix}"
+    bridgeNicName="br${bridgeNicSuffix}"
     bridgeName="docker-${bridgeNicName}"
     createDockerNicCmd="${createDockerNicCmd}docker network create --internal --driver=bridge --subnet=${bridgeSubnet} -o com.docker.network.bridge.name=${bridgeName} ${bridgeNicName}\n"
 }
 
 get_macvlan_param() {
-    echo "请输入macvlan网卡名后缀"
+    echo "请输入macvlan网卡名后缀, 小于5位，数字和字母"
     while true
     do
         read macvlanNicSuffix
-        if [[ "x$macvlanNicSuffix" == "x" ]]; then
-            echo "请重新输入"
-        else
-            break
+        if [[ "x$macvlanNicSuffix" != "x" ]]; then
+            num=`echo "$macvlanNicSuffix" | wc -L`
+            if [[ $num -lt 5 ]]; then
+                echo "$macvlanNicSuffix" | grep -q '[^a-zA-Z0-9]'
+                if [[ $? -eq 1 ]]; then
+                    break
+                fi
+            fi
         fi
+
+        echo "请重新输入"
     done
 
     physicalNicArr=(`find /sys/class/net -mindepth 1 -maxdepth 1 -lname '*virtual*' -prune -o -printf '%f\n'`)

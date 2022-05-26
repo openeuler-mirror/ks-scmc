@@ -147,3 +147,11 @@ CREATE TABLE IF NOT EXISTS `container_backups` (
   `created_at` INT(20) NOT NULL DEFAULT 0,
   `updated_at` INT(20) NOT NULL DEFAULT 0
 ) ENGINE=InnoDB AUTO_INCREMENT=1;
+
+ALTER TABLE `node_infos`
+ADD COLUMN `deleted` TINYINT NOT NULL DEFAULT 0 COMMENT '删除标记位 0:未删除'
+AFTER `disk_limit`;
+
+ALTER TABLE `container_templates`
+ADD COLUMN `node_id` BIGINT(20) NOT NULL DEFAULT 0 COMMENT '节点ID'
+AFTER `name`;

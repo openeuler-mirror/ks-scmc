@@ -50,9 +50,8 @@ func (s *NodeServer) Create(ctx context.Context, in *pb.CreateRequest) (*pb.Crea
 	}
 
 	isIp := net.ParseIP(in.Address)
-
 	isDomain, _ := regexp.MatchString("^[a-zA-Z][a-zA-Z0-9-.]{0,253}[a-zA-Z0-9]$", in.Address)
-	log.Warnf("node_handle ip: [%v], [%v], [%v]", isIp, isDomain, in.Address)
+	log.Debugf("node_handle ip: [%v], [%v], [%v]", isIp, isDomain, in.Address)
 
 	if isIp == nil && !isDomain {
 		log.Warnf("node_handle ip err: %v", in.Address)
@@ -61,6 +60,7 @@ func (s *NodeServer) Create(ctx context.Context, in *pb.CreateRequest) (*pb.Crea
 
 	conn, err := getAgentConn(in.Address)
 	if err != nil {
+		log.Warnf("get agent connection addr=%v err=%v", in.Address, err)
 		return nil, rpc.ErrInternal
 	}
 
@@ -70,17 +70,36 @@ func (s *NodeServer) Create(ctx context.Context, in *pb.CreateRequest) (*pb.Crea
 
 	_, err = cli.Status(ctx_, &pb.StatusRequest{})
 	if err != nil {
-		log.Warnf("Status: %v", err)
+		log.Warnf("check agent service err=%v", err)
 		return nil, rpc.ErrInternal
 	}
 
 	// connect agent address, check is alive
 
-	if err := model.CreateNode(in.Name, in.Address, in.Comment); err != nil {
-		if err == model.ErrDuplicateKey {
+	nodeInfo, err := model.QueryNodeByAddr(in.Address)
+	if err == model.ErrRecordNotFound {
+		if e := model.CreateNode(in.Name, in.Address, in.Comment); e != nil {
+			if e == model.ErrDuplicateKey {
+				return nil, rpc.ErrAlreadyExists
+			}
+			return nil, rpc.ErrInternal
+		}
+	} else if err != nil {
+		log.Warnf("query node by addr err=%v", err)
+		return nil, rpc.ErrInternal
+	} else {
+		if !nodeInfo.Deleted {
 			return nil, rpc.ErrAlreadyExists
 		}
-		return nil, rpc.ErrInternal
+
+		// 记录存在, 更新字段, 将删除标记位设置为false
+		nodeInfo.Name = in.Name
+		nodeInfo.Comment = in.Comment
+		nodeInfo.Deleted = false
+		if e := model.UpdateNode(nodeInfo); e != nil {
+			log.Warnf("update node err=%v", err)
+			return nil, rpc.ErrInternal
+		}
 	}
 
 	return &pb.CreateReply{}, nil

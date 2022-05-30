@@ -132,6 +132,7 @@ func ListWarnLog(pageSize, pageNo int64, nodeID, eventModule int64) (*Pager, []*
 	if eventModule > 0 {
 		qs.Where.And("event_module = ?", eventModule)
 	}
+	qs.Where.And("have_read = 0")
 
 	var data []*WarnLog
 	pager, err := PageQuery(pageSize, pageNo, qs, &data)

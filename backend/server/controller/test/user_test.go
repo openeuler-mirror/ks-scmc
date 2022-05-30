@@ -18,7 +18,6 @@ func TestUserSignup(t *testing.T) {
 		request := pb.SignupRequest{
 			Username: "test",
 			Password: "12345678",
-			Role:     "test",
 		}
 		reply, err := cli.Signup(ctx, &request)
 		if err != nil {

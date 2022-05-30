@@ -50,3 +50,17 @@ func TestListWarnLog(t *testing.T) {
 		}
 	})
 }
+
+func TestReadWarn(t *testing.T) {
+	testRunner(func(ctx context.Context, conn *grpc.ClientConn) {
+		cli := pb.NewLoggingClient(conn)
+		request := pb.ReadWarnRequest{
+			Ids: []int64{1},
+		}
+
+		_, err := cli.ReadWarn(ctx, &request)
+		if err != nil {
+			t.Errorf("ReadWarn: %v", err)
+		}
+	})
+}

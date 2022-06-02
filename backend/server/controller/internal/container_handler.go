@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"sync"
 	"time"
 
 	"github.com/google/uuid"
@@ -33,7 +34,7 @@ func (s *ContainerServer) List(ctx context.Context, in *pb.ListRequest) (*pb.Lis
 
 	var nodeToQuery []*model.NodeInfo
 	if in.NodeIds == nil {
-		for i, _ := range nodes {
+		for i := range nodes {
 			nodeToQuery = append(nodeToQuery, &nodes[i])
 		}
 	} else {
@@ -50,27 +51,48 @@ func (s *ContainerServer) List(ctx context.Context, in *pb.ListRequest) (*pb.Lis
 		}
 	}
 
+	var (
+		mtx sync.Mutex
+		wg  sync.WaitGroup
+	)
 	for _, node := range nodeToQuery {
-		conn, err := getAgentConn(node.Address)
-		if err != nil {
-			return nil, rpc.ErrInternal
-		}
+		wg.Add(1)
+		go func(ctx context.Context, node *model.NodeInfo) {
+			defer wg.Done()
+			conn, err := getAgentConn(node.Address)
+			if err != nil {
+				log.Warnf("get agent Conn address=%v: %v", node.Address, err)
 
-		cli := pb.NewContainerClient(conn)
-		ctx_, cancel := context.WithTimeout(context.Background(), time.Second*10)
-		defer cancel()
-		subReply, err := cli.List(ctx_, in)
-		if err != nil {
-			log.Warnf("get container list ID=%v address=%v: %v", node.ID, node.Address, err)
-			return nil, rpc.ErrInternal
-		}
+				mtx.Lock()
+				defer mtx.Unlock()
+				reply.FailNodes = append(reply.FailNodes, node.Address)
+				return
+			}
 
-		for i := range subReply.Containers {
-			subReply.Containers[i].NodeId = node.ID
-			subReply.Containers[i].NodeAddress = node.Address
-			reply.Containers = append(reply.Containers, subReply.Containers[i])
-		}
+			cli := pb.NewContainerClient(conn)
+			ctx_, cancel := context.WithTimeout(ctx, time.Second*10)
+			defer cancel()
+			subReply, err := cli.List(ctx_, in)
+			if err != nil {
+				log.Warnf("get container list ID=%v address=%v: %v", node.ID, node.Address, err)
+
+				mtx.Lock()
+				defer mtx.Unlock()
+				reply.FailNodes = append(reply.FailNodes, node.Address)
+				return
+			}
+
+			for i := range subReply.Containers {
+				subReply.Containers[i].NodeId = node.ID
+				subReply.Containers[i].NodeAddress = node.Address
+			}
+			mtx.Lock()
+			defer mtx.Unlock()
+			reply.Containers = append(reply.Containers, subReply.Containers...)
+		}(ctx, node)
 	}
+
+	wg.Wait()
 
 	return &reply, nil
 }

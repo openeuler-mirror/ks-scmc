@@ -7,6 +7,10 @@ import (
 	pb "scmc/rpc/pb/common"
 )
 
+func rpcError(errno pb.Errno, msg string) error {
+	return status.Error(codes.Code(errno), msg)
+}
+
 var (
 	ErrOK                 = error(nil)
 	ErrCanceled           = status.Error(codes.Canceled, "请求取消")
@@ -28,6 +32,12 @@ var (
 	ErrWrongPassword      = status.Error(codes.Code(pb.Errno_WrongPassword), "密码错误")
 	ErrSomeConfigFailed   = status.Error(codes.Internal, "容器已创建, 部分配置失败")
 	ErrInvalidImage       = status.Error(codes.Internal, "无效的镜像")
+
+	ErrContainerProcProtection  = rpcError(pb.Errno_CProcProtectionFailed, "配置进程保护失败")
+	ErrContainerNprocProtection = rpcError(pb.Errno_CNprocProtectionFailed, "配置网络进程保护失败")
+	ErrContainerFileProtection  = rpcError(pb.Errno_CFileProtectionFailed, "配置文件保护失败")
+	ErrContainerCmdOperation    = rpcError(pb.Errno_CCmdOperationFailed, "配置启停控制失败")
+	ErrContainerNetworkRule     = rpcError(pb.Errno_CNetworkRuleFailed, "配置网络规则失败")
 
 // ErrUserNotExist
 )

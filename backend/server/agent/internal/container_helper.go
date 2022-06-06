@@ -41,16 +41,27 @@ func containerGraphicSetup(containerName string, config *container.Config, hostC
 
 	// set environment for display, shared X11 socket/auth file
 	config.Env = append(config.Env, "DISPLAY=:0", "XAUTHORITY="+filepath.Join(containerAuthPath, authFile))
-	hostConfig.Mounts = append(hostConfig.Mounts, mount.Mount{
-		Type:   mount.TypeBind,
-		Source: socketDir,
-		Target: containerSocketPath,
-	})
-	hostConfig.Mounts = append(hostConfig.Mounts, mount.Mount{
-		Type:   mount.TypeBind,
-		Source: authDir,
-		Target: containerAuthPath,
-	})
+
+	var mnts []mount.Mount
+	for _, m := range hostConfig.Mounts {
+		if m.Target == containerSocketPath || m.Target == containerAuthPath {
+			continue // remove duplicate mnt point
+		}
+		mnts = append(mnts, m)
+	}
+
+	hostConfig.Mounts = append(mnts,
+		mount.Mount{
+			Type:   mount.TypeBind,
+			Source: socketDir,
+			Target: containerSocketPath,
+		},
+		mount.Mount{
+			Type:   mount.TypeBind,
+			Source: authDir,
+			Target: containerAuthPath,
+		},
+	)
 
 	return nil
 }

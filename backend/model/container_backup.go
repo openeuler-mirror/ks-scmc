@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/docker/docker/api/types"
-	"github.com/docker/docker/client"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -186,11 +185,7 @@ func AddContainerBackupJob(id int64, containerID, name string) error {
 
 		containerBackupJobs[job.ID] = job
 
-		cli, err := client.NewClientWithOpts(
-			client.FromEnv,
-			client.WithAPIVersionNegotiation(),
-			client.WithHTTPHeaders(map[string]string{"AuthZ-User": "KS-SCMC-SERVICE"}),
-		)
+		cli, err := DockerClient()
 		if err != nil {
 			log.Warnf("create docker cli err=%v", err)
 			job.Status = 2

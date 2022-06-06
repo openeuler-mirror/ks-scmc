@@ -99,7 +99,7 @@ func (sp *SecurityServer) ListProcProtection(ctx context.Context, in *pb.ListPro
 }
 
 func calcdockerCPMD5(ctx context.Context, containerId, srcDir string) (string, error) {
-	cli, err := dockerCli()
+	cli, err := model.DockerClient()
 	if err != nil {
 		return "", rpc.ErrInternal
 	}

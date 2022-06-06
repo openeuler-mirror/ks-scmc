@@ -52,6 +52,15 @@ type UserSession struct {
 	UpdatedAt  int64 `gorm:"autoUpdateTime"`
 }
 
+type UserRoleInfo struct {
+	UserInfo
+	PermsJSON string
+}
+
+func (UserRoleInfo) TableName() string {
+	return "user_infos"
+}
+
 func CreateUser(ctx context.Context, userInfo *UserInfo) error {
 	db, err := getConn()
 	if err != nil {
@@ -68,14 +77,14 @@ func CreateUser(ctx context.Context, userInfo *UserInfo) error {
 func UpdateUser(ctx context.Context, userInfo *UserInfo) error {
 	db, err := getConn()
 	if err != nil {
-		return  err
+		return err
 	}
 
 	if result := db.WithContext(ctx).Save(userInfo); result.Error != nil {
 		return result.Error
 	}
 
-	return  nil
+	return nil
 }
 
 func RemoveUser(ctx context.Context, userId int64) error {
@@ -260,25 +269,15 @@ func RemoveSession(userID, sessionKey string) error {
 	return nil
 }
 
-/*
-func UpdatePermission() {
-}
-
-
-func QuerySession(userID int64) (*UserSession, error) {
-}
-*/
-
-func QueryRoleByUserID(userID interface{}) (*UserRole, error) {
-	userInfo, err := QueryUserByID(userID)
-	if err != nil {
-		return nil, err
-
-	}
-
-	userRole, err := QueryRoleById(context.TODO(), userInfo.RoleID)
+func QueryUserRole(userID interface{}) (*UserRoleInfo, error) {
+	db, err := getConn()
 	if err != nil {
 		return nil, err
 	}
-	return userRole, nil
+
+	var r UserRoleInfo
+	db.Model(&UserRoleInfo{}).Joins("LEFT JOIN user_roles ON user_infos.role_id = user_roles.id").
+		Select("user_infos.*, user_roles.perms_json").First(&r, "user_infos.id = ?", userID)
+
+	return &r, nil
 }

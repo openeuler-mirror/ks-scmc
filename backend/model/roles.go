@@ -10,7 +10,7 @@ type UserRole struct {
 	ID         int64 ` gorm:"primaryKey"`
 	Name       string
 	IsEditable bool // 是否可更新删除
-	PermsJson  string
+	PermsJSON  string
 	CreatedAt  int64 `gorm:"autoCreateTime"`
 	UpdatedAt  int64 `gorm:"autoCreateTime"`
 }

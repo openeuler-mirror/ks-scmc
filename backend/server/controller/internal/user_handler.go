@@ -275,7 +275,7 @@ func (s *UserServer) CreateUser(ctx context.Context, in *pb.CreateUserRequest) (
 	}
 
 	var perms []*pb.Permission
-	err = json.Unmarshal([]byte(roleInfo.PermsJson), &perms)
+	err = json.Unmarshal([]byte(roleInfo.PermsJSON), &perms)
 	if err != nil {
 		log.Warnf("json unmarshal err: %v", err)
 	}
@@ -352,7 +352,7 @@ func (s *UserServer) UpdateUser(ctx context.Context, in *pb.UpdateUserRequest) (
 	}
 
 	var perms []*pb.Permission
-	err = json.Unmarshal([]byte(roleInfo.PermsJson), &perms)
+	err = json.Unmarshal([]byte(roleInfo.PermsJSON), &perms)
 	if err != nil {
 		log.Warnf("json unmarshal err: %v", err)
 	}
@@ -427,7 +427,7 @@ func (s *UserServer) ListRole(ctx context.Context, in *pb.ListRoleRequest) (*pb.
 	var reply pb.ListRoleReply
 	for _, r := range roles {
 		var perms []*pb.Permission
-		json.Unmarshal([]byte(r.PermsJson), &perms)
+		json.Unmarshal([]byte(r.PermsJSON), &perms)
 
 		reply.Roles = append(reply.Roles, &pb.UserRole{
 			Id:         r.ID,
@@ -460,7 +460,7 @@ func (s *UserServer) CreateRole(ctx context.Context, in *pb.CreateRoleRequest) (
 	role := &model.UserRole{
 		Name:       in.RoleInfo.Name,
 		IsEditable: in.RoleInfo.IsEditable,
-		PermsJson:  string(permsJSON),
+		PermsJSON:  string(permsJSON),
 	}
 
 	if err = model.CreateRole(ctx, role); err != nil {
@@ -472,7 +472,7 @@ func (s *UserServer) CreateRole(ctx context.Context, in *pb.CreateRoleRequest) (
 	}
 
 	var perms []*pb.Permission
-	err = json.Unmarshal([]byte(role.PermsJson), &perms)
+	err = json.Unmarshal([]byte(role.PermsJSON), &perms)
 	if err != nil {
 		log.Warnf("json unmarshal err: %v", err)
 	}
@@ -511,7 +511,7 @@ func (s *UserServer) UpdateRole(ctx context.Context, in *pb.UpdateRoleRequest) (
 	}
 
 	role.Name = in.RoleInfo.Name
-	role.PermsJson = string(permsJSON)
+	role.PermsJSON = string(permsJSON)
 
 	if err = model.UpdateRole(ctx, role); err != nil {
 		log.Warnf("role UpdateRole err: %v", err)
@@ -519,7 +519,7 @@ func (s *UserServer) UpdateRole(ctx context.Context, in *pb.UpdateRoleRequest) (
 	}
 
 	var perms []*pb.Permission
-	err = json.Unmarshal([]byte(role.PermsJson), &perms)
+	err = json.Unmarshal([]byte(role.PermsJSON), &perms)
 	if err != nil {
 		log.Warnf("json unmarshal err: %v", err)
 	}

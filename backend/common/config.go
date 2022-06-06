@@ -160,3 +160,11 @@ func LoadConfig(path string) error {
 
 	return nil
 }
+
+func NeedCheckAuth() bool {
+	return Config.Controller.CheckAuth
+}
+
+func NeedCheckPerm() bool {
+	return Config.Controller.CheckPerm
+}

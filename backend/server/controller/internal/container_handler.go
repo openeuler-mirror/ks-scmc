@@ -10,9 +10,12 @@ import (
 	"github.com/google/uuid"
 	log "github.com/sirupsen/logrus"
 
+	"scmc/common"
 	"scmc/model"
 	"scmc/rpc"
 	pb "scmc/rpc/pb/container"
+	"scmc/rpc/pb/user"
+	"scmc/server"
 )
 
 type ContainerServer struct {
@@ -97,6 +100,13 @@ func (s *ContainerServer) Create(ctx context.Context, in *pb.CreateRequest) (*pb
 	}
 
 	if in.Configs.SecurityConfig != nil {
+		if !isEmptySecurityConfig(in.Configs.SecurityConfig) && common.NeedCheckAuth() && common.NeedCheckPerm() {
+			perms, _ := ctx.Value("PERMS").([]*user.Permission)
+			if !server.HasPerm(user.PERMISSION_CONTAINER_CONF_SEC, perms) {
+				return nil, rpc.ErrContainerSecurityConfigNoPerm
+			}
+		}
+
 		if data, err := json.Marshal(in.Configs.SecurityConfig); err != nil {
 			log.Warnf("Marshal SecurityConfig err: %v", err)
 			return nil, rpc.ErrInternal
@@ -516,6 +526,38 @@ func (s *ContainerServer) Update(ctx context.Context, in *pb.UpdateRequest) (*pb
 	}
 
 	cli := pb.NewContainerClient(conn)
+	if common.NeedCheckAuth() && common.NeedCheckPerm() {
+		perms, _ := ctx.Value("PERMS").([]*user.Permission)
+
+		ctx_, cancel := context.WithTimeout(context.Background(), time.Second*10)
+		defer cancel()
+		inspect, err := cli.Inspect(ctx_, &pb.InspectRequest{ContainerId: in.ContainerId})
+		if err != nil {
+			log.Warnf("Container.Update inspect container=%v err=%v", in.ContainerId, err)
+			return nil, err
+		}
+
+		if containerBasicConfigDiff(inspect.Configs, in) && !server.HasPerm(user.PERMISSION_CONTAINER_CONF_BASIC, perms) {
+			log.Infof("no permission to update container basic config")
+			return nil, rpc.ErrContainerBasicConfigNoPerm
+		}
+
+		cfgs, err := model.GetContainerConfigs(in.NodeId, in.ContainerId)
+		if err != nil {
+			log.Infof("db get container configs id=%v err=%v", in.ContainerId, err)
+		} else {
+			var secCfgs pb.SecurityConfig
+			if err := json.Unmarshal([]byte(cfgs.SecurityConfig), &secCfgs); err != nil {
+				log.Infof("unmarshal security config err=%v", err)
+			} else {
+				if containerSecurityConfigDiff(&secCfgs, in.SecurityConfig) && !server.HasPerm(user.PERMISSION_CONTAINER_CONF_SEC, perms) {
+					log.Infof("no permission to update container security config")
+					return nil, rpc.ErrContainerSecurityConfigNoPerm
+				}
+			}
+		}
+	}
+
 	ctx_, cancel := context.WithTimeout(context.Background(), time.Second*10)
 	defer cancel()
 	agentReply, err := cli.Update(ctx_, in)

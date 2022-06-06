@@ -32,6 +32,7 @@ var (
 	ErrWrongPassword      = status.Error(codes.Code(pb.Errno_WrongPassword), "密码错误")
 	ErrInvalidImage       = status.Error(codes.Internal, "无效的镜像")
 
+	ErrRemoveContainerWhenRunning    = status.Error(codes.Internal, "容器正在运行，无法删除")
 	ErrContainerBasicConfigNoPerm    = status.Error(codes.PermissionDenied, "无权限设置容器常规配置")
 	ErrContainerSecurityConfigNoPerm = status.Error(codes.PermissionDenied, "无权限设置容器安全策略")
 

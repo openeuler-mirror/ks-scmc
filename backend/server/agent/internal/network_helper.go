@@ -13,8 +13,34 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-func checkConflict(ifs, ipAddr string, masklen int) bool {
-	cli, err := dockerCli()
+func checkIfs(ifs string) bool {
+	cli, err := model.DockerClient()
+	if err != nil {
+		return false
+	}
+
+	list, err := cli.NetworkList(context.Background(), types.NetworkListOptions{})
+	if err != nil {
+		log.Warnf("NetworkList: %v", err)
+		return false
+	}
+
+	for _, i := range list {
+		//不显示默认网卡
+		if i.Name == "bridge" || i.Name == "host" || i.Name == "none" {
+			continue
+		}
+		if ifs == i.Name {
+			return false
+		}
+	}
+
+	log.Errorf("%v not in docker nic", ifs)
+	return true
+}
+
+func checkConflict(ifs, ipAddr string, masklen int, containerId string) bool {
+	cli, err := model.DockerClient()
 	if err != nil {
 		return false
 	}
@@ -50,6 +76,10 @@ func checkConflict(ifs, ipAddr string, masklen int) bool {
 
 	containerIPs := make(map[string]struct{})
 	for _, c := range containers {
+		if containerId == c.ID {
+			continue
+		}
+
 		for _, n := range c.NetworkSettings.Networks {
 			if n.IPAMConfig != nil && n.IPAMConfig.IPv4Address != "" {
 				containerIPs[n.IPAMConfig.IPv4Address] = struct{}{}
@@ -68,7 +98,7 @@ func checkConflict(ifs, ipAddr string, masklen int) bool {
 }
 
 func ContainerWhiteCongig() error {
-	cli, err := dockerCli()
+	cli, err := model.DockerClient()
 	if err != nil {
 		return err
 	}
@@ -128,7 +158,7 @@ func ContainerWhiteCongig() error {
 
 func getLinkIfs() []string {
 	var linkIfs []string
-	cli, err := dockerCli()
+	cli, err := model.DockerClient()
 	if err != nil {
 		return linkIfs
 	}

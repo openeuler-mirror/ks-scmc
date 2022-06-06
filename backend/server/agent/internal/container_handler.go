@@ -38,6 +38,20 @@ func fromCPUShares(cpuShares int64) int64 {
 	return cpuShares - defaultCPUShares
 }
 
+func dockerResourceConfig(in *pb.ResourceLimit) container.Resources {
+	var r container.Resources
+
+	if in != nil {
+		r.NanoCPUs = int64(in.CpuLimit * 1e9)
+		r.CPUShares = toCPUShares(in.CpuPrio)
+		r.Memory = int64(in.MemoryLimit * megaBytes)
+		r.MemoryReservation = int64(in.MemorySoftLimit * megaBytes)
+		r.MemorySwap = int64(in.MemoryLimit * megaBytes) // prevent error: Memory limit should be smaller than already set memoryswap limit
+	}
+
+	return r
+}
+
 func ensureImage(cli *client.Client, image string) error {
 	list, err := cli.ImageList(context.Background(), types.ImageListOptions{})
 	if err != nil {
@@ -77,7 +91,7 @@ type ContainerServer struct {
 func (s *ContainerServer) List(ctx context.Context, in *pb.ListRequest) (*pb.ListReply, error) {
 	reply := pb.ListReply{}
 
-	cli, err := dockerCli()
+	cli, err := model.DockerClient()
 	if err != nil {
 		return nil, rpc.ErrInternal
 	}
@@ -104,6 +118,21 @@ func (s *ContainerServer) List(ctx context.Context, in *pb.ListRequest) (*pb.Lis
 			Created: c.Created,
 		}
 
+		if c.State != "created" {
+			ci, err := cli.ContainerInspect(ctx, c.ID)
+			if err != nil {
+				log.Warnf("ContainerInspect id=%v err=%v", c.ID, err)
+				// dont return error
+			}
+
+			startedAt, err := time.ParseInLocation(time.RFC3339Nano, ci.State.StartedAt, time.UTC)
+			if err != nil {
+				log.Warnf("ParseInLocation time=%v err=%v", ci.State.StartedAt, err)
+			} else {
+				info.Started = startedAt.Unix()
+			}
+		}
+
 		// 参考docker cli实现 去掉link特性连接的其他容器名
 		for _, name := range c.Names {
 			if strings.HasPrefix(name, "/") && len(strings.Split(name[1:], "/")) == 1 {
@@ -119,7 +148,7 @@ func (s *ContainerServer) List(ctx context.Context, in *pb.ListRequest) (*pb.Lis
 		}
 
 		diskStat := &pb.DiskStat{
-			Used: float64(c.SizeRootFs) / megaBytes,
+			Used: float64(c.SizeRootFs) / 1e6, // 与docker client保持一致
 		}
 
 		if v, ok := c.Labels["KS_SCMC_DISK_LIMIT"]; ok {
@@ -140,12 +169,93 @@ func (s *ContainerServer) List(ctx context.Context, in *pb.ListRequest) (*pb.Lis
 	return &reply, nil
 }
 
+func (s *ContainerServer) setSecurityConfig(id, uuid, name string, pid int, fromUpdate bool, sec *pb.SecurityConfig) error {
+	if sec == nil {
+		return nil
+	}
+
+	if fromUpdate {
+		if err := model.CleanFileAccess(id); err != nil {
+			log.Warnf("%v CleanFileAccess err:%v", id, err)
+			return rpc.ErrContainerFileProtection
+		}
+		if err := model.CleanWhiteList(id); err != nil {
+			log.Warnf("%v CleanWhiteList err:%v", id, err)
+			return rpc.ErrContainerProcProtection
+		}
+	}
+
+	if sec.ProcProtection != nil {
+		exeHashList, err := generateMD5Slice(id, sec.ProcProtection.ExeList)
+		if err != nil {
+			return rpc.ErrContainerProcProtection
+		}
+		if err := model.UpdateWhiteList(id, sec.ProcProtection.IsOn, exeHashList, []string{}); err != nil {
+			log.Warnf("UpdateWhiteList %v err: %v", id, err)
+			return rpc.ErrContainerProcProtection
+		}
+	}
+
+	if sec.NprocProtection != nil {
+		var inRule = &model.ProcProtection{
+			IsOn:    sec.NprocProtection.IsOn,
+			ExeList: sec.NprocProtection.ExeList,
+		}
+
+		if err := model.SaveOpensnitchRule(inRule, id, uuid); err != nil {
+			log.Warnf("SaveOpensnitchRule id=%v err=%v", id, err)
+			return rpc.ErrContainerNprocProtection
+		}
+	}
+
+	if sec.FileProtection != nil {
+		if err := model.UpdateFileAccess(id, sec.FileProtection.IsOn, sec.FileProtection.FileList, []string{}); err != nil {
+			log.Warnf("UpdateFileAccess %v err: %v", id, err)
+			return rpc.ErrContainerFileProtection
+		}
+	}
+
+	if sec.DisableCmdOperation {
+		if err := model.AddSensitiveContainers(name, id); err != nil {
+			log.Warnf("AddSensitiveContainers err=%v", err)
+			return rpc.ErrContainerCmdOperation
+		}
+	} else {
+		if fromUpdate {
+			if err := model.DelSensitiveContainers(name, id); err != nil {
+				log.Warnf("DelSensitiveContainers err=%v", err)
+				return rpc.ErrContainerCmdOperation
+			}
+		}
+
+	}
+
+	if sec.NetworkRule != nil {
+		var rules []model.NetworkRule
+		for _, v := range sec.NetworkRule.Rules {
+			rules = append(rules, model.NetworkRule{
+				Protocols: v.Protocols,
+				Addr:      v.Addr,
+				Port:      v.Port,
+			})
+		}
+
+		fileName := id + "-" + name
+		if err := model.UpdateContainerIPtablesFile(fileName, sec.NetworkRule.IsOn, rules, pid); err != nil {
+			log.Warnf("UpdateContainerIPtablesFile %v err: %v", fileName, err)
+			return rpc.ErrContainerNetworkRule
+		}
+	}
+
+	return nil
+}
+
 func (s *ContainerServer) create(configs *pb.ContainerConfigs) (string, error) {
 	if configs == nil || configs.Image == "" || !containerNamePattern.MatchString(configs.Name) {
 		return "", rpc.ErrInvalidArgument
 	}
 
-	cli, err := dockerCli()
+	cli, err := model.DockerClient()
 	if err != nil {
 		return "", rpc.ErrInternal
 	}
@@ -174,14 +284,6 @@ func (s *ContainerServer) create(configs *pb.ContainerConfigs) (string, error) {
 	}
 	config.Env = append(config.Env, fmt.Sprintf("KS_SCMC_UUID=%s", configs.Uuid))
 
-	if configs.EnableGraphic {
-		if err := containerGraphicSetup(configs.Name, &config, &hostConfig); err != nil {
-			log.Infof("containerGraphicSetup err=%v", err)
-			return "", rpc.ErrInternal
-		}
-		config.Labels["KS_SCMC_GRAPHIC"] = "1"
-	}
-
 	for _, m := range configs.Mounts {
 		hostConfig.Mounts = append(hostConfig.Mounts, mount.Mount{
 			Type:     mount.Type(m.Type),
@@ -191,18 +293,21 @@ func (s *ContainerServer) create(configs *pb.ContainerConfigs) (string, error) {
 		})
 	}
 
+	if configs.EnableGraphic {
+		if err := containerGraphicSetup(configs.Name, &config, &hostConfig); err != nil {
+			log.Infof("containerGraphicSetup err=%v", err)
+			return "", rpc.ErrInternal
+		}
+		config.Labels["KS_SCMC_GRAPHIC"] = "1"
+	}
+
 	if configs.RestartPolicy != nil {
 		hostConfig.RestartPolicy.Name = configs.RestartPolicy.Name
 		hostConfig.RestartPolicy.MaximumRetryCount = int(configs.RestartPolicy.MaxRetry)
 	}
 
 	if configs.ResouceLimit != nil {
-		hostConfig.Resources = container.Resources{
-			NanoCPUs:          int64(configs.ResouceLimit.CpuLimit * 10e9),
-			CPUShares:         toCPUShares(configs.ResouceLimit.CpuPrio),
-			Memory:            int64(configs.ResouceLimit.MemoryLimit * megaBytes),
-			MemoryReservation: int64(configs.ResouceLimit.MemorySoftLimit * megaBytes),
-		}
+		hostConfig.Resources = dockerResourceConfig(configs.ResouceLimit)
 
 		if configs.ResouceLimit.DiskLimit > 0.0 {
 			config.Labels["KS_SCMC_DISK_LIMIT"] = fmt.Sprintf("%f", configs.ResouceLimit.DiskLimit)
@@ -218,8 +323,12 @@ func (s *ContainerServer) create(configs *pb.ContainerConfigs) (string, error) {
 			EndpointsConfig: make(map[string]*network.EndpointSettings, len(configs.Networks)),
 		}
 		for _, v := range configs.Networks {
+			if checkIfs(v.Interface) {
+				return "", rpc.ErrInvalidArgument
+			}
+
 			if v.IpAddress != "" {
-				if !checkConflict(v.Interface, v.IpAddress, int(v.IpPrefixLen)) {
+				if !checkConflict(v.Interface, v.IpAddress, int(v.IpPrefixLen), "") {
 					return "", rpc.ErrInvalidArgument
 				}
 			}
@@ -259,65 +368,13 @@ func (s *ContainerServer) create(configs *pb.ContainerConfigs) (string, error) {
 		}
 	}
 
-	if configs.SecurityConfig != nil {
-		security := configs.SecurityConfig
-		if security.ProcProtection != nil {
-			exeHashList, err := generateMD5Slice(body.ID, security.ProcProtection.ExeList)
-			if err != nil {
-				return body.ID, rpc.ErrSomeConfigFailed
-			}
-			if err := model.UpdateWhiteList(body.ID, security.ProcProtection.IsOn, exeHashList, []string{}); err != nil {
-				log.Warnf("UpdateWhiteList %v err: %v", body.ID, err)
-				return body.ID, rpc.ErrSomeConfigFailed
-			}
+	if err := s.setSecurityConfig(body.ID, configs.Uuid, configs.Name, 0, false, configs.SecurityConfig); err != nil {
+		log.Warnf("setSecurityConfig failed err=%v", err)
+		if e := s.remove(cli, body.ID, true); e != nil {
+			log.Warnf("after setSecurityConfig failed remove container=%v err=%v", body.ID, e)
+			return body.ID, err
 		}
-
-		if configs.SecurityConfig.NprocProtection != nil {
-			nProcProtection := configs.SecurityConfig.NprocProtection
-			var inRule = &model.ProcProtection{
-				Type:    int32(nProcProtection.GetProtectionType()),
-				IsOn:    nProcProtection.GetIsOn(),
-				ExeList: nProcProtection.GetExeList(),
-			}
-
-			if err := model.SaveOpensnitchRule(inRule, body.ID, configs.Uuid); err != nil {
-				return body.ID, rpc.ErrSomeConfigFailed
-			}
-		}
-
-		if security.FileProtection != nil {
-			if err := model.UpdateFileAccess(body.ID, security.FileProtection.IsOn, security.FileProtection.FileList, []string{}); err != nil {
-				log.Warnf("UpdateFileAccess %v err: %v", body.ID, err)
-				return body.ID, rpc.ErrSomeConfigFailed
-			}
-		}
-
-		if security.DisableCmdOperation {
-			if err := model.AddSensitiveContainers(configs.Name, body.ID); err != nil {
-				log.Warnf("AddSensitiveContainers err=%v", err)
-				return body.ID, rpc.ErrSomeConfigFailed
-			}
-		}
-
-		if security.NetworkRule != nil {
-			var rules []model.NetworkRule
-			if security.NetworkRule.Rules != nil {
-				for _, v := range security.NetworkRule.Rules {
-					rule := model.NetworkRule{
-						Protocols: v.Protocols,
-						Addr:      v.Addr,
-						Port:      v.Port,
-					}
-					rules = append(rules, rule)
-				}
-			}
-
-			fileName := body.ID + "-" + configs.Name
-			if err := model.AddContainerIPtablesFile(fileName, security.NetworkRule.IsOn, rules); err != nil {
-				log.Warnf("AddContainerIPtablesFile %v err: %v", body.ID, err)
-				return body.ID, rpc.ErrSomeConfigFailed
-			}
-		}
+		return "", err
 	}
 
 	return body.ID, nil
@@ -335,7 +392,7 @@ func (s *ContainerServer) Start(ctx context.Context, in *pb.StartRequest) (*pb.S
 		return nil, rpc.ErrInvalidArgument
 	}
 
-	cli, err := dockerCli()
+	cli, err := model.DockerClient()
 	if err != nil {
 		return nil, rpc.ErrInternal
 	}
@@ -360,7 +417,7 @@ func (s *ContainerServer) Stop(ctx context.Context, in *pb.StopRequest) (*pb.Sto
 		return nil, rpc.ErrInvalidArgument
 	}
 
-	cli, err := dockerCli()
+	cli, err := model.DockerClient()
 	if err != nil {
 		return nil, rpc.ErrInternal
 	}
@@ -382,7 +439,7 @@ func (s *ContainerServer) Kill(ctx context.Context, in *pb.KillRequest) (*pb.Kil
 		return nil, rpc.ErrInvalidArgument
 	}
 
-	cli, err := dockerCli()
+	cli, err := model.DockerClient()
 	if err != nil {
 		return nil, rpc.ErrInternal
 	}
@@ -404,7 +461,7 @@ func (s *ContainerServer) Restart(ctx context.Context, in *pb.RestartRequest) (*
 		return nil, rpc.ErrInvalidArgument
 	}
 
-	cli, err := dockerCli()
+	cli, err := model.DockerClient()
 	if err != nil {
 		return nil, rpc.ErrInternal
 	}
@@ -427,25 +484,33 @@ func (s *ContainerServer) Update(ctx context.Context, in *pb.UpdateRequest) (*pb
 		return nil, rpc.ErrInvalidArgument
 	}
 
+	if in.Networks != nil {
+		for _, v := range in.Networks {
+			if checkIfs(v.Interface) {
+				return nil, rpc.ErrInvalidArgument
+			}
+
+			if v.IpAddress != "" {
+				if !checkConflict(v.Interface, v.IpAddress, int(v.IpPrefixLen), in.ContainerId) {
+					return nil, rpc.ErrInvalidArgument
+				}
+			}
+		}
+	}
+
 	inspectConfigs, err := s.inspect(in.ContainerId)
 	if err != nil {
 		log.Warnf("inspect container=%v err=%v", in.ContainerId, err)
 		return nil, rpc.ErrInternal
 	}
 
-	cli, err := dockerCli()
+	cli, err := model.DockerClient()
 	if err != nil {
 		return nil, rpc.ErrInternal
 	}
 
-	config := container.UpdateConfig{}
-	if in.ResourceLimit != nil {
-		config.Resources = container.Resources{
-			NanoCPUs:          int64(in.ResourceLimit.CpuLimit * 10e9),
-			CPUShares:         toCPUShares(in.ResourceLimit.CpuPrio),
-			Memory:            int64(in.ResourceLimit.MemoryLimit * megaBytes),
-			MemoryReservation: int64(in.ResourceLimit.MemorySoftLimit * megaBytes),
-		}
+	config := container.UpdateConfig{
+		Resources: dockerResourceConfig(in.ResourceLimit),
 	}
 
 	if in.RestartPolicy != nil {
@@ -461,7 +526,11 @@ func (s *ContainerServer) Update(ctx context.Context, in *pb.UpdateRequest) (*pb
 		return nil, transDockerError(err)
 	}
 
-	var containerPid int
+	if len(body.Warnings) > 0 {
+		log.Infof("ContainerUpdate result warnings: %v", body.Warnings)
+	}
+
+	var pid int
 	if in.Networks != nil {
 		info, err := cli.ContainerInspect(context.Background(), in.ContainerId)
 		if err != nil {
@@ -469,7 +538,7 @@ func (s *ContainerServer) Update(ctx context.Context, in *pb.UpdateRequest) (*pb
 			return nil, transDockerError(err)
 		}
 		if info.State != nil {
-			containerPid = info.State.Pid
+			pid = info.State.Pid
 		}
 
 		if info.NetworkSettings != nil {
@@ -538,163 +607,82 @@ func (s *ContainerServer) Update(ctx context.Context, in *pb.UpdateRequest) (*pb
 		}
 	}
 
-	if err := model.CleanFileAccess(in.ContainerId); err != nil {
-		log.Warnf("%v CleanFileAccess err:%v", in.ContainerId, err)
+	if err := s.setSecurityConfig(in.ContainerId, "", inspectConfigs.Name, pid, true, in.SecurityConfig); err != nil {
+		log.Warnf("Update setSecurityConfig err=%v", err)
 		return nil, err
-	}
-	if err := model.CleanWhiteList(in.ContainerId); err != nil {
-		log.Warnf("%v CleanWhiteList err:%v", in.ContainerId, err)
-		return nil, err
-	}
-
-	if in.SecurityConfig != nil {
-		security := in.SecurityConfig
-		if security.ProcProtection != nil {
-			exeHashList, err := generateMD5Slice(in.ContainerId, security.ProcProtection.ExeList)
-			if err != nil {
-				return nil, err
-			}
-			if err := model.UpdateWhiteList(in.ContainerId, security.ProcProtection.IsOn, exeHashList, []string{}); err != nil {
-				log.Warnf("UpdateWhiteList %v err: %v", in.ContainerId, err)
-				return nil, err
-			}
-		}
-
-		if in.SecurityConfig != nil {
-			if in.SecurityConfig.NprocProtection != nil {
-				var inRule = &model.ProcProtection{
-					Type:    int32(in.SecurityConfig.NprocProtection.ProtectionType),
-					IsOn:    in.SecurityConfig.NprocProtection.IsOn,
-					ExeList: in.SecurityConfig.NprocProtection.ExeList,
-				}
-
-				if err := model.SaveOpensnitchRule(inRule, in.ContainerId, inspectConfigs.Uuid); err != nil {
-					return nil, err
-				}
-			}
-		}
-
-		if security.FileProtection != nil {
-			if err := model.UpdateFileAccess(in.ContainerId, security.FileProtection.IsOn, security.FileProtection.FileList, []string{}); err != nil {
-				log.Warnf("UpdateFileAccess %v err: %v", in.ContainerId, err)
-				return nil, err
-			}
-		}
-
-		if security.DisableCmdOperation {
-			if err := model.AddSensitiveContainers(inspectConfigs.Name, inspectConfigs.ContainerId); err != nil {
-				log.Warnf("AddSensitiveContainers err=%v", err)
-				return nil, rpc.ErrInternal
-			}
-		} else {
-			if err := model.DelSensitiveContainers(inspectConfigs.Name, inspectConfigs.ContainerId); err != nil {
-				log.Warnf("DelSensitiveContainers err=%v", err)
-				return nil, rpc.ErrInternal
-			}
-		}
-
-		if security.NetworkRule != nil {
-			var rules []model.NetworkRule
-			if security.NetworkRule.Rules != nil {
-				for _, v := range security.NetworkRule.Rules {
-					rule := model.NetworkRule{
-						Protocols: v.Protocols,
-						Addr:      v.Addr,
-						Port:      v.Port,
-					}
-					rules = append(rules, rule)
-				}
-			}
-
-			if containerPid == 0 {
-				info, err := cli.ContainerInspect(context.Background(), in.ContainerId)
-				if err == nil && info.State != nil {
-					containerPid = info.State.Pid
-				}
-			}
-
-			if err := model.UpdateContainerIPtablesFile(in.ContainerId, security.NetworkRule.IsOn, rules, containerPid); err != nil {
-				log.Warnf("UpdateContainerIPtablesFile %v err: %v", in.ContainerId, err)
-				return nil, err
-			}
-		}
-	}
-
-	if len(body.Warnings) > 0 {
-		log.Infof("ContainerUpdate result warnings: %v", body.Warnings)
 	}
 
 	return &reply, nil
 }
 
+func (s *ContainerServer) remove(cli *client.Client, containerID string, force bool) error {
+	if cli == nil {
+		c, err := model.DockerClient()
+		if err != nil {
+			return rpc.ErrInternal
+		}
+		cli = c
+	}
+
+	configs, err := s.inspect(containerID)
+	if err != nil {
+		log.Warnf("inspect container=%v err=%v", containerID, err)
+		return err
+	}
+
+	opts := types.ContainerRemoveOptions{RemoveVolumes: true, Force: force}
+	if err := cli.ContainerRemove(context.Background(), containerID, opts); err != nil {
+		log.Warnf("ContainerRemove: id=%v %v", containerID, err)
+		return rpc.ErrInternal
+	}
+
+	if err := model.CleanFileAccess(containerID); err != nil {
+		log.Warnf("CleanFileAccess container=%v err=%v", containerID, err)
+	}
+	if err := model.CleanWhiteList(containerID); err != nil {
+		log.Warnf("CleanWhiteList container=%v err=%v", containerID, err)
+	}
+
+	if err := model.RemoveOpensnitchRule(containerID); err != nil {
+		log.Warnf("RemoveOpensnitchRule container=%v err=%v", containerID, err)
+	}
+
+	if err := removeContainerGraphicSetup(containerID); err != nil {
+		log.Warnf("removeContainerGraphicSetup container=%v err=%v", containerID, err)
+	}
+
+	fileName := containerID + "-" + configs.Name
+	model.ContainerRemveIPtables(fileName)
+
+	if err := model.DelSensitiveContainers(configs.Name, containerID); err != nil {
+		log.Warnf("DelSensitiveContainers err=%v", err)
+	}
+
+	return nil
+}
+
 func (s *ContainerServer) Remove(ctx context.Context, in *pb.RemoveRequest) (*pb.RemoveReply, error) {
-	reply := pb.RemoveReply{}
 	if (len(in.Ids)) <= 0 || len(in.Ids[0].ContainerIds) <= 0 {
 		return nil, rpc.ErrInvalidArgument
 	}
 
-	cli, err := dockerCli()
+	cli, err := model.DockerClient()
 	if err != nil {
 		return nil, rpc.ErrInternal
 	}
 
-	opts := types.ContainerRemoveOptions{
-		RemoveVolumes: true,
-	}
-
-	for _, id := range in.Ids[0].BackupImageIds {
-		if _, err := cli.ImageRemove(context.Background(), id, types.ImageRemoveOptions{}); err != nil {
-			log.Warnf("remove backup image=%v err=%v", id, err)
-			return nil, rpc.ErrInternal
-		}
-	}
-
 	for _, id := range in.Ids[0].ContainerIds {
-		configs, err := s.inspect(id)
+		err := s.remove(cli, id, false)
 		if err != nil {
-			log.Warnf("inspect container=%v err=%v", id, err)
-			return nil, rpc.ErrInternal
+			return &pb.RemoveReply{FailIds: []string{id}}, rpc.ErrInternal
 		}
-
-		if err := model.CleanFileAccess(id); err != nil {
-			log.Warnf("CleanFileAccess container=%v err=%v", id, err)
-			return nil, rpc.ErrInternal
-		}
-		if err := model.CleanWhiteList(id); err != nil {
-			log.Warnf("CleanWhiteList container=%v err=%v", id, err)
-			return nil, rpc.ErrInternal
-		}
-
-		if err := model.RemoveOpensnitchRule(id); err != nil {
-			log.Warnf("RemoveOpensnitchRule container=%v err=%v", id, err)
-			return nil, rpc.ErrInternal
-		}
-
-		if err := removeContainerGraphicSetup(id); err != nil {
-			log.Warnf("removeContainerGraphicSetup container=%v err=%v", id, err)
-			return nil, rpc.ErrInternal
-		}
-
-		fileName := id + "-" + configs.Name
-		model.ContainerRemveIPtables(fileName)
-
-		if err := model.DelSensitiveContainers(configs.Name, id); err != nil {
-			log.Warnf("DelSensitiveContainers err=%v", err)
-			return nil, rpc.ErrInternal
-		}
-
-		if err := cli.ContainerRemove(context.Background(), id, opts); err != nil {
-			log.Warnf("ContainerRemove: id=%v %v", id, err)
-			return nil, rpc.ErrInternal
-		}
-		reply.OkIds = append(reply.OkIds, id)
 	}
 
-	return &reply, nil
+	return &pb.RemoveReply{}, nil
 }
 
 func (s *ContainerServer) inspect(id string) (*pb.ContainerConfigs, error) {
-	cli, err := dockerCli()
+	cli, err := model.DockerClient()
 	if err != nil {
 		return nil, rpc.ErrInternal
 	}
@@ -759,7 +747,7 @@ func (s *ContainerServer) inspect(id string) (*pb.ContainerConfigs, error) {
 		}
 
 		configs.ResouceLimit = &pb.ResourceLimit{
-			CpuLimit:        float64(info.HostConfig.Resources.NanoCPUs) / 10e9,
+			CpuLimit:        float64(info.HostConfig.Resources.NanoCPUs) / 1e9,
 			CpuPrio:         fromCPUShares(info.HostConfig.Resources.CPUShares),
 			MemoryLimit:     float64(info.HostConfig.Resources.Memory) / megaBytes,
 			MemorySoftLimit: float64(info.HostConfig.Resources.MemoryReservation) / megaBytes,
@@ -805,7 +793,7 @@ func (s *ContainerServer) Inspect(ctx context.Context, in *pb.InspectRequest) (*
 
 func (s *ContainerServer) MonitorHistory(ctx context.Context, in *pb.MonitorHistoryRequest) (*pb.MonitorHistoryReply, error) {
 	now := time.Now()
-	if in.StartTime >= in.EndTime || in.StartTime > now.Unix() || in.Interval < 1 || in.StartTime < now.Add(-time.Hour*24*10).Unix() {
+	if in.StartTime >= in.EndTime || in.Interval < 1 || in.StartTime < now.Add(-time.Hour*24*10).Unix() {
 		log.Info("MonitorHistory invalid time args")
 		return nil, rpc.ErrInvalidArgument
 	}
@@ -825,7 +813,7 @@ func (s *ContainerServer) MonitorHistory(ctx context.Context, in *pb.MonitorHist
 	}
 
 	if in.ContainerId != "" {
-		cli, err := dockerCli()
+		cli, err := model.DockerClient()
 		if err != nil {
 			return nil, rpc.ErrInternal
 		}
@@ -860,7 +848,7 @@ func (s *ContainerServer) MonitorHistory(ctx context.Context, in *pb.MonitorHist
 }
 
 func (*ContainerServer) RemoveBackup(ctx context.Context, in *pb.RemoveBackupRequest) (*pb.RemoveBackupReply, error) {
-	cli, err := dockerCli()
+	cli, err := model.DockerClient()
 	if err != nil {
 		return nil, rpc.ErrInternal
 	}
@@ -874,7 +862,7 @@ func (*ContainerServer) RemoveBackup(ctx context.Context, in *pb.RemoveBackupReq
 }
 
 func (s *ContainerServer) ResumeBackup(ctx context.Context, in *pb.ResumeBackupRequest) (*pb.ResumeBackupReply, error) {
-	cli, err := dockerCli()
+	cli, err := model.DockerClient()
 	if err != nil {
 		return nil, rpc.ErrInternal
 	}

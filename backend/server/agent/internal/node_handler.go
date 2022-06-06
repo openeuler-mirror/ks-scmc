@@ -8,6 +8,7 @@ import (
 	"github.com/shirou/gopsutil/mem"
 	log "github.com/sirupsen/logrus"
 
+	"scmc/model"
 	"scmc/rpc"
 	pb "scmc/rpc/pb/node"
 )
@@ -17,7 +18,7 @@ type NodeServer struct {
 }
 
 func nodeStatus() (*pb.NodeStatus, error) {
-	cli, err := dockerCli()
+	cli, err := model.DockerClient()
 	if err != nil {
 		return &pb.NodeStatus{State: int64(pb.NodeState_Unknown)}, nil
 	}

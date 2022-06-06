@@ -16,29 +16,49 @@ type NetworkServer struct {
 }
 
 func (s *NetworkServer) List(ctx context.Context, in *pb.ListRequest) (*pb.ListReply, error) {
-	nodeInfo, err := model.QueryNodeByID(in.NodeId)
-	if err != nil {
-		if err == model.ErrRecordNotFound {
-			return nil, rpc.ErrNotFound
+	reply := pb.ListReply{}
+	var nodeToQuery []*model.NodeInfo
+	if in.NodeId == -1 {
+		nodes, err := model.ListNodes()
+		if err != nil {
+			log.Warnf("query nodes: %v", err)
+			return nil, rpc.ErrInternal
 		}
-		return nil, rpc.ErrInternal
+		for i, _ := range nodes {
+			nodeToQuery = append(nodeToQuery, &nodes[i])
+		}
+	} else {
+		nodeInfo, err := model.QueryNodeByID(in.NodeId)
+		if err != nil {
+			if err == model.ErrRecordNotFound {
+				return nil, rpc.ErrNotFound
+			}
+			return nil, rpc.ErrInternal
+		}
+		nodeToQuery = append(nodeToQuery, nodeInfo)
 	}
 
-	conn, err := getAgentConn(nodeInfo.Address)
-	if err != nil {
-		return nil, rpc.ErrInternal
+	for _, node := range nodeToQuery {
+		conn, err := getAgentConn(node.Address)
+		if err != nil {
+			return nil, rpc.ErrInternal
+		}
+
+		cli := pb.NewNetworkClient(conn)
+		ctx_, cancel := context.WithTimeout(context.Background(), time.Second*10)
+		defer cancel()
+		in.NodeId = node.ID
+		subReply, err := cli.List(ctx_, in)
+		if err != nil {
+			log.Warnf("get network list ID=%v address=%v: %v", node.ID, node.Address, err)
+			return nil, rpc.ErrInternal
+		}
+
+		reply.RealIfs = append(reply.RealIfs, subReply.RealIfs...)
+		reply.VirtualIfs = append(reply.VirtualIfs, subReply.VirtualIfs...)
 	}
 
-	cli := pb.NewNetworkClient(conn)
-	ctx_, cancel := context.WithTimeout(context.Background(), time.Second*10)
-	defer cancel()
-	reply, err := cli.List(ctx_, in)
-	if err != nil {
-		log.Warnf("get network list ID=%v address=%v: %v", nodeInfo.ID, nodeInfo.Address, err)
-		return nil, rpc.ErrInternal
-	}
-
-	return reply, nil
+	return &reply, nil
 }
 
 func (s *NetworkServer) Connect(ctx context.Context, in *pb.ConnectRequest) (*pb.ConnectReply, error) {

@@ -13,6 +13,7 @@ type ContainerTemplates struct {
 	Id         int64 `gorm:"primaryKey"`
 	Name       string
 	ConfigJSON string
+	NodeId     int64
 	CreatedAt  int64 `gorm:"autoCreateTime"`
 	UpdatedAt  int64 `gorm:"autoUpdateTime"`
 }
@@ -121,7 +122,7 @@ func ListTemplate(ctx context.Context, perPage int64, nextPage int64) (*PageInfo
 	return pageinfo, containerTemplates, nil
 }
 
-func CreateTemplate(ctx context.Context, id int64, name string, configbyte []byte) (int64, error) {
+func CreateTemplate(ctx context.Context, id int64, name string, configbyte []byte, nodeId int64) (int64, error) {
 	log.Debugln("CreateTemplate")
 	db, err := getConn()
 	if err != nil {
@@ -133,6 +134,7 @@ func CreateTemplate(ctx context.Context, id int64, name string, configbyte []byt
 		Id:         id,
 		Name:       name,
 		ConfigJSON: string(configbyte),
+		NodeId:     nodeId,
 	}
 	if result := db.WithContext(ctx).Create(&templateInfo); result.Error != nil {
 		log.Errorf("db create template %v", result.Error)
@@ -142,7 +144,7 @@ func CreateTemplate(ctx context.Context, id int64, name string, configbyte []byt
 	return templateInfo.Id, nil
 }
 
-func UpdateTemplate(ctx context.Context, id int64, name string, configbyte []byte) error {
+func UpdateTemplate(ctx context.Context, id int64, name string, configbyte []byte, nodeId int64) error {
 	db, err := getConn()
 	if err != nil {
 		return err
@@ -154,6 +156,7 @@ func UpdateTemplate(ctx context.Context, id int64, name string, configbyte []byt
 		map[string]interface{}{
 			"name":        name,
 			"config_json": string(configbyte),
+			"node_id":     nodeId,
 		},
 	); result.Error != nil {
 		log.Errorf("db update template %v", result.Error)

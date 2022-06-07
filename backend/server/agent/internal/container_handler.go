@@ -328,14 +328,8 @@ func (s *ContainerServer) create(configs *pb.ContainerConfigs) (string, error) {
 			EndpointsConfig: make(map[string]*network.EndpointSettings, len(configs.Networks)),
 		}
 		for _, v := range configs.Networks {
-			if checkIfs(v.Interface) {
+			if !checkNetworkInfo("", v.Interface, &v.IpAddress, int(v.IpPrefixLen)) {
 				return "", rpc.ErrInvalidArgument
-			}
-
-			if v.IpAddress != "" {
-				if !checkConflict(v.Interface, v.IpAddress, int(v.IpPrefixLen), "") {
-					return "", rpc.ErrInvalidArgument
-				}
 			}
 
 			networkConfig.EndpointsConfig[v.Interface] = &network.EndpointSettings{
@@ -491,19 +485,13 @@ func (s *ContainerServer) Update(ctx context.Context, in *pb.UpdateRequest) (*pb
 
 	if in.Networks != nil {
 		for _, v := range in.Networks {
-			if checkIfs(v.Interface) {
+			if !checkNetworkInfo(in.ContainerId, v.Interface, &v.IpAddress, int(v.IpPrefixLen)) {
 				return nil, rpc.ErrInvalidArgument
-			}
-
-			if v.IpAddress != "" {
-				if !checkConflict(v.Interface, v.IpAddress, int(v.IpPrefixLen), in.ContainerId) {
-					return nil, rpc.ErrInvalidArgument
-				}
 			}
 		}
 	}
 
-	inspectConfigs, err := s.inspect(in.ContainerId)
+	inspectConfigs, err := s.inspect(in.ContainerId, false)
 	if err != nil {
 		log.Warnf("inspect container=%v err=%v", in.ContainerId, err)
 		return nil, rpc.ErrInternal
@@ -629,13 +617,13 @@ func (s *ContainerServer) remove(cli *client.Client, containerID string, force b
 		cli = c
 	}
 
-	configs, err := s.inspect(containerID)
+	configs, err := s.inspect(containerID, false)
 	if err != nil {
 		log.Warnf("inspect container=%v err=%v", containerID, err)
 		return err
 	}
 
-	if configs.Status == "running" {
+	if !force && configs.Status == "running" {
 		return rpc.ErrRemoveContainerWhenRunning
 	}
 
@@ -690,7 +678,7 @@ func (s *ContainerServer) Remove(ctx context.Context, in *pb.RemoveRequest) (*pb
 	return &pb.RemoveReply{}, nil
 }
 
-func (s *ContainerServer) inspect(id string) (*pb.ContainerConfigs, error) {
+func (s *ContainerServer) inspect(id string, backup bool) (*pb.ContainerConfigs, error) {
 	cli, err := model.DockerClient()
 	if err != nil {
 		return nil, rpc.ErrInternal
@@ -773,15 +761,21 @@ func (s *ContainerServer) inspect(id string) (*pb.ContainerConfigs, error) {
 				continue // "bridge" 是默认创建的网络连接, 需要忽略
 			}
 
-			IpAddress := m.IPAddress
-			if IpAddress == "" && m.IPAMConfig != nil {
-				// 当容器未运行时, 返回用户填的IP地址
-				IpAddress = m.IPAMConfig.IPv4Address
+			var ipAddr string
+			if m.IPAMConfig != nil {
+				// 返回用户填的IP地址
+				ipAddr = m.IPAMConfig.IPv4Address
 			}
+
+			if !backup && m.IPAddress != "" {
+				// 非备份情况下，当用户没填IP地址，返回运行时IP
+				ipAddr = m.IPAddress
+			}
+
 			configs.Networks = append(configs.Networks, &pb.NetworkConfig{
 				Interface:   k,
 				ContainerId: info.ID,
-				IpAddress:   IpAddress,
+				IpAddress:   ipAddr,
 				IpPrefixLen: int32(m.IPPrefixLen),
 				MacAddress:  m.MacAddress,
 				Gateway:     m.Gateway,
@@ -793,7 +787,7 @@ func (s *ContainerServer) inspect(id string) (*pb.ContainerConfigs, error) {
 }
 
 func (s *ContainerServer) Inspect(ctx context.Context, in *pb.InspectRequest) (*pb.InspectReply, error) {
-	configs, err := s.inspect(in.ContainerId)
+	configs, err := s.inspect(in.ContainerId, false)
 	if err != nil {
 		return nil, err
 	}
@@ -877,14 +871,14 @@ func (s *ContainerServer) ResumeBackup(ctx context.Context, in *pb.ResumeBackupR
 	}
 
 	// inspect container
-	configs, err := s.inspect(in.ContainerId)
+	configs, err := s.inspect(in.ContainerId, true)
 	if err != nil {
 		log.Warnf("inspect container=%v err=%v", in.ContainerId, err)
 		return nil, rpc.ErrInternal
 	}
 
 	// remove old container
-	if err := cli.ContainerRemove(context.Background(), in.ContainerId, types.ContainerRemoveOptions{RemoveVolumes: true, Force: true}); err != nil {
+	if err := s.remove(cli, in.ContainerId, true); err != nil {
 		log.Warnf("remove container=%v err=%v", in.ContainerId, err)
 		return nil, rpc.ErrInternal
 	}

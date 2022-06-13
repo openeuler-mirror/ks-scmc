@@ -90,7 +90,7 @@ get_bridge_param() {
 
     bridgeNicName="br${bridgeNicSuffix}"
     bridgeName="docker-${bridgeNicName}"
-    createDockerNicCmd="${createDockerNicCmd}docker network create --internal --driver=bridge --subnet=${bridgeSubnet} -o com.docker.network.bridge.name=${bridgeName} ${bridgeNicName}\n"
+    createDockerNicCmd="${createDockerNicCmd}docker network create --driver=bridge --subnet=${bridgeSubnet} -o com.docker.network.bridge.name=${bridgeName} ${bridgeNicName}\n"
 }
 
 get_macvlan_param() {

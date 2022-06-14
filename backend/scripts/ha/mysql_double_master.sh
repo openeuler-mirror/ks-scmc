@@ -3,19 +3,7 @@ set -e
 WORKDIR="/tmp/"
 DB_PASSWD="123456"
 CONN_STR="/usr/bin/mysql -uroot -p${DB_PASSWD}"
-IS_LOCALIP=false
 MYSQLCONF=$PWD/mysql5-server.cnf
-
-function is_localIP() {
-    machine_ips=$(ip addr | grep 'inet' | grep -v 'inet6\|127.0.0.1' | grep -v grep | awk -F '/' '{print $1}' | awk '{print $2}')
-
-    for machine_ip in ${machine_ips}; do
-        if [[ "X${machine_ip}" == "X$1" ]]; then
-            IS_LOCALIP=true
-        fi
-    done
-
-}
 
 function check_ip() {
     IP=$1
@@ -156,18 +144,12 @@ function install() {
 
     IPNUM=1
     for HOSTIP in $HOSTAIP $HOSTBIP; do
-        is_localIP ${HOSTIP}
-        if ${IS_LOCALIP}; then
-            echo "install mysql"
-            yum install -y mysql5-server mysql5
-        else
-            if [ ! -f ${HOME}/.ssh/id_rsa ]; then
-                ssh-keygen
-            fi
-            ssh-copy-id root@${HOSTIP}
-            echo "install mysql"
-            ssh root@${HOSTIP} "yum install -y mysql5-server mysql5"
+        if [ ! -f ${HOME}/.ssh/id_rsa ]; then
+            ssh-keygen
         fi
+        ssh-copy-id root@${HOSTIP}
+        echo "install mysql"
+        ssh root@${HOSTIP} "yum install -y mysql5-server mysql5"
     done
 
     modifyServerId
@@ -182,21 +164,13 @@ function install() {
 function clean() {
     read_ip
     for HOSTIP in $HOSTAIP $HOSTBIP; do
-        is_localIP ${HOSTIP}
-        if ${IS_LOCALIP}; then
-            echo "remove mysql"
-            yum remove -y mysql5-server mysql5
-            rm -fr /etc/my.cnf.d/
-            rm -fr /var/lib/mysql
-        else
-            if [ ! -f ${HOME}/.ssh/id_rsa ]; then
-                ssh-keygen
-            fi
-
-            ssh-copy-id root@${HOSTIP}
-            echo "remove mysql"
-            ssh root@${HOSTIP} "yum remove -y mysql5-server mysql5;rm -fr /etc/my.cnf.d/;rm -fr /var/lib/mysql"
+        if [ ! -f ${HOME}/.ssh/id_rsa ]; then
+            ssh-keygen
         fi
+
+        ssh-copy-id root@${HOSTIP}
+        echo "remove mysql"
+        ssh root@${HOSTIP} "yum remove -y mysql5-server mysql5;rm -fr /etc/my.cnf.d/;rm -fr /var/lib/mysql"
     done
 }
 

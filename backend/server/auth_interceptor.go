@@ -44,7 +44,7 @@ func (auth *AuthInterceptor) Unary() grpc.UnaryServerInterceptor {
 					// log.Infof("AuthInterceptor error: %v", e)
 					return nil, err
 				}
-				if info.FullMethod != "/user.User/Logout" && common.NeedCheckPerm() {
+				if info.FullMethod != "/user.User/Logout" && info.FullMethod != "/user.User/UpdatePassword" && common.NeedCheckPerm() {
 					ctx, err = auth.checkAuthorization(ctx, userID, info.FullMethod)
 					if err != nil {
 						log.Infof("AuthInterceptor method=%v user=%v error=%v", info.FullMethod, userID, err)

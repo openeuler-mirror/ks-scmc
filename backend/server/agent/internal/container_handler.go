@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"runtime"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/docker/docker/api/types"
@@ -400,14 +401,69 @@ func (s *ContainerServer) Start(ctx context.Context, in *pb.StartRequest) (*pb.S
 	for _, id := range in.Ids[0].ContainerIds {
 		if err := cli.ContainerStart(context.Background(), id, opts); err != nil {
 			log.Warnf("ContainerStart: id=%v %v", id, err)
-			return nil, rpc.ErrInternal
+			var faileReason string
+			if s, _ := status.FromError(err); s != nil {
+				faileReason = s.Message()
+			}
+			reply.FailInfos = append(reply.FailInfos, &pb.ContainerFailInfo{
+				ContainerId: id,
+				FailReason:  faileReason,
+			})
+			continue
 		}
 
 		reply.OkIds = append(reply.OkIds, id)
 	}
 
-	reply.OkIds = nil
 	return &reply, nil
+}
+
+func (s *ContainerServer) parallelProcessing(operate string, contaienrIds []string) ([]string, []*pb.ContainerFailInfo, error) {
+	cli, err := model.DockerClient()
+	if err != nil {
+		return nil, nil, rpc.ErrInternal
+	}
+
+	timeout := time.Second
+	var wg sync.WaitGroup
+	var lock sync.Mutex
+	var okIds []string
+	var failInfos []*pb.ContainerFailInfo
+
+	for _, id := range contaienrIds {
+		wg.Add(1)
+		go func(containerId string) {
+			defer wg.Done()
+			var err error
+			if "ContainerStop" == operate {
+				err = cli.ContainerStop(context.Background(), containerId, &timeout)
+			} else if "ContainerRestart" == operate {
+				err = cli.ContainerRestart(context.Background(), containerId, &timeout)
+			} else {
+				log.Warnf("%v: id=%v ", operate, containerId)
+				return
+			}
+
+			if err != nil {
+				log.Warnf("%v: id=%v %v", operate, containerId, err)
+				var faileReason string
+				if s, _ := status.FromError(err); s != nil {
+					faileReason = s.Message()
+				}
+				lock.Lock()
+				failInfos = append(failInfos, &pb.ContainerFailInfo{
+					ContainerId: containerId,
+					FailReason:  faileReason,
+				})
+				lock.Unlock()
+				return
+			}
+			okIds = append(okIds, containerId)
+		}(id)
+	}
+
+	wg.Wait()
+	return okIds, failInfos, nil
 }
 
 func (s *ContainerServer) Stop(ctx context.Context, in *pb.StopRequest) (*pb.StopReply, error) {
@@ -416,18 +472,13 @@ func (s *ContainerServer) Stop(ctx context.Context, in *pb.StopRequest) (*pb.Sto
 		return nil, rpc.ErrInvalidArgument
 	}
 
-	cli, err := model.DockerClient()
+	okIds, failInfos, err := s.parallelProcessing("ContainerStop", in.Ids[0].ContainerIds)
 	if err != nil {
-		return nil, rpc.ErrInternal
+		return nil, err
 	}
 
-	for _, id := range in.Ids[0].ContainerIds {
-		if err := cli.ContainerStop(context.Background(), id, nil); err != nil { // TODO timeout
-			log.Warnf("ContainerStop: id=%v %v", id, err)
-			return nil, rpc.ErrInternal
-		}
-		reply.OkIds = append(reply.OkIds, id)
-	}
+	reply.OkIds = append(reply.OkIds, okIds...)
+	reply.FailInfos = append(reply.FailInfos, failInfos...)
 
 	return &reply, nil
 }
@@ -446,7 +497,15 @@ func (s *ContainerServer) Kill(ctx context.Context, in *pb.KillRequest) (*pb.Kil
 	for _, id := range in.Ids[0].ContainerIds {
 		if err := cli.ContainerKill(context.Background(), id, ""); err != nil { // TODO signal
 			log.Warnf("ContainerKill: id=%v %v", id, err)
-			return nil, rpc.ErrInternal
+			var faileReason string
+			if s, _ := status.FromError(err); s != nil {
+				faileReason = s.Message()
+			}
+			reply.FailInfos = append(reply.FailInfos, &pb.ContainerFailInfo{
+				ContainerId: id,
+				FailReason:  faileReason,
+			})
+			continue
 		}
 		reply.OkIds = append(reply.OkIds, id)
 	}
@@ -460,18 +519,13 @@ func (s *ContainerServer) Restart(ctx context.Context, in *pb.RestartRequest) (*
 		return nil, rpc.ErrInvalidArgument
 	}
 
-	cli, err := model.DockerClient()
+	okIds, failInfos, err := s.parallelProcessing("ContainerRestart", in.Ids[0].ContainerIds)
 	if err != nil {
-		return nil, rpc.ErrInternal
+		return nil, err
 	}
 
-	for _, id := range in.Ids[0].ContainerIds {
-		if err := cli.ContainerRestart(context.Background(), id, nil); err != nil { // TODO timeout
-			log.Warnf("ContainerRestart: id=%v %v", id, err)
-			return nil, rpc.ErrInternal
-		}
-		reply.OkIds = append(reply.OkIds, id)
-	}
+	reply.OkIds = append(reply.OkIds, okIds...)
+	reply.FailInfos = append(reply.FailInfos, failInfos...)
 
 	return &reply, nil
 }
@@ -668,14 +722,25 @@ func (s *ContainerServer) Remove(ctx context.Context, in *pb.RemoveRequest) (*pb
 		return nil, rpc.ErrInternal
 	}
 
+	reply := pb.RemoveReply{}
 	for _, id := range in.Ids[0].ContainerIds {
 		err := s.remove(cli, id, false)
 		if err != nil {
-			return &pb.RemoveReply{FailIds: []string{id}}, err
+			var faileReason string
+			if s, _ := status.FromError(err); s != nil {
+				faileReason = s.Message()
+			}
+			reply.FailInfos = append(reply.FailInfos, &pb.ContainerFailInfo{
+				ContainerId: id,
+				FailReason:  faileReason,
+			})
+			reply.FailIds = append(reply.FailIds, id)
+			continue
 		}
+		reply.OkIds = append(reply.OkIds, id)
 	}
 
-	return &pb.RemoveReply{}, nil
+	return &reply, nil
 }
 
 func (s *ContainerServer) inspect(id string, backup bool) (*pb.ContainerConfigs, error) {

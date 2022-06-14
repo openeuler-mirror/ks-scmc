@@ -5,17 +5,10 @@ function generat_script() {
     if [[ ! -d $PWD/ks-scmc ]]; then
         mkdir $PWD/ks-scmc -p
     fi
-    cat >$PWD/ks-scmc/check_ks-scmc.sh <<'EOF'
+    cat >$PWD/ks-scmc/check_ks-scmc.sh <<EOF
 #!/bin/bash
-counter=$(netstat -na | grep "LISTEN" | grep -w "10050" | wc -l)
-if [ "${counter}" -eq 0 ]; then
-	exit 1
-fi
-
-counter=$(netstat -na | grep "LISTEN" | grep "3306" | wc -l)
-if [ "${counter}" -eq 0 ]; then
-    exit 1
-fi
+systemctl is-active -q mysqld.service || exit 1
+systemctl is-active -q ks-scmc-controller.service || exit 1
 EOF
     chmod +x $PWD/ks-scmc/check_ks-scmc.sh
 }
@@ -28,7 +21,7 @@ function generat_config() {
 
 function generat_vvrp() {
     cat >>$TMPCONF <<EOF
-    
+
 vrrp_script ${SCRIPT_NAME} {
     script ${SCRIPT_PATH}
     interval 2
@@ -107,17 +100,6 @@ function read_config() {
     KSHAIPNET=${KSHAIPNET:-ens3}
 }
 
-function is_localIP() {
-    machine_ips=$(ip addr | grep 'inet' | grep -v 'inet6\|127.0.0.1' | grep -v grep | awk -F '/' '{print $1}' | awk '{print $2}')
-
-    for machine_ip in ${machine_ips}; do
-        if [[ "X${machine_ip}" == "X$1" ]]; then
-            IS_LOCALIP=true
-        fi
-    done
-
-}
-
 function install() {
     read_ip
     read_config
@@ -137,71 +119,56 @@ function install() {
 
     generat_config
 
-    IS_LOCALIP=false
     IPNUM=1
     for HOSTIP in $HOSTAIP $HOSTBIP; do
         echo $HOSTIP
-        is_localIP ${HOSTIP}
-        if ${IS_LOCALIP}; then
-            yum install -y keepalived net-tools
-            cp keepalivedA.conf /etc/keepalived/keepalived.conf
-            systemctl restart keepalived
-        else
-            if [ ${IPNUM} -eq 1 ]; then
-                echo "添加ssh免密"
-                if [ ! -f ${HOME}/.ssh/id_rsa ]; then
-                    ssh-keygen
-                fi
-                ssh-copy-id root@${HOSTIP}
-                ssh root@${HOSTIP} "yum install -y keepalived net-tools"
-                scp keepalivedA.conf root@${HOSTIP}:/etc/keepalived/keepalived.conf
-                scp -r ks-scmc root@${HOSTIP}:/etc/keepalived/
-                # scp -r mysql root@${HOSTIP}:/etc/keepalived/
-                ssh root@${HOSTIP} "systemctl restart keepalived"
-                IPNUM=2
-            else
-                echo "添加ssh免密"
-                if [ ! -f ${HOME}/.ssh/id_rsa ]; then
-                    ssh-keygen
-                fi
-                ssh-copy-id root@${HOSTIP}
-                ssh root@${HOSTIP} "yum install -y keepalived net-tools"
-                scp keepalivedB.conf root@${HOSTIP}:/etc/keepalived/keepalived.conf
-                scp -r ks-scmc root@${HOSTIP}:/etc/keepalived/
-                # scp -r mysql root@${HOSTIP}:/etc/keepalived/
-                ssh root@${HOSTIP} "systemctl restart keepalived"
+        if [ ${IPNUM} -eq 1 ]; then
+            echo "添加ssh免密"
+            if [ ! -f ${HOME}/.ssh/id_rsa ]; then
+                ssh-keygen
             fi
+            ssh-copy-id root@${HOSTIP}
+            ssh root@${HOSTIP} "yum install -y keepalived net-tools"
+            scp keepalivedA.conf root@${HOSTIP}:/etc/keepalived/keepalived.conf
+            scp -r ks-scmc root@${HOSTIP}:/etc/keepalived/
+            # scp -r mysql root@${HOSTIP}:/etc/keepalived/
+            ssh root@${HOSTIP} "systemctl restart keepalived"
+            IPNUM=2
+        else
+            echo "添加ssh免密"
+            if [ ! -f ${HOME}/.ssh/id_rsa ]; then
+                ssh-keygen
+            fi
+            ssh-copy-id root@${HOSTIP}
+            ssh root@${HOSTIP} "yum install -y keepalived net-tools"
+            scp keepalivedB.conf root@${HOSTIP}:/etc/keepalived/keepalived.conf
+            scp -r ks-scmc root@${HOSTIP}:/etc/keepalived/
+            # scp -r mysql root@${HOSTIP}:/etc/keepalived/
+            ssh root@${HOSTIP} "systemctl restart keepalived"
         fi
     done
 }
 
 function clean() {
     read_ip
-    IS_LOCALIP=false
     IPNUM=1
     for HOSTIP in $HOSTAIP $HOSTBIP; do
         echo $HOSTIP
-        is_localIP ${HOSTIP}
-        if ${IS_LOCALIP}; then
-            yum remove -y keepalived
-            rm -fr /etc/keepalived
-        else
-            if [ ${IPNUM} -eq 1 ]; then
-                echo "添加ssh免密"
-                if [ ! -f ${HOME}/.ssh/id_rsa ]; then
-                    ssh-keygen
-                fi
-                ssh-copy-id root@${HOSTIP}
-                ssh root@${HOSTIP} "yum remove -y keepalived;rm -fr /etc/keepalived"
-                IPNUM=2
-            else
-                echo "添加ssh免密"
-                if [ ! -f ${HOME}/.ssh/id_rsa ]; then
-                    ssh-keygen
-                fi
-                ssh-copy-id root@${HOSTIP}
-                ssh root@${HOSTIP} "yum remove -y keepalived;rm -fr /etc/keepalived"
+        if [ ${IPNUM} -eq 1 ]; then
+            echo "添加ssh免密"
+            if [ ! -f ${HOME}/.ssh/id_rsa ]; then
+                ssh-keygen
             fi
+            ssh-copy-id root@${HOSTIP}
+            ssh root@${HOSTIP} "yum remove -y keepalived;rm -fr /etc/keepalived"
+            IPNUM=2
+        else
+            echo "添加ssh免密"
+            if [ ! -f ${HOME}/.ssh/id_rsa ]; then
+                ssh-keygen
+            fi
+            ssh-copy-id root@${HOSTIP}
+            ssh root@${HOSTIP} "yum remove -y keepalived;rm -fr /etc/keepalived"
         fi
     done
 }

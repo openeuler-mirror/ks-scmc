@@ -931,6 +931,19 @@ func (*ContainerServer) RemoveBackup(ctx context.Context, in *pb.RemoveBackupReq
 		return nil, rpc.ErrInternal
 	}
 
+	cc, err := model.GetContainerConfigsByUUID(backup.UUID)
+	if err != nil {
+		log.Infof("model.GetContainerConfigsByUUID err=%v", err)
+		if err == model.ErrRecordNotFound {
+			return nil, rpc.ErrNotFound
+		}
+		return nil, rpc.ErrInternal
+	}
+
+	if cc.NodeID != backup.NodeID {
+		return nil, rpc.ErrInternal
+	}
+
 	nodeInfo, err := model.QueryNodeByID(backup.NodeID)
 	if err != nil {
 		if err == model.ErrRecordNotFound {
@@ -947,11 +960,24 @@ func (*ContainerServer) RemoveBackup(ctx context.Context, in *pb.RemoveBackupReq
 	cli := pb.NewContainerClient(conn)
 	ctx_, cancel := context.WithTimeout(context.Background(), time.Second*10)
 	defer cancel()
+
+	ci, err := cli.Inspect(ctx_, &pb.InspectRequest{
+		NodeId:      backup.ID,
+		ContainerId: cc.ContainerID,
+	})
+	if err != nil {
+		return nil, rpc.ErrInternal
+	}
+
+	if ci.Configs.GetImage() == backup.ImageRef {
+		return nil, rpc.ErrRemoveContainerBackupWhenRunning
+	}
+
 	if _, err := cli.RemoveBackup(ctx_, &pb.RemoveBackupRequest{
-		Id:      in.Id,
-		ImageId: backup.ImageID,
+		Id:       in.Id,
+		ImageRef: backup.ImageRef,
 	}); err != nil {
-		log.Warnf("agent RemoveBackup image=%v err=%v", backup.ImageID, err)
+		log.Warnf("agent RemoveBackup image=%v err=%v", backup.ImageRef, err)
 		return nil, rpc.ErrInternal
 	}
 

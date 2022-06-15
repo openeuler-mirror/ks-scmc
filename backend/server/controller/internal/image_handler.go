@@ -450,7 +450,7 @@ func (s *ImageServer) Update(stream pb.Image_UpdateServer) error {
 
 	img.Description = req.Info.Description
 
-	err = model.UpadteImage(img)
+	err = model.UpdateImage(img)
 	if err != nil {
 		return rpc.ErrInternal
 	}
@@ -531,21 +531,186 @@ func (s *ImageServer) Download(in *pb.DownloadRequest, stream pb.Image_DownloadS
 	return nil
 }
 
-func (s *ImageServer) Approve(ctx context.Context, in *pb.ApproveRequest) (*pb.ApproveReply, error) {
-	if !in.Approve && in.RejectReason != "" {
-		log.Debugf("Image.Approve no reject reason")
-		return nil, rpc.ErrInvalidArgument
+func (s *ImageServer) noticeAgentSync(toRemove, toPull []string) {
+	nodes, err := model.ListNodes()
+	if err != nil {
+		log.Warnf("noticeAgentSync list nodes err=%v", err)
+		return
 	}
 
-	if err := model.ApproveImage(in.ImageId, in.Approve, in.RejectReason); err != nil {
-		return nil, rpc.ErrInternal
+	// 遍历各节点通过ImagePull拉取镜像
+	for _, n := range nodes {
+		conn, err := getAgentConn(n.Address)
+		if err != nil {
+			log.Warnf("Failed to connect to agent service, node=%+v", n)
+			continue
+		}
+
+		req := pb.AgentSyncRequest{
+			ToRemove: toRemove,
+			ToPull: toPull,
+		}
+
+		cli := pb.NewImageClient(conn)
+		for i := 0; i < 3; i++ {
+			ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+			defer cancel()
+			if _, err = cli.AgentSync(ctx, &req); err != nil {
+				log.Infof("sync image %+v on node address=%v err=%v", req , n.Address, err)
+				continue
+			}
+
+			log.Debugf("sync image %+v on node address=%v", req , n.Address)
+			break
+		}
 	}
+}
+
+func (s *ImageServer) Approve(ctx context.Context, in *pb.ApproveRequest) (*pb.ApproveReply, error) {
+	i, err := model.QueryImageByID(in.ImageId)
+	if err != nil {
+		if err == model.ErrRecordNotFound {
+			return nil, status.Errorf(codes.NotFound, "镜像不存在")
+		}
+		return nil, rpc.ErrDatabaseFail
+	}
+
+	if i.VerifyStatus != model.VerifyPass {
+		log.Warnf("the signature does not pass")
+		return nil, status.Errorf(codes.FailedPrecondition, "镜像校验未通过，无法审批")
+	}
+
+	if !in.Approve && in.RejectReason != "" {
+		return nil, status.Errorf(codes.InvalidArgument, "参数错误：拒绝原因不能为空")
+	}
+
+	if in.Approve {
+		i.ApprovalStatus = model.ApprovalPass
+	} else {
+		i.ApprovalStatus = model.ApprovalReject
+	}
+	i.RejectReason = in.RejectReason
+
+	if err := model.UpdateImage(i); err != nil {
+		log.Infof("Approve image=%+v err=%v", i, err)
+		return nil, rpc.ErrDatabaseFail
+	}
+
+	// 审批通过后 推送registry 通知agent同步
+	if in.Approve {
+		go func() {
+			model.PushImage(i)
+			s.noticeAgentSync(nil, []string{i.Name + ":" + i.Version})
+		}()
+	}
+
 	return &pb.ApproveReply{}, nil
 }
 
 func (s *ImageServer) Remove(ctx context.Context, in *pb.RemoveRequest) (*pb.RemoveReply, error) {
-	if err := model.RemoveImage(in.ImageIds); err != nil {
-		return nil, rpc.ErrInternal
+	images, err := model.QueryImageByIDs(in.ImageIds)
+	if err != nil {
+		log.Infof("DB query image info err=%v", err)
+		return nil, rpc.ErrDatabaseFail
 	}
+
+	if err := model.RemoveImages(in.ImageIds); err != nil {
+		return nil, rpc.ErrDatabaseFail
+	}
+
+	go func() {
+		// remove in registry, node agent remove local image
+		var toRemove []string
+		for _, i := range images {
+			v := i.Name + ":" + i.Version
+			if err := model.RemoveRegistryImage(v); err != nil {
+				log.Infof("registry remove image name=%v version=%v, err=%v", i.Name, i.Version, err)
+			}
+		}
+		s.noticeAgentSync(toRemove, nil)
+	}()
+
 	return &pb.RemoveReply{}, nil
+}
+
+// CronSyncImage 定时执行函数cleanRegistryImages和syncNodeImage
+func CronSyncImage() {
+	for {
+		if isMaster() {
+			SyncNodeImages()
+		}
+		time.Sleep(time.Minute)
+	}
+}
+
+// SyncNodeImages 读取数据库中镜像列表，删除节点上多余的（注意不能删除备份产生的镜像），
+// 拉取缺失的
+func SyncNodeImages() {
+	validImages, err := allValidImages()
+	if err != nil {
+		log.Infof("get valid images err=%v", err)
+		return
+	}
+
+	nodes, err := model.ListNodes()
+	if err != nil {
+		log.Warnf("Failed to list node images: %v", err)
+		return
+	}
+
+	for _, n := range nodes {
+		go syncNodeImages(validImages, n.Address)
+	}
+}
+
+func syncNodeImages(validImages map[string]int, addr string) {
+	conn, err := getAgentConn(addr)
+	if err != nil {
+		log.Warnf("Failed to connect to agent service, addr=%v", addr)
+		return
+	}
+
+	cli := pb.NewImageClient(conn)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+	defer cancel()
+	reply, err := cli.List(ctx, &pb.ListRequest{})
+	if err != nil {
+		log.Warnf("image.List for node=%v err=%v", addr, err)
+		return
+	}
+
+	nodeImages := make(map[string]bool, len(reply.Images))
+	for _, i := range reply.Images {
+		nodeImages[i.Name] = true
+	}
+
+	var req pb.AgentSyncRequest
+
+	// TODO 优化备份创建数据维护，防止备份镜像不会被错误地删除后取消下面的注释
+	// 节点存在的镜像，上传和备份中都没有，需要删除
+	// for image := range nodeImages {
+	// 	if _, ok := validImages[image]; !ok {
+	// 		req.ToRemove = append(req.ToRemove, image)
+	// 	}
+	// }
+
+	// 上传且审批通过的镜像，节点中不存在，需要同步
+	for image, t := range validImages {
+		_, ok := nodeImages[image]
+		if !ok && t == ImageSourceUpload {
+			req.ToPull = append(req.ToPull, image)
+		}
+	}
+
+	if len(req.ToRemove) == 0 && len(req.ToPull) == 0 {
+		return // no changes
+	}
+
+	ctx, cancel = context.WithTimeout(context.Background(), time.Second*10)
+	defer cancel()
+	_, err = cli.AgentSync(ctx, &req)
+	if err != nil {
+		log.Warnf("image.AgentSync for node=%v err=%v", addr, err)
+		return
+	}
 }

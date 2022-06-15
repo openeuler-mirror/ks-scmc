@@ -62,6 +62,6 @@ func Server() (*grpc.Server, error) {
 	go internal.ResumeContainerConfigs()
 	go internal.CheckContainerBackupJob()
 	go internal.DetectIllegalContainer()
-
+	go internal.CronSyncImage()
 	return s, nil
 }

@@ -28,8 +28,6 @@ import (
 // pushing with the prefix, *docker images* shows simplified repo name after pull.
 const imageRepoPrefix = "library/"
 
-var chImage = make(chan ImageInfo, 10)
-
 func registryUrl() string {
 	if common.Config.Registry.Secure {
 		return "https://" + common.Config.Registry.Addr
@@ -273,7 +271,7 @@ func pullImage(cli *client.Client, repoTag string) (io.ReadCloser, error) {
 	ctx := context.Background()
 
 	return cli.ImagePull(ctx, repoTag, types.ImagePullOptions{
-		All:          true,
+		All:          false,
 		RegistryAuth: encodedAuth,
 	})
 }
@@ -353,19 +351,19 @@ func getFileInfo(path string) (*fileInfo, error) {
 	}, nil
 }
 
-func pushImage(info ImageInfo) {
+func PushImage(info *ImageInfo) {
 	hub, err := newRegistryClient()
 	if err != nil {
 		log.Errorf("connect to registry %s err=%v", registryUrl(), err)
 		return
 	}
 
-	repositories, _ := hub.Repositories()
-	for _, repository := range repositories {
-		tags, _ := hub.Tags(repository)
+	repos, _ := hub.Repositories()
+	for _, repo := range repos {
+		tags, _ := hub.Tags(repo)
 		for _, tag := range tags {
-			if repository == info.Name && tag == info.Version {
-				log.Warnf("[%v]:[%v] is exist", repository, tag)
+			if repo == info.Name && tag == info.Version {
+				log.Warnf("[%v]:[%v] is exist", repo, tag)
 				return
 			}
 		}
@@ -381,14 +379,9 @@ func pushImage(info ImageInfo) {
 }
 
 func PushImgae() {
-	CheckImagePush()
 	for {
-		time.Sleep(time.Second)
-		select {
-		case x := <-chImage:
-			log.Debugf("PushImgae ch: %+v", x)
-			pushImage(x)
-		}
+		CheckImagePush()
+		time.Sleep(time.Minute)
 	}
 }
 

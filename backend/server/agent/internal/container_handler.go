@@ -2,6 +2,7 @@ package internal
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"regexp"
 	"runtime"
@@ -58,29 +59,43 @@ func dockerResourceConfig(in *pb.ResourceLimit) container.Resources {
 	return r
 }
 
-func ensureImage(cli *client.Client, image string) error {
+func ensureLocalImage(cli *client.Client, image string) error {
 	list, err := cli.ImageList(context.Background(), types.ImageListOptions{})
 	if err != nil {
 		log.Warnf("ImageList: %v", err)
 		return nil
 	}
-
+	log.Debugf("image: %v", image)
 	for _, i := range list {
+		log.Debugf("i.ID: %v", i.ID)
 		if i.ID == image {
 			return nil
 		}
 		for _, s := range i.RepoTags {
+			log.Debugf("repotag: %v", s)
 			if s == image {
 				return nil
 			}
 		}
 	}
 
+	return errors.New("image is not in local")
+}
+
+func ensureImage(cli *client.Client, image string) error {
+	err := ensureLocalImage(cli, image)
+	if err != nil {
+		log.Warnf("IsLocalImageExist err: %v", err)
+	}
+
 	imageExists, err := model.IsImageExist(image)
 	if err != nil {
+		log.Debugf("IsImageExist err: %v", err)
 		return err
-	} else if !imageExists {
-		return rpc.ErrInvalidArgument
+	}
+
+	if !imageExists {
+		return errors.New("image is not in registry")
 	}
 
 	if err = model.PullImage(image); err != nil {
@@ -268,7 +283,7 @@ func (s *ContainerServer) create(configs *pb.ContainerConfigs) (string, error) {
 		return "", rpc.ErrInternal
 	}
 
-	if err := ensureImage(cli, configs.Image); err != nil {
+	if err := ensureLocalImage(cli, configs.Image); err != nil {
 		if _, ok := status.FromError(err); ok {
 			return "", err
 		}
@@ -925,8 +940,8 @@ func (*ContainerServer) RemoveBackup(ctx context.Context, in *pb.RemoveBackupReq
 		return nil, rpc.ErrInternal
 	}
 
-	if _, err := cli.ImageRemove(context.Background(), in.ImageId, types.ImageRemoveOptions{}); err != nil {
-		log.Warnf("remove image=%v err=%v", in.ImageId, err)
+	if _, err := cli.ImageRemove(context.Background(), in.ImageRef, types.ImageRemoveOptions{}); err != nil {
+		log.Warnf("remove image=%v err=%v", in.ImageRef, err)
 		return nil, rpc.ErrInternal
 	}
 

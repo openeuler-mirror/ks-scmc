@@ -2,13 +2,7 @@
 package model
 
 import (
-	"errors"
-	"fmt"
-	"os"
-
 	log "github.com/sirupsen/logrus"
-
-	"scmc/common"
 )
 
 const (
@@ -45,6 +39,21 @@ func (ImageInfo) TableName() string {
 	return "image_infos"
 }
 
+func FindImage(ids []int64) ([]ImageInfo, error) {
+	db, err := getConn()
+	if err != nil {
+		return nil, err
+	}
+	var images []ImageInfo
+	result := db.First(&images, ids)
+	if result.Error != nil {
+		log.Errorf("db query images: %v", result.Error)
+		return nil, result.Error
+	}
+
+	return images, nil
+}
+
 func ListImages() ([]ImageInfo, error) {
 	db, err := getConn()
 	if err != nil {
@@ -77,44 +86,30 @@ func CreateImages(image ImageInfo) (int64, error) {
 	return image.ID, nil
 }
 
-func RemoveImageFile(images []ImageInfo) error {
-	for _, image := range images {
-		err := os.Remove(image.FilePath)
-		signFileName := fmt.Sprintf("%s/%s_%s.sign", common.Config.Controller.ImageDir, image.Name, image.Version)
-		errSign := os.Remove(signFileName)
-		log.Debugf("db remove image file %v: %v, %v: %v", image.FilePath, err, signFileName, errSign)
-	}
-
-	return nil
-}
-
-func RemoveImage(ids []int64) error {
+func RemoveImages(ids []int64) error {
 	db, err := getConn()
 	if err != nil {
 		return err
 	}
 
 	var images []ImageInfo
-	db.Find(&images, ids)
-
-	result := db.Where("id IN ?", ids).Delete(ImageInfo{})
+	result := db.Find(&images, ids)
 	if result.Error != nil {
 		log.Errorf("db remove image ids=%v: %v", ids, result.Error)
 		return result.Error
 	}
 
-	RemoveImageFile(images)
-
-	for _, info := range images {
-		k := info.Name + ":" + info.Version
-		RemoveRegistryImage(k)
+	result = db.Where("id IN ?", ids).Delete(ImageInfo{})
+	if result.Error != nil {
+		log.Errorf("db remove image ids=%v: %v", ids, result.Error)
+		return result.Error
 	}
 
 	log.Debugf("db remove image ids=%v OK", ids)
 	return nil
 }
 
-func UpadteImage(image *ImageInfo) error {
+func UpdateImage(image *ImageInfo) error {
 	db, err := getConn()
 	if err != nil {
 		return err
@@ -126,41 +121,6 @@ func UpadteImage(image *ImageInfo) error {
 		return translateError(err)
 	}
 
-	return nil
-}
-
-func ApproveImage(id int64, approve bool, reason string) error {
-	db, err := getConn()
-	if err != nil {
-		return err
-	}
-	var imageInfo ImageInfo
-	result := db.First(&imageInfo, id)
-	if result.Error != nil {
-		log.Warnf("ApproveImage query image id=%v: %v", id, result.Error)
-		return translateError(result.Error)
-	}
-
-	if approve && imageInfo.VerifyStatus != VerifyPass {
-		log.Warnf("the signature does not pass")
-		return errors.New("the signature does not pass")
-	}
-
-	if approve {
-		imageInfo.ApprovalStatus = ApprovalPass
-	} else {
-		imageInfo.ApprovalStatus = ApprovalReject
-	}
-
-	imageInfo.RejectReason = reason
-
-	err = db.Save(&imageInfo).Error
-	if err != nil {
-		log.Warnf("ApproveImage update %+v err=%v", imageInfo, err)
-		return translateError(err)
-	}
-
-	chImage <- imageInfo
 	return nil
 }
 
@@ -201,4 +161,42 @@ func QueryImageByID(id int64) (*ImageInfo, error) {
 	}
 
 	return &imageInfo, nil
+}
+
+func QueryImageByIDs(ids []int64) ([]*ImageInfo, error) {
+	db, err := getConn()
+	if err != nil {
+		return nil, err
+	}
+
+	var data []*ImageInfo
+	if err := db.Find(&data, "id IN ?", ids).Error; err != nil {
+		log.Warnf("query image ids=%v: %v", ids, err)
+		return nil, translateError(err)
+	}
+
+	return data, nil
+}
+
+func GetRepositoriesImages() map[string][]string {
+	hub, err := newRegistryClient()
+	if err != nil {
+		log.Warnf("connect to registry [%v][%v][%v], err=%v", registryUrl(), registryUsername(), registryPassword(), err)
+		return nil
+	}
+	repositories, err := hub.Repositories()
+	if err != nil {
+		log.Warnf("get registry err=%v", err)
+		return nil
+	}
+	repositoriesimagemap := make(map[string][]string)
+	for _, repository := range repositories {
+		tags, err := hub.Tags(repository)
+		if err != nil {
+			log.Warnf("tag %v ", err)
+			return nil
+		}
+		repositoriesimagemap[repository] = tags
+	}
+	return repositoriesimagemap
 }

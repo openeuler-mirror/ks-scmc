@@ -22,7 +22,7 @@ func getNodeStatus(node *model.NodeInfo) (*pb.NodeStatus, error) {
 	}
 
 	cli := pb.NewNodeClient(conn)
-	ctx_, cancel := context.WithTimeout(context.Background(), time.Second*2)
+	ctx_, cancel := context.WithTimeout(context.Background(), time.Second*50)
 	defer cancel()
 	r, err := cli.Status(ctx_, &pb.StatusRequest{})
 	if err != nil {
@@ -74,7 +74,7 @@ func writeNodeWatchLogs(n *pb.NodeInfo) []*model.WarnLog {
 	if n.Status == nil {
 		r = append(r, &model.WarnLog{
 			NodeId:      n.Id,
-			NodeInfo:    n.Name + " " + n.Address,
+			NodeInfo:    fmt.Sprintf("%s (%s)", n.Name, n.Address),
 			EventType:   int64(logging.EVENT_TYPE_WARN_NODE_OFFLINE),
 			EventModule: int64(logging.EVENT_MODULE_NODE),
 			Detail:      "节点离线",
@@ -85,7 +85,7 @@ func writeNodeWatchLogs(n *pb.NodeInfo) []*model.WarnLog {
 	if n.Status.State != int64(pb.NodeState_Online) {
 		r = append(r, &model.WarnLog{
 			NodeId:      n.Id,
-			NodeInfo:    n.Name + " " + n.Address,
+			NodeInfo:    fmt.Sprintf("%s (%s)", n.Name, n.Address),
 			EventType:   int64(logging.EVENT_TYPE_WARN_NODE_ABNORMAL),
 			EventModule: int64(logging.EVENT_MODULE_NODE),
 			Detail:      "节点状态异常",
@@ -97,7 +97,7 @@ func writeNodeWatchLogs(n *pb.NodeInfo) []*model.WarnLog {
 			if n.Status.CpuStat.Used > n.RscLimit.CpuLimit {
 				r = append(r, &model.WarnLog{
 					NodeId:      n.Id,
-					NodeInfo:    n.Name + " " + n.Address,
+					NodeInfo:    fmt.Sprintf("%s (%s)", n.Name, n.Address),
 					EventType:   int64(logging.EVENT_TYPE_WARN_RESOURCE_USAGE),
 					EventModule: int64(logging.EVENT_MODULE_NODE),
 					Detail:      fmt.Sprintf("CPU使用率 %.2f%%", n.Status.CpuStat.Used*100),
@@ -109,7 +109,7 @@ func writeNodeWatchLogs(n *pb.NodeInfo) []*model.WarnLog {
 			if float64(n.Status.MemStat.Used) > n.RscLimit.MemoryLimit {
 				r = append(r, &model.WarnLog{
 					NodeId:      n.Id,
-					NodeInfo:    n.Name + " " + n.Address,
+					NodeInfo:    fmt.Sprintf("%s (%s)", n.Name, n.Address),
 					EventType:   int64(logging.EVENT_TYPE_WARN_RESOURCE_USAGE),
 					EventModule: int64(logging.EVENT_MODULE_NODE),
 					Detail:      fmt.Sprintf("内存使用 %dMB", n.Status.MemStat.Used),
@@ -121,7 +121,7 @@ func writeNodeWatchLogs(n *pb.NodeInfo) []*model.WarnLog {
 			if float64(n.Status.DiskStat.Used) > n.RscLimit.DiskLimit {
 				r = append(r, &model.WarnLog{
 					NodeId:      n.Id,
-					NodeInfo:    n.Name + " " + n.Address,
+					NodeInfo:    fmt.Sprintf("%s (%s)", n.Name, n.Address),
 					EventType:   int64(logging.EVENT_TYPE_WARN_RESOURCE_USAGE),
 					EventModule: int64(logging.EVENT_MODULE_NODE),
 					Detail:      fmt.Sprintf("磁盘使用 %dMB", n.Status.DiskStat.Used),

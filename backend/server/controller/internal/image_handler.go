@@ -12,6 +12,8 @@ import (
 
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/crypto/openpgp"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 
 	"scmc/common"
 	"scmc/model"
@@ -193,6 +195,12 @@ func (s *ImageServer) Upload(stream pb.Image_UploadServer) error {
 
 	if req.Info == nil || req.Sign == nil {
 		return rpc.ErrInvalidArgument
+	} else if !isValidImageName(req.Info.Name) {
+		return status.Errorf(codes.InvalidArgument, "镜像名参数错误")
+	} else if !isValidImageVersion(req.Info.Version) {
+		return status.Errorf(codes.InvalidArgument, "镜像版本参数错误")
+	} else if !isValidImageDesc(req.Info.Description) {
+		return status.Errorf(codes.InvalidArgument, "镜像描述参数错误")
 	}
 
 	fileName := fmt.Sprintf("%s/%s_%s%s", imageDir(), req.Info.Name, req.Info.Version, req.Info.Type)
@@ -320,14 +328,14 @@ func (s *ImageServer) Update(stream pb.Image_UpdateServer) error {
 		return rpc.ErrUnknown
 	}
 
-	if req.Info == nil {
+	if req.Info == nil || (req.Info.Size != 0 && req.Sign == nil) || (req.Info.Size == 0 && req.Sign != nil) {
 		return rpc.ErrInvalidArgument
-	}
-	if req.Info.Size != 0 && req.Sign == nil {
-		return rpc.ErrInvalidArgument
-	}
-	if req.Info.Size == 0 && req.Sign != nil {
-		return rpc.ErrInvalidArgument
+	} else if !isValidImageName(req.Info.Name) {
+		return status.Errorf(codes.InvalidArgument, "镜像名参数错误")
+	} else if !isValidImageVersion(req.Info.Version) {
+		return status.Errorf(codes.InvalidArgument, "镜像版本参数错误")
+	} else if !isValidImageDesc(req.Info.Description) {
+		return status.Errorf(codes.InvalidArgument, "镜像描述参数错误")
 	}
 
 	img, err := model.QueryImageByID(req.ImageId)

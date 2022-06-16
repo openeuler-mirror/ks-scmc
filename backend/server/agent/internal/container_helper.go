@@ -3,7 +3,6 @@ package internal
 import (
 	"os"
 	"path/filepath"
-	"regexp"
 
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/mount"
@@ -13,13 +12,11 @@ import (
 )
 
 const (
-	containerSocketPath = "/tmp/.X11-unix"
-	containerAuthPath   = "/tmp/.xauth"
-	authFile            = "Xauthority"
+	containerSocketPath  = "/tmp/.X11-unix"
+	containerAuthPath    = "/tmp/.xauth"
+	authFile             = "Xauthority"
+	containerNamePattern = `^[a-zA-Z0-9][a-zA-Z0-9_.-]+$`
 )
-const containerNameChars = `[a-zA-Z0-9][a-zA-Z0-9_.-]`
-
-var containerNamePattern = regexp.MustCompile(`^` + containerNameChars + `+$`)
 
 func containerGraphicSetup(containerName string, config *container.Config, hostConfig *container.HostConfig) error {
 	hostPath := filepath.Join(common.Config.Agent.ContainerExtraDataBasedir, containerName)

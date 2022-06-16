@@ -2,11 +2,13 @@ package internal
 
 import (
 	"context"
-	"net"
-	"regexp"
 	"time"
+	"unicode/utf8"
 
 	log "github.com/sirupsen/logrus"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 
 	"scmc/model"
 	"scmc/rpc"
@@ -45,17 +47,12 @@ func (s *NodeServer) List(ctx context.Context, in *pb.ListRequest) (*pb.ListRepl
 }
 
 func (s *NodeServer) Create(ctx context.Context, in *pb.CreateRequest) (*pb.CreateReply, error) {
-	if in.Name == "" || in.Address == "" {
-		return nil, rpc.ErrInvalidArgument
-	}
-
-	isIp := net.ParseIP(in.Address)
-	isDomain, _ := regexp.MatchString("^[a-zA-Z][a-zA-Z0-9-.]{0,253}[a-zA-Z0-9]$", in.Address)
-	log.Debugf("node_handle ip: [%v], [%v], [%v]", isIp, isDomain, in.Address)
-
-	if isIp == nil && !isDomain {
-		log.Warnf("node_handle ip err: %v", in.Address)
-		return nil, rpc.ErrInvalidArgument
+	if !isValidNodeAddr(in.Address) {
+		return nil, status.Errorf(codes.InvalidArgument, "节点地址参数错误")
+	} else if !isValidNodeName(in.Name) {
+		return nil, status.Errorf(codes.InvalidArgument, "节点名称参数错误")
+	} else if !isValidNodeComment(in.Comment) {
+		return nil, status.Errorf(codes.InvalidArgument, "节点备注参数错误")
 	}
 
 	conn, err := getAgentConn(in.Address)
@@ -164,6 +161,12 @@ func (s *NodeServer) Status(ctx context.Context, in *pb.StatusRequest) (*pb.Stat
 }
 
 func (s *NodeServer) Update(ctx context.Context, in *pb.UpdateRequest) (*pb.UpdateReply, error) {
+	if utf8.RuneCountInString(in.Name) < 1 || utf8.RuneCountInString(in.Name) > 50 {
+		return nil, grpc.Errorf(codes.InvalidArgument, "节点名长度限制1-50")
+	} else if utf8.RuneCountInString(in.Comment) > 200 {
+		return nil, grpc.Errorf(codes.InvalidArgument, "节点备注长度限制0-200")
+	}
+
 	nodeInfo, err := model.QueryNodeByID(in.NodeId)
 	if err != nil {
 		if err == model.ErrRecordNotFound {

@@ -2,11 +2,82 @@ package internal
 
 import (
 	"math"
+	"net"
+	"regexp"
 	"sort"
+	"unicode/utf8"
 
 	pb "scmc/rpc/pb/container"
 	"scmc/rpc/pb/security"
 )
+
+const (
+	containerNamePattern = `^[a-zA-Z0-9][a-zA-Z0-9_.-]+$`
+	imageNamePattern     = `^[a-z0-9][a-z0-9_.-]*[a-z0-9]$`
+	imageVersionPattern  = containerNamePattern
+)
+
+func isValidNodeAddr(s string) bool {
+	c := utf8.RuneCountInString(s)
+	if c < 1 || c > 200 {
+		return false
+	}
+
+	ip := net.ParseIP(s)
+	isDomain := regexp.MustCompile("^[a-zA-Z][a-zA-Z0-9-.]{0,253}[a-zA-Z0-9]$").MatchString(s)
+	return ip != nil || isDomain
+}
+
+func isValidNodeName(s string) bool {
+	c := utf8.RuneCountInString(s)
+	return c >= 1 && c <= 50
+}
+
+func isValidNodeComment(s string) bool {
+	c := utf8.RuneCountInString(s)
+	return c <= 200
+}
+
+func isValidContainerName(s string) bool {
+	c := utf8.RuneCountInString(s)
+	if c < 1 || c > 50 {
+		return false
+	}
+
+	return regexp.MustCompile(containerNamePattern).MatchString(s)
+}
+
+func isValidContainerDesc(s string) bool {
+	c := utf8.RuneCountInString(s)
+	return c <= 200
+}
+
+func isValidImageName(s string) bool {
+	c := utf8.RuneCountInString(s)
+	if c < 1 || c > 50 {
+		return false
+	}
+
+	return regexp.MustCompile(imageNamePattern).MatchString(s)
+}
+
+func isValidImageVersion(s string) bool {
+	c := utf8.RuneCountInString(s)
+	if c < 1 || c > 20 {
+		return false
+	}
+
+	return regexp.MustCompile(imageVersionPattern).MatchString(s)
+}
+
+func isValidImageDesc(s string) bool {
+	c := utf8.RuneCountInString(s)
+	return c <= 200
+}
+
+func isValidBackupDesc(s string) bool {
+	return utf8.RuneCountInString(s) <= 200
+}
 
 func resourceLimitDiff(r0, r1 *pb.ResourceLimit) bool {
 	if r0 == nil && r1 == nil {

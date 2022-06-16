@@ -3,6 +3,7 @@ package internal
 import (
 	"context"
 	"fmt"
+	"regexp"
 	"runtime"
 	"strings"
 	"sync"
@@ -13,6 +14,7 @@ import (
 	"github.com/docker/docker/api/types/mount"
 	"github.com/docker/docker/api/types/network"
 	"github.com/docker/docker/client"
+	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
 	"github.com/shirou/gopsutil/mem"
@@ -255,8 +257,10 @@ func (s *ContainerServer) setSecurityConfig(id, uuid, name string, pid int, from
 }
 
 func (s *ContainerServer) create(configs *pb.ContainerConfigs) (string, error) {
-	if configs == nil || configs.Image == "" || !containerNamePattern.MatchString(configs.Name) {
+	if configs == nil || configs.Image == "" {
 		return "", rpc.ErrInvalidArgument
+	} else if !regexp.MustCompile(containerNamePattern).MatchString(configs.Name) {
+		return "", status.Errorf(codes.InvalidArgument, "容器名参数错误")
 	}
 
 	cli, err := model.DockerClient()

@@ -12,6 +12,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 
 	"scmc/common"
 	"scmc/model"
@@ -100,8 +101,12 @@ func (s *ContainerServer) List(ctx context.Context, in *pb.ListRequest) (*pb.Lis
 }
 
 func (s *ContainerServer) Create(ctx context.Context, in *pb.CreateRequest) (*pb.CreateReply, error) {
-	if in.Configs == nil {
+	if in.Configs == nil || in.NodeId <= 0 {
 		return nil, rpc.ErrInvalidArgument
+	} else if !isValidContainerName(in.Configs.Name) {
+		return nil, status.Errorf(codes.InvalidArgument, "容器名参数错误")
+	} else if !isValidContainerDesc(in.Configs.Desc) {
+		return nil, status.Errorf(codes.InvalidArgument, "容器描述参数错误")
 	}
 
 	nodeInfo, err := model.QueryNodeByID(in.NodeId)
@@ -732,59 +737,59 @@ func (s *ContainerServer) ListTemplate(ctx context.Context, in *pb.ListTemplateR
 }
 
 func (s *ContainerServer) CreateTemplate(ctx context.Context, in *pb.CreateTemplateRequest) (*pb.CreateTemplateReply, error) {
-	reply := pb.CreateTemplateReply{}
-	if data := in.GetData(); data != nil {
-		id := data.GetId()
-		if id < 0 {
-			reply.Id = -1
-			return &reply, errors.New("id error")
-		}
-		nodeId := data.NodeId
-		if nodeId <= 0 {
-			return nil, rpc.ErrInvalidArgument
-		}
-
-		name := data.GetConf().Name
-		confbyte, err := json.Marshal(data.Conf)
-		if err != nil {
-			return nil, err
-		}
-
-		id, err = model.CreateTemplate(ctx, id, name, confbyte, nodeId)
-		if err != nil {
-			log.Println(err)
-		}
-		reply.Id = id
-	} else {
-		return nil, errors.New("request is null")
+	if in.Data == nil || in.Data.Conf == nil || in.Data.NodeId <= 0 {
+		return nil, rpc.ErrInvalidArgument
+	} else if !isValidContainerName(in.Data.Conf.Name) {
+		return nil, grpc.Errorf(codes.InvalidArgument, "模板名参数错误")
+	} else if !isValidContainerDesc(in.Data.Conf.Desc) {
+		return nil, grpc.Errorf(codes.InvalidArgument, "模板描述参数错误")
 	}
+
+	reply := pb.CreateTemplateReply{}
+	data := in.Data
+	id := data.Id
+	if id < 0 {
+		reply.Id = -1
+		return &reply, grpc.Errorf(codes.InvalidArgument, "id error")
+	}
+
+	confbyte, err := json.Marshal(data.Conf)
+	if err != nil {
+		return nil, err
+	}
+
+	id, err = model.CreateTemplate(ctx, id, data.Conf.Name, confbyte, data.NodeId)
+	if err != nil {
+		log.Println(err)
+	}
+	reply.Id = id
 
 	return &reply, nil
 }
 
 func (s *ContainerServer) UpdateTemplate(ctx context.Context, in *pb.UpdateTemplateRequest) (*pb.UpdateTemplateReply, error) {
-	reply := pb.UpdateTemplateReply{}
-	if data := in.GetData(); data != nil {
-		id := data.GetId()
-		if id < 1 {
-			return &reply, errors.New("id error")
-		}
-		nodeId := data.NodeId
-		if nodeId <= 0 {
-			return nil, rpc.ErrInvalidArgument
-		}
-		name := data.GetConf().Name
-		confbyte, err := json.Marshal(data.Conf)
-		if err != nil {
-			return nil, err
-		}
-		err = model.UpdateTemplate(ctx, id, name, confbyte, nodeId)
-		if err != nil {
-			log.Println(err)
-		}
+	if in.Data == nil || in.Data.Conf == nil || in.Data.NodeId <= 0 {
+		return nil, rpc.ErrInvalidArgument
+	} else if !isValidContainerName(in.Data.Conf.Name) {
+		return nil, grpc.Errorf(codes.InvalidArgument, "模板名参数错误")
+	} else if !isValidContainerDesc(in.Data.Conf.Desc) {
+		return nil, grpc.Errorf(codes.InvalidArgument, "模板描述参数错误")
+	}
 
-	} else {
-		return nil, errors.New("request is null")
+	reply := pb.UpdateTemplateReply{}
+	data := in.Data
+	id := data.Id
+	if id < 1 {
+		return &reply, errors.New("id error")
+	}
+
+	confbyte, err := json.Marshal(data.Conf)
+	if err != nil {
+		return nil, err
+	}
+	err = model.UpdateTemplate(ctx, id, data.Conf.Name, confbyte, data.NodeId)
+	if err != nil {
+		log.Println(err)
 	}
 
 	return &reply, nil
@@ -842,6 +847,10 @@ func (*ContainerServer) CreateBackup(ctx context.Context, in *pb.CreateBackupReq
 		return nil, rpc.ErrInvalidArgument
 	}
 
+	if !isValidBackupDesc(in.BackupDesc) {
+		return nil, status.Errorf(codes.InvalidArgument, "参数错误：备份描述无效")
+	}
+
 	configs, err := model.GetContainerConfigs(in.NodeId, in.ContainerId)
 	if err != nil {
 		log.Infof("model.GetContainerConfigs err=%v", err)
@@ -890,6 +899,10 @@ func (*ContainerServer) CreateBackup(ctx context.Context, in *pb.CreateBackupReq
 }
 
 func (*ContainerServer) UpdateBackup(ctx context.Context, in *pb.UpdateBackupRequest) (*pb.UpdateBackupReply, error) {
+	if !isValidBackupDesc(in.BackupDesc) {
+		return nil, status.Errorf(codes.InvalidArgument, "参数错误：备份描述无效")
+	}
+
 	data, err := model.QueryContainerBackupByID(in.Id)
 	if err != nil {
 		log.Infof("model.QueryContainerBackupByID err=%v", err)

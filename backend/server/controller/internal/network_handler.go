@@ -41,17 +41,30 @@ func (s *NetworkServer) List(ctx context.Context, in *pb.ListRequest) (*pb.ListR
 	for _, node := range nodeToQuery {
 		conn, err := getAgentConn(node.Address)
 		if err != nil {
-			return nil, rpc.ErrInternal
+			if len(nodeToQuery) == 1 {
+				return nil, rpc.ErrInternal
+			}
+			continue
 		}
 
 		cli := pb.NewNetworkClient(conn)
 		ctx_, cancel := context.WithTimeout(context.Background(), time.Second*10)
 		defer cancel()
-		in.NodeId = node.ID
 		subReply, err := cli.List(ctx_, in)
 		if err != nil {
 			log.Warnf("get network list ID=%v address=%v: %v", node.ID, node.Address, err)
-			return nil, rpc.ErrInternal
+			if len(nodeToQuery) == 1 {
+				return nil, rpc.ErrInternal
+			}
+			continue
+		}
+
+		for _, v := range subReply.VirtualIfs {
+			v.NodeId = node.ID
+		}
+
+		for _, v := range subReply.RealIfs {
+			v.NodeId = node.ID
 		}
 
 		reply.RealIfs = append(reply.RealIfs, subReply.RealIfs...)

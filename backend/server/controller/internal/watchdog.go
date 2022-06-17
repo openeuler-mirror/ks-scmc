@@ -138,12 +138,13 @@ func writeNodeWatchLogs(n *pb.NodeInfo) []*model.WarnLog {
 }
 
 func NodeStatusMonitor() {
-	// TODO: check current host is the master
 	// TODO: container monitor data
 	for {
-		nodeData := getAllNodeData(true)
-		for _, n := range nodeData {
-			writeNodeWatchLogs(n)
+		if isMaster() {
+			nodeData := getAllNodeData(true)
+			for _, n := range nodeData {
+				writeNodeWatchLogs(n)
+			}
 		}
 		time.Sleep(time.Minute)
 	}

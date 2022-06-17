@@ -2,16 +2,49 @@ package internal
 
 import (
 	"context"
+	"net"
 	"strings"
 	"time"
 
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 
+	"scmc/common"
 	"scmc/model"
 	pb "scmc/rpc/pb/container"
 	"scmc/rpc/pb/logging"
 )
+
+func isMaster() bool {
+	ifaceName, vip := common.Config.Controller.VirtualIf, common.Config.Controller.VirtualIP
+	if ifaceName == "" || vip == "" {
+		return true
+	}
+
+	iface, err := net.InterfaceByName(ifaceName)
+	if err != nil {
+		log.Warnf("net.InterfaceByName iface=%s err=%v", ifaceName, err)
+		return false
+	}
+
+	addrs, err := iface.Addrs()
+	if err != nil {
+		log.Warnf("get iface=%s address list, err=%v", ifaceName, err)
+	}
+
+	for _, i := range addrs {
+		addr, _, err := net.ParseCIDR(i.String())
+		if err != nil {
+			log.Warnf("net.ParseCIDR(%s) err=%v", i.String(), err)
+			return false
+		}
+		if addr.String() == vip {
+			return true
+		}
+	}
+
+	return false
+}
 
 func GetBackupJob(conn *grpc.ClientConn, id int64) (*pb.GetBackupJobReply, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
@@ -29,57 +62,59 @@ func DelBackupJob(conn *grpc.ClientConn, id int64) (*pb.DelBackupJobReply, error
 	return cli.DelBackupJob(ctx, &pb.DelBackupJobRequest{Id: id})
 }
 
-func CheckContainerBackupJob() {
-	runner := func() {
-		jobs, err := model.QueryUndoneContainerBackup()
+func checkContainerBackupJob() {
+	jobs, err := model.QueryUndoneContainerBackup()
+	if err != nil {
+		log.Warnf("model.QueryContainerBackups err=%v", err)
+		return
+	}
+
+	for _, job := range jobs {
+		nodeInfo, err := model.QueryNodeByID(job.NodeID)
 		if err != nil {
-			log.Warnf("model.QueryContainerBackups err=%v", err)
-			return
+			log.Warnf("model.QueryNodeByID node_id=%v err=%v", job.NodeID, err)
+			continue
 		}
 
-		for _, job := range jobs {
-			nodeInfo, err := model.QueryNodeByID(job.NodeID)
-			if err != nil {
-				log.Warnf("model.QueryNodeByID node_id=%v err=%v", job.NodeID, err)
+		conn, err := getAgentConn(nodeInfo.Address)
+		if err != nil {
+			log.Warnf("get agent conn addr=%v err=%v", nodeInfo.Address, err)
+			continue
+		}
+
+		rep, err := GetBackupJob(conn, job.ID)
+		if err != nil {
+			log.Warnf("GetBackupJob id=%v err=%v", job.ID, err)
+			continue
+		}
+
+		if rep.Status != 0 || time.Since(time.Unix(rep.UpdatedAt, 0)) > time.Minute*5 {
+			job.ImageRef = rep.ImageRef
+			job.ImageID = rep.ImageId
+			job.ImageSize = rep.ImageSize
+			job.Status = int8(rep.Status)
+			if job.Status == 0 { // 超时
+				job.Status = 2
+			}
+
+			if err := model.UpdateContainerBackup(job); err != nil {
+				log.Warnf("model.UpdateContainerBackup id=%v err=%v", job.ID, err)
 				continue
 			}
 
-			conn, err := getAgentConn(nodeInfo.Address)
+			_, err = DelBackupJob(conn, job.ID)
 			if err != nil {
-				log.Warnf("get agent conn addr=%v err=%v", nodeInfo.Address, err)
-				continue
-			}
-
-			rep, err := GetBackupJob(conn, job.ID)
-			if err != nil {
-				log.Warnf("GetBackupJob id=%v err=%v", job.ID, err)
-				continue
-			}
-
-			if rep.Status != 0 || time.Since(time.Unix(rep.UpdatedAt, 0)) > time.Minute*5 {
-				job.ImageRef = rep.ImageRef
-				job.ImageID = rep.ImageId
-				job.ImageSize = rep.ImageSize
-				job.Status = int8(rep.Status)
-				if job.Status == 0 { // 超时
-					job.Status = 2
-				}
-
-				if err := model.UpdateContainerBackup(job); err != nil {
-					log.Warnf("model.UpdateContainerBackup id=%v err=%v", job.ID, err)
-					continue
-				}
-
-				_, err = DelBackupJob(conn, job.ID)
-				if err != nil {
-					log.Warnf("DelBackupJob id=%v err=%v", job.ID, err)
-				}
+				log.Warnf("DelBackupJob id=%v err=%v", job.ID, err)
 			}
 		}
 	}
+}
 
+func CheckContainerBackupJob() {
 	for {
-		runner()
+		if isMaster() {
+			checkContainerBackupJob()
+		}
 		time.Sleep(time.Minute)
 	}
 }
@@ -183,7 +218,9 @@ func (t IllegalContainerDetection) Run() {
 
 func DetectIllegalContainer() {
 	for {
-		IllegalContainerDetection{}.Run()
+		if isMaster() {
+			IllegalContainerDetection{}.Run()
+		}
 		time.Sleep(time.Minute)
 	}
 }

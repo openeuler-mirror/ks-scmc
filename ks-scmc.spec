@@ -9,8 +9,8 @@ License:        No License
 Group:          Tools/Container/Docker
 
 Name:           ks-scmc
-Version:        1.0.1
-Release:        1
+Version:        1.0.2
+Release:        3
 URL:            http://gitlab.kylinos.com.cn/os/%{name}
 Source0:        %{name}-%{version}.tar.gz
 
@@ -61,6 +61,7 @@ rm -rf %{_datadir}/ks-scmc
 %{_sysconfdir}/%{name}/access-container-gui
 %{_sysconfdir}/%{name}/graphic_rc
 %{_sysconfdir}/%{name}/setup_db.sh
+%{_sysconfdir}/%{name}/setup_agent.sh
 %{_sysconfdir}/%{name}/database.sql
 %{_sysconfdir}/%{name}/create_network.sh
 %{_sysconfdir}/%{name}/sync_image.sh

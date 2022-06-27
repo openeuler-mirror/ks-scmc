@@ -24,10 +24,10 @@ KylinSec security container magic cube provides simply, effecient and secure con
 %autosetup -c -n %{name}-%{version}
 
 %build
-cd backend && make && cd -
+make && cd -
 
 %install
-cd backend && make DESTDIR=$RPM_BUILD_ROOT install && cd -
+make DESTDIR=$RPM_BUILD_ROOT install && cd -
 
 %post
 %systemd_post %{name}-agent.service

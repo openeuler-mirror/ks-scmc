@@ -1,5 +1,6 @@
-backend/ks-scmc-server
-backend/ks-scmc-authz
+./ks-scmc-server
+./ks-scmc-authz
+./ks-scmc-user
 
 ks-scmc-*.tar.gz
 
@@ -7,7 +8,7 @@ ks-scmc-*.tar.gz
 
 
 # comment off when coding, comment on when you need to merge code
-# backend/go.mod
-# backend/go.sum
-# backend/vendor/
-# backend/rpc/pb/***
+# go.mod
+# go.sum
+# vendor/
+# rpc/pb/***

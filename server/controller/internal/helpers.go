@@ -13,8 +13,8 @@ import (
 
 const (
 	containerNamePattern = `^[a-zA-Z0-9][a-zA-Z0-9_.-]+$`
-	imageNamePattern     = `^[a-z0-9][a-z0-9_.-]*[a-z0-9]$`
-	imageVersionPattern  = containerNamePattern
+	imageNamePattern     = `^[a-z0-9]([a-z0-9_.-]*[a-z0-9])?$`
+	imageVersionPattern  = `^[a-zA-Z0-9][a-zA-Z0-9_.-]*$`
 )
 
 func isValidNodeAddr(s string) bool {

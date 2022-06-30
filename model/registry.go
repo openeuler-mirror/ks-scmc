@@ -3,11 +3,13 @@ package model
 import (
 	"context"
 	"crypto/sha256"
+	"crypto/tls"
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"io"
 	"io/ioutil"
+	"net"
 	"net/http"
 	"os"
 	"scmc/common"
@@ -53,19 +55,43 @@ type registryClient struct {
 }
 
 func newRegistryClient() (*registryClient, error) {
-	createFunc := registry.NewInsecure
-	if common.Config.Registry.Secure {
-		createFunc = registry.New
+	t := &http.Transport{
+		Proxy: http.ProxyFromEnvironment,
+		DialContext: (&net.Dialer{
+			Timeout:   10 * time.Second,
+			KeepAlive: 10 * time.Second,
+			DualStack: true,
+		}).DialContext,
+		ForceAttemptHTTP2:     true,
+		MaxIdleConns:          10,
+		MaxIdleConnsPerHost:   2,
+		IdleConnTimeout:       60 * time.Second,
+		ExpectContinueTimeout: 1 * time.Second,
 	}
 
-	r, err := createFunc(registryUrl(), registryUsername(), registryPassword())
-	if err != nil {
+	if common.Config.Registry.Secure {
+		t.TLSHandshakeTimeout = 10 * time.Second
+	} else {
+		t.TLSClientConfig = &tls.Config{
+			InsecureSkipVerify: true,
+		}
+	}
+
+	rt := registry.WrapTransport(t, registryUrl(), registryUsername(), registryPassword())
+	url := strings.TrimSuffix(registryUrl(), "/")
+	r := &registry.Registry{
+		URL: url,
+		Client: &http.Client{
+			Transport: rt,
+		},
+		Logf: log.Debugf,
+	}
+
+	if err := r.Ping(); err != nil {
 		return nil, err
 	}
 
-	cli := &registryClient{r}
-	cli.Logf = log.Debugf
-	return cli, nil
+	return &registryClient{r}, nil
 }
 
 // Copy from "github.com/heroku/docker-registry-client/registry"

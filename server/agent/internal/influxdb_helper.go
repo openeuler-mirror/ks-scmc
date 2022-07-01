@@ -17,7 +17,7 @@ const megaBytes = 1 << 20
 
 func cpuQuery(interval uint) string {
 	division := time.Minute * time.Duration(interval)
-	f := ` SELECT non_negative_difference(mean("value"))  / %d FROM "cpu_usage_system"
+	f := `SELECT non_negative_difference(mean("value"))  / %d FROM "cpu_usage_total"
 	WHERE ("container_name" = $container) AND time >= $start and time <= $end
 	GROUP BY time($interval) fill(previous)`
 	return fmt.Sprintf(f, division)

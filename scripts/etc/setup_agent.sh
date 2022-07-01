@@ -26,6 +26,35 @@ echo "配置cadvisor组件"
 sed -i 's/CADVISOR_PORT="4194"/CADVISOR_PORT="8080"/g' /etc/sysconfig/cadvisor
 # 采集数据写入influxdb
 sed -i 's/CADVISOR_STORAGE_DRIVER=""/CADVISOR_STORAGE_DRIVER="influxdb"/g' /etc/sysconfig/cadvisor
+
+cat >> /etc/sysconfig/cadvisor << EOF
+
+# List of metrics to be disabled
+CADVISOR_DISABLED_METRICS="tcp,udp,sched,process,percpu"
+EOF
+
+cat > /usr/lib/systemd/system/cadvisor.service << EOF
+[Unit]
+Description=cAdvisor
+
+[Service]
+EnvironmentFile=/etc/sysconfig/cadvisor
+ExecStart=/usr/bin/cadvisor \\
+        --docker=\${CADVISOR_DOCKER_ENDPOINT} \\
+        --port=\${CADVISOR_PORT} \\
+        --storage_driver=\${CADVISOR_STORAGE_DRIVER} \\
+        --storage_driver_host=\${CADVISOR_STORAGE_DRIVER_HOST} \\
+        --storage_driver_password=\${CADVISOR_STORAGE_DRIVER_PASSWORD} \\
+        --storage_driver_secure=\${CADVISOR_STORAGE_DRIVER_SECURE} \\
+        --storage_driver_user=\${CADVISOR_STORAGE_DRIVER_USER} \\
+        --logtostderr=\${CADVISOR_LOG_TO_STDERR} \\
+        --disable_metrics=\${CADVISOR_DISABLED_METRICS}
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+
 systemctl enable --now cadvisor.service
 
 

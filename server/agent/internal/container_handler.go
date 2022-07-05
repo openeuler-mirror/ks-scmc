@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"regexp"
-	"runtime"
 	"strings"
 	"sync"
 	"time"
@@ -48,7 +47,7 @@ func dockerResourceConfig(in *pb.ResourceLimit) container.Resources {
 	if in != nil {
 		r.NanoCPUs = int64(in.CpuLimit * 1e9)
 		if r.NanoCPUs == 0 {
-			r.NanoCPUs = int64(runtime.NumCPU()) * 1e9
+			r.NanoCPUs = int64(numCPU()) * 1e9
 		}
 		r.CPUShares = toCPUShares(in.CpuPrio)
 		r.Memory = int64(in.MemoryLimit * megaBytes)
@@ -887,7 +886,6 @@ func (s *ContainerServer) MonitorHistory(ctx context.Context, in *pb.MonitorHist
 
 	containerName := "/" // query influxdb need container name, "/" for query the host
 
-	numCPU := float64(runtime.NumCPU())
 	memInfo, err := mem.VirtualMemory()
 	if err != nil {
 		log.Infof("VirtualMemory err=%v", err)
@@ -895,7 +893,7 @@ func (s *ContainerServer) MonitorHistory(ctx context.Context, in *pb.MonitorHist
 	}
 
 	rscLimit := pb.ResourceLimit{
-		CpuLimit:    numCPU,
+		CpuLimit:    float64(numCPU()),
 		MemoryLimit: float64(memInfo.Total) / megaBytes,
 	}
 

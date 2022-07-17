@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+option go_package = "scmc/rpc/pb/system";
+
+package sys;  // system will conflict with C++ namespace
+
+service System {
+    // 测试服务连通性，无需登录
+    rpc Ping(PingRequest) returns (PingReply) {}
+    // 客户端订阅通知消息
+    rpc Subscribe(SubscribeRequest) returns (stream SubscribeReply) {}
+}
+
+message PingRequest {}
+
+message PingReply {}
+
+message SubscribeRequest {}
+
+enum SubscribeMessage {
+    None              = 0;
+    UserSessionExpire = 1;  // 用户会话过期
+}
+
+message SubscribeReply {
+    int64  msg_type    = 1;
+    string msg_content = 2;
+}

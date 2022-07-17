@@ -7,11 +7,16 @@ import "common.proto";
 package node;
 
 service Node {
+    // 查询节点列表
     rpc List(ListRequest) returns (ListReply) {}
+    // 添加新节点
     rpc Create(CreateRequest) returns (CreateReply) {}
+    // 删除已有节点
     rpc Remove(RemoveRequest) returns (RemoveReply) {}
-    rpc Status(StatusRequest) returns (StatusReply) {}
+    // 更新节点配置
     rpc Update(UpdateRequest) returns (UpdateReply) {}
+    // 获取节点状态
+    rpc Status(StatusRequest) returns (StatusReply) {}
 
     // 安全配置
     rpc UpdateFileProtect(UpdateFileProtectRequest) returns (UpdateFileProtectReply) {}  // 文件保护

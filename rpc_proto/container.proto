@@ -8,16 +8,22 @@ import "security.proto";
 package container;
 
 service Container {
+    // 查询容器列表
     rpc List(ListRequest) returns (ListReply) {}
+    // 创建新容器
     rpc Create(CreateRequest) returns (CreateReply) {}
+    // 查看容器配置
     rpc Inspect(InspectRequest) returns (InspectReply) {}
+    // 开始运行容器
     rpc Start(StartRequest) returns (StartReply) {}
+    // 停止运行容器
     rpc Stop(StopRequest) returns (StopReply) {}
+    // 删除容器
     rpc Remove(RemoveRequest) returns (RemoveReply) {}
+    // 重启容器
     rpc Restart(RestartRequest) returns (RestartReply) {}
+    // 更新容器配置
     rpc Update(UpdateRequest) returns (UpdateReply) {}
-    rpc Kill(KillRequest) returns (KillReply) {}
-    rpc Status(StatusRequest) returns (StatusReply) {}
 
     // 容器备份客户端接口
     rpc CreateBackup(CreateBackupRequest) returns (CreateBackupReply) {}  // 创建备份
@@ -31,11 +37,16 @@ service Container {
     rpc GetBackupJob(GetBackupJobRequest) returns (GetBackupJobReply) {}
     rpc DelBackupJob(DelBackupJobRequest) returns (DelBackupJobReply) {}
 
+    // 查询容器模板列表
     rpc ListTemplate(ListTemplateRequest) returns (ListTemplateReply) {}
+    // 创建容器模板
     rpc CreateTemplate(CreateTemplateRequest) returns (CreateTemplateReply) {}
+    // 更新容器模板
     rpc UpdateTemplate(UpdateTemplateRequest) returns (UpdateTemplateReply) {}
-    rpc RemoveTemplate(RemoveTemplateRequest) returns (RemoveTemplateReply) {}
+    // 查询单个容器模板详情
     rpc InspectTemplate(InspectTemplateRequest) returns (InspectTemplateReply) {}
+    // 删除容器模板
+    rpc RemoveTemplate(RemoveTemplateRequest) returns (RemoveTemplateReply) {}
 
     // 监控历史数据查询
     rpc MonitorHistory(MonitorHistoryRequest) returns (MonitorHistoryReply) {}

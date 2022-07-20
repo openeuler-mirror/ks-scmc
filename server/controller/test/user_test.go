@@ -12,28 +12,11 @@ import (
 	pb "scmc/rpc/pb/user"
 )
 
-func TestUserSignup(t *testing.T) {
-	testRunner(func(ctx context.Context, conn *grpc.ClientConn) {
-		cli := pb.NewUserClient(conn)
-		request := pb.SignupRequest{
-			Username: "test",
-			Password: "12345678",
-		}
-		reply, err := cli.Signup(ctx, &request)
-		if err != nil {
-			t.Errorf("Signup: %v", err)
-		}
-
-		t.Logf("Signup reply: %v", reply)
-	})
-
-}
-
 func TestUserLogin(t *testing.T) {
 	testRunner(func(ctx context.Context, conn *grpc.ClientConn) {
 		cli := pb.NewUserClient(conn)
 		request := pb.LoginRequest{
-			Username: "test",
+			Username: "sysadm",
 			Password: "12345678",
 		}
 

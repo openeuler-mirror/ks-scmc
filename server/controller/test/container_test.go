@@ -130,22 +130,6 @@ func TestContainerInspect(t *testing.T) {
 	})
 }
 
-func TestContainerStatus(t *testing.T) {
-	testRunner(func(ctx context.Context, conn *grpc.ClientConn) {
-		cli := pb.NewContainerClient(conn)
-		request := pb.StatusRequest{
-			NodeId: 1,
-		}
-
-		reply, err := cli.Status(ctx, &request)
-		if err != nil {
-			t.Errorf("Status: %v", err)
-		}
-
-		t.Logf("Status reply: %v", reply)
-	})
-}
-
 func TestCreateTemplate(t *testing.T) {
 
 	ctx, conn, err := initTestRunner()

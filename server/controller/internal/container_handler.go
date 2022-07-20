@@ -304,73 +304,6 @@ func (s *ContainerServer) Stop(ctx context.Context, in *pb.StopRequest) (*pb.Sto
 	return &reply, nil
 }
 
-func (s *ContainerServer) Kill(ctx context.Context, in *pb.KillRequest) (*pb.KillReply, error) {
-	reply := pb.KillReply{}
-	if len(in.Ids) <= 0 {
-		return nil, rpc.ErrInvalidArgument
-	}
-
-	for _, c := range in.Ids {
-		nodeId, containerIds := c.NodeId, uniqueString(c.ContainerIds)
-
-		if nodeId <= 0 || len(containerIds) <= 0 {
-			log.Warnf("kill container ErrInvalidArgument")
-			continue
-		}
-
-		nodeInfo, err := model.QueryNodeByID(nodeId)
-		if err != nil {
-			if err == model.ErrRecordNotFound {
-				log.Warnf("kill container ErrRecordNotFound")
-				continue
-			}
-			log.Warnf("kill container ErrInternal")
-			continue
-		}
-
-		conn, err := getAgentConn(nodeInfo.Address)
-		if err != nil {
-			log.Warnf("kill container ErrInternal")
-			continue
-		}
-
-		cli := pb.NewContainerClient(conn)
-		ctx_, cancel := context.WithTimeout(context.Background(), time.Second*10)
-		defer cancel()
-
-		request := pb.KillRequest{
-			Ids: []*pb.ContainerIdList{
-				{
-					ContainerIds: containerIds,
-				},
-			},
-		}
-
-		subReply, err := cli.Kill(ctx_, &request)
-		if err != nil {
-			log.Warnf("kill container ErrInternal: %v", err)
-			continue
-		}
-
-		for i := range subReply.FailInfos {
-			subReply.FailInfos[i].NodeInfo = nodeInfo.Address
-		}
-		reply.FailInfos = append(reply.FailInfos, subReply.FailInfos...)
-		reply.OkIds = append(reply.OkIds, subReply.OkIds...)
-	}
-
-	// 操作对象只有一个出错时确保返回错误码
-	if len(in.Ids) == 1 && len(reply.OkIds) == 0 {
-		if len(reply.FailInfos) == 0 {
-			return nil, rpc.ErrInternal
-		}
-
-		return nil, status.Errorf(codes.Internal, reply.FailInfos[0].FailReason)
-	}
-
-	return &reply, nil
-}
-
 func (s *ContainerServer) Restart(ctx context.Context, in *pb.RestartRequest) (*pb.RestartReply, error) {
 	reply := pb.RestartReply{}
 
@@ -578,36 +511,6 @@ func (s *ContainerServer) Inspect(ctx context.Context, in *pb.InspectRequest) (*
 			}
 		}
 	}
-	return agentReply, nil
-}
-
-func (s *ContainerServer) Status(ctx context.Context, in *pb.StatusRequest) (*pb.StatusReply, error) {
-	if in.NodeId <= 0 {
-		return nil, rpc.ErrInvalidArgument
-	}
-
-	nodeInfo, err := model.QueryNodeByID(in.NodeId)
-	if err != nil {
-		if err == model.ErrRecordNotFound {
-			return nil, rpc.ErrNotFound
-		}
-		return nil, rpc.ErrInternal
-	}
-
-	conn, err := getAgentConn(nodeInfo.Address)
-	if err != nil {
-		return nil, rpc.ErrInternal
-	}
-
-	cli := pb.NewContainerClient(conn)
-	ctx_, cancel := context.WithTimeout(context.Background(), time.Second*10)
-	defer cancel()
-	agentReply, err := cli.Status(ctx_, in)
-	if err != nil {
-		log.Warnf("Status container: %v", err)
-		return nil, err
-	}
-
 	return agentReply, nil
 }
 

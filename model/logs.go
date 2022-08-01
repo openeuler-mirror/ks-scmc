@@ -1,6 +1,8 @@
 package model
 
 import (
+	"fmt"
+
 	log "github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 )
@@ -59,7 +61,13 @@ func CreateRuntimeLog(logs []*RuntimeLog) error {
 	return nil
 }
 
-func ListRuntimeLog(pageSize, pageNo int64, startTime, endTime, nodeID, eventModule int64) (*Pager, []*RuntimeLogs, error) {
+type LogFilter struct {
+	Property string
+	Query    string
+	Fuzzy    bool
+}
+
+func ListRuntimeLog(pageSize, pageNo int64, startTime, endTime, nodeID, eventModule int64, f *LogFilter) (*Pager, []*RuntimeLogs, error) {
 	qs := queries{
 		Where:  &query{},
 		Select: &query{"runtime_logs.*, user_infos.username AS username", nil},
@@ -76,6 +84,15 @@ func ListRuntimeLog(pageSize, pageNo int64, startTime, endTime, nodeID, eventMod
 	}
 	if eventModule > 0 {
 		qs.Where.And("event_module = ?", eventModule)
+	}
+	if f != nil {
+		if f.Fuzzy {
+			propertyString := fmt.Sprintf("%s LIKE ?", f.Property)
+			qs.Where.And(propertyString, fmt.Sprintf("%%%s%%", f.Query))
+		} else {
+			propertyString := fmt.Sprintf("%s = ?", f.Property)
+			qs.Where.And(propertyString, f.Query)
+		}
 	}
 
 	var data []*RuntimeLogs

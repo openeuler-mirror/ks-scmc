@@ -18,16 +18,22 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type ContainerClient interface {
+	// 查询容器列表
 	List(ctx context.Context, in *ListRequest, opts ...grpc.CallOption) (*ListReply, error)
+	// 创建新容器
 	Create(ctx context.Context, in *CreateRequest, opts ...grpc.CallOption) (*CreateReply, error)
+	// 查看容器配置
 	Inspect(ctx context.Context, in *InspectRequest, opts ...grpc.CallOption) (*InspectReply, error)
+	// 开始运行容器
 	Start(ctx context.Context, in *StartRequest, opts ...grpc.CallOption) (*StartReply, error)
+	// 停止运行容器
 	Stop(ctx context.Context, in *StopRequest, opts ...grpc.CallOption) (*StopReply, error)
+	// 删除容器
 	Remove(ctx context.Context, in *RemoveRequest, opts ...grpc.CallOption) (*RemoveReply, error)
+	// 重启容器
 	Restart(ctx context.Context, in *RestartRequest, opts ...grpc.CallOption) (*RestartReply, error)
+	// 更新容器配置
 	Update(ctx context.Context, in *UpdateRequest, opts ...grpc.CallOption) (*UpdateReply, error)
-	Kill(ctx context.Context, in *KillRequest, opts ...grpc.CallOption) (*KillReply, error)
-	Status(ctx context.Context, in *StatusRequest, opts ...grpc.CallOption) (*StatusReply, error)
 	// 容器备份客户端接口
 	CreateBackup(ctx context.Context, in *CreateBackupRequest, opts ...grpc.CallOption) (*CreateBackupReply, error)
 	UpdateBackup(ctx context.Context, in *UpdateBackupRequest, opts ...grpc.CallOption) (*UpdateBackupReply, error)
@@ -38,11 +44,16 @@ type ContainerClient interface {
 	AddBackupJob(ctx context.Context, in *AddBackupJobRequest, opts ...grpc.CallOption) (*AddBackupJobReply, error)
 	GetBackupJob(ctx context.Context, in *GetBackupJobRequest, opts ...grpc.CallOption) (*GetBackupJobReply, error)
 	DelBackupJob(ctx context.Context, in *DelBackupJobRequest, opts ...grpc.CallOption) (*DelBackupJobReply, error)
+	// 查询容器模板列表
 	ListTemplate(ctx context.Context, in *ListTemplateRequest, opts ...grpc.CallOption) (*ListTemplateReply, error)
+	// 创建容器模板
 	CreateTemplate(ctx context.Context, in *CreateTemplateRequest, opts ...grpc.CallOption) (*CreateTemplateReply, error)
+	// 更新容器模板
 	UpdateTemplate(ctx context.Context, in *UpdateTemplateRequest, opts ...grpc.CallOption) (*UpdateTemplateReply, error)
-	RemoveTemplate(ctx context.Context, in *RemoveTemplateRequest, opts ...grpc.CallOption) (*RemoveTemplateReply, error)
+	// 查询单个容器模板详情
 	InspectTemplate(ctx context.Context, in *InspectTemplateRequest, opts ...grpc.CallOption) (*InspectTemplateReply, error)
+	// 删除容器模板
+	RemoveTemplate(ctx context.Context, in *RemoveTemplateRequest, opts ...grpc.CallOption) (*RemoveTemplateReply, error)
 	// 监控历史数据查询
 	MonitorHistory(ctx context.Context, in *MonitorHistoryRequest, opts ...grpc.CallOption) (*MonitorHistoryReply, error)
 }
@@ -121,24 +132,6 @@ func (c *containerClient) Restart(ctx context.Context, in *RestartRequest, opts 
 func (c *containerClient) Update(ctx context.Context, in *UpdateRequest, opts ...grpc.CallOption) (*UpdateReply, error) {
 	out := new(UpdateReply)
 	err := c.cc.Invoke(ctx, "/container.Container/Update", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *containerClient) Kill(ctx context.Context, in *KillRequest, opts ...grpc.CallOption) (*KillReply, error) {
-	out := new(KillReply)
-	err := c.cc.Invoke(ctx, "/container.Container/Kill", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *containerClient) Status(ctx context.Context, in *StatusRequest, opts ...grpc.CallOption) (*StatusReply, error) {
-	out := new(StatusReply)
-	err := c.cc.Invoke(ctx, "/container.Container/Status", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -244,18 +237,18 @@ func (c *containerClient) UpdateTemplate(ctx context.Context, in *UpdateTemplate
 	return out, nil
 }
 
-func (c *containerClient) RemoveTemplate(ctx context.Context, in *RemoveTemplateRequest, opts ...grpc.CallOption) (*RemoveTemplateReply, error) {
-	out := new(RemoveTemplateReply)
-	err := c.cc.Invoke(ctx, "/container.Container/RemoveTemplate", in, out, opts...)
+func (c *containerClient) InspectTemplate(ctx context.Context, in *InspectTemplateRequest, opts ...grpc.CallOption) (*InspectTemplateReply, error) {
+	out := new(InspectTemplateReply)
+	err := c.cc.Invoke(ctx, "/container.Container/InspectTemplate", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *containerClient) InspectTemplate(ctx context.Context, in *InspectTemplateRequest, opts ...grpc.CallOption) (*InspectTemplateReply, error) {
-	out := new(InspectTemplateReply)
-	err := c.cc.Invoke(ctx, "/container.Container/InspectTemplate", in, out, opts...)
+func (c *containerClient) RemoveTemplate(ctx context.Context, in *RemoveTemplateRequest, opts ...grpc.CallOption) (*RemoveTemplateReply, error) {
+	out := new(RemoveTemplateReply)
+	err := c.cc.Invoke(ctx, "/container.Container/RemoveTemplate", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -275,16 +268,22 @@ func (c *containerClient) MonitorHistory(ctx context.Context, in *MonitorHistory
 // All implementations must embed UnimplementedContainerServer
 // for forward compatibility
 type ContainerServer interface {
+	// 查询容器列表
 	List(context.Context, *ListRequest) (*ListReply, error)
+	// 创建新容器
 	Create(context.Context, *CreateRequest) (*CreateReply, error)
+	// 查看容器配置
 	Inspect(context.Context, *InspectRequest) (*InspectReply, error)
+	// 开始运行容器
 	Start(context.Context, *StartRequest) (*StartReply, error)
+	// 停止运行容器
 	Stop(context.Context, *StopRequest) (*StopReply, error)
+	// 删除容器
 	Remove(context.Context, *RemoveRequest) (*RemoveReply, error)
+	// 重启容器
 	Restart(context.Context, *RestartRequest) (*RestartReply, error)
+	// 更新容器配置
 	Update(context.Context, *UpdateRequest) (*UpdateReply, error)
-	Kill(context.Context, *KillRequest) (*KillReply, error)
-	Status(context.Context, *StatusRequest) (*StatusReply, error)
 	// 容器备份客户端接口
 	CreateBackup(context.Context, *CreateBackupRequest) (*CreateBackupReply, error)
 	UpdateBackup(context.Context, *UpdateBackupRequest) (*UpdateBackupReply, error)
@@ -295,11 +294,16 @@ type ContainerServer interface {
 	AddBackupJob(context.Context, *AddBackupJobRequest) (*AddBackupJobReply, error)
 	GetBackupJob(context.Context, *GetBackupJobRequest) (*GetBackupJobReply, error)
 	DelBackupJob(context.Context, *DelBackupJobRequest) (*DelBackupJobReply, error)
+	// 查询容器模板列表
 	ListTemplate(context.Context, *ListTemplateRequest) (*ListTemplateReply, error)
+	// 创建容器模板
 	CreateTemplate(context.Context, *CreateTemplateRequest) (*CreateTemplateReply, error)
+	// 更新容器模板
 	UpdateTemplate(context.Context, *UpdateTemplateRequest) (*UpdateTemplateReply, error)
-	RemoveTemplate(context.Context, *RemoveTemplateRequest) (*RemoveTemplateReply, error)
+	// 查询单个容器模板详情
 	InspectTemplate(context.Context, *InspectTemplateRequest) (*InspectTemplateReply, error)
+	// 删除容器模板
+	RemoveTemplate(context.Context, *RemoveTemplateRequest) (*RemoveTemplateReply, error)
 	// 监控历史数据查询
 	MonitorHistory(context.Context, *MonitorHistoryRequest) (*MonitorHistoryReply, error)
 	mustEmbedUnimplementedContainerServer()
@@ -332,12 +336,6 @@ func (UnimplementedContainerServer) Restart(context.Context, *RestartRequest) (*
 }
 func (UnimplementedContainerServer) Update(context.Context, *UpdateRequest) (*UpdateReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Update not implemented")
-}
-func (UnimplementedContainerServer) Kill(context.Context, *KillRequest) (*KillReply, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method Kill not implemented")
-}
-func (UnimplementedContainerServer) Status(context.Context, *StatusRequest) (*StatusReply, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method Status not implemented")
 }
 func (UnimplementedContainerServer) CreateBackup(context.Context, *CreateBackupRequest) (*CreateBackupReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateBackup not implemented")
@@ -372,11 +370,11 @@ func (UnimplementedContainerServer) CreateTemplate(context.Context, *CreateTempl
 func (UnimplementedContainerServer) UpdateTemplate(context.Context, *UpdateTemplateRequest) (*UpdateTemplateReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateTemplate not implemented")
 }
-func (UnimplementedContainerServer) RemoveTemplate(context.Context, *RemoveTemplateRequest) (*RemoveTemplateReply, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method RemoveTemplate not implemented")
-}
 func (UnimplementedContainerServer) InspectTemplate(context.Context, *InspectTemplateRequest) (*InspectTemplateReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method InspectTemplate not implemented")
+}
+func (UnimplementedContainerServer) RemoveTemplate(context.Context, *RemoveTemplateRequest) (*RemoveTemplateReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RemoveTemplate not implemented")
 }
 func (UnimplementedContainerServer) MonitorHistory(context.Context, *MonitorHistoryRequest) (*MonitorHistoryReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method MonitorHistory not implemented")
@@ -534,42 +532,6 @@ func _Container_Update_Handler(srv interface{}, ctx context.Context, dec func(in
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(ContainerServer).Update(ctx, req.(*UpdateRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Container_Kill_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(KillRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(ContainerServer).Kill(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/container.Container/Kill",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ContainerServer).Kill(ctx, req.(*KillRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Container_Status_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(StatusRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(ContainerServer).Status(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/container.Container/Status",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ContainerServer).Status(ctx, req.(*StatusRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -772,24 +734,6 @@ func _Container_UpdateTemplate_Handler(srv interface{}, ctx context.Context, dec
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Container_RemoveTemplate_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(RemoveTemplateRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(ContainerServer).RemoveTemplate(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/container.Container/RemoveTemplate",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ContainerServer).RemoveTemplate(ctx, req.(*RemoveTemplateRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 func _Container_InspectTemplate_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(InspectTemplateRequest)
 	if err := dec(in); err != nil {
@@ -804,6 +748,24 @@ func _Container_InspectTemplate_Handler(srv interface{}, ctx context.Context, de
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(ContainerServer).InspectTemplate(ctx, req.(*InspectTemplateRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Container_RemoveTemplate_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RemoveTemplateRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ContainerServer).RemoveTemplate(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/container.Container/RemoveTemplate",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ContainerServer).RemoveTemplate(ctx, req.(*RemoveTemplateRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -866,14 +828,6 @@ var Container_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Container_Update_Handler,
 		},
 		{
-			MethodName: "Kill",
-			Handler:    _Container_Kill_Handler,
-		},
-		{
-			MethodName: "Status",
-			Handler:    _Container_Status_Handler,
-		},
-		{
 			MethodName: "CreateBackup",
 			Handler:    _Container_CreateBackup_Handler,
 		},
@@ -918,12 +872,12 @@ var Container_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Container_UpdateTemplate_Handler,
 		},
 		{
-			MethodName: "RemoveTemplate",
-			Handler:    _Container_RemoveTemplate_Handler,
-		},
-		{
 			MethodName: "InspectTemplate",
 			Handler:    _Container_InspectTemplate_Handler,
+		},
+		{
+			MethodName: "RemoveTemplate",
+			Handler:    _Container_RemoveTemplate_Handler,
 		},
 		{
 			MethodName: "MonitorHistory",

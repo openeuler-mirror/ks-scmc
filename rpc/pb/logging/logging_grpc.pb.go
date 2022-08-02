@@ -18,8 +18,11 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type LoggingClient interface {
+	// 查询审计事件日志列表
 	ListRuntime(ctx context.Context, in *ListRuntimeRequest, opts ...grpc.CallOption) (*ListRuntimeReply, error)
+	// 查询告警事件列表
 	ListWarn(ctx context.Context, in *ListWarnRequest, opts ...grpc.CallOption) (*ListWarnReply, error)
+	// 设置告警事件已读
 	ReadWarn(ctx context.Context, in *ReadWarnRequest, opts ...grpc.CallOption) (*ReadWarnReply, error)
 }
 
@@ -62,8 +65,11 @@ func (c *loggingClient) ReadWarn(ctx context.Context, in *ReadWarnRequest, opts 
 // All implementations must embed UnimplementedLoggingServer
 // for forward compatibility
 type LoggingServer interface {
+	// 查询审计事件日志列表
 	ListRuntime(context.Context, *ListRuntimeRequest) (*ListRuntimeReply, error)
+	// 查询告警事件列表
 	ListWarn(context.Context, *ListWarnRequest) (*ListWarnReply, error)
+	// 设置告警事件已读
 	ReadWarn(context.Context, *ReadWarnRequest) (*ReadWarnReply, error)
 	mustEmbedUnimplementedLoggingServer()
 }

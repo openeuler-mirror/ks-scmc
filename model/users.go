@@ -9,7 +9,7 @@ import (
 	"gorm.io/gorm/clause"
 )
 
-const sessionLivePeriod = time.Minute * 10
+const sessionLivePeriod = time.Minute * 30
 
 type UserInfo struct {
 	ID         int64 `gorm:"primaryKey"`

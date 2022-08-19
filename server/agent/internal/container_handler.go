@@ -958,9 +958,11 @@ func (*ContainerServer) RemoveBackup(ctx context.Context, in *pb.RemoveBackupReq
 		return nil, rpc.ErrInternal
 	}
 
-	if _, err := cli.ImageRemove(context.Background(), in.ImageRef, types.ImageRemoveOptions{}); err != nil {
-		log.Warnf("remove image=%v err=%v", in.ImageRef, err)
-		return nil, rpc.ErrInternal
+	if len(in.ImageRef) > 0 {
+		if _, err := cli.ImageRemove(context.Background(), in.ImageRef, types.ImageRemoveOptions{}); err != nil {
+			log.Warnf("remove image=%v err=%v", in.ImageRef, err)
+			return nil, rpc.ErrInternal
+		}
 	}
 
 	return &pb.RemoveBackupReply{}, nil
@@ -1029,6 +1031,7 @@ func (s *ContainerServer) GetBackupJob(ctx context.Context, in *pb.GetBackupJobR
 		ImageId:     job.ImageID,
 		ImageSize:   job.ImageSize,
 		Status:      job.Status,
+		UpdatedAt:   job.UpdatedAt,
 	}, nil
 }
 

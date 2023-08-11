@@ -1,0 +1,113 @@
+syntax = "proto3";
+
+option go_package = "ksc-mcube/rpc/pb/container";
+
+package container;
+
+message Port {
+    string ip = 1;
+    uint32 private_port = 2;
+    uint32 public_port = 3;
+    string type = 4;
+}
+
+message MountPoint {
+    string type = 1;
+    string name = 2;
+    string source = 3;
+    string destination = 4;
+    string driver = 5;
+    string mode = 6;
+    bool rw = 7;
+    string propagation = 8;
+}
+
+message EndpointIPAMConfig {
+    string ipv4_address = 1;
+    string ipv6_address = 2;
+    repeated string link_local_ips = 3;
+}
+
+message EndpointSetting {
+    EndpointIPAMConfig ipam_config = 1;
+    repeated string links = 2;
+    repeated string aliases = 3;
+    string network_id = 4;
+    string endpoint_id = 5;
+    string gateway = 6;
+    string ip_address = 7;
+    int32 ip_prefix_len = 8;
+    string ipv6_gateway = 9;
+    string global_ipv6_address = 10;
+    int32 global_ipv6_prefix_len = 11;
+    string mac_address = 12;
+    map<string, string> driver_opts = 13;
+}
+
+message ContainerInfo {
+    string id = 1;
+    repeated string names = 2;
+    string image = 3;
+    string image_id = 4;
+    string command = 5;
+    int64 created = 6;
+    repeated Port ports = 7;
+    int64 size_rw = 8;
+    int64 size_root_fs = 9;
+    repeated string labels = 10;
+    string state = 11;
+    string status = 12;
+    string network_mode = 13;
+    // NetworkSettings
+    map<string, EndpointSetting> network_settings = 14;
+    repeated MountPoint mounts = 15;
+}
+
+message NodeStatus {
+    bool running = 1;
+    int32 total_containers = 2;
+    int32 running_containers = 3;
+    string cpu_usage = 4;
+    string memory_usage = 5;
+    string disk_usage = 6;
+    string network_usage = 7;
+}
+
+message Mount {
+    string type = 1;    // "bind" "volume" "tmpfs" "npipe"
+    string source = 2;
+    string target = 3;
+    bool read_only = 4;
+    string consistency = 5; // "consistent" "cached" "delegated" "default"
+
+	// bind_options
+	// volume_options
+	// tmpfs_options 
+}
+
+message RestartPolicy {
+	string name = 1;
+	int32 max_retry = 2;
+}
+
+message HostConfig {
+    string network_mode = 1;
+    RestartPolicy restart_policy = 2;
+    bool auto_remove = 3;
+    string ipc_mode = 4;
+    repeated Mount mounts = 5;
+
+    // double cpus = 6;
+
+}
+
+message CreateContainerConfig {
+    string hostname = 1;
+    string domain_name = 2;
+    string user = 3;   // user user:group
+    map<string, string> env = 4;
+    repeated string cmd = 5;
+    string image = 6;
+    repeated string entrypoint = 7;
+
+}

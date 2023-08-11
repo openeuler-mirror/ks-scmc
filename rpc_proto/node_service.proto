@@ -1,0 +1,55 @@
+syntax = "proto3";
+
+option go_package = "ksc-mcube/rpc/pb/node";
+
+package node;
+
+import "common.proto";
+import "node_types.proto";
+
+service Node {
+  rpc List(ListRequest) returns (ListReply) {}
+  rpc Create(CreateRequest) returns (CreateReply) {}
+  rpc Remove(RemoveRequest) returns (RemoveReply) {}
+  rpc Status(StatusRequest) returns (StatusReply) {}
+}
+
+message ListRequest {
+    common.RequestHeader header = 1;
+}
+
+message ListReply {
+    common.ReplyHeader header = 1;
+    repeated NodeInfo nodes = 2;
+}
+
+message CreateRequest {
+    common.RequestHeader header = 1;
+    string name = 2;
+    string address = 3;
+    string comment = 4;
+}
+
+message CreateReply {
+    common.ReplyHeader header = 1;
+    int64 id = 2;
+}
+
+message RemoveRequest {
+    common.RequestHeader header = 1;
+    repeated int64 ids = 2;
+}
+
+message RemoveReply {
+    common.ReplyHeader header = 1;
+}
+
+message StatusRequest {
+    common.RequestHeader header = 1;
+    repeated int64 node_ids = 2;
+}
+
+message StatusReply {
+    common.ReplyHeader header = 1;
+    repeated NodeStatus status_list = 2;
+}

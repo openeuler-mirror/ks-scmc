@@ -1,0 +1,115 @@
+syntax = "proto3";
+
+option go_package = "ksc-mcube/rpc/pb/container";
+
+package container;
+
+import "common.proto";
+import "container_types.proto";
+
+service Container {
+  rpc List(ListRequest) returns (ListReply) {}
+
+  // 以下未实现
+  rpc Create(CreateRequest) returns (CreateReply) {}
+  rpc Start(StartRequest) returns (StartReply) {}
+  rpc Stop(StopRequest) returns (StopReply) {}
+  rpc Kill(KillRequest) returns (KillReply) {}
+  rpc Restart(RestartRequest) returns (RestartReply) {}
+  rpc Update(UpdateRequest) returns (UpdateReply) {}
+  rpc Remove(RemoveRequest) returns (RemoveReply) {}
+}
+
+message ListRequest {
+    common.RequestHeader header = 1;
+    repeated int64 node_ids = 2;
+    bool list_all = 3;
+}
+
+message ListReply {
+    common.ReplyHeader header = 1;
+
+    message NodeContainer {
+        int64 node_id = 1;
+        string node_address = 2;
+        ContainerInfo info = 3;
+    }
+
+    repeated NodeContainer containers = 2;
+}
+
+message CreateRequest {
+    common.RequestHeader header = 1;
+    int64 node_id = 2;
+    string name = 3;
+    CreateContainerConfig config = 4;
+
+    HostConfig host_config = 5;
+    map<string, EndpointSetting> network_config = 6;
+}
+
+message CreateReply {
+    common.ReplyHeader header = 1;
+    string container_id = 2;
+    repeated string warnings = 3;
+}
+
+message StartRequest {
+    common.RequestHeader header = 1;
+    int64 node_id = 2;
+    string container_id = 3;
+}
+
+message StartReply {
+    common.ReplyHeader header = 1;
+}
+
+message StopRequest {
+    common.RequestHeader header = 1;
+    int64 node_id = 2;
+    string container_id = 3;
+}
+
+message StopReply {
+    common.ReplyHeader header = 1;
+}
+
+message KillRequest {
+    common.RequestHeader header = 1;
+    int64 node_id = 2;
+    string container_id = 3;
+}
+
+message KillReply {
+    common.ReplyHeader header = 1;
+}
+
+message RestartRequest {
+    common.RequestHeader header = 1;
+    int64 node_id = 2;
+    string container_id = 3;
+}
+
+message RestartReply {
+    common.ReplyHeader header = 1;
+}
+
+message UpdateRequest {
+    common.RequestHeader header = 1;
+    int64 node_id = 2;
+    string container_id = 3;
+}
+
+message UpdateReply {
+    common.ReplyHeader header = 1;
+}
+
+message RemoveRequest {
+    common.RequestHeader header = 1;
+    int64 node_id = 2;
+    string container_id = 3;
+}
+
+message RemoveReply {
+    common.ReplyHeader header = 1;
+}

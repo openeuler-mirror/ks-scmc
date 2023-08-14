@@ -1,0 +1,29 @@
+syntax = "proto3";
+
+option go_package = "ksc-mcube/rpc/pb/node";
+
+package node;
+
+message NodeInfo {
+    int64 id = 1;
+    string name = 2;
+    string address = 3;
+    string comment = 4;
+}
+
+enum NodeState {
+    Offline = 0;
+    Unknown = 1;
+    Online  = 10;
+}
+
+message NodeStatus {
+    int64 node_id = 1;
+    int64 state = 2;    // NodeState
+    int64 total_containers = 3;
+    int64 running_containers = 4;
+    string cpu_usage = 5;
+    string memory_usage = 6;
+    // string disk_usage = 7;
+    // string network_usage = 8;
+}

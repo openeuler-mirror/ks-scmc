@@ -1,0 +1,49 @@
+syntax = "proto3";
+
+option go_package = "ksc-mcube/rpc/pb/common";
+
+package common;
+
+enum Errno {
+    // system level
+    // https://grpc.github.io/grpc/core/md_doc_statuscodes.html
+    OK                  = 0;    // 成功
+    Canceled            = 1;
+    Unknown             = 2;    // 未知错误
+    InvalidArgument     = 3;    // 客户端参数错误
+    DeadlineExceeded    = 4;
+    NotFound            = 5;    // 资源不存在
+    AlreadyExists       = 6;    // 资源已存在
+    PermissionDenied    = 7;    // 无权限操作
+    ResourceExhausted   = 8;
+    FailedPrecondition  = 9;
+    Aborted             = 10;
+    OutOfRange          = 11;
+    Unimplemented       = 12;   // 接口未实现
+    Internal            = 13;   // 内部错误
+    Unavailable         = 14;
+    DataLoss            = 15;
+    Unauthenticated     = 16;   // 认证失败
+
+    // user related
+    UserAlreadyExist    = 201;  // AlreadyExists
+    UserNotExist        = 202;  // NotFound
+    WrongPassword       = 203;
+    InvalidSession      = 204;  // Unauthenticated
+    SessionExpired      = 205;  // Unauthenticated
+    NoPermission        = 206;  // PermissionDenied
+}
+
+message RequestHeader {
+    string client_type = 1;
+    string client_version = 2;
+    string client_key = 3;
+
+    int64 user_id = 10;
+    string session_key = 11;
+}
+
+message ReplyHeader {
+    int32 err_no = 1;   // Errno
+    string err_msg = 2;
+}

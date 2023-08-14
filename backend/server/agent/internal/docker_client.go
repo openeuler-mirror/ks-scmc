@@ -1,11 +1,11 @@
-package server
+package internal
 
 import (
 	"context"
-	"log"
 	"sync"
 
 	"github.com/docker/docker/client"
+	log "github.com/sirupsen/logrus"
 )
 
 var (
@@ -20,7 +20,7 @@ func dockerCli() (*client.Client, error) {
 	if cli != nil {
 		_, err := cli.Ping(context.Background())
 		if err != nil {
-			log.Printf("Ping: %v", err)
+			log.Warnf("ping container daemon: %v", err)
 		} else {
 			return cli, nil
 		}
@@ -29,7 +29,7 @@ func dockerCli() (*client.Client, error) {
 	var err error
 	cli, err = client.NewClientWithOpts(client.FromEnv)
 	if err != nil {
-		log.Printf("try to connect to container daemon: %v", err)
+		log.Warnf("try to connect to container daemon: %v", err)
 		return nil, err
 	}
 

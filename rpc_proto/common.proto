@@ -44,6 +44,6 @@ message RequestHeader {
 }
 
 message ReplyHeader {
-    int32 err_no = 1;   // Errno
+    int32 err_no = 1;
     string err_msg = 2;
 }

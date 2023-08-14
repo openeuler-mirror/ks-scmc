@@ -9,15 +9,17 @@ import "container_types.proto";
 
 service Container {
   rpc List(ListRequest) returns (ListReply) {}
-
-  // 以下未实现
   rpc Create(CreateRequest) returns (CreateReply) {}
+  rpc Inspect(InspectRequest) returns (InspectReply) {}
   rpc Start(StartRequest) returns (StartReply) {}
   rpc Stop(StopRequest) returns (StopReply) {}
-  rpc Kill(KillRequest) returns (KillReply) {}
-  rpc Restart(RestartRequest) returns (RestartReply) {}
-  rpc Update(UpdateRequest) returns (UpdateReply) {}
   rpc Remove(RemoveRequest) returns (RemoveReply) {}
+  rpc Restart(RestartRequest) returns (RestartReply) {}
+  // 以下未实现
+  rpc Update(UpdateRequest) returns (UpdateReply) {}
+  rpc Kill(KillRequest) returns (KillReply) {}
+
+  rpc Status(StatusRequest) returns (StatusReply) {}
 }
 
 message ListRequest {
@@ -29,12 +31,6 @@ message ListRequest {
 message ListReply {
     common.ReplyHeader header = 1;
 
-    message NodeContainer {
-        int64 node_id = 1;
-        string node_address = 2;
-        ContainerInfo info = 3;
-    }
-
     repeated NodeContainer containers = 2;
 }
 
@@ -42,8 +38,8 @@ message CreateRequest {
     common.RequestHeader header = 1;
     int64 node_id = 2;
     string name = 3;
-    CreateContainerConfig config = 4;
 
+    ContainerConfig config = 4;
     HostConfig host_config = 5;
     map<string, EndpointSetting> network_config = 6;
 }
@@ -54,50 +50,71 @@ message CreateReply {
     repeated string warnings = 3;
 }
 
-message StartRequest {
+message InspectRequest {
     common.RequestHeader header = 1;
     int64 node_id = 2;
     string container_id = 3;
 }
 
+message InspectReply {
+    common.ReplyHeader header = 1;
+    ContainerInfo info = 2;
+    HostConfig host_config = 3;
+    repeated Mount mounts = 4;
+    ContainerConfig config = 5;
+    map<string, EndpointSetting> network_settings = 6;
+}
+
+message StartRequest {
+    common.RequestHeader header = 1;
+    int64 node_id = 2;
+    repeated string container_ids = 3;
+}
+
 message StartReply {
     common.ReplyHeader header = 1;
+    repeated string ok_ids = 2;
 }
 
 message StopRequest {
     common.RequestHeader header = 1;
     int64 node_id = 2;
-    string container_id = 3;
+    repeated string container_ids = 3;
 }
 
 message StopReply {
     common.ReplyHeader header = 1;
+    repeated string ok_ids = 2;
 }
 
 message KillRequest {
     common.RequestHeader header = 1;
     int64 node_id = 2;
-    string container_id = 3;
+    repeated string container_ids = 3;
 }
 
 message KillReply {
     common.ReplyHeader header = 1;
+    repeated string ok_ids = 2;
 }
 
 message RestartRequest {
     common.RequestHeader header = 1;
     int64 node_id = 2;
-    string container_id = 3;
+    repeated string container_ids = 3;
 }
 
 message RestartReply {
     common.ReplyHeader header = 1;
+    repeated string ok_ids = 2;
 }
 
 message UpdateRequest {
     common.RequestHeader header = 1;
     int64 node_id = 2;
     string container_id = 3;
+    ResourceConfig resource_config = 4;
+    RestartPolicy restart_policy = 5;
 }
 
 message UpdateReply {
@@ -107,9 +124,21 @@ message UpdateReply {
 message RemoveRequest {
     common.RequestHeader header = 1;
     int64 node_id = 2;
-    string container_id = 3;
+    repeated string container_ids = 3;
 }
 
 message RemoveReply {
     common.ReplyHeader header = 1;
+    repeated string ok_ids = 2;
+}
+
+message StatusRequest {
+    common.RequestHeader header = 1;
+    int64 node_id = 2;
+    string container_id = 3;
+}
+
+message StatusReply {
+    common.ReplyHeader header = 1;
+    ContainerStatus status = 2;
 }

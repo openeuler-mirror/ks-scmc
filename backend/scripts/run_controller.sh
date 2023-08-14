@@ -1,0 +1,1 @@
+./ksc-mcube -stdout=1 -verbose=5 controller

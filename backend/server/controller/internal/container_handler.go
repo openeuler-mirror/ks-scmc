@@ -1,9 +1,10 @@
-package server
+package internal
 
 import (
 	"context"
-	"log"
 	"time"
+
+	log "github.com/sirupsen/logrus"
 
 	"ksc-mcube/model"
 	"ksc-mcube/rpc/errno"
@@ -15,12 +16,12 @@ type ContainerServer struct {
 }
 
 func (s *ContainerServer) List(ctx context.Context, in *pb.ListRequest) (*pb.ListReply, error) {
-	log.Printf("Received: %v", in)
+	log.Infof("Received: %v", in)
 	reply := pb.ListReply{Header: errno.InternalError}
 
 	nodes, err := model.ListNodes()
 	if err != nil {
-		log.Printf("query nodes: %v", err)
+		log.Warnf("query nodes: %v", err)
 		return &reply, nil
 	}
 
@@ -32,7 +33,7 @@ func (s *ContainerServer) List(ctx context.Context, in *pb.ListRequest) (*pb.Lis
 				goto next
 			}
 		}
-		log.Printf("node ID=%v not found", nodeID)
+		log.Infof("node ID=%v not found", nodeID)
 		reply.Header = errno.NotFound
 		return &reply, nil
 	next:
@@ -49,11 +50,11 @@ func (s *ContainerServer) List(ctx context.Context, in *pb.ListRequest) (*pb.Lis
 		defer cancel()
 		subReply, err := cli.List(ctx, in)
 		if err != nil {
-			log.Printf("get container list ID=%v address=%v: %v", node.ID, node.Address, err)
+			log.Warnf("get container list ID=%v address=%v: %v", node.ID, node.Address, err)
 			return &reply, nil
 		}
 
-		log.Printf("subReply: %+v", subReply)
+		log.Debugf("subReply: %+v", subReply)
 		for i, _ := range subReply.Containers {
 			subReply.Containers[i].NodeId = node.ID
 			subReply.Containers[i].NodeAddress = node.Address

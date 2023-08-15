@@ -14,3 +14,4 @@ vendor:
 
 clean:
 	rm -f $(PROJECT)
+	rm -rf $(RPC)

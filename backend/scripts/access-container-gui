@@ -1,0 +1,30 @@
+#!/usr/bin/bash
+
+#set -x
+set -e
+
+if [[ $# -ne 1 ]]; then
+    echo "Usage $0 [container ID/name]" >&2
+    exit 1
+fi
+
+CONTAINER_NAME="$1"
+BASE_DIR="/var/containers"
+
+SOCK_DIR=${BASE_DIR}/${CONTAINER_NAME}/socket
+AUTH_FILE=${BASE_DIR}/${CONTAINER_NAME}/Xauthority
+
+HOSTNAME=$(docker inspect -f '{{ .Config.Hostname }}' ${CONTAINER_NAME})
+
+# Get the DISPLAY slot
+DISPLAY_NUMBER=$(echo $DISPLAY | cut -d. -f1 | cut -d: -f2)
+
+# X11 auth permission
+AUTH_COOKIE=$(xauth list | grep "^$(hostname)/unix:${DISPLAY_NUMBER} " | awk '{print $3}')
+xauth -f ${AUTH_FILE} add ${HOSTNAME}/unix:0 MIT-MAGIC-COOKIE-1 ${AUTH_COOKIE}
+
+# Proxy with the :0 DISPLAY
+socat UNIX-LISTEN:${SOCK_DIR}/X0,fork TCP4:localhost:60${DISPLAY_NUMBER} &
+
+# (re)start container
+docker start ${CONTAINER_NAME}

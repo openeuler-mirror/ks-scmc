@@ -23,6 +23,23 @@ func TestContainerList(t *testing.T) {
 			t.Errorf("List: %v", err)
 		}
 
-		t.Logf("List reply: %v", reply)
+		t.Logf("List reply: %+v", reply)
+	})
+}
+
+func TestContainerInspect1(t *testing.T) {
+	testRunner(func(ctx context.Context, conn *grpc.ClientConn) {
+		cli := pb.NewContainerClient(conn)
+		request := pb.InspectRequest{
+			Header:      &common.RequestHeader{},
+			ContainerId: "030f6ec2fede",
+		}
+
+		reply, err := cli.Inspect(ctx, &request)
+		if err != nil {
+			t.Errorf("Inspect: %v", err)
+		}
+
+		t.Logf("Inspect reply: %+v", reply)
 	})
 }

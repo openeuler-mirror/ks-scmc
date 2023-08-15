@@ -6,8 +6,8 @@ import (
 	"github.com/go-sql-driver/mysql"
 )
 
-var ErrDBRecordNotFound = errors.New("Database record not found.")
-var ErrDuplicateKey = errors.New("Duplicate key conflict.")
+var ErrDBRecordNotFound = errors.New("database record not found")
+var ErrDuplicateKey = errors.New("duplicate key conflict")
 
 func translateError(err error) error {
 	if isDuplicateKeyError(err) {

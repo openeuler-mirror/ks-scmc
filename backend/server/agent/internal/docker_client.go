@@ -2,9 +2,11 @@ package internal
 
 import (
 	"context"
+	"ksc-mcube/rpc"
 	"sync"
 
 	"github.com/docker/docker/client"
+	"github.com/docker/docker/errdefs"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -27,13 +29,24 @@ func dockerCli() (*client.Client, error) {
 	}
 
 	var err error
-	cli, err = client.NewClientWithOpts(client.FromEnv)
+	cli, err = client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	if err != nil {
 		log.Warnf("try to connect to container daemon: %v", err)
 		return nil, err
 	}
 
-	cli.NegotiateAPIVersion(context.Background())
-
 	return cli, nil
+}
+
+func transDockerError(err error) error {
+	log.Debugf("docker error %#v", err)
+	if errdefs.IsInvalidParameter(err) {
+		return rpc.ErrInvalidArgument
+	} else if errdefs.IsNotFound(err) {
+		return rpc.ErrNotFound
+	} else if errdefs.IsConflict(err) {
+		return rpc.ErrAlreadyExists
+	}
+
+	return rpc.ErrInternal
 }

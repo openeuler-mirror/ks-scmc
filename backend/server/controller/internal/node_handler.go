@@ -7,7 +7,7 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"ksc-mcube/model"
-	"ksc-mcube/rpc/errno"
+	"ksc-mcube/rpc"
 	pb "ksc-mcube/rpc/pb/node"
 )
 
@@ -17,12 +17,13 @@ type NodeServer struct {
 
 func (s *NodeServer) List(ctx context.Context, in *pb.ListRequest) (*pb.ListReply, error) {
 	log.Infof("Received: %v", in)
+	reply := pb.ListReply{}
+
 	nodes, err := model.ListNodes()
 	if err != nil {
-		return &pb.ListReply{Header: errno.InternalError}, nil
+		return nil, rpc.ErrInternal
 	}
 
-	reply := pb.ListReply{Header: errno.OK}
 	for _, node := range nodes {
 		reply.Nodes = append(reply.Nodes, &pb.NodeInfo{
 			Id:      node.ID,
@@ -38,35 +39,35 @@ func (s *NodeServer) Create(ctx context.Context, in *pb.CreateRequest) (*pb.Crea
 	log.Infof("Received: %v", in)
 
 	if in.Name == "" || in.Address == "" {
-		return &pb.CreateReply{Header: errno.InvalidArgument}, nil
+		return nil, rpc.ErrInvalidArgument
 	}
 
 	// connect agent address, check is alive
 
 	if err := model.CreateNode(in.Name, in.Address, in.Comment); err != nil {
 		if err == model.ErrDuplicateKey {
-			return &pb.CreateReply{Header: errno.AlreadyExists}, nil
+			return nil, rpc.ErrAlreadyExists
 		}
-		return &pb.CreateReply{Header: errno.InternalError}, nil
+		return nil, rpc.ErrInternal
 	}
 
-	return &pb.CreateReply{Header: errno.OK}, nil
+	return &pb.CreateReply{}, nil
 }
 
 func (s *NodeServer) Remove(ctx context.Context, in *pb.RemoveRequest) (*pb.RemoveReply, error) {
 	log.Infof("Received: %v", in)
 	if err := model.RemoveNode(in.Ids); err != nil {
-		return &pb.RemoveReply{Header: errno.InternalError}, nil
+		return nil, rpc.ErrInternal
 	}
-	return &pb.RemoveReply{Header: errno.OK}, nil
+	return &pb.RemoveReply{}, nil
 }
 
 func (s *NodeServer) Status(ctx context.Context, in *pb.StatusRequest) (*pb.StatusReply, error) {
-	reply := pb.StatusReply{Header: errno.InternalError}
+	reply := pb.StatusReply{}
 
 	nodes, err := model.ListNodes()
 	if err != nil {
-		return &reply, nil
+		return nil, rpc.ErrInternal
 	}
 
 	var nodeToQuery []*model.NodeInfo
@@ -78,8 +79,7 @@ func (s *NodeServer) Status(ctx context.Context, in *pb.StatusRequest) (*pb.Stat
 			}
 		}
 		log.Warnf("node ID=%v not found", nodeID)
-		reply.Header = errno.NotFound
-		return &reply, nil
+		return nil, rpc.ErrNotFound
 	next:
 	}
 
@@ -100,16 +100,15 @@ func (s *NodeServer) Status(ctx context.Context, in *pb.StatusRequest) (*pb.Stat
 		subReply, err := cli.Status(ctx, in)
 		if err != nil {
 			log.Warnf("get node status ID=%v address=%v: %v", node.ID, node.Address, err)
-			return &reply, nil
+			return nil, rpc.ErrInternal
 		}
 
 		log.Debugf("subReply: %+v", subReply)
-		for i, _ := range subReply.StatusList {
+		for i := range subReply.StatusList {
 			subReply.StatusList[i].NodeId = node.ID
 			reply.StatusList = append(reply.StatusList, subReply.StatusList[i])
 		}
 	}
 
-	reply.Header = errno.OK
 	return &reply, nil
 }

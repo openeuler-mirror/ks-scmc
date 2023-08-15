@@ -20,7 +20,6 @@ type ContainerServer struct {
 }
 
 func (s *ContainerServer) List(ctx context.Context, in *pb.ListRequest) (*pb.ListReply, error) {
-	log.Infof("Received: %v", in)
 	reply := pb.ListReply{}
 
 	cli, err := dockerCli()
@@ -58,7 +57,6 @@ func (s *ContainerServer) List(ctx context.Context, in *pb.ListRequest) (*pb.Lis
 }
 
 func (s *ContainerServer) Create(ctx context.Context, in *pb.CreateRequest) (*pb.CreateReply, error) {
-	log.Infof("Received: %v", in)
 	reply := pb.CreateReply{}
 
 	// TODO check args
@@ -171,7 +169,6 @@ func (s *ContainerServer) Create(ctx context.Context, in *pb.CreateRequest) (*pb
 }
 
 func (s *ContainerServer) Start(ctx context.Context, in *pb.StartRequest) (*pb.StartReply, error) {
-	log.Infof("Received: %v", in)
 	reply := pb.StartReply{}
 
 	cli, err := dockerCli()
@@ -193,7 +190,6 @@ func (s *ContainerServer) Start(ctx context.Context, in *pb.StartRequest) (*pb.S
 }
 
 func (s *ContainerServer) Stop(ctx context.Context, in *pb.StopRequest) (*pb.StopReply, error) {
-	log.Infof("Received: %v", in)
 	reply := pb.StopReply{}
 
 	cli, err := dockerCli()
@@ -213,7 +209,6 @@ func (s *ContainerServer) Stop(ctx context.Context, in *pb.StopRequest) (*pb.Sto
 }
 
 func (s *ContainerServer) Kill(ctx context.Context, in *pb.KillRequest) (*pb.KillReply, error) {
-	log.Infof("Received: %v", in)
 	reply := pb.KillReply{}
 
 	cli, err := dockerCli()
@@ -233,7 +228,6 @@ func (s *ContainerServer) Kill(ctx context.Context, in *pb.KillRequest) (*pb.Kil
 }
 
 func (s *ContainerServer) Restart(ctx context.Context, in *pb.RestartRequest) (*pb.RestartReply, error) {
-	log.Infof("Received: %v", in)
 	reply := pb.RestartReply{}
 
 	cli, err := dockerCli()
@@ -253,7 +247,6 @@ func (s *ContainerServer) Restart(ctx context.Context, in *pb.RestartRequest) (*
 }
 
 func (s *ContainerServer) Update(ctx context.Context, in *pb.UpdateRequest) (*pb.UpdateReply, error) {
-	log.Infof("Received: %v", in)
 	reply := pb.UpdateReply{}
 
 	if in.ContainerId == "" || (in.ResourceConfig == nil && in.RestartPolicy == nil) {
@@ -295,7 +288,6 @@ func (s *ContainerServer) Update(ctx context.Context, in *pb.UpdateRequest) (*pb
 }
 
 func (s *ContainerServer) Remove(ctx context.Context, in *pb.RemoveRequest) (*pb.RemoveReply, error) {
-	log.Infof("Received: %v", in)
 	reply := pb.RemoveReply{}
 
 	cli, err := dockerCli()
@@ -319,7 +311,6 @@ func (s *ContainerServer) Remove(ctx context.Context, in *pb.RemoveRequest) (*pb
 }
 
 func (s *ContainerServer) Inspect(ctx context.Context, in *pb.InspectRequest) (*pb.InspectReply, error) {
-	log.Infof("Received: %v", in)
 	reply := pb.InspectReply{}
 
 	cli, err := dockerCli()
@@ -390,12 +381,7 @@ func (s *ContainerServer) Inspect(ctx context.Context, in *pb.InspectRequest) (*
 }
 
 func (s *ContainerServer) Status(ctx context.Context, in *pb.StatusRequest) (*pb.StatusReply, error) {
-	log.Infof("Received: %v", in)
-	reply := pb.StatusReply{Status: &pb.ContainerStatus{Id: in.ContainerId}}
-
-	if in.ContainerId == "" {
-		return nil, rpc.ErrInvalidArgument
-	}
+	reply := pb.StatusReply{}
 
 	cli, err := dockerCli()
 	if err != nil {

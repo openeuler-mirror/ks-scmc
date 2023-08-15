@@ -16,7 +16,6 @@ type ContainerServer struct {
 }
 
 func (s *ContainerServer) List(ctx context.Context, in *pb.ListRequest) (*pb.ListReply, error) {
-	log.Infof("Received: %v", in)
 	reply := pb.ListReply{}
 
 	nodes, err := model.ListNodes()
@@ -65,7 +64,6 @@ func (s *ContainerServer) List(ctx context.Context, in *pb.ListRequest) (*pb.Lis
 }
 
 func (s *ContainerServer) Create(ctx context.Context, in *pb.CreateRequest) (*pb.CreateReply, error) {
-	log.Infof("Received: %v", in)
 	// reply := pb.CreateReply{}
 
 	nodeInfo, err := model.QueryNodeByID(in.NodeId)
@@ -95,7 +93,6 @@ func (s *ContainerServer) Create(ctx context.Context, in *pb.CreateRequest) (*pb
 }
 
 func (s *ContainerServer) Start(ctx context.Context, in *pb.StartRequest) (*pb.StartReply, error) {
-	log.Infof("Received: %v", in)
 	reply := pb.StartReply{}
 
 	if in.NodeId <= 0 || len(in.ContainerIds) <= 0 {
@@ -129,7 +126,6 @@ func (s *ContainerServer) Start(ctx context.Context, in *pb.StartRequest) (*pb.S
 }
 
 func (s *ContainerServer) Stop(ctx context.Context, in *pb.StopRequest) (*pb.StopReply, error) {
-	log.Infof("Received: %v", in)
 	reply := pb.StopReply{}
 
 	if in.NodeId <= 0 || len(in.ContainerIds) <= 0 {
@@ -163,7 +159,6 @@ func (s *ContainerServer) Stop(ctx context.Context, in *pb.StopRequest) (*pb.Sto
 }
 
 func (s *ContainerServer) Kill(ctx context.Context, in *pb.KillRequest) (*pb.KillReply, error) {
-	log.Infof("Received: %v", in)
 	reply := pb.KillReply{}
 
 	if in.NodeId <= 0 || len(in.ContainerIds) <= 0 {
@@ -197,7 +192,6 @@ func (s *ContainerServer) Kill(ctx context.Context, in *pb.KillRequest) (*pb.Kil
 }
 
 func (s *ContainerServer) Restart(ctx context.Context, in *pb.RestartRequest) (*pb.RestartReply, error) {
-	log.Infof("Received: %v", in)
 	reply := pb.RestartReply{}
 
 	if in.NodeId <= 0 || len(in.ContainerIds) <= 0 {
@@ -231,7 +225,6 @@ func (s *ContainerServer) Restart(ctx context.Context, in *pb.RestartRequest) (*
 }
 
 func (s *ContainerServer) Remove(ctx context.Context, in *pb.RemoveRequest) (*pb.RemoveReply, error) {
-	log.Infof("Received: %v", in)
 	reply := pb.RemoveReply{}
 
 	if in.NodeId <= 0 || len(in.ContainerIds) <= 0 {
@@ -265,7 +258,6 @@ func (s *ContainerServer) Remove(ctx context.Context, in *pb.RemoveRequest) (*pb
 }
 
 func (s *ContainerServer) Inspect(ctx context.Context, in *pb.InspectRequest) (*pb.InspectReply, error) {
-	log.Infof("Received: %v", in)
 	// reply := pb.InspectReply{}
 
 	if in.NodeId <= 0 || in.ContainerId == "" {
@@ -299,7 +291,6 @@ func (s *ContainerServer) Inspect(ctx context.Context, in *pb.InspectRequest) (*
 }
 
 func (s *ContainerServer) Status(ctx context.Context, in *pb.StatusRequest) (*pb.StatusReply, error) {
-	log.Infof("Received: %v", in)
 	// reply := pb.StatusReply{}
 
 	if in.NodeId <= 0 {
@@ -333,8 +324,6 @@ func (s *ContainerServer) Status(ctx context.Context, in *pb.StatusRequest) (*pb
 }
 
 func (s *ContainerServer) Update(ctx context.Context, in *pb.UpdateRequest) (*pb.UpdateReply, error) {
-	log.Infof("Received: %v", in)
-
 	if in.NodeId <= 0 || in.ContainerId == "" {
 		return nil, rpc.ErrInvalidArgument
 	}

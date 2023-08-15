@@ -19,7 +19,6 @@ type NodeServer struct {
 }
 
 func (s *NodeServer) List(ctx context.Context, in *pb.ListRequest) (*pb.ListReply, error) {
-	log.Infof("Received: %v", in)
 	reply := pb.ListReply{}
 
 	nodes, err := model.ListNodes()
@@ -39,8 +38,6 @@ func (s *NodeServer) List(ctx context.Context, in *pb.ListRequest) (*pb.ListRepl
 }
 
 func (s *NodeServer) Create(ctx context.Context, in *pb.CreateRequest) (*pb.CreateReply, error) {
-	log.Infof("Received: %v", in)
-
 	if in.Name == "" || in.Address == "" {
 		return nil, rpc.ErrInvalidArgument
 	}
@@ -86,7 +83,6 @@ func (s *NodeServer) Create(ctx context.Context, in *pb.CreateRequest) (*pb.Crea
 }
 
 func (s *NodeServer) Remove(ctx context.Context, in *pb.RemoveRequest) (*pb.RemoveReply, error) {
-	log.Infof("Received: %v", in)
 	if err := model.RemoveNode(in.Ids); err != nil {
 		return nil, rpc.ErrInternal
 	}

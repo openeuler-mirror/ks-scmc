@@ -1,0 +1,71 @@
+syntax = "proto3";
+
+option go_package = "ksc-mcube/rpc/pb/image";
+
+package image;
+
+import "common.proto";
+import "image_types.proto";
+
+service Image {
+  rpc List(ListRequest) returns (ListReply) {}
+  rpc Upload(UploadRequest) returns (UploadReply) {}
+  rpc Update(UpdateRequest) returns (UpdateReply) {}
+  rpc Download(DownloadRequest) returns (DownloadReply) {}
+  rpc Check(CheckRequest) returns (CheckReply) {}
+  rpc Remove(RemoveRequest) returns (RemoveReply) {}
+}
+
+message ListRequest {
+    common.RequestHeader header = 1;
+    int64 node_id = 2;
+}
+
+message ListReply {
+    common.ReplyHeader header = 1;
+    repeated ImageInfo images = 2;
+}
+
+message UploadRequest {
+    common.RequestHeader header = 1;
+    int64 node_id = 2;
+}
+
+message UploadReply {
+    common.ReplyHeader header = 1;
+}
+
+message UpdateRequest {
+    common.RequestHeader header = 1;
+    int64 node_id = 2;
+}
+
+message UpdateReply {
+    common.ReplyHeader header = 1;
+}
+
+message DownloadRequest {
+    common.RequestHeader header = 1;
+    int64 node_id = 2;
+}
+
+message DownloadReply {
+    common.ReplyHeader header = 1;
+}
+
+message CheckRequest {
+    common.RequestHeader header = 1;
+    int64 node_id = 2;
+}
+
+message CheckReply {
+    common.ReplyHeader header = 1;
+}
+
+message RemoveRequest {
+    common.RequestHeader header = 1;
+}
+
+message RemoveReply {
+    common.ReplyHeader header = 1;
+}

@@ -2,7 +2,6 @@ package internal
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"strings"
 
@@ -62,12 +61,15 @@ func (s *ContainerServer) Create(ctx context.Context, in *pb.CreateRequest) (*pb
 	log.Infof("Received: %v", in)
 	reply := pb.CreateReply{}
 
+	// TODO check args
+	if in.Config.Image == "" || !containerNamePattern.MatchString(in.Name) {
+		return nil, rpc.ErrInvalidArgument
+	}
+
 	cli, err := dockerCli()
 	if err != nil {
 		return nil, rpc.ErrInternal
 	}
-
-	// TODO check args
 
 	var (
 		envs          []string
@@ -121,6 +123,7 @@ func (s *ContainerServer) Create(ctx context.Context, in *pb.CreateRequest) (*pb
 		if in.HostConfig.ResourceConfig != nil {
 			hostConfig.Resources = container.Resources{
 				NanoCPUs:          in.HostConfig.ResourceConfig.NanoCpus,
+				CPUShares:         in.HostConfig.ResourceConfig.CpuShares,
 				Memory:            in.HostConfig.ResourceConfig.MemLimit,
 				MemoryReservation: in.HostConfig.ResourceConfig.MemSoftLimit,
 			}
@@ -148,6 +151,13 @@ func (s *ContainerServer) Create(ctx context.Context, in *pb.CreateRequest) (*pb
 				networkConfig.EndpointsConfig[k].IPAMConfig.IPv6Address = v.IpamConfig.Ipv6Address
 			}
 		}
+	}
+
+	if in.EnableGraphic {
+		if hostConfig == nil {
+			hostConfig = &container.HostConfig{}
+		}
+		containerGraphicSetup(in.Name, &config, hostConfig)
 	}
 
 	body, err := cli.ContainerCreate(context.Background(), &config, hostConfig, networkConfig, nil, in.Name)
@@ -293,11 +303,8 @@ func (s *ContainerServer) Remove(ctx context.Context, in *pb.RemoveRequest) (*pb
 		return nil, rpc.ErrInternal
 	}
 
-	// TODO follow user input
 	opts := types.ContainerRemoveOptions{
-		RemoveVolumes: true,
-		RemoveLinks:   false,
-		Force:         false,
+		RemoveVolumes: in.RemoveVolumes,
 	}
 
 	for _, id := range in.ContainerIds {
@@ -395,37 +402,28 @@ func (s *ContainerServer) Status(ctx context.Context, in *pb.StatusRequest) (*pb
 		return nil, rpc.ErrInternal
 	}
 
-	info, err := cli.ContainerInspect(context.Background(), in.ContainerId)
+	opts := types.ContainerListOptions{All: true, Size: true}
+	containers, err := cli.ContainerList(context.Background(), opts)
 	if err != nil {
-		log.Warnf("ContainerInspect: %v", err)
-		return nil, transDockerError(err)
-	}
-
-	if info.State == nil {
-		reply.Status.Status = "unknown"
-		return &reply, nil
-	}
-
-	reply.Status.Status = info.State.Status
-	if !info.State.Running {
-		return &reply, nil
-	}
-
-	stats, err := cli.ContainerStatsOneShot(context.Background(), in.ContainerId)
-	if err != nil {
-		log.Printf("ContainerStatsOneShot: %v", err)
-		return nil, transDockerError(err)
-	}
-
-	defer stats.Body.Close()
-
-	var v types.StatsJSON
-	if err := json.NewDecoder(stats.Body).Decode(&v); err != nil {
-		log.Printf("decode stats json: %v", err)
+		log.Warnf("ContainerList: %v", err)
 		return nil, rpc.ErrInternal
 	}
 
-	reply.Status = calculateContainerStat(&v)
-	reply.Status.Id = in.ContainerId
+	m := make(map[string]*pb.ContainerStatus, len(containers))
+
+	for _, c := range containers {
+		m[c.ID] = &pb.ContainerStatus{
+			Id:    c.ID,
+			State: c.State,
+		}
+
+	}
+
+	containerStats(m)
+	reply.Status = make([]*pb.ContainerStatus, 0, len(containers))
+	for _, v := range m {
+		reply.Status = append(reply.Status, v)
+	}
+
 	return &reply, nil
 }

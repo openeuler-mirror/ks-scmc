@@ -9,7 +9,7 @@ import (
 )
 
 func TestCadvisor(t *testing.T) {
-	client, err := client.NewClient("http://172.17.0.2:8080/")
+	client, err := client.NewClient("http://172.17.0.6:8080/")
 	if err != nil {
 		t.Error(err)
 	}
@@ -34,10 +34,6 @@ func TestCadvisor(t *testing.T) {
 	}
 
 	for _, info := range infos {
-		if info.Id == "" {
-			continue
-		}
-		// t.Logf("%+v", info)
 		if len(info.Stats) > 1 {
 			head := info.Stats[0]
 			tail := info.Stats[len(info.Stats)-1]

@@ -23,7 +23,10 @@ func TestContainerList(t *testing.T) {
 			t.Errorf("List: %v", err)
 		}
 
-		t.Logf("List reply: %+v", reply)
+		for _, c := range reply.Containers {
+			t.Logf("List container: %+v", c)
+		}
+
 	})
 }
 

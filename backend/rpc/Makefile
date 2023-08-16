@@ -1,38 +1,22 @@
-INC_DIR=../../rpc_proto
-BASE_DIR=./pb
+PATH := $(shell go env GOPATH)/bin:$(PATH)
 
-all: $(BASE_DIR)/common \
-	$(BASE_DIR)/user \
-	$(BASE_DIR)/node \
-	$(BASE_DIR)/container \
-	$(BASE_DIR)/network \
-	$(BASE_DIR)/image
+INC := ../../rpc_proto
+BASE := pb
 
-$(BASE_DIR)/common: $(INC_DIR)/common.proto
+GRPC_SERVICES := $(patsubst $(INC)/%,%, $(wildcard $(INC)/*service.proto))
+GRPC_SERVICES := $(patsubst %_service.proto,%, $(GRPC_SERVICES))
+GRPC_SERVICES := $(patsubst %,$(BASE)/%, $(GRPC_SERVICES))
+
+all: $(BASE)/common $(GRPC_SERVICES)
+
+$(BASE)/common: $(INC)/common.proto
 	mkdir -p $@
-	protoc -I $(INC_DIR) --go_out=$@ --go_opt=paths=source_relative $^
+	protoc -I $(INC) --go_out=$@ --go_opt=paths=source_relative $(notdir $^)
 
-$(BASE_DIR)/user: $(INC_DIR)/user_service.proto
+$(BASE)/%: $(INC)/%_service.proto $(INC)/%_types.proto
 	mkdir -p $@
-	protoc -I $(INC_DIR) --go_out=$@ --go_opt=paths=source_relative \
-		--go-grpc_out=$@ --go-grpc_opt=paths=source_relative $^
+	protoc -I $(INC) --go_out=$@ --go_opt=paths=source_relative \
+		--go-grpc_out=$@ --go-grpc_opt=paths=source_relative $(notdir $^)
 
-$(BASE_DIR)/node: $(INC_DIR)/node_service.proto $(INC_DIR)/node_types.proto
-	mkdir -p $@
-	protoc -I $(INC_DIR) --go_out=$@ --go_opt=paths=source_relative \
-		--go-grpc_out=$@ --go-grpc_opt=paths=source_relative $^
-
-$(BASE_DIR)/container: $(INC_DIR)/container_service.proto $(INC_DIR)/container_types.proto
-	mkdir -p $@
-	protoc -I $(INC_DIR) --go_out=$@ --go_opt=paths=source_relative \
-		--go-grpc_out=$@ --go-grpc_opt=paths=source_relative $^
-
-$(BASE_DIR)/network: $(INC_DIR)/network_service.proto $(INC_DIR)/network_types.proto
-	mkdir -p $@
-	protoc -I $(INC_DIR) --go_out=$@ --go_opt=paths=source_relative \
-		--go-grpc_out=$@ --go-grpc_opt=paths=source_relative $^
-
-$(BASE_DIR)/image: $(INC_DIR)/image_service.proto $(INC_DIR)/image_types.proto
-	mkdir -p $@
-	protoc -I $(INC_DIR) --go_out=$@ --go_opt=paths=source_relative \
-		--go-grpc_out=$@ --go-grpc_opt=paths=source_relative $^
+clean:
+	rm -rf $(BASE)

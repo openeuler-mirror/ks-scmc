@@ -25,7 +25,9 @@ void CommonPage::setBusy(bool status)
 
 void CommonPage::clearTable()
 {
+    KLOG_INFO() << "pre" << m_model->rowCount();
     m_model->removeRows(0, m_model->rowCount());
+    KLOG_INFO() << "current" << m_model->rowCount();
 }
 
 void CommonPage::addOperationButton(QToolButton *btn)
@@ -51,24 +53,15 @@ void CommonPage::setTableColNum(int num)
     m_model->setColumnCount(num);
 }
 
-void CommonPage::setTableItem(int col, int row, QStandardItem *item)
+void CommonPage::setTableItem(int row, int col, QStandardItem *item)
 {
     m_model->setItem(row, col, item);
 }
 
-void CommonPage::setTableItems(int row, QList<QStandardItem *> items)
+void CommonPage::setTableItems(int row, int col, QList<QStandardItem *> items)
 {
-    for (int i = 0; i < items.size(); i++)
-    {
-        if (i == 0)
-        {
-            m_model->setItem(row, i, items.at(i));
-        }
-        else
-        {
-            m_model->setItem(row, i + 1, items.at(i));
-        }
-    }
+    for (int i = col, j = 0; i < items.size() + col; i++, j++)
+        m_model->setItem(row, i, items.at(j));
 }
 
 void CommonPage::setTableActions(int col, QStringList actionIcons)
@@ -115,9 +108,36 @@ void CommonPage::setHeaderSections(QStringList names)
     ui->tableView->setColumnWidth(1, 150);
 }
 
-QList<QMap<QString, QVariant>> CommonPage::getCheckedRowInfo()
+void CommonPage::setTableDefaultContent()
 {
-    return m_checkedRowInfo;
+    m_model->removeRows(0, m_model->rowCount());
+    for (int i = 0; i < m_model->columnCount(); i++)
+    {
+        QStandardItem *item = new QStandardItem("-");
+        item->setTextAlignment(Qt::AlignCenter);
+        m_model->setItem(0, i, item);
+    }
+    //    ui->tableView->setItemDelegate(ui->tableView->itemDelegate());
+}
+
+int CommonPage::getTableRowCount()
+{
+    return m_model->rowCount();
+}
+
+QList<QMap<QString, QVariant>> CommonPage::getCheckedItemInfo(int col)
+{
+    QList<QMap<QString, QVariant>> checkedItemInfo;  //containerId,nodeId
+    for (int i = 0; i < m_model->rowCount(); i++)
+    {
+        auto item = m_model->item(i, col);
+        if (item->checkState() == Qt::CheckState::Checked)
+        {
+            QMap<QString, QVariant> idMap = item->data().value<QMap<QString, QVariant>>();
+            checkedItemInfo.append(idMap);
+        }
+    }
+    return checkedItemInfo;
 }
 
 void CommonPage::initUI()

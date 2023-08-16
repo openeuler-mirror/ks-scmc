@@ -32,11 +32,6 @@ int main(int argc, char *argv[])
         QMessageBox::warning(NULL, "warning", "Open failed", QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes);
     }
 
-    RpcEntry::Instance().creatChannel();
-    RpcEntry::Instance().nodeTest();
-    RpcEntry::Instance().containerTest();
-    RpcEntry::Instance().userTest();
-
     MainWindow w;
     //    int screenNum = QApplication::desktop()->screenNumber(QCursor::pos());
     //    QRect screenGeometry = QApplication::desktop()->screenGeometry(screenNum);

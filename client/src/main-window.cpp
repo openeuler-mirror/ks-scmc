@@ -6,12 +6,24 @@
 #include "./ui_main-window.h"
 #include "common/common-page.h"
 #include "common/guide-item.h"
+#include "common/info-worker.h"
 #include "pages/container/container-list.h"
 #include "pages/node/node-list.h"
+
+std::string g_server_addr = "10.200.12.181:10050";
+
 MainWindow::MainWindow(QWidget* parent)
     : QWidget(parent), ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+
+    QStringList args = qApp->arguments();
+    if (args.size() > 1)
+    {
+        g_server_addr = args[1].toStdString();
+        printf("[%s][%d] g_server_addr:%s\n", __func__, __LINE__, g_server_addr.data());
+    }
+
     initUI();
 }
 
@@ -20,10 +32,10 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
-void MainWindow::onItemClicked(QListWidgetItem* item)
+void MainWindow::onItemClicked(QListWidgetItem* currItem, QListWidgetItem* preItem)
 {
     //侧边栏展开与收缩
-    GuideItem* guideItem = qobject_cast<GuideItem*>(ui->listWidget->itemWidget(item));
+    GuideItem* guideItem = qobject_cast<GuideItem*>(ui->listWidget->itemWidget(currItem));
     if (guideItem->getItemType() != GUIDE_ITEM_TYPE_GROUP)
     {
         guideItem->setSelected(true);
@@ -35,34 +47,36 @@ void MainWindow::onItemClicked(QListWidgetItem* item)
             }
         }
     }
-    if (m_groupMap.contains(item))
+    if (m_groupMap.contains(currItem))
     {
-        if (m_isShowMap.value(item))  //hide
+        if (m_isShowMap.value(currItem))  //hide
         {
             guideItem->setArrow(true);
-            QList<QListWidgetItem*> subItems = m_groupMap.value(item);
+            QList<QListWidgetItem*> subItems = m_groupMap.value(currItem);
             foreach (QListWidgetItem* subItem, subItems)
             {
                 subItem->setHidden(true);
             }
-            m_isShowMap.insert(item, false);
+            m_isShowMap.insert(currItem, false);
         }
         else  //show
         {
             guideItem->setArrow(false);
-            QList<QListWidgetItem*> subItems = m_groupMap.value(item);
+            QList<QListWidgetItem*> subItems = m_groupMap.value(currItem);
             foreach (QListWidgetItem* subItem, subItems)
             {
                 subItem->setHidden(false);
             }
-            m_isShowMap.insert(item, true);
+            m_isShowMap.insert(currItem, true);
         }
     }
-    int currenRow = ui->listWidget->row(item);
+    int currenRow = ui->listWidget->row(currItem);
+    int preRow = ui->listWidget->row(preItem);
     std::cout << currenRow << std::endl;
 
     if (!m_pageMap.value(currenRow))
         return;
+    InfoWorker::getInstance().disconnect();
     m_pageMap[currenRow]->updateInfo();
     m_stackedWidget->setCurrentWidget(m_pageMap.value(currenRow));
 }
@@ -106,9 +120,6 @@ void MainWindow::initUI()
         m_pageMap[itemEnum] = subPage;
     }
 
-    ///TODO:set current widget to home
-    m_stackedWidget->setCurrentWidget(m_pageMap.value(GUIDE_ITEM_CONTAINER_LIST));
-
     QListWidgetItem* homeItem = createGuideItem("Home Page", GUIDE_ITEM_TYPE_NORMAL, ":/images/home-page.png");
     QListWidgetItem* auditCenter = createGuideItem("Audit Center", GUIDE_ITEM_TYPE_GROUP, ":/images/audit-center.svg");
     QListWidgetItem* auditApplyList = createGuideItem("Audit Apply List", GUIDE_ITEM_TYPE_SUB);
@@ -126,6 +137,9 @@ void MainWindow::initUI()
     m_groupMap.insert(containerManager, containerSubItems);
     m_isShowMap.insert(containerManager, false);
 
+    QListWidgetItem* imageManager = createGuideItem("Image Manager", GUIDE_ITEM_TYPE_NORMAL, ":/images/image-manager.svg");
+    QListWidgetItem* nodeManager = createGuideItem("Node Manager", GUIDE_ITEM_TYPE_NORMAL, ":/images/node-manager.svg");
+
     //show first
     GuideItem* guideItem = qobject_cast<GuideItem*>(ui->listWidget->itemWidget(containerManager));
     guideItem->setArrow(false);
@@ -137,12 +151,12 @@ void MainWindow::initUI()
     {
         subItem->setHidden(false);
     }
-
-    QListWidgetItem* imageManager = createGuideItem("Image Manager", GUIDE_ITEM_TYPE_NORMAL, ":/images/image-manager.svg");
-    QListWidgetItem* nodeManager = createGuideItem("Node Manager", GUIDE_ITEM_TYPE_NORMAL, ":/images/node-manager.svg");
-
+    ///TODO:set current widget to home
+    m_stackedWidget->setCurrentWidget(m_pageMap.value(GUIDE_ITEM_CONTAINER_LIST));
     ui->listWidget->setCurrentRow(GUIDE_ITEM_CONTAINER_LIST);
-    connect(ui->listWidget, &QListWidget::itemClicked, this, &MainWindow::onItemClicked);
+    m_pageMap[GUIDE_ITEM_CONTAINER_LIST]->updateInfo();
+
+    connect(ui->listWidget, &QListWidget::currentItemChanged, this, &MainWindow::onItemClicked);
 }
 
 CommonPage* MainWindow::createSubPage(GUIDE_ITEM itemEnum)

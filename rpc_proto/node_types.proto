@@ -9,6 +9,8 @@ message NodeInfo {
     string name = 2;
     string address = 3;
     string comment = 4;
+
+    NodeStatus status = 5;
 }
 
 enum NodeState {

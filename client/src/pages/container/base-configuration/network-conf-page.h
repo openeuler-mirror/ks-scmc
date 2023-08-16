@@ -1,8 +1,8 @@
-#ifndef NETWORKCONFPAGE_H
+﻿#ifndef NETWORKCONFPAGE_H
 #define NETWORKCONFPAGE_H
 
 #include <QWidget>
-
+#include "common/info-worker.h"
 namespace Ui
 {
 class NetworkConfPage;
@@ -15,10 +15,15 @@ class NetworkConfPage : public QWidget
 public:
     explicit NetworkConfPage(QWidget *parent = nullptr);
     ~NetworkConfPage();
+    void getNetworkInfo(container::CreateRequest *req);
+    void updateNetworkInfo(int64_t node_id);
+
+private:
+    void getNetworkListResult(const QPair<grpc::Status, network::ListReply> &reply);
 
 private:
     void initUI();
-    QStringList getVirtualNetCard();
+    void getNetworkInfo();
 
 private:
     Ui::NetworkConfPage *ui;

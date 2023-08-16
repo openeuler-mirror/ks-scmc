@@ -5,7 +5,6 @@
 #include <QLabel>
 #include <QMouseEvent>
 #include <QStandardItem>
-
 #include "container-setting.h"
 
 #define NODE_ID "node id"
@@ -40,8 +39,8 @@ void ContainerList::onBtnCreate()
     KLOG_INFO() << "onBtnCreate";
     if (!m_createCTSetting)
     {
-        m_createCTSetting = new ContainerSetting();
-        initContianerSetting(m_createCTSetting, CONTAINER_SETTING_TYPE_CREATE);
+        m_createCTSetting = new ContainerSetting(CONTAINER_SETTING_TYPE_CONTAINER_CREATE);
+        //initContianerSetting(m_createCTSetting, CONTAINER_SETTING_TYPE_CREATE);
         m_createCTSetting->show();
         connect(m_createCTSetting, &ContainerSetting::destroyed,
                 [=] {
@@ -55,6 +54,12 @@ void ContainerList::onBtnCreate()
 void ContainerList::onBtnRun()
 {
     KLOG_INFO() << "onBtnRun";
+    QList<QMap<QString, QVariant>> info = getCheckedItemInfo(0);
+    foreach (auto idMap, info)
+    {
+        KLOG_INFO() << idMap.value(NODE_ID).toInt();
+        KLOG_INFO() << idMap.value(CONTAINER_ID).toString();
+    }
 }
 
 void ContainerList::onBtnStop()
@@ -102,8 +107,7 @@ void ContainerList::onEdit(int row)
     KLOG_INFO() << row;
     if (!m_editCTSetting)
     {
-        m_editCTSetting = new ContainerSetting();
-        initContianerSetting(m_editCTSetting, CONTAINER_SETTING_TYPE_EDIT);
+        m_editCTSetting = new ContainerSetting(CONTAINER_SETTING_TYPE_CONTAINER_EDIT);
         m_editCTSetting->show();
         connect(m_editCTSetting, &ContainerSetting::destroyed,
                 [=] {
@@ -124,17 +128,20 @@ void ContainerList::getNodeListResult(QPair<grpc::Status, node::ListReply> reply
     KLOG_INFO() << "getNodeListResult";
     if (reply.first.ok())
     {
+        m_vecNodeId.clear();
         for (auto n : reply.second.nodes())
         {
             KLOG_INFO() << n.id();
             m_vecNodeId.push_back(n.id());
         }
+        if (!m_vecNodeId.empty())
+        {
+            InfoWorker::getInstance().listContainer(m_vecNodeId, true);
+            connect(&InfoWorker::getInstance(), &InfoWorker::listContainerFinished, this, &ContainerList::getContainerListResult);
+        }
     }
-    if (!m_vecNodeId.empty())
-    {
-        InfoWorker::getInstance().listContainer(m_vecNodeId, true);
-        connect(&InfoWorker::getInstance(), &InfoWorker::listContainerFinished, this, &ContainerList::getContainerListResult);
-    }
+    else
+        setTableDefaultContent();
 }
 
 void ContainerList::getContainerListResult(QPair<grpc::Status, container::ListReply> reply)
@@ -144,9 +151,9 @@ void ContainerList::getContainerListResult(QPair<grpc::Status, container::ListRe
     {
         clearTable();
         int size = reply.second.containers_size();
+        KLOG_INFO() << "container size:" << size;
         if (size > 0)
         {
-            setTableRowNum(size);
             int row = 0;
             QMap<QString, QVariant> idMap;
             for (auto i : reply.second.containers())
@@ -156,23 +163,40 @@ void ContainerList::getContainerListResult(QPair<grpc::Status, container::ListRe
                 idMap.insert(CONTAINER_ID, i.info().id().data());
 
                 QStandardItem *itemName = new QStandardItem(i.info().name().data());
-                itemName->setData(idMap);
+                itemName->setData(QVariant::fromValue(idMap));
                 itemName->setCheckable(true);
+                setTableItem(row, 0, itemName);
 
                 QStandardItem *itemStatus = new QStandardItem(i.info().state().data());
                 itemStatus->setTextAlignment(Qt::AlignCenter);
+
                 QStandardItem *itemImage = new QStandardItem(i.info().image().data());
                 itemImage->setTextAlignment(Qt::AlignCenter);
+
                 QStandardItem *itemNodeAddress = new QStandardItem(i.node_address().data());
                 itemNodeAddress->setTextAlignment(Qt::AlignCenter);
 
-                setTableItems(row, QList<QStandardItem *>() << itemName
-                                                            << itemStatus
-                                                            << itemImage
-                                                            << itemNodeAddress);
+                setTableItems(row, 2, QList<QStandardItem *>() << itemStatus << itemImage << itemNodeAddress);
+
+                //                if (i.info().has_resource_stat())
+                //                {
+                //                    if (i.info().resource_stat().has_cpu_stat())
+                //                    {
+                //                        double cpuStat = i.info().resource_stat().cpu_stat().core_used().data();
+                //                        QString str = QString::number(cpuStat * 100, 'f', 2);
+                //                        QStandardItem *itemCpu = new QStandardItem(str);
+                //                        itemCpu->setTextAlignment(Qt::AlignCenter);
+                //                        setTableItem(5, row, itemCpu);
+                //                    }
+                //                }
+
                 row++;
             }
         }
+    }
+    else
+    {
+        setTableDefaultContent();
     }
 }
 
@@ -245,64 +269,13 @@ void ContainerList::initTable()
     setHeaderSections(tableHHeaderDate);
     QList<int> sortablCol = {0, 3};
     setSortableCol(sortablCol);
-    setTableRowNum(tableHHeaderDate.size());
-
     setTableActions(1, QStringList() << ":/images/monitor.svg"
                                      << ":/images/edit.svg"
                                      << ":/images/terminal.svg"
                                      << ":/images/more_in_table.svg");
 
     connect(this, &ContainerList::sigMonitor, this, &ContainerList::onMonitor);
-    //    connect(headerView, &HeaderView::ckbToggled, this, &ContainerList::onHeaderCkbTog);
     connect(this, &ContainerList::sigEdit, this, &ContainerList::onEdit);
-}
-
-void ContainerList::initContianerSetting(ContainerSetting *window, ContainerSettingType type)
-{
-    window->setWindowTitle("Create Container");
-    QStringList labelName = {tr("ContainerName:"),
-                             tr("Describe:"),
-                             tr("Image:"),
-                             tr("Node:")};
-    for (int i = 0; i < labelName.size(); i++)
-    {
-        QLabel *label = new QLabel(window);
-        label->setText(labelName.at(i));
-        window->setItems(i, 0, label);
-    }
-
-    for (int i = 0; i < 2; i++)
-    {
-        QLineEdit *lineEdit = new QLineEdit(window);
-        lineEdit->setFixedSize(QSize(200, 30));
-        window->setItems(i, 1, lineEdit);
-        if (i == 0 && type == CONTAINER_SETTING_TYPE_EDIT)
-        {
-            lineEdit->setObjectName("lineEdit_name");
-            lineEdit->setReadOnly(true);
-            lineEdit->setStyleSheet("#lineEdit_name{border:none}");
-            // TODO:lineEdit->setText();
-        }
-    }
-
-    if (type == CONTAINER_SETTING_TYPE_CREATE)
-    {
-        QComboBox *cb_image = new QComboBox(window);
-        cb_image->setFixedSize(QSize(200, 30));
-        window->setItems(2, 1, cb_image);
-    }
-    else
-    {
-        QLabel *lab = new QLabel(window);
-        // TODO:lab->setText();
-        window->setItems(2, 1, lab);
-    }
-
-    QComboBox *cb_node = new QComboBox(window);
-    cb_node->setFixedSize(QSize(200, 30));
-    window->setItems(3, 1, cb_node);
-    //获取后端镜像、节点
-    //cb_image->addItems(QStringList() << "");
 }
 
 void ContainerList::insertContainerInfo()

@@ -74,10 +74,10 @@ QTableView{
     border:none;
     padding: 0px;		/*内边距*/
     margin: 0px;			/*外边距*/
-    color: #575757;		/*表格文本的颜色*/
+    color: #303133;		/*表格文本的颜色*/
     background: white;	/*表格背景色*/
     gridline-color:	#E4E7ED;		/*网格边框*/
-    font-size: 24px;					/*表格文本大小*/
+    font-size: 14px;					/*表格文本大小*/
 /*    font-family: "Microsoft YaHei";		/*表格文本字体*/
 }
 QTableView::item

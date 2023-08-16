@@ -1,0 +1,14 @@
+[Unit]
+Description=KylinSec Magic Cube controller service
+
+[Service]
+PIDFile=/var/lib/ksc-mcube/controller.pid
+
+ExecStart=/usr/bin/ksc-mcube -verbose=5 controller
+
+Restart=on-failure
+
+RestartPreventExitStatus=1
+
+[Install]
+WantedBy=multi-user.target

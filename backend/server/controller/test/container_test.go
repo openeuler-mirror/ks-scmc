@@ -146,6 +146,14 @@ func TestContainerCreateWithCmd(t *testing.T) {
 			HostConfig: &pb.HostConfig{
 				Privileged: true,
 			},
+			NetworkConfig: map[string]*pb.EndpointSetting{
+				"br0": {
+					IpamConfig: &pb.IPAMConfig{
+						Ipv4Address: "172.28.5.10",
+					},
+					MacAddress: "12:34:56:78:9a:bc",
+				},
+			},
 		}
 
 		reply, err := cli.Create(ctx, &request)

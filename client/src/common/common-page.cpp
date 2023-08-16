@@ -23,6 +23,11 @@ void CommonPage::setBusy(bool status)
 {
 }
 
+void CommonPage::clearTable()
+{
+    m_model->removeRows(0, m_model->rowCount());
+}
+
 void CommonPage::addOperationButton(QToolButton *btn)
 {
     ui->hLayout_OpBtns->addWidget(btn, Qt::AlignLeft);
@@ -36,26 +41,34 @@ void CommonPage::addOperationButtons(QList<QPushButton *> opBtns)
     }
 }
 
-void CommonPage::setTableColAndRow(int col, int row)
+void CommonPage::setTableRowNum(int num)
 {
-    m_model->setColumnCount(col);
-    m_model->setRowCount(row);
-    //设置每行高度
-    for (int i = 0; i < row; i++)
-    {
-        ui->tableView->setRowHeight(i, 50);
-    }
+    m_model->setRowCount(num);
 }
 
-void CommonPage::setTableItem(int col, int row, QStandardItem *item, bool checkable)
+void CommonPage::setTableColNum(int num)
 {
-    item->setCheckable(checkable);
+    m_model->setColumnCount(num);
+}
+
+void CommonPage::setTableItem(int col, int row, QStandardItem *item)
+{
     m_model->setItem(row, col, item);
 }
 
 void CommonPage::setTableItems(int row, QList<QStandardItem *> items)
 {
-    m_model->insertRow(row, items);
+    for (int i = 0; i < items.size(); i++)
+    {
+        if (i == 0)
+        {
+            m_model->setItem(row, i, items.at(i));
+        }
+        else
+        {
+            m_model->setItem(row, i + 1, items.at(i));
+        }
+    }
 }
 
 void CommonPage::setTableActions(int col, QStringList actionIcons)
@@ -122,6 +135,7 @@ void CommonPage::initUI()
     ui->tableView->setHorizontalHeader(m_headerView);
     //隐藏列表头
     ui->tableView->verticalHeader()->setVisible(false);
+    ui->tableView->verticalHeader()->setDefaultSectionSize(50);
 
     //设置表的其他属性
     ui->tableView->setMouseTracking(true);
@@ -185,10 +199,12 @@ void CommonPage::onHeaderCkbTog(bool toggled)
     for (int i = 0; i < rowCounts; i++)
     {
         QStandardItem *item = m_model->item(i, 0);
-        KLOG_INFO() << item->text();
-        if (toggled)
-            item->setCheckState(Qt::Checked);
-        else
-            item->setCheckState(Qt::Unchecked);
+        if (item)
+        {
+            if (toggled)
+                item->setCheckState(Qt::Checked);
+            else
+                item->setCheckState(Qt::Unchecked);
+        }
     }
 }

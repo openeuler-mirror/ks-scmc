@@ -1,6 +1,8 @@
 #include "node-list.h"
 #include <kiran-log/qt5-log-i.h>
 #include "node-addition.h"
+#include "rpc.h"
+
 NodeList::NodeList(QWidget *parent) : CommonPage(parent),
                                       m_nodeAddition(nullptr)
 {
@@ -19,6 +21,8 @@ NodeList::~NodeList()
 
 void NodeList::updateInfo(QString keyword)
 {
+    KLOG_INFO() << "NodeList updateInfo";
+    getNodeList();
 }
 
 void NodeList::onCreateNode()
@@ -43,6 +47,11 @@ void NodeList::onRemoveNode()
 void NodeList::onMonitor(int row)
 {
     KLOG_INFO() << row;
+}
+
+void NodeList::getListResult(QPair<grpc::Status, node::ListReply> reply)
+{
+    KLOG_INFO() << reply.second.nodes_size();
 }
 
 void NodeList::initButtons()
@@ -73,14 +82,22 @@ void NodeList::initTable()
                                     QString(tr("Memory")),
                                     QString(tr("Disk"))};
     setHeaderSections(tableHHeaderDate);
-    setTableColAndRow(tableHHeaderDate.size(), 2);
+    setTableColNum(tableHHeaderDate.size());
+
     setTableActions(1, QStringList() << ":/images/monitor.svg");
 
+    setTableRowNum(2);
     QStandardItem *item = new QStandardItem("a");
     QStandardItem *itemB = new QStandardItem("b");
-    setTableItem(0, 0, item, true);
-    setTableItem(0, 1, itemB, true);
+    setTableItem(0, 0, item);
+    setTableItem(0, 1, itemB);
     setSortableCol(QList<int>() << 0);
 
     connect(this, &NodeList::sigMonitor, this, &NodeList::onMonitor);
+}
+
+void NodeList::getNodeList()
+{
+    InfoWorker::getInstance().listNode();
+    connect(&InfoWorker::getInstance(), &InfoWorker::listNodeFinished, this, &NodeList::getListResult);
 }

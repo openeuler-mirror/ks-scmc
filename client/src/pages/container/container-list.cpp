@@ -5,7 +5,12 @@
 #include <QLabel>
 #include <QMouseEvent>
 #include <QStandardItem>
+
 #include "container-setting.h"
+
+#define NODE_ID "node id"
+#define CONTAINER_ID "container id"
+
 ContainerList::ContainerList(QWidget *parent)
     : CommonPage(parent),
       m_createCTSetting(nullptr),
@@ -114,6 +119,63 @@ void ContainerList::onTerminal(int row)
     KLOG_INFO() << row;
 }
 
+void ContainerList::getNodeListResult(QPair<grpc::Status, node::ListReply> reply)
+{
+    KLOG_INFO() << "getNodeListResult";
+    if (reply.first.ok())
+    {
+        for (auto n : reply.second.nodes())
+        {
+            KLOG_INFO() << n.id();
+            m_vecNodeId.push_back(n.id());
+        }
+    }
+    if (!m_vecNodeId.empty())
+    {
+        InfoWorker::getInstance().listContainer(m_vecNodeId, true);
+        connect(&InfoWorker::getInstance(), &InfoWorker::listContainerFinished, this, &ContainerList::getContainerListResult);
+    }
+}
+
+void ContainerList::getContainerListResult(QPair<grpc::Status, container::ListReply> reply)
+{
+    KLOG_INFO() << "getContainerListResult";
+    if (reply.first.ok())
+    {
+        clearTable();
+        int size = reply.second.containers_size();
+        if (size > 0)
+        {
+            setTableRowNum(size);
+            int row = 0;
+            QMap<QString, QVariant> idMap;
+            for (auto i : reply.second.containers())
+            {
+                qint64 nodeId = i.node_id();
+                idMap.insert(NODE_ID, nodeId);
+                idMap.insert(CONTAINER_ID, i.info().id().data());
+
+                QStandardItem *itemName = new QStandardItem(i.info().name().data());
+                itemName->setData(idMap);
+                itemName->setCheckable(true);
+
+                QStandardItem *itemStatus = new QStandardItem(i.info().state().data());
+                itemStatus->setTextAlignment(Qt::AlignCenter);
+                QStandardItem *itemImage = new QStandardItem(i.info().image().data());
+                itemImage->setTextAlignment(Qt::AlignCenter);
+                QStandardItem *itemNodeAddress = new QStandardItem(i.node_address().data());
+                itemNodeAddress->setTextAlignment(Qt::AlignCenter);
+
+                setTableItems(row, QList<QStandardItem *>() << itemName
+                                                            << itemStatus
+                                                            << itemImage
+                                                            << itemNodeAddress);
+                row++;
+            }
+        }
+    }
+}
+
 void ContainerList::initButtons()
 {
     //创建按钮及菜单
@@ -181,20 +243,14 @@ void ContainerList::initTable()
                                     QString(tr("Disk")),
                                     QString(tr("Online Time"))};
     setHeaderSections(tableHHeaderDate);
-    //    QList<int> sortablCol = {0, 3};
-    setTableColAndRow(tableHHeaderDate.size(), 3);
+    QList<int> sortablCol = {0, 3};
+    setSortableCol(sortablCol);
+    setTableRowNum(tableHHeaderDate.size());
 
     setTableActions(1, QStringList() << ":/images/monitor.svg"
                                      << ":/images/edit.svg"
                                      << ":/images/terminal.svg"
                                      << ":/images/more_in_table.svg");
-
-    QStandardItem *item = new QStandardItem("a");
-    QStandardItem *itemB = new QStandardItem("b");
-    setTableItem(0, 0, item, true);
-    setTableItem(0, 1, itemB, true);
-    setSortableCol(QList<int>() << 0);
-    setTableColAndRow(tableHHeaderDate.size(), 2);
 
     connect(this, &ContainerList::sigMonitor, this, &ContainerList::onMonitor);
     //    connect(headerView, &HeaderView::ckbToggled, this, &ContainerList::onHeaderCkbTog);
@@ -253,10 +309,17 @@ void ContainerList::insertContainerInfo()
 {
 }
 
+void ContainerList::getContainerList()
+{
+    InfoWorker::getInstance().listNode();
+    connect(&InfoWorker::getInstance(), &InfoWorker::listNodeFinished, this, &ContainerList::getNodeListResult);
+}
+
 void ContainerList::updateInfo(QString keyword)
 {
     KLOG_INFO() << "containerList updateInfo";
     //gRPC->拿数据->填充内容
+    getContainerList();
     if (!keyword.isEmpty())
         KLOG_INFO() << keyword;
 }

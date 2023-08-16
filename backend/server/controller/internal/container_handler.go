@@ -25,7 +25,7 @@ func (s *ContainerServer) List(ctx context.Context, in *pb.ListRequest) (*pb.Lis
 	}
 
 	var nodeToQuery []*model.NodeInfo
-	for _, nodeID := range in.NodeIds {
+	for _, nodeID := range uniqueInt64(in.NodeIds) {
 		for i, node := range nodes {
 			if node.ID == nodeID {
 				nodeToQuery = append(nodeToQuery, &nodes[i])
@@ -52,7 +52,7 @@ func (s *ContainerServer) List(ctx context.Context, in *pb.ListRequest) (*pb.Lis
 			return nil, rpc.ErrInternal
 		}
 
-		log.Debugf("subReply: %+v", subReply)
+		// log.Debugf("subReply: %+v", subReply)
 		for i := range subReply.Containers {
 			subReply.Containers[i].NodeId = node.ID
 			subReply.Containers[i].NodeAddress = node.Address
@@ -60,6 +60,7 @@ func (s *ContainerServer) List(ctx context.Context, in *pb.ListRequest) (*pb.Lis
 		}
 	}
 
+	log.Infof("container size=%d", len(reply.Containers))
 	return &reply, nil
 }
 
@@ -95,165 +96,275 @@ func (s *ContainerServer) Create(ctx context.Context, in *pb.CreateRequest) (*pb
 func (s *ContainerServer) Start(ctx context.Context, in *pb.StartRequest) (*pb.StartReply, error) {
 	reply := pb.StartReply{}
 
-	if in.NodeId <= 0 || len(in.ContainerIds) <= 0 {
+	if len(in.Ids) <= 0 {
 		return nil, rpc.ErrInvalidArgument
 	}
 
-	nodeInfo, err := model.QueryNodeByID(in.NodeId)
-	if err != nil {
-		if err == model.ErrDBRecordNotFound {
-			return nil, rpc.ErrNotFound
+	for _, c := range in.Ids {
+		nodeId, containerIds := c.NodeId, uniqueString(c.ContainerIds)
+
+		if nodeId <= 0 || len(containerIds) <= 0 {
+			log.Warnf("start container ErrInvalidArgument")
+			continue
 		}
-		return nil, rpc.ErrInternal
+
+		nodeInfo, err := model.QueryNodeByID(nodeId)
+		if err != nil {
+			if err == model.ErrDBRecordNotFound {
+				log.Warnf("start container ErrDBRecordNotFound")
+				continue
+			}
+			log.Warnf("start container ErrInternal")
+			continue
+		}
+
+		conn, err := getAgentConn(nodeInfo.Address)
+		if err != nil {
+			log.Warnf("start container ErrInternal")
+			continue
+		}
+
+		cli := pb.NewContainerClient(conn)
+		ctx_, cancel := context.WithTimeout(context.Background(), time.Second*10)
+		defer cancel()
+
+		request := pb.StartRequest{
+			Ids: []*pb.ContainerIdList{
+				{
+					ContainerIds: containerIds,
+				},
+			},
+		}
+
+		agentReply, err := cli.Start(ctx_, &request)
+		if err != nil {
+			log.Warnf("start container ErrInternal: %v", err)
+			continue
+		}
+
+		log.Debugf("start container agent reply: %+v", agentReply)
 	}
 
-	conn, err := getAgentConn(nodeInfo.Address)
-	if err != nil {
-		return nil, rpc.ErrInternal
-	}
-
-	cli := pb.NewContainerClient(conn)
-	ctx_, cancel := context.WithTimeout(context.Background(), time.Second*10)
-	defer cancel()
-	agentReply, err := cli.Start(ctx_, in)
-	if err != nil {
-		log.Warnf("start container: %v", err)
-		return nil, rpc.ErrInternal
-	}
-
-	log.Debugf("start container agent reply: %+v", agentReply)
 	return &reply, nil
 }
 
 func (s *ContainerServer) Stop(ctx context.Context, in *pb.StopRequest) (*pb.StopReply, error) {
 	reply := pb.StopReply{}
 
-	if in.NodeId <= 0 || len(in.ContainerIds) <= 0 {
+	if len(in.Ids) <= 0 {
 		return nil, rpc.ErrInvalidArgument
 	}
 
-	nodeInfo, err := model.QueryNodeByID(in.NodeId)
-	if err != nil {
-		if err == model.ErrDBRecordNotFound {
-			return nil, rpc.ErrNotFound
+	for _, c := range in.Ids {
+		nodeId, containerIds := c.NodeId, uniqueString(c.ContainerIds)
+
+		if nodeId <= 0 || len(containerIds) <= 0 {
+			log.Warnf("stop container ErrInvalidArgument")
+			continue
 		}
-		return nil, rpc.ErrInternal
+
+		nodeInfo, err := model.QueryNodeByID(nodeId)
+		if err != nil {
+			if err == model.ErrDBRecordNotFound {
+				log.Warnf("stop container ErrDBRecordNotFound")
+				continue
+			}
+			log.Warnf("stop container ErrInternal")
+			continue
+		}
+
+		conn, err := getAgentConn(nodeInfo.Address)
+		if err != nil {
+			log.Warnf("stop container ErrInternal")
+			continue
+		}
+
+		cli := pb.NewContainerClient(conn)
+		ctx_, cancel := context.WithTimeout(context.Background(), time.Second*10)
+		defer cancel()
+
+		request := pb.StopRequest{
+			Ids: []*pb.ContainerIdList{
+				{
+					ContainerIds: containerIds,
+				},
+			},
+		}
+
+		agentReply, err := cli.Stop(ctx_, &request)
+		if err != nil {
+			log.Warnf("stop container ErrInternal: %v", err)
+			continue
+		}
+
+		log.Debugf("stop container agent reply: %+v", agentReply)
 	}
 
-	conn, err := getAgentConn(nodeInfo.Address)
-	if err != nil {
-		return nil, rpc.ErrInternal
-	}
-
-	cli := pb.NewContainerClient(conn)
-	ctx_, cancel := context.WithTimeout(context.Background(), time.Second*10)
-	defer cancel()
-	agentReply, err := cli.Stop(ctx_, in)
-	if err != nil {
-		log.Warnf("stop container: %v", err)
-		return nil, rpc.ErrInternal
-	}
-
-	log.Debugf("stop container agent reply: %+v", agentReply)
 	return &reply, nil
 }
 
 func (s *ContainerServer) Kill(ctx context.Context, in *pb.KillRequest) (*pb.KillReply, error) {
 	reply := pb.KillReply{}
-
-	if in.NodeId <= 0 || len(in.ContainerIds) <= 0 {
+	if len(in.Ids) <= 0 {
 		return nil, rpc.ErrInvalidArgument
 	}
 
-	nodeInfo, err := model.QueryNodeByID(in.NodeId)
-	if err != nil {
-		if err == model.ErrDBRecordNotFound {
-			return nil, rpc.ErrNotFound
+	for _, c := range in.Ids {
+		nodeId, containerIds := c.NodeId, uniqueString(c.ContainerIds)
+
+		if nodeId <= 0 || len(containerIds) <= 0 {
+			log.Warnf("kill container ErrInvalidArgument")
+			continue
 		}
-		return nil, rpc.ErrInternal
+
+		nodeInfo, err := model.QueryNodeByID(nodeId)
+		if err != nil {
+			if err == model.ErrDBRecordNotFound {
+				log.Warnf("kill container ErrDBRecordNotFound")
+				continue
+			}
+			log.Warnf("kill container ErrInternal")
+			continue
+		}
+
+		conn, err := getAgentConn(nodeInfo.Address)
+		if err != nil {
+			log.Warnf("kill container ErrInternal")
+			continue
+		}
+
+		cli := pb.NewContainerClient(conn)
+		ctx_, cancel := context.WithTimeout(context.Background(), time.Second*10)
+		defer cancel()
+
+		request := pb.KillRequest{
+			Ids: []*pb.ContainerIdList{
+				{
+					ContainerIds: containerIds,
+				},
+			},
+		}
+
+		agentReply, err := cli.Kill(ctx_, &request)
+		if err != nil {
+			log.Warnf("kill container ErrInternal: %v", err)
+			continue
+		}
+
+		log.Debugf("kill container agent reply: %+v", agentReply)
 	}
 
-	conn, err := getAgentConn(nodeInfo.Address)
-	if err != nil {
-		return nil, rpc.ErrInternal
-	}
-
-	cli := pb.NewContainerClient(conn)
-	ctx_, cancel := context.WithTimeout(context.Background(), time.Second*10)
-	defer cancel()
-	agentReply, err := cli.Kill(ctx_, in)
-	if err != nil {
-		log.Warnf("kill container: %v", err)
-		return nil, rpc.ErrInternal
-	}
-
-	log.Debugf("kill container agent reply: %+v", agentReply)
 	return &reply, nil
 }
 
 func (s *ContainerServer) Restart(ctx context.Context, in *pb.RestartRequest) (*pb.RestartReply, error) {
 	reply := pb.RestartReply{}
 
-	if in.NodeId <= 0 || len(in.ContainerIds) <= 0 {
+	if len(in.Ids) <= 0 {
 		return nil, rpc.ErrInvalidArgument
 	}
 
-	nodeInfo, err := model.QueryNodeByID(in.NodeId)
-	if err != nil {
-		if err == model.ErrDBRecordNotFound {
-			return nil, rpc.ErrNotFound
+	for _, c := range in.Ids {
+		nodeId, containerIds := c.NodeId, uniqueString(c.ContainerIds)
+
+		if nodeId <= 0 || len(containerIds) <= 0 {
+			log.Warnf("restart container ErrInvalidArgument")
+			continue
 		}
-		return nil, rpc.ErrInternal
+
+		nodeInfo, err := model.QueryNodeByID(nodeId)
+		if err != nil {
+			if err == model.ErrDBRecordNotFound {
+				log.Warnf("restart container ErrDBRecordNotFound")
+				continue
+			}
+			log.Warnf("restart container ErrInternal")
+			continue
+		}
+
+		conn, err := getAgentConn(nodeInfo.Address)
+		if err != nil {
+			log.Warnf("restart container ErrInternal")
+			continue
+		}
+
+		cli := pb.NewContainerClient(conn)
+		ctx_, cancel := context.WithTimeout(context.Background(), time.Second*10)
+		defer cancel()
+
+		request := pb.RestartRequest{
+			Ids: []*pb.ContainerIdList{
+				{
+					ContainerIds: containerIds,
+				},
+			},
+		}
+
+		agentReply, err := cli.Restart(ctx_, &request)
+		if err != nil {
+			log.Warnf("restart container ErrInternal: %v", err)
+			continue
+		}
+
+		log.Debugf("restart container agent reply: %+v", agentReply)
 	}
 
-	conn, err := getAgentConn(nodeInfo.Address)
-	if err != nil {
-		return nil, rpc.ErrInternal
-	}
-
-	cli := pb.NewContainerClient(conn)
-	ctx_, cancel := context.WithTimeout(context.Background(), time.Second*10)
-	defer cancel()
-	agentReply, err := cli.Restart(ctx_, in)
-	if err != nil {
-		log.Warnf("restart container: %v", err)
-		return nil, rpc.ErrInternal
-	}
-
-	log.Debugf("restart container agent reply: %+v", agentReply)
 	return &reply, nil
 }
 
 func (s *ContainerServer) Remove(ctx context.Context, in *pb.RemoveRequest) (*pb.RemoveReply, error) {
 	reply := pb.RemoveReply{}
 
-	if in.NodeId <= 0 || len(in.ContainerIds) <= 0 {
+	if len(in.Ids) <= 0 {
 		return nil, rpc.ErrInvalidArgument
 	}
 
-	nodeInfo, err := model.QueryNodeByID(in.NodeId)
-	if err != nil {
-		if err == model.ErrDBRecordNotFound {
-			return nil, rpc.ErrNotFound
+	for _, c := range in.Ids {
+		nodeId, containerIds := c.NodeId, uniqueString(c.ContainerIds)
+		log.Debugf("remove container, nodeId: %v", nodeId)
+
+		if nodeId <= 0 || len(containerIds) <= 0 {
+			log.Warnf("remove container ErrInvalidArgument")
+			continue
 		}
-		return nil, rpc.ErrInternal
+
+		nodeInfo, err := model.QueryNodeByID(nodeId)
+		if err != nil {
+			if err == model.ErrDBRecordNotFound {
+				log.Warnf("remove container ErrDBRecordNotFound")
+				continue
+			}
+			log.Warnf("remove container ErrInternal")
+			continue
+		}
+
+		conn, err := getAgentConn(nodeInfo.Address)
+		if err != nil {
+			log.Warnf("remove container ErrInternal")
+			continue
+		}
+
+		cli := pb.NewContainerClient(conn)
+		ctx_, cancel := context.WithTimeout(context.Background(), time.Second*10)
+		defer cancel()
+
+		request := pb.RemoveRequest{
+			Ids: []*pb.ContainerIdList{
+				{
+					ContainerIds: containerIds,
+				},
+			},
+		}
+
+		agentReply, err := cli.Remove(ctx_, &request)
+		if err != nil {
+			log.Warnf("remove container ErrInternal: %v", err)
+			continue
+		}
+
+		log.Debugf("remove container agent reply: %+v", agentReply)
 	}
 
-	conn, err := getAgentConn(nodeInfo.Address)
-	if err != nil {
-		return nil, rpc.ErrInternal
-	}
-
-	cli := pb.NewContainerClient(conn)
-	ctx_, cancel := context.WithTimeout(context.Background(), time.Second*10)
-	defer cancel()
-	agentReply, err := cli.Remove(ctx_, in)
-	if err != nil {
-		log.Warnf("remove container: %v", err)
-		return nil, rpc.ErrInternal
-	}
-
-	log.Debugf("remove container agent reply: %+v", agentReply)
 	return &reply, nil
 }
 

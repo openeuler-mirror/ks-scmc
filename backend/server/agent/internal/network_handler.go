@@ -2,7 +2,7 @@ package internal
 
 import (
 	"context"
-	"fmt"
+	"net"
 	"strings"
 
 	"ksc-mcube/rpc"
@@ -14,6 +14,23 @@ import (
 
 type NetworkServer struct {
 	pb.UnimplementedNetworkServer
+}
+
+func parseSubnet(s string) (*pb.Subnet, error) {
+	if len(s) == 0 {
+		return nil, nil
+	}
+
+	_, info, err := net.ParseCIDR(s)
+	if err != nil {
+		return nil, err
+	}
+
+	n, _ := info.Mask.Size()
+	return &pb.Subnet{
+		Addr:      info.IP.String(),
+		PrefixLen: int32(n),
+	}, nil
 }
 
 func (s *NetworkServer) List(ctx context.Context, in *pb.ListRequest) (*pb.ListReply, error) {
@@ -39,28 +56,21 @@ func (s *NetworkServer) List(ctx context.Context, in *pb.ListRequest) (*pb.ListR
 			continue
 		}
 
-		var (
-			conf    = i.IPAM.Config[0]
-			subnet  pb.Subnet
-			ipRange *pb.Subnet
-		)
+		conf := i.IPAM.Config[0]
 
-		n, err := fmt.Sscanf(conf.Subnet, "%s/%d", &subnet.Addr, &subnet.PrefixLen)
-		if err != nil || n != 2 {
-			log.Warnf("bridge network[%s] parse subnet=%v return n=%v err=%v", i.Name, conf.Subnet, n, err)
+		subnet, err := parseSubnet(conf.Subnet)
+		if err != nil {
+			log.Warnf("bridge network[%s] parse subnet=%v return err=%v", i.Name, conf.Subnet, err)
 		}
 
-		if len(conf.IPRange) > 0 {
-			ipRange = &pb.Subnet{}
-			n, err = fmt.Sscanf(conf.IPRange, "%s/%d", &ipRange.Addr, &ipRange.PrefixLen)
-			if err != nil || n != 2 {
-				log.Warnf("bridge network[%s] parse ip_range=%v return n=%v err=%v", i.Name, conf.IPRange, n, err)
-			}
+		ipRange, err := parseSubnet(conf.IPRange)
+		if err != nil {
+			log.Warnf("bridge network[%s] parse ip_range=%v return err=%v", i.Name, conf.IPRange, err)
 		}
 
 		reply.BridgeIf = append(reply.BridgeIf, &pb.BridgeNetworkInterface{
 			Name:    i.Name,
-			Subnet:  &subnet,
+			Subnet:  subnet,
 			IpRange: ipRange,
 			Gateway: conf.Gateway,
 		})

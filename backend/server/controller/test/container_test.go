@@ -24,7 +24,10 @@ func TestContainerList(t *testing.T) {
 			t.Errorf("List: %v", err)
 		}
 
-		t.Logf("List reply: %+v", reply)
+		for _, c := range reply.Containers {
+			t.Logf("container info: %+v", c)
+		}
+
 	})
 }
 
@@ -34,7 +37,7 @@ func TestContainerCreate(t *testing.T) {
 		request := pb.CreateRequest{
 			Header: &common.RequestHeader{},
 			NodeId: 1,
-			Name:   "monitor-collector",
+			Name:   "cadvisor",
 			Config: &pb.ContainerConfig{
 				Image: "gcr.io/cadvisor/cadvisor:v0.36.0",
 				Env: map[string]string{
@@ -168,9 +171,13 @@ func TestContainerStart(t *testing.T) {
 	testRunner(func(ctx context.Context, conn *grpc.ClientConn) {
 		cli := pb.NewContainerClient(conn)
 		request := pb.StartRequest{
-			Header:       &common.RequestHeader{},
-			NodeId:       1,
-			ContainerIds: []string{"monitor-collector"},
+			Header: &common.RequestHeader{},
+			Ids: []*pb.ContainerIdList{
+				{
+					NodeId:       1,
+					ContainerIds: []string{"cadvisor"},
+				},
+			},
 		}
 
 		reply, err := cli.Start(ctx, &request)
@@ -186,9 +193,13 @@ func TestContainerStop(t *testing.T) {
 	testRunner(func(ctx context.Context, conn *grpc.ClientConn) {
 		cli := pb.NewContainerClient(conn)
 		request := pb.StopRequest{
-			Header:       &common.RequestHeader{},
-			NodeId:       1,
-			ContainerIds: []string{"39e7278cf3b6"},
+			Header: &common.RequestHeader{},
+			Ids: []*pb.ContainerIdList{
+				{
+					NodeId:       1,
+					ContainerIds: []string{"cadvisor"},
+				},
+			},
 		}
 
 		reply, err := cli.Stop(ctx, &request)
@@ -204,9 +215,13 @@ func TestContainerRestart(t *testing.T) {
 	testRunner(func(ctx context.Context, conn *grpc.ClientConn) {
 		cli := pb.NewContainerClient(conn)
 		request := pb.RestartRequest{
-			Header:       &common.RequestHeader{},
-			NodeId:       1,
-			ContainerIds: []string{"39e7278cf3b6"},
+			Header: &common.RequestHeader{},
+			Ids: []*pb.ContainerIdList{
+				{
+					NodeId:       1,
+					ContainerIds: []string{"cadvisor"},
+				},
+			},
 		}
 
 		reply, err := cli.Restart(ctx, &request)
@@ -221,9 +236,13 @@ func TestContainerRemove(t *testing.T) {
 	testRunner(func(ctx context.Context, conn *grpc.ClientConn) {
 		cli := pb.NewContainerClient(conn)
 		request := pb.RemoveRequest{
-			Header:       &common.RequestHeader{},
-			NodeId:       1,
-			ContainerIds: []string{"39e7278cf3b6"},
+			Header: &common.RequestHeader{},
+			Ids: []*pb.ContainerIdList{
+				{
+					NodeId:       1,
+					ContainerIds: []string{"cadvisor"},
+				},
+			},
 		}
 
 		reply, err := cli.Remove(ctx, &request)
@@ -240,7 +259,7 @@ func TestContainerInspect(t *testing.T) {
 		request := pb.InspectRequest{
 			Header:      &common.RequestHeader{},
 			NodeId:      1,
-			ContainerId: "monitor-collector",
+			ContainerId: "cadvisor",
 		}
 
 		reply, err := cli.Inspect(ctx, &request)
@@ -275,7 +294,7 @@ func TestContainerUpdate(t *testing.T) {
 		request := pb.UpdateRequest{
 			Header:      &common.RequestHeader{},
 			NodeId:      1,
-			ContainerId: "monitor-collector",
+			ContainerId: "cadvisor",
 			ResourceConfig: &pb.ResourceConfig{
 				NanoCpus:     2e9,
 				MemLimit:     512 * (1 << 20),

@@ -147,6 +147,7 @@ func (s *ContainerServer) Create(ctx context.Context, in *pb.CreateRequest) (*pb
 			if v.IpamConfig != nil {
 				networkConfig.EndpointsConfig[k].IPAMConfig.IPv4Address = v.IpamConfig.Ipv4Address
 				networkConfig.EndpointsConfig[k].IPAMConfig.IPv6Address = v.IpamConfig.Ipv6Address
+				networkConfig.EndpointsConfig[k].MacAddress = v.MacAddress
 			}
 		}
 	}

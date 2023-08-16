@@ -1,0 +1,14 @@
+[Unit]
+Description=KylinSec Magic Cube agent service
+
+[Service]
+# PIDFile=/var/lib/ksc-mcube/agent.pid
+
+ExecStart=/usr/bin/ksc-mcube -verbose=5 agent
+
+Restart=on-failure
+
+RestartPreventExitStatus=1
+
+[Install]
+WantedBy=multi-user.target

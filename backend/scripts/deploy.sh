@@ -22,3 +22,7 @@ docker run -d -p 8080:8080 --name=cadvisor \
     google/cadvisor:${CADVISOR_VERSION} \
         -disable_metrics=udp,advtcp,sched,process,tcp,percpu        
         # -storage_driver=influxdb -storage_driver_db=cadvisor -storage_driver_host=influxdb:8086
+
+yum install -y mysql5-server mysql5
+
+mysql -uroot < ./database.sql

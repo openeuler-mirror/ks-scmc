@@ -2,7 +2,7 @@
 #define HIGHAVAILABILITYPAGE_H
 
 #include <QWidget>
-
+#include "common/info-worker.h"
 namespace Ui
 {
 class HighAvailabilityPage;
@@ -16,7 +16,7 @@ public:
     explicit HighAvailabilityPage(QWidget *parent = nullptr);
     ~HighAvailabilityPage();
     void setHighAvailInfo();
-    //getHighAvailInf();
+    void getRestartPolicy(container::HostConfig *cfg);
 
 private slots:
     void onCbActivated(QString text);

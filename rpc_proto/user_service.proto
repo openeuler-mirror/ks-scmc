@@ -5,6 +5,7 @@ option go_package = "ksc-mcube/rpc/pb/user";
 package user;
 
 import "common.proto";
+import "user_types.proto";
 
 service User {
   rpc Signup(SignupRequest) returns (SignupReply) {}

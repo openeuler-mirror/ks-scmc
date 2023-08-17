@@ -20,7 +20,7 @@ public:
 public:
     QString m_firstColVal{};
     QString m_secondColVal{};
-    int m_thirdColVal{};
+    int m_thirdColVal;
 };
 
 #endif  // CONFIG_H

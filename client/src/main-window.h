@@ -23,7 +23,7 @@ public:
     ~MainWindow();
 
 protected:
-    void onItemClicked(QListWidgetItem *currItem, QListWidgetItem *preItem);
+    void onItemClicked(QListWidgetItem *currItem);
     void paintEvent(QPaintEvent *event) override;
 
 private:

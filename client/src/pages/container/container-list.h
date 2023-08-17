@@ -28,8 +28,11 @@ public:
 private slots:
     void onBtnCreate();
     void onBtnRun();
+    void onBtnRun(QModelIndex index);
     void onBtnStop();
+    void onBtnStop(QModelIndex index);
     void onBtnRestart();
+    void onBtnRestart(QModelIndex index);
     void onBtnDelete();
     void onActCopyConfig();
     void onActBatchUpdate();
@@ -52,8 +55,9 @@ private:
     void initTable();
     void initConnect();
     void getContainerList();
-    void getContainerInfo(QMap<QString, QVariant> itemData);
-    void getCheckId(std::map<int64_t, std::vector<std::string> > &ids);
+    void getContainerInspect(QMap<QString, QVariant> itemData);
+    void getCheckedItemsId(std::map<int64_t, std::vector<std::string> > &ids);
+    void getItemId(int row, std::map<int64_t, std::vector<std::string> > &ids);
 
 private:
     QMenu *m_createMenu;
@@ -62,6 +66,7 @@ private:
     ContainerSetting *m_createCTSetting;
     ContainerSetting *m_editCTSetting;
     std::vector<int64_t> m_vecNodeId;
+    QTimer *m_timer;
 };
 
 #endif  // CONTAINERLIST_H

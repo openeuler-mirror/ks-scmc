@@ -27,20 +27,25 @@
 
 #define NODE_ID "node id"
 #define NODE_ADDRESS "node address"
+
+const std::string TagContainerDescription = "TAG_CONTAINER_DESC";
+
 ContainerSetting::ContainerSetting(ContainerSettingType type, QWidget *parent) : QWidget(parent),
                                                                                  ui(new Ui::ContainerSetting),
                                                                                  m_netWorkCount(0),
                                                                                  m_type(type)
 {
     ui->setupUi(this);
-    getNodeInfo();
     initUI();
     setAttribute(Qt::WA_DeleteOnClose);
+
     connect(&InfoWorker::getInstance(), &InfoWorker::listNodeFinished, this, &ContainerSetting::getNodeListResult);
     connect(&InfoWorker::getInstance(), &InfoWorker::createContainerFinished, this, &ContainerSetting::getCreateContainerResult);
     connect(&InfoWorker::getInstance(), &InfoWorker::containerInspectFinished, this, &ContainerSetting::getContainerInspectResult);
     connect(&InfoWorker::getInstance(), &InfoWorker::updateContainerFinished, this, &ContainerSetting::getUpdateContainerResult);
     connect(&InfoWorker::getInstance(), &InfoWorker::listImageFinished, this, &ContainerSetting::getListImageFinishedResult);
+
+    getNodeInfo();
 }
 
 ContainerSetting::~ContainerSetting()
@@ -83,6 +88,8 @@ bool ContainerSetting::eventFilter(QObject *obj, QEvent *ev)
 
 void ContainerSetting::initUI()
 {
+    setWindowIcon(QIcon(":/images/logo.png"));
+    setWindowModality(Qt::ApplicationModal);
     ui->tabWidget->setStyleSheet(QString("QTabWidget::tab-bar{width:%1px;}").arg(this->geometry().width() + 20));
     ui->tabWidget->setFocusPolicy(Qt::NoFocus);
     ui->btn_add->setIcon(QIcon(":/images/addition.svg"));
@@ -163,6 +170,7 @@ void ContainerSetting::initSummaryUI()
     {
     case CONTAINER_SETTING_TYPE_CONTAINER_CREATE:
     {
+        setWindowTitle(tr("Create Container"));
         m_cbImage = new QComboBox(this);
         m_cbImage->setFixedSize(QSize(200, 30));
         QGridLayout *layout = dynamic_cast<QGridLayout *>(ui->page_container->layout());
@@ -172,6 +180,7 @@ void ContainerSetting::initSummaryUI()
     }
     case CONTAINER_SETTING_TYPE_CONTAINER_EDIT:
     {
+        setWindowTitle(tr("Edit Container"));
         m_labImage = new QLabel(this);
         QGridLayout *layout = dynamic_cast<QGridLayout *>(ui->page_container->layout());
         layout->addWidget(m_labImage, 2, 1);
@@ -282,6 +291,11 @@ void ContainerSetting::createContainer()
     request.set_node_id(m_nodeInfo.key(ui->cb_node->currentText()));
     request.set_name(ui->lineEdit_name->text().toStdString());
     auto cntrCfg = request.mutable_config();
+    if (!ui->lineEdit_describe->text().isEmpty())
+    {
+        auto labels = cntrCfg->mutable_labels();
+        labels->insert({TagContainerDescription, ui->lineEdit_describe->text().toStdString()});
+    }
     cntrCfg->set_image(m_cbImage->currentText().toStdString());
 
     //cpu
@@ -298,7 +312,7 @@ void ContainerSetting::createContainer()
         MessageDialog::message(tr("Memory Data"),
                                tr("Input error"),
                                tr("Memory soft limit can't be greater than the maximum limit !"),
-                               tr(":/images/warning.png"),
+                               tr(":/images/error.svg"),
                                MessageDialog::StandardButton::Ok);
         return;
     }
@@ -320,7 +334,7 @@ void ContainerSetting::createContainer()
         MessageDialog::message(tr("Env Data"),
                                tr("Input error"),
                                tr("Please improve the contents in Env table!"),
-                               tr(":/images/warning.png"),
+                               tr(":/images/error.svg"),
                                MessageDialog::StandardButton::Ok);
         return;
     }
@@ -333,7 +347,7 @@ void ContainerSetting::createContainer()
         MessageDialog::message(tr("Volumes Data"),
                                tr("Input error"),
                                tr("Please improve the contents in Volumes table!"),
-                               tr(":/images/warning.png"),
+                               tr(":/images/error.svg"),
                                MessageDialog::StandardButton::Ok);
         return;
     }
@@ -424,7 +438,7 @@ void ContainerSetting::onDelItem()
     auto ret = MessageDialog::message(tr("Delete Network Card"),
                                       tr("Are you sure you want to delete the network card?"),
                                       tr("It can't be recovered after deletion.Are you sure you want to continue?"),
-                                      ":/images/warning.png",
+                                      ":/images/warning.svg",
                                       MessageDialog::StandardButton::Yes | MessageDialog::StandardButton::Cancel);
     if (ret == MessageDialog::StandardButton::Yes)
     {
@@ -488,10 +502,12 @@ void ContainerSetting::getNodeListResult(const QPair<grpc::Status, node::ListRep
             ui->cb_node->addItem(QString("%1").arg(n.address().data()));
             m_totalCPU = n.status().cpu_stat().total();
         }
-        auto iter = m_nodeInfo.begin();
-        onNodeSelectedChanged(iter.value());
-
-        KLOG_INFO() << "total cpu = " << m_totalCPU;
+        if (!m_nodeInfo.isEmpty())
+        {
+            auto iter = m_nodeInfo.begin();
+            onNodeSelectedChanged(iter.value());
+            KLOG_INFO() << "total cpu = " << m_totalCPU;
+        }
     }
 }
 
@@ -509,8 +525,8 @@ void ContainerSetting::getCreateContainerResult(const QPair<grpc::Status, contai
         KLOG_DEBUG() << QString::fromStdString(reply.first.error_message());
         MessageDialog::message(tr("Create Container"),
                                tr("Create container failed!"),
-                               tr("Error: %1").arg(reply.first.error_message().data()),
-                               tr(":/images/warning.png"),
+                               tr("Error: ") + reply.first.error_message().data(),
+                               ":/images/warning.svg",
                                MessageDialog::StandardButton::Ok);
     }
 }
@@ -529,6 +545,16 @@ void ContainerSetting::getContainerInspectResult(const QPair<grpc::Status, conta
         KLOG_INFO() << ctnCfg.image().data();
         if (m_labImage)
             m_labImage->setText(ctnCfg.image().data());
+
+        if (ctnCfg.labels_size() > 0)
+        {
+            auto labels = ctnCfg.labels();
+            if (labels.find(TagContainerDescription) != labels.end())
+            {
+                // display container description
+                ui->lineEdit_describe->setText(labels[TagContainerDescription].data());
+            }
+        }
 
         auto host = reply.second.host_config();
         //cpu
@@ -559,7 +585,7 @@ void ContainerSetting::getUpdateContainerResult(const QPair<grpc::Status, contai
         MessageDialog::message(tr("Update Container"),
                                tr("Update container failed!"),
                                tr("Error: %1").arg(reply.first.error_message().data()),
-                               tr(":/images/warning.png"),
+                               tr(":/images/warning.svg"),
                                MessageDialog::StandardButton::Ok);
     }
 }
@@ -581,7 +607,7 @@ void ContainerSetting::getListImageFinishedResult(const QPair<grpc::Status, imag
         MessageDialog::message(tr("List Image"),
                                tr("Get image List failed!"),
                                tr("Error: %1").arg(reply.first.error_message().data()),
-                               ":/images/warning.png",
+                               ":/images/warning.svg",
                                MessageDialog::StandardButton::Ok);
     }
 }

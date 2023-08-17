@@ -1,40 +1,60 @@
 #include "common-page.h"
 #include <kiran-log/qt5-log-i.h>
 #include <QHBoxLayout>
+#include <QPainter>
+#include <QTime>
 #include <QTimer>
 #include <iostream>
 #include "common/button-delegate.h"
 #include "common/header-view.h"
+#include "common/mask-widget.h"
 #include "ui_common-page.h"
 
 using namespace std;
 
 #define TIMEOUT 200
 CommonPage::CommonPage(QWidget *parent) : QWidget(parent),
-                                          ui(new Ui::CommonPage)
+                                          ui(new Ui::CommonPage),
+                                          m_searchTimer(nullptr),
+                                          m_refreshBtnTimer(nullptr),
+                                          m_maskWidget(nullptr)
 {
     ui->setupUi(this);
     initUI();
-    m_timer = new QTimer(this);
-    connect(m_timer, &QTimer::timeout,
+
+    m_maskWidget = new MaskWidget(this);
+    m_maskWidget->setFixedSize(this->size());  //设置窗口大小
+    this->stackUnder(qobject_cast<QWidget *>(m_maskWidget));
+
+    m_searchTimer = new QTimer(this);
+    connect(m_searchTimer, &QTimer::timeout,
             [this] {
                 search();
-                m_timer->stop();
+                m_searchTimer->stop();
             });
+    m_refreshBtnTimer = new QTimer(this);
+    connect(m_refreshBtnTimer, &QTimer::timeout, this, &CommonPage::onRefreshTimeout);
 }
 
 CommonPage::~CommonPage()
 {
     delete ui;
-    if (m_timer)
+    if (m_searchTimer)
     {
-        delete m_timer;
-        m_timer = nullptr;
+        delete m_searchTimer;
+        m_searchTimer = nullptr;
+    }
+    if (m_refreshBtnTimer)
+    {
+        delete m_refreshBtnTimer;
+        m_refreshBtnTimer = nullptr;
     }
 }
 
 void CommonPage::setBusy(bool status)
 {
+    m_maskWidget->setMaskVisible(status);
+    setOpBtnEnabled(!status);
 }
 
 void CommonPage::clearTable()
@@ -59,7 +79,6 @@ void CommonPage::addOperationButtons(QList<QPushButton *> opBtns)
 
 void CommonPage::setOpBtnEnabled(bool enabled)
 {
-    KLOG_INFO() << "setOpBtnEnabled" << enabled;
     for (int i = 0; i < ui->hLayout_OpBtns->count(); i++)
     {
         QAbstractButton *btn = qobject_cast<QAbstractButton *>(ui->hLayout_OpBtns->itemAt(i)->widget());
@@ -160,9 +179,9 @@ int CommonPage::getTableRowCount()
     return m_model->rowCount();
 }
 
-QStandardItem *CommonPage::getRowItem(int row)
+QStandardItem *CommonPage::getItem(int row, int col)
 {
-    return m_model->item(row, 0);
+    return m_model->item(row, col);
 }
 
 QList<QMap<QString, QVariant>> CommonPage::getCheckedItemInfo(int col)
@@ -180,11 +199,18 @@ QList<QMap<QString, QVariant>> CommonPage::getCheckedItemInfo(int col)
     return checkedItemInfo;
 }
 
+void CommonPage::sleep(int sec)
+{
+    QTime dieTime = QTime::currentTime().addSecs(sec);
+    while (QTime::currentTime() < dieTime)
+        QCoreApplication::processEvents(QEventLoop::AllEvents, 100);
+}
+
 void CommonPage::initUI()
 {
-    //ui->tableView->installEventFilter(this);
     ui->lineEdit_search->setPlaceholderText(tr("Please enter the keyword"));
     ui->btn_refresh->setIcon(QIcon(":/images/refresh.svg"));
+    ui->btn_refresh->installEventFilter(this);
 
     QHBoxLayout *layout = new QHBoxLayout(ui->lineEdit_search);
     layout->setMargin(0);
@@ -194,7 +220,8 @@ void CommonPage::initUI()
     btn_search->setObjectName("btn_search");
     btn_search->setFixedSize(QSize(16, 16));
     btn_search->setIcon(QIcon(":/images/search.svg"));
-    btn_search->setStyleSheet("#btn_search{background:transparent;}");
+    btn_search->setStyleSheet("#btn_search{background:#ffffff;border:none;}"
+                              "#btn_search:focus{outline:none;}");
     btn_search->setCursor(Qt::PointingHandCursor);
     layout->addStretch();
     layout->addWidget(btn_search);
@@ -224,7 +251,7 @@ void CommonPage::initUI()
     connect(ui->btn_refresh, &QToolButton::clicked, this, &CommonPage::refresh);
     connect(ui->lineEdit_search, &QLineEdit::textChanged,
             [this](QString text) {
-                m_timer->start(TIMEOUT);
+                m_searchTimer->start(TIMEOUT);
             });
 }
 
@@ -234,6 +261,37 @@ void CommonPage::adjustTableSize()
     height = m_model->rowCount() * 50 + 50 + 20;  // row height+ header height + space
     ui->tableView->setFixedHeight(height);
     emit sigTableHeightChanged(height);
+}
+
+bool CommonPage::eventFilter(QObject *watched, QEvent *event)
+{
+    if (watched == ui->btn_refresh && event->type() == QEvent::HoverEnter)
+    {
+        ui->btn_refresh->setIcon(QIcon(":/images/refresh-hover.svg"));
+        return true;
+    }
+    else if (watched == ui->btn_refresh && event->type() == QEvent::HoverLeave)
+    {
+        ui->btn_refresh->setIcon(QIcon(":/images/refresh.svg"));
+        return true;
+    }
+    return false;
+}
+
+void CommonPage::resizeEvent(QResizeEvent *event)
+{
+    if (event)
+    {
+    }  //消除警告提示
+
+    if (m_maskWidget != nullptr)
+    {
+        m_maskWidget->setAutoFillBackground(true);
+        QPalette pal = m_maskWidget->palette();
+        pal.setColor(QPalette::Background, QColor(0x00, 0x00, 0x00, 0x20));
+        m_maskWidget->setPalette(pal);
+        m_maskWidget->setFixedSize(this->size());
+    }
 }
 
 void CommonPage::onMonitor(int row)
@@ -270,6 +328,35 @@ void CommonPage::onActRestart(QModelIndex index)
 {
     KLOG_INFO() << index.row();
     emit sigRestart(index);
+}
+
+void CommonPage::onRefreshTimeout()
+{
+    static int count = 0;
+    count++;
+    QPixmap pix(":/images/refresh-hover.svg");
+    static int rat = 0;
+    rat = rat >= 180 ? 30 : rat + 30;
+    cout << rat << endl;
+    int imageWidth = pix.width();
+    int imageHeight = pix.height();
+    QPixmap temp(pix.size());
+    temp.fill(Qt::transparent);
+    QPainter painter(&temp);
+    painter.setRenderHint(QPainter::SmoothPixmapTransform, true);
+    painter.translate(imageWidth / 2, imageHeight / 2);        //让图片的中心作为旋转的中心
+    painter.rotate(rat);                                       //顺时针旋转90度
+    painter.translate(-(imageWidth / 2), -(imageHeight / 2));  //使原点复原
+    painter.drawPixmap(0, 0, pix);
+    painter.end();
+    ui->btn_refresh->setIcon(QIcon(temp));
+
+    if (count == 6)
+    {
+        m_refreshBtnTimer->stop();
+        ui->btn_refresh->setIcon(QIcon(":/images/refresh.svg"));
+        count = 0;
+    }
 }
 
 void CommonPage::search()
@@ -314,6 +401,8 @@ void CommonPage::search()
 
 void CommonPage::refresh()
 {
+    m_refreshBtnTimer->start(50);
+    //更新列表信息
     updateInfo();
 }
 

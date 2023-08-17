@@ -1,6 +1,7 @@
 #include "configtable.h"
 #include <QDebug>
 #include "ui_configtable.h"
+#include<kiran-log/qt5-log-i.h>
 
 ConfigTable::ConfigTable(ConfigTableType whichTable, QWidget *parent) : QWidget(parent),
                                                                         ui(new Ui::ConfigTable),
@@ -90,6 +91,13 @@ void ConfigTable::paintEditor(int curRow)
 
 QList<QSharedPointer<ModelItem> > ConfigTable::getAllData()
 {
+    //paintEditor();
+    auto i = m_pModel->getAllModel();
+    for (auto pItem : i)
+    {
+        KLOG_INFO() << __func__ << ",Var:" << pItem->m_firstColVal << ",Val:" << pItem->m_secondColVal << ",mode:" << pItem->m_thirdColVal;
+    }
+
     return m_pModel->getAllModel();
 }
 

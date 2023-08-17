@@ -68,14 +68,14 @@
      <item row="0" column="0">
       <widget class="QLabel" name="label">
        <property name="text">
-        <string>&lt;font color=red&gt;*&lt;/font&gt; Node Name:</string>
+        <string>Node Name:   &lt;font color=red&gt;*&lt;/font&gt;</string>
        </property>
       </widget>
      </item>
      <item row="1" column="0">
       <widget class="QLabel" name="label_2">
        <property name="text">
-        <string>&lt;font color=red&gt;*&lt;/font&gt; Node IP:</string>
+        <string>Node IP:  &lt;font color=red&gt;*&lt;/font&gt; </string>
        </property>
       </widget>
      </item>

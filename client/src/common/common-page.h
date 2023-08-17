@@ -10,6 +10,7 @@ namespace Ui
 class CommonPage;
 }
 
+class MaskWidget;
 class HeaderView;
 class CommonPage : public QWidget
 {
@@ -34,12 +35,17 @@ public:
     void setTableDefaultContent(QList<int> actionCol, QString text);
     void clearText();
     int getTableRowCount();
-    QStandardItem *getRowItem(int row);
+    QStandardItem *getItem(int row, int col);
     QList<QMap<QString, QVariant>> getCheckedItemInfo(int col);
+    void sleep(int sec);
 
 private:
     void initUI();
     void adjustTableSize();
+
+protected:
+    bool eventFilter(QObject *watched, QEvent *event);
+    virtual void resizeEvent(QResizeEvent *event) override;
 
 signals:
     void sigMonitor(int row);
@@ -57,6 +63,7 @@ private slots:
     void onActRun(QModelIndex index);
     void onActStop(QModelIndex index);
     void onActRestart(QModelIndex index);
+    void onRefreshTimeout();
     void search();
     void refresh();
     void onHeaderCkbTog(bool toggled);
@@ -66,8 +73,10 @@ private:
     QString m_keyword;
     QStandardItemModel *m_model;
     HeaderView *m_headerView;
-    QTimer *m_timer;
+    QTimer *m_searchTimer;
+    QTimer *m_refreshBtnTimer;
     int m_actionCol;
+    MaskWidget *m_maskWidget;
 };
 
 #endif  // COMMONPAGE_H

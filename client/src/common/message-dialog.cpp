@@ -87,6 +87,7 @@ void MessageDialog::setDialogSize(const QSize &size)
 void MessageDialog::initUI()
 {
     setWindowFlags(Qt::WindowCloseButtonHint);
+    setWindowIcon(QIcon(":/images/logo.png"));
     if (standardButtonInfoMap.isEmpty())
     {
         standardButtonInfoMap = {

@@ -1,5 +1,7 @@
 #include "node-list.h"
 #include <kiran-log/qt5-log-i.h>
+#include <QApplication>
+#include <QDesktopWidget>
 #include "common/message-dialog.h"
 #include "node-addition.h"
 #include "rpc.h"
@@ -41,7 +43,12 @@ void NodeList::onCreateNode()
     if (!m_nodeAddition)
     {
         m_nodeAddition = new NodeAddition();
+        int screenNum = QApplication::desktop()->screenNumber(QCursor::pos());
+        QRect screenGeometry = QApplication::desktop()->screenGeometry(screenNum);
+        m_nodeAddition->move(screenGeometry.x() + (screenGeometry.width() - this->width()) / 2,
+                             screenGeometry.y() + (screenGeometry.height() - this->height()) / 2);
         m_nodeAddition->show();
+
         connect(m_nodeAddition, &NodeAddition::sigSave, this, &NodeList::onSaveSlot);
         connect(m_nodeAddition, &NodeAddition::destroyed,
                 [=] {
@@ -68,7 +75,7 @@ void NodeList::onRemoveNode()
         MessageDialog::StandardButton ret = MessageDialog::message(tr("Delete Node"),
                                                                    tr("Are you sure you want to delete the node?"),
                                                                    tr("It can't be recovered after deletion.Are you sure you want to continue?"),
-                                                                   ":/images/warning.png",
+                                                                   ":/images/warning.svg",
                                                                    MessageDialog::StandardButton::Yes | MessageDialog::StandardButton::Cancel);
         if (ret == MessageDialog::StandardButton::Yes)
         {
@@ -95,19 +102,16 @@ void NodeList::onSaveSlot(QMap<QString, QString> Info)
 
 void NodeList::getListResult(const QPair<grpc::Status, node::ListReply> &reply)
 {
-    KLOG_INFO() << reply.second.nodes_size();
     if (reply.first.ok())
     {
+        setOpBtnEnabled(true);
         int size = reply.second.nodes_size();
         if (size <= 0)
         {
             setTableDefaultContent(QList<int>() << ACTION_COL, "-");
-            setOpBtnEnabled(false);
             return;
         }
-
         clearTable();
-        setOpBtnEnabled(true);
         int row = 0;
         QMap<QString, QVariant> idMap;
         for (auto node : reply.second.nodes())

@@ -92,6 +92,14 @@ QTableView#tableView::indicator:checked
 {
     image: url(:/images/checked.png);
 }
+CommonPage #lineEdit_search:focus
+{
+    border:1px solid #409EFF ;
+}
+CommonPage #label_search_tips
+{
+    color:#F57900;
+}
 
 
 /*************************ContainerList**********************/
@@ -258,6 +266,25 @@ ContainerSetting QComboBox::down-arrow
     image: url(:/images/arrow_n.png);
 }
 
+QComboBox QAbstractItemView
+{
+    background:#ffffff;
+    color:#303133;
+    outline:none;
+    border: 1px solid #E4E7ED;
+
+}
+QComboBox QAbstractItemView::item
+{
+    height:30px;
+}
+
+QComboBox QAbstractItemView::item:selected
+{
+   background-color:#EDF3FF;
+   color:#303133;
+}
+
 ContainerSetting QLineEdit
 {
     border:1px solid #E4E7ED;
@@ -337,16 +364,40 @@ MessageDialog
 {
     background-color:#ffffff;
 }
-#widget_btn
+
+MessageDialog #btn_Ok,MessageDialog #btn_Yes
 {
-    border-top:1px solid #E4E7ED;
+    background-color:#409EFF;
+    border: 1px solid #409EFF;
+    border-radius: 6px;
+    color:#ffffff;
+}
+MessageDialog #btn_Ok:hover,MessageDialog #btn_Yes:hover
+{
+    background-color:#66B1FF;
 }
 
-#lab_summary
+MessageDialog #btn_Cancel
+{
+    background-color:#ffffff;
+    border: 1px solid #E4E7ED;
+    border-radius: 6px;
+}
+MessageDialog #btn_Cancel:hover
+{
+    background-color:#EBEEF5
+}
+
+MessageDialog #btn_Ok:focus,MessageDialog #btn_Yes:focus,MessageDialog #btn_Cancel:focus
+{
+    outline: none;
+}
+
+MessageDialog #label_summary
 {
     font-size:20px;
 }
-#lab_body
+MessageDialog #label_body
 {
     font-size:14px;
 }

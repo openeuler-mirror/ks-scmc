@@ -27,7 +27,7 @@
     <number>20</number>
    </property>
    <property name="bottomMargin">
-    <number>0</number>
+    <number>20</number>
    </property>
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout_2">
@@ -55,13 +55,13 @@
       <widget class="QLineEdit" name="lineEdit_search">
        <property name="minimumSize">
         <size>
-         <width>200</width>
+         <width>300</width>
          <height>40</height>
         </size>
        </property>
        <property name="maximumSize">
         <size>
-         <width>200</width>
+         <width>300</width>
          <height>40</height>
         </size>
        </property>
@@ -82,6 +82,29 @@
       <enum>QFrame::NoFrame</enum>
      </property>
     </widget>
+   </item>
+   <item>
+    <widget class="QLabel" name="label_search_tips">
+     <property name="text">
+      <string/>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <spacer name="verticalSpacer">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>20</width>
+       <height>40</height>
+      </size>
+     </property>
+    </spacer>
    </item>
   </layout>
  </widget>

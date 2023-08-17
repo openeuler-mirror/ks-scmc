@@ -21,36 +21,59 @@ MemoryConfPage::~MemoryConfPage()
     delete ui;
 }
 
-void MemoryConfPage::setMemoryInfo(MemoryInfo memoryInfo)
+void MemoryConfPage::setMemoryInfo(container::HostConfig *cfg)
 {
-    ui->lineEdit_soft_limit->setText(QString("%1").arg(memoryInfo.softLimit));
-    ui->lineEdit_max_limit->setText(QString("%1").arg(memoryInfo.maxLimit));
-}
-
-void MemoryConfPage::getMemoryInfo(container::HostConfig *cfg)
-{
-    auto resourceCfg = cfg->mutable_resource_config();
-
-    auto softLimit = getLimitData(ui->lineEdit_soft_limit, ui->cb_soft_unit);
-    KLOG_INFO() << "Memory soft limit: " << softLimit;
-
-    auto maxLimit = getLimitData(ui->lineEdit_max_limit, ui->cb_max_unit);
-    KLOG_INFO() << "Memory max limit: " << maxLimit;
-
-    if (softLimit <= maxLimit)
+    if (cfg)
     {
-        resourceCfg->set_mem_limit(maxLimit);
-        resourceCfg->set_mem_soft_limit(softLimit);
+        auto resourceCfg = cfg->mutable_resource_config();
+        int memLimit = limitDataHandle(true, resourceCfg->mem_limit(), ui->cb_max_unit);
+        int sofgLimit = limitDataHandle(true, resourceCfg->mem_soft_limit(), ui->cb_soft_unit);
+        KLOG_INFO() << resourceCfg->mem_limit() << resourceCfg->mem_soft_limit();
+
+        ui->lineEdit_soft_limit->setText(QString("%1").arg(sofgLimit));
+        ui->lineEdit_max_limit->setText(QString("%1").arg(memLimit));
     }
 }
 
-qlonglong MemoryConfPage::getLimitData(QLineEdit *inputWidget, QComboBox *unitWidget)
+ErrorCode MemoryConfPage::getMemoryInfo(container::ResourceConfig *cfg)
+{
+    if (cfg)
+    {
+        auto softLimit = limitDataHandle(false, ui->lineEdit_soft_limit->text().toInt(), ui->cb_soft_unit);
+        KLOG_INFO() << "Memory soft limit: " << softLimit;
+
+        auto maxLimit = limitDataHandle(false, ui->lineEdit_max_limit->text().toInt(), ui->cb_max_unit);
+        KLOG_INFO() << "Memory max limit: " << maxLimit;
+
+        if (softLimit <= maxLimit)
+        {
+            cfg->set_mem_limit(maxLimit);
+            cfg->set_mem_soft_limit(softLimit);
+            return NO_ERROR;
+        }
+        else
+            return INPUT_ARG_ERROR;
+    }
+    return CONFIG_ARG_ERROR;
+}
+
+int MemoryConfPage::limitDataHandle(bool stom, int originData, QComboBox *unitWidget)
 {
     QString unit = unitWidget->currentText();
-    qlonglong limit;
-    if (unit == "MB")
-        limit = inputWidget->text().toLongLong() << 20;
-    else
-        limit = inputWidget->text().toLongLong() << 30;
+    int limit;
+    if (stom)  //bites->M/GB
+    {
+        if (unit == "MB")
+            limit = originData >> 20;
+        else
+            limit = originData >> 30;
+    }
+    else  //M/GB->bites
+    {
+        if (unit == "MB")
+            limit = originData << 20;
+        else
+            limit = originData << 30;
+    }
     return limit;
 }

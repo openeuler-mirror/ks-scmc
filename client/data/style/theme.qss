@@ -44,23 +44,28 @@ QLabel#label_icon
     image: url(:/images/head.svg);
 }
 
-QToolButton#btn_menu
+QPushButton#btn_menu
 {
-    background-color:transparent;
+    background-color:#ffffff;
+    border:none;
 }
-QToolButton#btn_menu:pressed
+QPushButton#btn_menu:hover
 {
-    background-color:transparent;
+     background-color:#ffffff;
 }
-QToolButton#btn_menu:hover
+QPushButton#btn_menu:pressed
 {
-     background-color:transparent;
+    background-color:#ffffff;
 }
-
+QPushButton#btn_menu:focus
+{
+    outline:none;
+}
 /*************************CommonPage*************************/
 QToolButton#btn_refresh
 {
-    background-color:transparent;
+    background-color:#ffffff;
+    border:none;
 }
 
 QLineEdit#lineEdit_search

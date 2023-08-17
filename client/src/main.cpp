@@ -4,9 +4,11 @@
 #include <QFile>
 #include <QMessageBox>
 #include <QStyle>
+#include <QTranslator>
 #include <iostream>
 #include "main-window.h"
 
+#define TRANSLATION_DIR "/usr/share/KsC-mCube/translations/"
 int main(int argc, char *argv[])
 {
     //设置日志输出
@@ -30,6 +32,16 @@ int main(int argc, char *argv[])
     else
     {
         QMessageBox::warning(NULL, "warning", "Open failed", QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes);
+    }
+    //加载翻译文件
+    QTranslator *qtTranslator = new QTranslator(qApp);
+    if (qtTranslator->load(QLocale(), "KsC-mCube", ".", TRANSLATION_DIR, ".qm"))
+    {
+        a.installTranslator(qtTranslator);
+    }
+    else
+    {
+        qDebug("Load Translator File failed : %s\n", TRANSLATION_DIR);
     }
 
     MainWindow w;

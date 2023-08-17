@@ -1,10 +1,10 @@
 #include "node-list.h"
 #include <kiran-log/qt5-log-i.h>
+#include "common/message-dialog.h"
 #include "node-addition.h"
 #include "rpc.h"
-
 #define NODE_ID "node id"
-
+#define ACTION_COL 1
 NodeList::NodeList(QWidget *parent) : CommonPage(parent),
                                       m_nodeAddition(nullptr)
 {
@@ -27,8 +27,13 @@ NodeList::~NodeList()
 void NodeList::updateInfo(QString keyword)
 {
     KLOG_INFO() << "NodeList updateInfo";
-    initNodeConnect();
-    getNodeList();
+    clearText();
+    InfoWorker::getInstance().disconnect();
+    if (keyword.isEmpty())
+    {
+        initNodeConnect();
+        getNodeList();
+    }
 }
 
 void NodeList::onCreateNode()
@@ -37,7 +42,7 @@ void NodeList::onCreateNode()
     {
         m_nodeAddition = new NodeAddition();
         m_nodeAddition->show();
-        connect(m_nodeAddition,&NodeAddition::sigSave,this,&NodeList::onSaveSlot);
+        connect(m_nodeAddition, &NodeAddition::sigSave, this, &NodeList::onSaveSlot);
         connect(m_nodeAddition, &NodeAddition::destroyed,
                 [=] {
                     KLOG_INFO() << " m_nodeAdditiong destroy";
@@ -58,7 +63,20 @@ void NodeList::onRemoveNode()
         node_ids.push_back(idMap.value(NODE_ID).toInt());
     }
 
-    InfoWorker::getInstance().removeNode(node_ids);
+    if (!node_ids.empty())
+    {
+        MessageDialog::StandardButton ret = MessageDialog::message(tr("Delete Node"),
+                                                                   tr("Are you sure you want to delete the node?"),
+                                                                   tr("It can't be recovered after deletion.Are you sure you want to continue?"),
+                                                                   ":/images/warning.png",
+                                                                   MessageDialog::StandardButton::Yes | MessageDialog::StandardButton::Cancel);
+        if (ret == MessageDialog::StandardButton::Yes)
+        {
+            InfoWorker::getInstance().removeNode(node_ids);
+        }
+        else
+            KLOG_INFO() << "cancel";
+    }
 }
 
 void NodeList::onMonitor(int row)
@@ -75,16 +93,21 @@ void NodeList::onSaveSlot(QMap<QString, QString> Info)
     InfoWorker::getInstance().createNode(request);
 }
 
-void NodeList::getListResult(QPair<grpc::Status, node::ListReply> reply)
+void NodeList::getListResult(const QPair<grpc::Status, node::ListReply> &reply)
 {
     KLOG_INFO() << reply.second.nodes_size();
     if (reply.first.ok())
     {
         int size = reply.second.nodes_size();
         if (size <= 0)
-            return ;
+        {
+            setTableDefaultContent(QList<int>() << ACTION_COL, "-");
+            setOpBtnEnabled(false);
+            return;
+        }
 
-        setTableRowNum(size);
+        clearTable();
+        setOpBtnEnabled(true);
         int row = 0;
         QMap<QString, QVariant> idMap;
         for (auto node : reply.second.nodes())
@@ -114,7 +137,7 @@ void NodeList::getListResult(QPair<grpc::Status, node::ListReply> reply)
                 if (status.has_cpu_stat())
                 {
                     char str[128]{};
-                    sprintf(str, "%0.1f%%", status.cpu_stat().used()*100);
+                    sprintf(str, "%0.1f%%", status.cpu_stat().used() * 100);
                     strCpuPct = std::string(str);
                 }
 
@@ -130,7 +153,7 @@ void NodeList::getListResult(QPair<grpc::Status, node::ListReply> reply)
             itemStatus->setTextAlignment(Qt::AlignCenter);
             QStandardItem *itemCntrCnt = new QStandardItem(strCntrCnt.data());
             itemCntrCnt->setTextAlignment(Qt::AlignCenter);
-            QStandardItem *itemCpu= new QStandardItem(strCpuPct.data());
+            QStandardItem *itemCpu = new QStandardItem(strCpuPct.data());
             itemCpu->setTextAlignment(Qt::AlignCenter);
             QStandardItem *itemMem = new QStandardItem(strMemPct.data());
             itemMem->setTextAlignment(Qt::AlignCenter);
@@ -138,29 +161,28 @@ void NodeList::getListResult(QPair<grpc::Status, node::ListReply> reply)
             itemDisk->setTextAlignment(Qt::AlignCenter);
 
             setTableItem(row, 0, itemName);
-            setTableItems(row, 2, QList<QStandardItem *>() << itemStatus << itemIp << itemCntrCnt
-                                                        << itemCpu << itemMem << itemDisk);
+            setTableItems(row, 2, QList<QStandardItem *>() << itemStatus << itemIp << itemCntrCnt << itemCpu << itemMem << itemDisk);
             row++;
-
         }
     }
     else
     {
-        setTableDefaultContent();
+        setTableDefaultContent(QList<int>() << ACTION_COL, "-");
+        setOpBtnEnabled(false);
     }
 }
 
-void NodeList::getCreateResult(QPair<grpc::Status, node::CreateReply> reply)
+void NodeList::getCreateResult(const QPair<grpc::Status, node::CreateReply> &reply)
 {
     KLOG_INFO() << reply.first.error_code() << reply.first.error_message().data();
     if (reply.first.ok())
     {
         getNodeList();
-        return ;
+        return;
     }
 }
 
-void NodeList::getRemoveResult(QPair<grpc::Status, node::RemoveReply> reply)
+void NodeList::getRemoveResult(const QPair<grpc::Status, node::RemoveReply> &reply)
 {
     KLOG_INFO() << reply.first.error_code() << reply.first.error_message().data();
     if (reply.first.ok())
@@ -184,6 +206,7 @@ void NodeList::initButtons()
     connect(btnRemove, &QPushButton::clicked, this, &NodeList::onRemoveNode);
 
     addOperationButtons(QList<QPushButton *>() << btnCreate << btnRemove);
+    setOpBtnEnabled(false);
 }
 
 void NodeList::initTable()
@@ -200,7 +223,8 @@ void NodeList::initTable()
     setTableColNum(tableHHeaderDate.size());
     QList<int> sortablCol = {0, 2};
     setSortableCol(sortablCol);
-    setTableActions(1, QStringList() << ":/images/monitor.svg");
+    setTableActions(ACTION_COL, QStringList() << ":/images/monitor.svg");
+    setTableDefaultContent(QList<int>() << ACTION_COL, "-");
 
     connect(this, &NodeList::sigMonitor, this, &NodeList::onMonitor);
 }

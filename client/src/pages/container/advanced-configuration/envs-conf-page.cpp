@@ -1,5 +1,6 @@
 #include "envs-conf-page.h"
 #include <QVBoxLayout>
+#include "common/message-dialog.h"
 #include "ui_envs-conf-page.h"
 EnvsConfPage::EnvsConfPage(QWidget *parent) : QWidget(parent),
                                               ui(new Ui::EnvsConfPage)
@@ -13,7 +14,7 @@ EnvsConfPage::~EnvsConfPage()
     delete ui;
 }
 
-void EnvsConfPage::getEnvInfo(container::ContainerConfig *cfg)
+ErrorCode EnvsConfPage::getEnvInfo(container::ContainerConfig *cfg)
 {
     if (cfg)
     {
@@ -23,9 +24,17 @@ void EnvsConfPage::getEnvInfo(container::ContainerConfig *cfg)
         {
             auto key = item->m_firstColVal;
             auto value = item->m_secondColVal;
+            if (key.isEmpty())
+                continue;
             env->insert({key.toStdString(), value.toStdString()});
         }
+        if (env->empty())
+        {
+            return INPUT_NULL_ERROR;
+        }
+        return NO_ERROR;
     }
+    return CONFIG_ARG_ERROR;
 }
 
 void EnvsConfPage::initUI()

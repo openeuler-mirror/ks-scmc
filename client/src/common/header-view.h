@@ -9,6 +9,7 @@ class HeaderView : public QHeaderView
 public:
     explicit HeaderView(bool isCheckable, QWidget *parent = nullptr);
     void setSortableCols(QList<int> cols);
+    void setCheckable(bool checkable);
 
 protected:
     void paintSection(QPainter *painter, const QRect &rect, int logicalIndex) const override;

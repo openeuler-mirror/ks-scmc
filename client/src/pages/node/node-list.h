@@ -27,9 +27,9 @@ private slots:
     void onRemoveNode();
     void onMonitor(int row);
     void onSaveSlot(QMap<QString, QString> Info);
-    void getListResult(QPair<grpc::Status, node::ListReply> reply);
-    void getCreateResult(QPair<grpc::Status, node::CreateReply> reply);
-    void getRemoveResult(QPair<grpc::Status, node::RemoveReply> reply);
+    void getListResult(const QPair<grpc::Status, node::ListReply> &);
+    void getCreateResult(const QPair<grpc::Status, node::CreateReply> &);
+    void getRemoveResult(const QPair<grpc::Status, node::RemoveReply> &);
 
 private:
     void initButtons();

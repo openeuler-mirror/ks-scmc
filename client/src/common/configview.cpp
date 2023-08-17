@@ -14,8 +14,8 @@ ConfigDelegate::ConfigDelegate(ConfigTableType whichTable, QWidget *parent) : QS
                                                                               m_ChooseTable(whichTable)
 {
     m_listPage.reserve(10);
-    m_listMode << tr("ReadOnly")
-               << tr("ReadWrite");
+    m_listMode << tr("ReadWrite")
+               << tr("ReadOnly");
 }
 
 ConfigDelegate::~ConfigDelegate()
@@ -146,7 +146,7 @@ void ConfigDelegate::sendSaveSlot(OperateWidget *pCurWidget)
     if (m_pEditFirst.size() <= row || m_pEditSecond.size() <= row)
         return;
 
-    if (m_pEditFirst[row]->text().isEmpty())
+    if (m_pEditFirst[row]->text().isEmpty() && !m_pEditSecond[row]->text().isEmpty())
     {
         std::string str = "Please enter variable";
         if (CONFIG_TABLE_TYPE_VOLUMES == m_ChooseTable)
@@ -154,17 +154,17 @@ void ConfigDelegate::sendSaveSlot(OperateWidget *pCurWidget)
         MessageDialog::message(tr("Save Data"),
                                tr("Data is empty!"),
                                tr(str.data()),
-                               ":/images/warning.png",
+                               ":/images/warning.svg",
                                MessageDialog::StandardButton::Ok);
         return;
     }
-    if (CONFIG_TABLE_TYPE_VOLUMES == m_ChooseTable && m_pEditSecond[row]->text().isEmpty())
+    if (CONFIG_TABLE_TYPE_VOLUMES == m_ChooseTable && m_pEditSecond[row]->text().isEmpty() && !m_pEditFirst[row]->text().isEmpty())
     {
         std::string str = "Please enter host path";
         MessageDialog::message(tr("Save Data"),
                                tr("Data is empty!"),
                                tr(str.data()),
-                               ":/images/warning.png",
+                               ":/images/warning.svg",
                                MessageDialog::StandardButton::Ok);
         return;
     }

@@ -24,13 +24,15 @@ ErrorCode EnvsConfPage::getEnvInfo(container::ContainerConfig *cfg)
         {
             auto key = item->m_firstColVal;
             auto value = item->m_secondColVal;
+            printf("%s,%d,%d,%d\n", __func__, __LINE__, key.isEmpty(), value.isEmpty());
             if (key.isEmpty())
-                continue;
+            {
+                if (!value.isEmpty())
+                    return INPUT_NULL_ERROR;
+                else
+                    continue;
+            }
             env->insert({key.toStdString(), value.toStdString()});
-        }
-        if (env->empty())
-        {
-            return INPUT_NULL_ERROR;
         }
         return NO_ERROR;
     }

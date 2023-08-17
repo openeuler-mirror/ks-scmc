@@ -152,10 +152,10 @@ bool ButtonDelegate::editorEvent(QEvent *event, QAbstractItemModel *model, const
 
 void ButtonDelegate::onActTriggered(QAction *act)
 {
-    if (act->text() == "Run")
+    if (act->text() == tr("Run"))
         emit sigActRun(m_index);
-    else if (act->text() == "Stop")
+    else if (act->text() == tr("Stop"))
         emit sigActStop(m_index);
-    else if (act->text() == "Restart")
+    else if (act->text() == tr("Restart"))
         emit sigActRestart(m_index);
 }

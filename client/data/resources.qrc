@@ -34,7 +34,11 @@
         <file>images/container-env.png</file>
         <file>images/container-cpu.svg</file>
         <file>images/add_item.svg</file>
-        <file>images/warning.png</file>
         <file>images/search.svg</file>
+        <file>images/refresh-hover.svg</file>
+        <file>images/error.svg</file>
+        <file>images/warning.svg</file>
+        <file>images/logo.png</file>
+        <file>images/loading.gif</file>
     </qresource>
 </RCC>

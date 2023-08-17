@@ -1,4 +1,5 @@
 #include "main-window.h"
+#include <kiran-log/qt5-log-i.h>
 #include <QDebug>
 #include <QIcon>
 #include <QPainter>
@@ -10,7 +11,7 @@
 #include "pages/container/container-list.h"
 #include "pages/node/node-list.h"
 
-std::string g_server_addr = "10.200.12.181:10050";
+std::string g_server_addr = "127.0.0.1:10050";
 
 MainWindow::MainWindow(QWidget* parent)
     : QWidget(parent), ui(new Ui::MainWindow)
@@ -21,7 +22,6 @@ MainWindow::MainWindow(QWidget* parent)
     if (args.size() > 1)
     {
         g_server_addr = args[1].toStdString();
-        printf("[%s][%d] g_server_addr:%s\n", __func__, __LINE__, g_server_addr.data());
     }
 
     initUI();
@@ -32,7 +32,7 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
-void MainWindow::onItemClicked(QListWidgetItem* currItem, QListWidgetItem* preItem)
+void MainWindow::onItemClicked(QListWidgetItem* currItem)
 {
     //侧边栏展开与收缩
     GuideItem* guideItem = qobject_cast<GuideItem*>(ui->listWidget->itemWidget(currItem));
@@ -71,7 +71,6 @@ void MainWindow::onItemClicked(QListWidgetItem* currItem, QListWidgetItem* preIt
         }
     }
     int currenRow = ui->listWidget->row(currItem);
-    std::cout << currenRow << std::endl;
 
     if (!m_pageMap.value(currenRow))
         return;
@@ -91,6 +90,7 @@ void MainWindow::paintEvent(QPaintEvent* event)
 void MainWindow::initUI()
 {
     this->setWindowTitle(tr("KylinSec security Container magic Cube"));
+    setWindowIcon(QIcon(":/images/logo.png"));
     ui->btn_menu->setIcon(QIcon(":/images/menu.svg"));
     ui->label_name->setText("Admin");
 
@@ -126,14 +126,14 @@ void MainWindow::initUI()
     QList<QListWidgetItem*> auditSubItems = {auditApplyList, auditWarningList, auditLogList};
     m_groupMap.insert(auditCenter, auditSubItems);
     ///TODO: m_isShowMap.insert(auditCenter, false);
-    m_isShowMap.insert(auditCenter, true);
+    m_isShowMap.insert(auditCenter, false);
 
     QListWidgetItem* containerManager = createGuideItem(tr("Container Manager"), GUIDE_ITEM_TYPE_GROUP, ":/images/container-manager.svg");
     QListWidgetItem* containerList = createGuideItem(tr("Container List"), GUIDE_ITEM_TYPE_SUB);
     QListWidgetItem* containerTemplate = createGuideItem(tr("Container Template"), GUIDE_ITEM_TYPE_SUB);
     QList<QListWidgetItem*> containerSubItems = {containerList, containerTemplate};
     m_groupMap.insert(containerManager, containerSubItems);
-    m_isShowMap.insert(containerManager, false);
+    m_isShowMap.insert(containerManager, true);
 
     QListWidgetItem* imageManager = createGuideItem(tr("Image Manager"), GUIDE_ITEM_TYPE_NORMAL, ":/images/image-manager.svg");
     QListWidgetItem* nodeManager = createGuideItem(tr("Node Manager"), GUIDE_ITEM_TYPE_NORMAL, ":/images/node-manager.svg");
@@ -154,7 +154,7 @@ void MainWindow::initUI()
     ui->listWidget->setCurrentRow(GUIDE_ITEM_CONTAINER_LIST);
     m_pageMap[GUIDE_ITEM_CONTAINER_LIST]->updateInfo();
 
-    connect(ui->listWidget, &QListWidget::currentItemChanged, this, &MainWindow::onItemClicked);
+    connect(ui->listWidget, &QListWidget::itemClicked, this, &MainWindow::onItemClicked);
 }
 
 CommonPage* MainWindow::createSubPage(GUIDE_ITEM itemEnum)

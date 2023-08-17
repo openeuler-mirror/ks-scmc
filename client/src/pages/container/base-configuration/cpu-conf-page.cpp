@@ -20,21 +20,25 @@ CPUConfPage::~CPUConfPage()
     delete ui;
 }
 
-void CPUConfPage::setCPUInfo(CPUInfo cpuInfo)
-{
-    ui->lineEdit_cpu_core->setText(QString("%1").arg(cpuInfo.totalCore));
-    ui->lineEdit_sche_pri->setText(QString("%1").arg(cpuInfo.schedulingPriority));
-}
-
-void CPUConfPage::getCPUInfo(container::HostConfig* cfg)
+void CPUConfPage::setCPUInfo(container::HostConfig* cfg)
 {
     if (cfg)
     {
         auto resourceCfg = cfg->mutable_resource_config();
+        KLOG_INFO() << resourceCfg->nano_cpus() / 1e9 << resourceCfg->cpu_shares();
+        ui->lineEdit_cpu_core->setText(QString("%1").arg(resourceCfg->nano_cpus() / 1e9));
+        ui->lineEdit_sche_pri->setText(QString("%1").arg(resourceCfg->cpu_shares()));
+    }
+}
+
+void CPUConfPage::getCPUInfo(container::ResourceConfig* cfg)
+{
+    if (cfg)
+    {
         KLOG_INFO() << "cpu core:" << ui->lineEdit_cpu_core->text().toInt() * 1e9;
-        resourceCfg->set_nano_cpus(ui->lineEdit_cpu_core->text().toInt() * 1e9);
+        cfg->set_nano_cpus(ui->lineEdit_cpu_core->text().toInt() * 1e9);
 
         //调度优先级
-        resourceCfg->set_cpu_shares(ui->lineEdit_sche_pri->text().toInt());
+        cfg->set_cpu_shares(ui->lineEdit_sche_pri->text().toInt());
     }
 }

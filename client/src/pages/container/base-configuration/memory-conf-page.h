@@ -18,11 +18,13 @@ class MemoryConfPage : public QWidget
 public:
     explicit MemoryConfPage(QWidget *parent = nullptr);
     ~MemoryConfPage();
-    void setMemoryInfo(MemoryInfo memoryInfo);
-    void getMemoryInfo(container::HostConfig *cfg);
+    void setMemoryInfo(container::HostConfig *cfg);
+    ErrorCode getMemoryInfo(container::ResourceConfig *cfg);
 
 private:
-    qlonglong getLimitData(QLineEdit *inputWidget, QComboBox *unitWidget);
+    //bites->M/GB,M/GB->bites
+    //stom: Small to Max
+    int limitDataHandle(bool stom, int originData, QComboBox *unitWidget);
 
 private:
     Ui::MemoryConfPage *ui;

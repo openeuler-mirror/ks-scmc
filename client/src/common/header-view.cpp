@@ -22,6 +22,11 @@ void HeaderView::setSortableCols(QList<int> cols)
     m_sortableCol = cols;
 }
 
+void HeaderView::setCheckable(bool checkable)
+{
+    m_isCheckable = checkable;
+}
+
 void HeaderView::paintSection(QPainter *painter, const QRect &rect, int logicalIndex) const
 {  //保存第一列的位置
     painter->save();

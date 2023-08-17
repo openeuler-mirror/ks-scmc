@@ -35,5 +35,6 @@
         <file>images/container-cpu.svg</file>
         <file>images/add_item.svg</file>
         <file>images/warning.png</file>
+        <file>images/search.svg</file>
     </qresource>
 </RCC>

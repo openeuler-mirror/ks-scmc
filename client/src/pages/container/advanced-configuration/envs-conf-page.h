@@ -3,6 +3,7 @@
 
 #include <QWidget>
 #include "common/configtable.h"
+#include "common/def.h"
 #include "common/info-worker.h"
 namespace Ui
 {
@@ -16,7 +17,7 @@ class EnvsConfPage : public QWidget
 public:
     explicit EnvsConfPage(QWidget *parent = nullptr);
     ~EnvsConfPage();
-    void getEnvInfo(container::ContainerConfig *cfg);
+    ErrorCode getEnvInfo(container::ContainerConfig *cfg);
 
 private:
     void initUI();

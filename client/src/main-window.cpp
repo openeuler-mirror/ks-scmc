@@ -71,12 +71,10 @@ void MainWindow::onItemClicked(QListWidgetItem* currItem, QListWidgetItem* preIt
         }
     }
     int currenRow = ui->listWidget->row(currItem);
-    int preRow = ui->listWidget->row(preItem);
     std::cout << currenRow << std::endl;
 
     if (!m_pageMap.value(currenRow))
         return;
-    InfoWorker::getInstance().disconnect();
     m_pageMap[currenRow]->updateInfo();
     m_stackedWidget->setCurrentWidget(m_pageMap.value(currenRow));
 }
@@ -120,25 +118,25 @@ void MainWindow::initUI()
         m_pageMap[itemEnum] = subPage;
     }
 
-    QListWidgetItem* homeItem = createGuideItem("Home Page", GUIDE_ITEM_TYPE_NORMAL, ":/images/home-page.png");
-    QListWidgetItem* auditCenter = createGuideItem("Audit Center", GUIDE_ITEM_TYPE_GROUP, ":/images/audit-center.svg");
-    QListWidgetItem* auditApplyList = createGuideItem("Audit Apply List", GUIDE_ITEM_TYPE_SUB);
-    QListWidgetItem* auditWarningList = createGuideItem("Audit Warning List", GUIDE_ITEM_TYPE_SUB);
-    QListWidgetItem* auditLogList = createGuideItem("Audit Log List", GUIDE_ITEM_TYPE_SUB);
+    QListWidgetItem* homeItem = createGuideItem(tr("Home Page"), GUIDE_ITEM_TYPE_NORMAL, ":/images/home-page.png");
+    QListWidgetItem* auditCenter = createGuideItem(tr("Audit Center"), GUIDE_ITEM_TYPE_GROUP, ":/images/audit-center.svg");
+    QListWidgetItem* auditApplyList = createGuideItem(tr("Audit Apply List"), GUIDE_ITEM_TYPE_SUB);
+    QListWidgetItem* auditWarningList = createGuideItem(tr("Audit Warning List"), GUIDE_ITEM_TYPE_SUB);
+    QListWidgetItem* auditLogList = createGuideItem(tr("Audit Log List"), GUIDE_ITEM_TYPE_SUB);
     QList<QListWidgetItem*> auditSubItems = {auditApplyList, auditWarningList, auditLogList};
     m_groupMap.insert(auditCenter, auditSubItems);
     ///TODO: m_isShowMap.insert(auditCenter, false);
     m_isShowMap.insert(auditCenter, true);
 
-    QListWidgetItem* containerManager = createGuideItem("Container Manager", GUIDE_ITEM_TYPE_GROUP, ":/images/container-manager.svg");
-    QListWidgetItem* containerList = createGuideItem("Container List", GUIDE_ITEM_TYPE_SUB);
-    QListWidgetItem* containerTemplate = createGuideItem("Container Template", GUIDE_ITEM_TYPE_SUB);
+    QListWidgetItem* containerManager = createGuideItem(tr("Container Manager"), GUIDE_ITEM_TYPE_GROUP, ":/images/container-manager.svg");
+    QListWidgetItem* containerList = createGuideItem(tr("Container List"), GUIDE_ITEM_TYPE_SUB);
+    QListWidgetItem* containerTemplate = createGuideItem(tr("Container Template"), GUIDE_ITEM_TYPE_SUB);
     QList<QListWidgetItem*> containerSubItems = {containerList, containerTemplate};
     m_groupMap.insert(containerManager, containerSubItems);
     m_isShowMap.insert(containerManager, false);
 
-    QListWidgetItem* imageManager = createGuideItem("Image Manager", GUIDE_ITEM_TYPE_NORMAL, ":/images/image-manager.svg");
-    QListWidgetItem* nodeManager = createGuideItem("Node Manager", GUIDE_ITEM_TYPE_NORMAL, ":/images/node-manager.svg");
+    QListWidgetItem* imageManager = createGuideItem(tr("Image Manager"), GUIDE_ITEM_TYPE_NORMAL, ":/images/image-manager.svg");
+    QListWidgetItem* nodeManager = createGuideItem(tr("Node Manager"), GUIDE_ITEM_TYPE_NORMAL, ":/images/node-manager.svg");
 
     //show first
     GuideItem* guideItem = qobject_cast<GuideItem*>(ui->listWidget->itemWidget(containerManager));

@@ -13,16 +13,27 @@ HighAvailabilityPage::~HighAvailabilityPage()
     delete ui;
 }
 
-void HighAvailabilityPage::getRestartPolicy(container::HostConfig *cfg)
+void HighAvailabilityPage::setRestartPolicy(container::HostConfig *cfg)
 {
     if (cfg)
     {
         auto policy = cfg->mutable_restart_policy();
+        KLOG_INFO() << "policy name: " << policy->name().data()
+                    << "policy max retry:" << policy->max_retry();
 
+        ui->cb_high_avail_policy->setCurrentText(QString::fromStdString(policy->name()));
+        ui->lineEdit_times->setText(QString("%1").arg(policy->max_retry()));
+    }
+}
+
+void HighAvailabilityPage::getRestartPolicy(container::RestartPolicy *cfg)
+{
+    if (cfg)
+    {
         KLOG_INFO() << "Policy :" << ui->cb_high_avail_policy->currentText() << "times: " << ui->lineEdit_times->text();
-        policy->set_name(ui->cb_high_avail_policy->currentText().toStdString());
+        cfg->set_name(ui->cb_high_avail_policy->currentText().toStdString());
         if (ui->lineEdit_times->isVisible())
-            policy->set_max_retry(ui->lineEdit_times->text().toInt());
+            cfg->set_max_retry(ui->lineEdit_times->text().toInt());
     }
 }
 
@@ -52,7 +63,7 @@ void HighAvailabilityPage::initUI()
 {
     setLineEditVisible(false);
     ui->cb_high_avail_policy->addItems(QStringList()
-                                       << tr("disabled")
+                                       << tr("no")
                                        << tr("always")
                                        << tr("on-failure")
                                        << tr("unless-stopped"));

@@ -13,41 +13,43 @@ import (
 )
 
 const (
-	socketMountPath   = "/tmp/.X11-unix"
-	authFileMountPath = "/tmp/.Xauthority"
+	containerSocketPath = "/tmp/.X11-unix"
+	containerAuthPath   = "/tmp/.xauth"
+	authFile            = "Xauthority"
 )
 const containerNameChars = `[a-zA-Z0-9][a-zA-Z0-9_.-]`
 
 var containerNamePattern = regexp.MustCompile(`^` + containerNameChars + `+$`)
 
 func containerGraphicSetup(containerName string, config *container.Config, hostConfig *container.HostConfig) error {
-	socketDir := filepath.Join(common.GraphicConfigBaseDir, containerName, "socket")
+	hostPath := filepath.Join(common.GraphicConfigBaseDir, containerName)
+	socketDir := filepath.Join(hostPath, "socket")
 	if err := os.MkdirAll(socketDir, 0755); err != nil {
 		log.Warnf("mkdir %v: %v", socketDir, err)
 		return err
 	}
 
-	authFile := filepath.Join(common.GraphicConfigBaseDir, containerName, "Xauthority")
-	_, err := os.Stat(authFile)
-	if os.IsNotExist(err) {
-		file, err := os.Create(authFile)
-		if err != nil {
-			log.Warnf("create file %v: %v", authFile, err)
-			return err
-		}
-		defer file.Close()
+	authDir := filepath.Join(hostPath, "xauth")
+	if err := os.MkdirAll(authDir, 0755); err != nil {
+		log.Warnf("mkdir %v: %v", authDir, err)
+		return err
 	}
 
-	config.Env = append(config.Env, "DISPLAY=:0", "XAUTHORITY="+authFileMountPath)
+	// AttachStdin, Tty: make sure container like OS(ubuntu, centos) will not exit after start
+	config.AttachStdin = true
+	config.Tty = true
+
+	// set environment for display, shared X11 socket/auth file
+	config.Env = append(config.Env, "DISPLAY=:0", "XAUTHORITY="+filepath.Join(containerAuthPath, authFile))
 	hostConfig.Mounts = append(hostConfig.Mounts, mount.Mount{
 		Type:   mount.TypeBind,
 		Source: socketDir,
-		Target: socketMountPath,
+		Target: containerSocketPath,
 	})
 	hostConfig.Mounts = append(hostConfig.Mounts, mount.Mount{
 		Type:   mount.TypeBind,
-		Source: authFile,
-		Target: authFileMountPath,
+		Source: authDir,
+		Target: containerAuthPath,
 	})
 
 	return nil

@@ -6,9 +6,11 @@ import (
 	"net"
 	"os"
 	"path/filepath"
+	"time"
 
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/keepalive"
 
 	"ksc-mcube/common"
 	"ksc-mcube/server/agent"
@@ -45,7 +47,19 @@ func main() {
 	common.InitLogger(verbose, logStdout, logFile)
 
 	var addr string
-	s := grpc.NewServer(common.UnaryServerInterceptor()...)
+	opts := append(common.UnaryServerInterceptor(),
+		grpc.KeepaliveEnforcementPolicy(keepalive.EnforcementPolicy{
+			MinTime:             10 * time.Second, // If a client pings more than once every 10 seconds, terminate the connection
+			PermitWithoutStream: true,             // Allow pings even when there are no active streams
+		}),
+		grpc.KeepaliveParams(keepalive.ServerParameters{
+			MaxConnectionIdle:     60 * time.Second, // If a client is idle for 60 seconds, send a GOAWAY
+			MaxConnectionAge:      30 * time.Minute, // If any connection is alive for more than 30 minutes, send a GOAWAY
+			MaxConnectionAgeGrace: 5 * time.Second,  // Allow 5 seconds for pending RPCs to complete before forcibly closing connections
+			Time:                  20 * time.Second, // Ping the client if it is idle for 20 seconds to ensure the connection is still active
+			Timeout:               5 * time.Second,  // Wait 5 second for the ping ack before assuming the connection is dead
+		}))
+	s := grpc.NewServer(opts...)
 	if mode == agentMode {
 		agent.Register(s)
 		addr = fmt.Sprintf("%s:%d", common.Host, common.AgentPort)

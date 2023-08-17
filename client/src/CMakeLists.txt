@@ -1,8 +1,8 @@
 set(RPC_INCLUDE_DIRS "../rpc/")
 set(PAGE_HEAD_DIR "pages/container/")
 set(DATA_DIR "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_DATADIR}")
-set(TRANSLATIONS_DIR "${DATA_DIR}/KsC-mCube/translations/")
-set(TS_FILES "../translations/KsC-mCube.zh_CN.ts" )
+set(TRANSLATIONS_DIR "${DATA_DIR}/ksc-mcube/translations/")
+set(TS_FILES "../translations/ksc-mcube.zh_CN.ts" )
 
 include_directories(include ${RPC_INCLUDE_DIRS})
 file(GLOB_RECURSE rpc_src "../rpc/*.cc")
@@ -40,3 +40,6 @@ target_link_libraries(ksc-mcube-client
 
 install(FILES ${QM_FILES}
     DESTINATION ${TRANSLATIONS_DIR})
+
+install(TARGETS ksc-mcube-client
+    DESTINATION ${BIN_DIR})

@@ -31,7 +31,8 @@ void HighAvailabilityPage::getRestartPolicy(container::RestartPolicy *cfg)
     if (cfg)
     {
         KLOG_INFO() << "Policy :" << ui->cb_high_avail_policy->currentText() << "times: " << ui->lineEdit_times->text();
-        cfg->set_name(ui->cb_high_avail_policy->currentText().toStdString());
+        QString policy = ui->cb_high_avail_policy->itemData(ui->cb_high_avail_policy->currentIndex()).toString();
+        cfg->set_name(policy.toStdString());
         if (ui->lineEdit_times->isVisible())
             cfg->set_max_retry(ui->lineEdit_times->text().toInt());
     }
@@ -39,7 +40,7 @@ void HighAvailabilityPage::getRestartPolicy(container::RestartPolicy *cfg)
 
 void HighAvailabilityPage::onCbActivated(QString text)
 {
-    if (text == "on-failure")
+    if (text == tr("on-failure"))
     {
         if (m_isVisible == false)
             setLineEditVisible(true);
@@ -62,11 +63,10 @@ void HighAvailabilityPage::setLineEditVisible(bool visible)
 void HighAvailabilityPage::initUI()
 {
     setLineEditVisible(false);
-    ui->cb_high_avail_policy->addItems(QStringList()
-                                       << tr("no")
-                                       << tr("always")
-                                       << tr("on-failure")
-                                       << tr("unless-stopped"));
+    ui->cb_high_avail_policy->addItem(tr("no"), "no");
+    ui->cb_high_avail_policy->addItem(tr("always"), "always");
+    ui->cb_high_avail_policy->addItem(tr("on-failure"), "on-failure");
+    ui->cb_high_avail_policy->addItem(tr("unless-stopped"), "unless-stopped");
 
     ui->lineEdit_times->setValidator(new QIntValidator(0, 20, this));
 

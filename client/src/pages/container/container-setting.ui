@@ -375,7 +375,7 @@
       </spacer>
      </item>
      <item>
-      <widget class="QToolButton" name="btn_confirm">
+      <widget class="QPushButton" name="btn_confirm">
        <property name="minimumSize">
         <size>
          <width>100</width>

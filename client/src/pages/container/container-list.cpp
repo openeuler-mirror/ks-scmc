@@ -1,25 +1,46 @@
-#include "container-list.h"
 #include <kiran-log/qt5-log-i.h>
+#include <QApplication>
 #include <QComboBox>
+#include <QDesktopWidget>
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QMouseEvent>
+#include <QProcess>
 #include <QStandardItem>
+#include <QTimer>
+
 #include "common/message-dialog.h"
+#include "container-list.h"
 #include "container-setting.h"
+
 #define NODE_ID "node id"
+#define NODE_ADDRESS "node address"
 #define CONTAINER_ID "container id"
+#define CONTAINER_NAME "container name"
 #define ACTION_COL 1
+
+// TODO read from config file.
+const QString TERMINAL_CMD = "mate-terminal -e";
+const QString BASHRC_FILE = "/etc/ksc-mcube/graphic_rc";
 
 ContainerList::ContainerList(QWidget *parent)
     : CommonPage(parent),
       m_createCTSetting(nullptr),
-      m_editCTSetting(nullptr)
+      m_editCTSetting(nullptr),
+      m_timer(nullptr)
 {
     initButtons();
     //初始化表格
     initTable();
-    initConnect();
+
+    //    m_timer = new QTimer(this);
+    //    m_timer->start(10000);
+    //    connect(m_timer, &QTimer::timeout,
+    //            [this] {
+    //                InfoWorker::getInstance().listNode();
+    //            });
+
+    connect(this, &ContainerList::sigTerminal, this, &ContainerList::onTerminal);
 }
 
 ContainerList::~ContainerList()
@@ -42,6 +63,12 @@ void ContainerList::onBtnCreate()
     if (!m_createCTSetting)
     {
         m_createCTSetting = new ContainerSetting(CONTAINER_SETTING_TYPE_CONTAINER_CREATE);
+
+        int screenNum = QApplication::desktop()->screenNumber(QCursor::pos());
+        QRect screenGeometry = QApplication::desktop()->screenGeometry(screenNum);
+        m_createCTSetting->move(screenGeometry.x() + (screenGeometry.width() - this->width()) / 2,
+                                screenGeometry.y() + (screenGeometry.height() - this->height()) / 2);
+
         m_createCTSetting->show();
         connect(m_createCTSetting, &ContainerSetting::destroyed,
                 [=] {
@@ -60,7 +87,20 @@ void ContainerList::onBtnRun()
 {
     KLOG_INFO() << "onBtnRun";
     std::map<int64_t, std::vector<std::string>> ids;
-    getCheckId(ids);
+    getCheckedItemsId(ids);
+    if (!ids.empty())
+    {
+        setBusy(true);
+        InfoWorker::getInstance().startContainer(ids);
+    }
+}
+
+void ContainerList::onBtnRun(QModelIndex index)
+{
+    KLOG_INFO() << "onBtnRun:" << index.row();
+    std::map<int64_t, std::vector<std::string>> ids;
+    getItemId(index.row(), ids);
+    setBusy(true);
     InfoWorker::getInstance().startContainer(ids);
 }
 
@@ -68,7 +108,20 @@ void ContainerList::onBtnStop()
 {
     KLOG_INFO() << "onBtnStop";
     std::map<int64_t, std::vector<std::string>> ids;
-    getCheckId(ids);
+    getCheckedItemsId(ids);
+    if (!ids.empty())
+    {
+        setBusy(true);
+        InfoWorker::getInstance().stopContainer(ids);
+    }
+}
+
+void ContainerList::onBtnStop(QModelIndex index)
+{
+    KLOG_INFO() << "onBtnStop:" << index.row();
+    std::map<int64_t, std::vector<std::string>> ids;
+    getItemId(index.row(), ids);
+    setBusy(true);
     InfoWorker::getInstance().stopContainer(ids);
 }
 
@@ -76,7 +129,20 @@ void ContainerList::onBtnRestart()
 {
     KLOG_INFO() << "onBtnRestart";
     std::map<int64_t, std::vector<std::string>> ids;
-    getCheckId(ids);
+    getCheckedItemsId(ids);
+    if (ids.empty())
+    {
+        setBusy(true);
+        InfoWorker::getInstance().restartContainer(ids);
+    }
+}
+
+void ContainerList::onBtnRestart(QModelIndex index)
+{
+    KLOG_INFO() << "onBtnRestart:" << index.row();
+    std::map<int64_t, std::vector<std::string>> ids;
+    getItemId(index.row(), ids);
+    setBusy(true);
     InfoWorker::getInstance().restartContainer(ids);
 }
 
@@ -84,16 +150,17 @@ void ContainerList::onBtnDelete()
 {
     KLOG_INFO() << "onBtnDelete";
     std::map<int64_t, std::vector<std::string>> ids;
-    getCheckId(ids);
+    getCheckedItemsId(ids);
     if (!ids.empty())
     {
         auto ret = MessageDialog::message(tr("Delete Container"),
                                           tr("Are you sure you want to delete the container?"),
                                           tr("It can't be recovered after deletion.Are you sure you want to continue?"),
-                                          ":/images/warning.png",
+                                          ":/images/warning.svg",
                                           MessageDialog::StandardButton::Yes | MessageDialog::StandardButton::Cancel);
         if (ret == MessageDialog::StandardButton::Yes)
         {
+            setBusy(true);
             InfoWorker::getInstance().removeContainer(ids);
         }
         else
@@ -132,12 +199,17 @@ void ContainerList::onEdit(int row)
     if (!m_editCTSetting)
     {
         m_editCTSetting = new ContainerSetting(CONTAINER_SETTING_TYPE_CONTAINER_EDIT);
+        int screenNum = QApplication::desktop()->screenNumber(QCursor::pos());
+        QRect screenGeometry = QApplication::desktop()->screenGeometry(screenNum);
+        m_editCTSetting->move(screenGeometry.x() + (screenGeometry.width() - this->width()) / 2,
+                              screenGeometry.y() + (screenGeometry.height() - this->height()) / 2);
         m_editCTSetting->show();
-        auto item = getRowItem(row);
+
+        auto item = getItem(row, 0);
         QPair<int64_t, QString> ids = {item->data().toMap().value(NODE_ID).toInt(),
                                        item->data().toMap().value(CONTAINER_ID).toString()};
         m_editCTSetting->setContainerNodeIds(ids);
-        getContainerInfo(item->data().toMap());
+        getContainerInspect(item->data().toMap());
         connect(m_editCTSetting, &ContainerSetting::destroyed,
                 [=] {
                     KLOG_INFO() << " edit container setting destroy";
@@ -153,12 +225,21 @@ void ContainerList::onEdit(int row)
 
 void ContainerList::onTerminal(int row)
 {
-    KLOG_INFO() << row;
+    auto infoMap = getItem(row, 0)->data().value<QMap<QString, QVariant>>();
+    auto nodeAddr = infoMap.value(NODE_ADDRESS).toString();
+    auto containerName = infoMap.value(CONTAINER_NAME).toString();
+    auto cmd = QString("%1 \"ssh -Xt root@%2 CONTAINER_NAME=%3 bash --rcfile %4\"")
+                   .arg(TERMINAL_CMD, nodeAddr, containerName, BASHRC_FILE);
+
+    KLOG_INFO() << cmd;
+    QProcess proc;
+    proc.startDetached(cmd);
 }
 
 void ContainerList::getNodeListResult(const QPair<grpc::Status, node::ListReply> &reply)
 {
     KLOG_INFO() << "getNodeListResult";
+    setBusy(false);
     if (reply.first.ok())
     {
         setOpBtnEnabled(true);
@@ -170,6 +251,7 @@ void ContainerList::getNodeListResult(const QPair<grpc::Status, node::ListReply>
         }
         if (!m_vecNodeId.empty())
         {
+            setBusy(true);
             InfoWorker::getInstance().listContainer(m_vecNodeId, true);
         }
     }
@@ -182,6 +264,7 @@ void ContainerList::getNodeListResult(const QPair<grpc::Status, node::ListReply>
 
 void ContainerList::getContainerListResult(const QPair<grpc::Status, container::ListReply> &reply)
 {
+    setBusy(false);
     KLOG_INFO() << "getContainerListResult";
     if (reply.first.ok())
     {
@@ -193,15 +276,17 @@ void ContainerList::getContainerListResult(const QPair<grpc::Status, container::
         clearTable();
         setOpBtnEnabled(true);
         int row = 0;
-        QMap<QString, QVariant> idMap;
+        QMap<QString, QVariant> infoMap;
         for (auto i : reply.second.containers())
         {
             qint64 nodeId = i.node_id();
-            idMap.insert(NODE_ID, nodeId);
-            idMap.insert(CONTAINER_ID, i.info().id().data());
+            infoMap.insert(NODE_ID, nodeId);
+            infoMap.insert(CONTAINER_ID, i.info().id().data());
+            infoMap.insert(CONTAINER_NAME, i.info().name().data());
+            infoMap.insert(NODE_ADDRESS, i.node_address().data());
 
             QStandardItem *itemName = new QStandardItem(i.info().name().data());
-            itemName->setData(QVariant::fromValue(idMap));
+            itemName->setData(QVariant::fromValue(infoMap));
             itemName->setCheckable(true);
             setTableItem(row, 0, itemName);
 
@@ -255,6 +340,7 @@ void ContainerList::getContainerListResult(const QPair<grpc::Status, container::
 
 void ContainerList::getContainerStartResult(const QPair<grpc::Status, container::StartReply> &reply)
 {
+    setBusy(false);
     KLOG_INFO() << reply.first.error_code() << reply.first.error_message().data();
     if (reply.first.ok())
     {
@@ -265,16 +351,23 @@ void ContainerList::getContainerStartResult(const QPair<grpc::Status, container:
 
 void ContainerList::getContainerStopResult(const QPair<grpc::Status, container::StopReply> &reply)
 {
+    setBusy(false);
     KLOG_INFO() << reply.first.error_code() << reply.first.error_message().data();
     if (reply.first.ok())
     {
+        KLOG_INFO() << "stop surccessful";
         getContainerList();
         return;
+    }
+    else
+    {
+        KLOG_INFO() << "stop failed";
     }
 }
 
 void ContainerList::getContainerRestartResult(const QPair<grpc::Status, container::RestartReply> &reply)
 {
+    setBusy(false);
     KLOG_INFO() << reply.first.error_code() << reply.first.error_message().data();
     if (reply.first.ok())
     {
@@ -285,6 +378,7 @@ void ContainerList::getContainerRestartResult(const QPair<grpc::Status, containe
 
 void ContainerList::getContainerRemoveResult(const QPair<grpc::Status, container::RemoveReply> &reply)
 {
+    setBusy(false);
     KLOG_INFO() << reply.first.error_code() << reply.first.error_message().data();
     if (reply.first.ok())
     {
@@ -353,10 +447,14 @@ void ContainerList::initButtons()
     connect(actBatchEdit, &QAction::triggered, this, &ContainerList::onActBatchEdit);
     connect(actBackup, &QAction::triggered, this, &ContainerList::onActBackup);
 
-    connect(m_opBtnMap[OPERATION_BUTTOM_RUN], &QPushButton::clicked, this, &ContainerList::onBtnRun);
-    connect(m_opBtnMap[OPERATION_BUTTOM_STOP], &QPushButton::clicked, this, &ContainerList::onBtnStop);
-    connect(m_opBtnMap[OPERATION_BUTTOM_RESTART], &QPushButton::clicked, this, &ContainerList::onBtnRestart);
+    connect(m_opBtnMap[OPERATION_BUTTOM_RUN], SIGNAL(clicked()), this, SLOT(onBtnRun()));
+    connect(m_opBtnMap[OPERATION_BUTTOM_STOP], SIGNAL(clicked()), this, SLOT(onBtnStop()));
+    connect(m_opBtnMap[OPERATION_BUTTOM_RESTART], SIGNAL(clicked()), this, SLOT(onBtnRestart()));
     connect(m_opBtnMap[OPERATION_BUTTOM_DELETE], &QPushButton::clicked, this, &ContainerList::onBtnDelete);
+
+    connect(this, SIGNAL(sigRun(QModelIndex)), this, SLOT(onBtnRun(QModelIndex)));
+    connect(this, SIGNAL(sigStop(QModelIndex)), this, SLOT(onBtnStop(QModelIndex)));
+    connect(this, SIGNAL(sigRestart(QModelIndex)), this, SLOT(onBtnRestart(QModelIndex)));
 
     addOperationButtons(m_opBtnMap.values());
     setOpBtnEnabled(false);
@@ -398,15 +496,17 @@ void ContainerList::initConnect()
 
 void ContainerList::getContainerList()
 {
+    setBusy(true);
     InfoWorker::getInstance().listNode();
 }
 
-void ContainerList::getContainerInfo(QMap<QString, QVariant> itemData)
+void ContainerList::getContainerInspect(QMap<QString, QVariant> itemData)
 {
+    //    setBusy(true);
     InfoWorker::getInstance().containerInspect(itemData.value(NODE_ID).toInt(), itemData.value(CONTAINER_ID).toString().toStdString());
 }
 
-void ContainerList::getCheckId(std::map<int64_t, std::vector<std::string>> &ids)
+void ContainerList::getCheckedItemsId(std::map<int64_t, std::vector<std::string>> &ids)
 {
     QList<QMap<QString, QVariant>> info = getCheckedItemInfo(0);
     int64_t node_id{};
@@ -429,6 +529,17 @@ void ContainerList::getCheckId(std::map<int64_t, std::vector<std::string>> &ids)
             ids[node_id].push_back(idMap.value(CONTAINER_ID).toString().toStdString());
         }
     }
+}
+
+void ContainerList::getItemId(int row, std::map<int64_t, std::vector<std::string>> &ids)
+{
+    auto item = getItem(row, 0);
+    QMap<QString, QVariant> idMap = item->data().value<QMap<QString, QVariant>>();
+
+    std::vector<std::string> container_ids;
+    container_ids.push_back(idMap.value(CONTAINER_ID).toString().toStdString());
+    auto nodeId = idMap.value(NODE_ID).toInt();
+    ids.insert(std::pair<int64_t, std::vector<std::string>>(nodeId, container_ids));
 }
 
 void ContainerList::updateInfo(QString keyword)

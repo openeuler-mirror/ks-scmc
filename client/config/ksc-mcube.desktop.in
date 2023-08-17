@@ -1,0 +1,15 @@
+#!/usr/bin/env xdg-open
+[Desktop Entry]
+Encoding=UTF-8
+Name=KsC-mCube
+Name[zh_CN]=麒麟信安安全容器魔方
+Comment=KsC-mCube
+Comment[zh_CN]=麒麟信安安全容器魔方
+Exec=${BIN_DIR}/ksc-mcube-client
+Icon=${ICON_DIR}/ksc-mcube-logo.png
+Terminal=false
+Type=Application
+X-KIRAN-NoDisplay=true
+
+Categories=System;Settings;Security;X-System-Server;
+StartupNotify=true

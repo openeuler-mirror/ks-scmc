@@ -1,0 +1,8 @@
+backend/vendor/***
+backend/ksc-mcube-server
+***/*.pb.go
+
+client/.vscode
+client/build
+***/*.pb.h
+***/*.pb.cc

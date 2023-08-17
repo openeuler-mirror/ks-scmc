@@ -44,5 +44,5 @@ func getConn() (*gorm.DB, error) {
 }
 
 func init() {
-	flag.StringVar(&dsn, "mysql-dsn", "ksc-mcube:%7hXnBx!ZUqR@tcp(127.0.0.1:3306)/ksc-mcube?charset=utf8mb4&timeout=10s", "mysql connection")
+	flag.StringVar(&dsn, "mysql-dsn", "root:123456@tcp(127.0.0.1:3306)/ksc-mcube", "mysql connection")
 }

@@ -10,6 +10,7 @@ require (
 	github.com/docker/go-connections v0.4.0 // indirect
 	github.com/fatih/gomodifytags v1.16.0 // indirect
 	github.com/go-sql-driver/mysql v1.6.0
+	github.com/golang/protobuf v1.5.0
 	github.com/google/cadvisor v0.43.0
 	github.com/google/uuid v1.2.0
 	github.com/influxdata/influxdb1-client v0.0.0-20200827194710-b269163b24ab

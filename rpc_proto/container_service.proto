@@ -15,11 +15,12 @@ service Container {
   rpc Stop(StopRequest) returns (StopReply) {}
   rpc Remove(RemoveRequest) returns (RemoveReply) {}
   rpc Restart(RestartRequest) returns (RestartReply) {}
-  // 以下未实现
   rpc Update(UpdateRequest) returns (UpdateReply) {}
   rpc Kill(KillRequest) returns (KillReply) {}
-
   rpc Status(StatusRequest) returns (StatusReply) {}
+
+  // 监控历史数据查询
+  rpc MonitorHistory(MonitorHistoryRequest) returns (MonitorHistoryReply) {}
 }
 
 message ListRequest {
@@ -137,4 +138,25 @@ message StatusRequest {
 message StatusReply {
     common.ReplyHeader header = 1;
     repeated ResourceStat status = 2;
+}
+
+message MonitorHistoryRequest {
+    common.RequestHeader header = 1;
+    int64 node_id = 2;
+    int64 start_time = 3;
+    int64 end_time = 4;
+    string container_id = 5;
+    string data_type = 6;	// CPU, memory, disk, network
+}
+
+message MonitorHistoryReply {
+    common.ReplyHeader header = 1;
+    repeated MonitorSample data = 2;
+}
+
+message MonitorSample {
+    int64 time = 1;
+    double cpu_usage = 10;
+    double memory_usage = 20;
+    double disk_usage = 30;
 }

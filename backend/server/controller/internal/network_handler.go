@@ -18,7 +18,7 @@ type NetworkServer struct {
 func (s *NetworkServer) List(ctx context.Context, in *pb.ListRequest) (*pb.ListReply, error) {
 	nodeInfo, err := model.QueryNodeByID(in.NodeId)
 	if err != nil {
-		if err == model.ErrDBRecordNotFound {
+		if err == model.ErrRecordNotFound {
 			return nil, rpc.ErrNotFound
 		}
 		return nil, rpc.ErrInternal

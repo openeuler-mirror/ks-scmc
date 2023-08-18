@@ -1,19 +1,19 @@
 package model
 
 import (
-	"flag"
 	"sync"
 	"time"
 
 	log "github.com/sirupsen/logrus"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
+
+	"ksc-mcube/common"
 )
 
 var (
 	db   *gorm.DB
 	lock sync.Mutex
-	dsn  string
 )
 
 func getConn() (*gorm.DB, error) {
@@ -24,6 +24,7 @@ func getConn() (*gorm.DB, error) {
 		return db, nil
 	}
 
+	dsn := common.Config.MySQL.DSN()
 	_db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	if err != nil {
 		log.Warnf("connect to database: %s, error: %v", dsn, err)
@@ -41,8 +42,4 @@ func getConn() (*gorm.DB, error) {
 
 	db = _db
 	return db, nil
-}
-
-func init() {
-	flag.StringVar(&dsn, "mysql-dsn", "root:123456@tcp(127.0.0.1:3306)/ksc-mcube", "mysql connection")
 }

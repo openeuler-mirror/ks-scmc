@@ -4,10 +4,11 @@ import (
 	"errors"
 
 	"github.com/go-sql-driver/mysql"
+	"gorm.io/gorm"
 )
 
-var ErrDBRecordNotFound = errors.New("database record not found")
 var ErrDuplicateKey = errors.New("duplicate key conflict")
+var ErrRecordNotFound = gorm.ErrRecordNotFound
 
 func translateError(err error) error {
 	if isDuplicateKeyError(err) {

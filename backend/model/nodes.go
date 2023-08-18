@@ -63,7 +63,7 @@ func RemoveNode(ids []int64) error {
 
 		if result.Error == gorm.ErrRecordNotFound {
 			log.Printf("DeleteNode query id=%v not found", id)
-			return ErrDBRecordNotFound
+			return ErrRecordNotFound
 		} else if result.Error != nil {
 			log.Printf("DeleteNode query: %v", result.Error)
 			return result.Error
@@ -94,7 +94,7 @@ func QueryNodeByID(id int64) (*NodeInfo, error) {
 		return nil, translateError(result.Error)
 	} else if result.RowsAffected == 0 {
 		log.Warnf("query node id=%v not found", id)
-		return nil, ErrDBRecordNotFound
+		return nil, ErrRecordNotFound
 	}
 
 	return &nodeInfo, nil

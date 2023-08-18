@@ -1,4 +1,4 @@
-package common
+package server
 
 import (
 	"context"
@@ -8,11 +8,19 @@ import (
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/peer"
+	// "google.golang.org/protobuf/proto"
 )
 
-// debug level logging: request and reply
-// info level logging: time cost
-func basicUnaryServerInterceptor() grpc.UnaryServerInterceptor {
+// LogInterceptor is a server interceptor for request and reply logging
+type LogInterceptor struct{}
+
+// NewLogInterceptor returns a new log interceptor
+func NewLogInterceptor() *LogInterceptor {
+	return &LogInterceptor{}
+}
+
+// Unary returns a server interceptor function to logging unary RPC
+func (interceptor *LogInterceptor) Unary() grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (reply interface{}, err error) {
 		var addr string
 		if p, ok := peer.FromContext(ctx); ok {
@@ -25,17 +33,12 @@ func basicUnaryServerInterceptor() grpc.UnaryServerInterceptor {
 			if err != nil {
 				logger = log.Infof
 			}
-			logger("%s %s\nREQUEST: %vREPLY: %vERR: %v", addr, info.FullMethod, proto.MarshalTextString(req.(proto.Message)), proto.MarshalTextString(reply.(proto.Message)), err)
+			logger("%s %s\nREQUEST: %vREPLY: %vERR: %v", addr, info.FullMethod,
+				proto.MarshalTextString(req.(proto.Message)), proto.MarshalTextString(reply.(proto.Message)), err)
 			log.Infof("%s %s COST: %v ms", addr, info.FullMethod, time.Since(ts).Milliseconds())
 		}()
 
 		reply, err = handler(ctx, req)
 		return reply, err
-	}
-}
-
-func UnaryServerInterceptor() []grpc.ServerOption {
-	return []grpc.ServerOption{
-		grpc.ChainUnaryInterceptor(basicUnaryServerInterceptor()),
 	}
 }

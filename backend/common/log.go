@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	"log"
 	"os"
 	"path/filepath"
 
@@ -35,22 +36,28 @@ func (m *logFormatter) Format(entry *logrus.Entry) ([]byte, error) {
 	return b.Bytes(), nil
 }
 
-func InitLogger(verbose int, stdout bool, filename string) {
+func InitLogger(name string) {
 	logger := &lumberjack.Logger{
-		Filename:   filename,
+		Filename:   filepath.Join(Config.Log.Basedir, name),
 		MaxSize:    1,
 		MaxBackups: 100,
 		MaxAge:     100,
 		LocalTime:  true,
 	}
 
-	if stdout {
+	if Config.Log.Stdout {
 		logrus.SetOutput(io.MultiWriter(os.Stdout, logger))
 	} else {
 		logrus.SetOutput(logger)
 	}
 
-	logrus.SetLevel(logrus.Level(verbose))
+	level, err := logrus.ParseLevel(Config.Log.Level)
+	if err != nil {
+		log.Printf("parse log level=%s err=%v", level, err)
+		level = logrus.InfoLevel
+	}
+
+	logrus.SetLevel(level)
 	logrus.SetReportCaller(true)
 	logrus.SetFormatter(&logFormatter{})
 }

@@ -12,7 +12,7 @@ import (
 )
 
 func cadvisorClient() (*client.Client, error) {
-	cli, err := client.NewClient("http://" + common.CAdvisorAddr)
+	cli, err := client.NewClient("http://" + common.Config.CAdvisor.Addr)
 	if err != nil {
 		log.Warnf("create cadvisor client %s: %v", "", err)
 	}

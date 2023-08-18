@@ -11,6 +11,8 @@ import (
 	"google.golang.org/grpc/metadata"
 )
 
+const AuthKeySeprator = ':'
+
 // AuthInterceptor server interceptor for authentication and authorization
 type AuthInterceptor struct {
 }
@@ -52,7 +54,7 @@ func (interceptor *AuthInterceptor) check(ctx context.Context, method string) er
 	}
 
 	authorization := values[0]
-	i := strings.IndexRune(authorization, ':')
+	i := strings.IndexRune(authorization, AuthKeySeprator)
 	if i == -1 {
 		log.Infof("invalid authorization metadata: %v", authorization)
 		return rpc.ErrUnauthenticated

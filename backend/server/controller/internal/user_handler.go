@@ -2,15 +2,19 @@ package internal
 
 import (
 	"context"
+	"fmt"
+	"strings"
 
 	"github.com/google/uuid"
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/crypto/bcrypt"
+	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/peer"
 
 	"ksc-mcube/model"
 	"ksc-mcube/rpc"
 	pb "ksc-mcube/rpc/pb/user"
+	"ksc-mcube/server"
 )
 
 type UserServer struct {
@@ -48,11 +52,41 @@ func (s *UserServer) Login(ctx context.Context, in *pb.LoginRequest) (*pb.LoginR
 		return &pb.LoginReply{}, nil
 	}
 
-	return &pb.LoginReply{UserId: userInfo.ID, SessionKey: sessionKey}, nil
+	return &pb.LoginReply{
+		UserId:  userInfo.ID,
+		AuthKey: fmt.Sprintf("%d%c%s", userInfo.ID, server.AuthKeySeprator, sessionKey),
+	}, nil
 }
 
 func (s *UserServer) Logout(ctx context.Context, in *pb.LogoutRequest) (*pb.LogoutReply, error) {
-	// TODO database operation
+	md, ok := metadata.FromIncomingContext(ctx)
+	if !ok {
+		log.Infof("get metadata from incoming context failed")
+		return nil, rpc.ErrInternal
+	}
+
+	values := md["authorization"]
+	if len(values) == 0 {
+		log.Infof("'authorization' not exist in request metadata.")
+		return nil, rpc.ErrInternal
+	}
+
+	authorization := values[0]
+	i := strings.IndexRune(authorization, ':')
+	if i == -1 {
+		log.Infof("invalid authorization metadata: %v", authorization)
+		return nil, rpc.ErrInternal
+	}
+
+	userID, accessToken := authorization[:i], authorization[i+1:]
+	err := model.RemoveSession(userID, accessToken)
+	if err != nil && err != model.ErrRecordNotFound {
+		log.Infof("database error=%v", err)
+		return nil, rpc.ErrInternal
+	} else if err == model.ErrRecordNotFound {
+		return nil, rpc.ErrNotFound
+	}
+
 	return &pb.LogoutReply{}, nil
 }
 
@@ -71,7 +105,7 @@ func (s *UserServer) Signup(ctx context.Context, in *pb.SignupRequest) (*pb.Sign
 
 	// database operations
 	userInfo, err := model.QueryUser(in.Username)
-	if err != nil {
+	if err != nil && err != model.ErrRecordNotFound {
 		return nil, rpc.ErrInternal
 	} else if userInfo != nil {
 		return nil, rpc.ErrAlreadyExists

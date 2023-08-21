@@ -2,11 +2,12 @@ package internal
 
 import (
 	"fmt"
-	"ksc-mcube/common"
 	"sync"
 
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
+
+	"ksc-mcube/common"
 )
 
 var (

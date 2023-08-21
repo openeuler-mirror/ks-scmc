@@ -4,11 +4,11 @@ import (
 	"context"
 	"time"
 
+	log "github.com/sirupsen/logrus"
+
 	"ksc-mcube/model"
 	"ksc-mcube/rpc"
 	pb "ksc-mcube/rpc/pb/network"
-
-	log "github.com/sirupsen/logrus"
 )
 
 type NetworkServer struct {

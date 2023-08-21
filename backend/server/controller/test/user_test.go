@@ -4,10 +4,10 @@ import (
 	"context"
 	"testing"
 
+	"google.golang.org/grpc"
+
 	common "ksc-mcube/rpc/pb/common"
 	pb "ksc-mcube/rpc/pb/user"
-
-	"google.golang.org/grpc"
 )
 
 func TestUserSignup(t *testing.T) {

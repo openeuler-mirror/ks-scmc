@@ -1,5 +1,5 @@
 syntax = "proto3";
 
-option go_package = "ksc-mcube/rpc/pb/user";
+option go_package = "scmc/rpc/pb/user";
 
 package user;

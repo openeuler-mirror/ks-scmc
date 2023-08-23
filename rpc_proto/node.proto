@@ -1,0 +1,180 @@
+syntax = "proto3";
+
+option go_package = "scmc/rpc/pb/node";
+
+import "common.proto";
+
+package node;
+
+service Node {
+    rpc List(ListRequest) returns (ListReply) {}
+    rpc Create(CreateRequest) returns (CreateReply) {}
+    rpc Remove(RemoveRequest) returns (RemoveReply) {}
+    rpc Status(StatusRequest) returns (StatusReply) {}
+    rpc Update(UpdateRequest) returns (UpdateReply) {}
+    rpc ListLog(ListLogRequest) returns (ListLogReply) {}        // 日志列表
+    rpc UpdateLog(UpdateLogRequest) returns (UpdateLogReply) {}  // 更新日志(已读)
+
+    // 安全配置
+    rpc UpdateFileProtect(UpdateFileProtectRequest) returns (UpdateFileProtectReply) {}  // 文件保护
+    rpc UpdateNetworkRule(UpdateNetworkRuleRequest) returns (UpdateNetworkRuleReply) {}  // 网络访问规则
+}
+
+message ListRequest {}
+
+message ListReply {
+    repeated NodeInfo nodes = 1;
+}
+
+message CreateRequest {
+    string name    = 1;
+    string address = 2;
+    string comment = 3;
+}
+
+message CreateReply {
+    int64 id = 1;
+}
+
+message RemoveRequest {
+    repeated int64 ids = 1;
+}
+
+message RemoveReply {}
+
+message StatusRequest {
+    repeated int64 node_ids = 1;
+}
+
+message StatusReply {
+    repeated NodeStatus status_list = 1;
+}
+
+message UpdateRequest {
+    int64         node_id   = 1;
+    string        name      = 2;
+    string        comment   = 3;
+    ResourceLimit rsc_limit = 4;
+}
+
+message UpdateReply {}
+
+message ListLogRequest {
+    int64  start_time     = 1;
+    int64  end_time       = 2;
+    int64  level          = 3;  // 日志等级 1:info 2:warn
+    int64  node_id        = 4;
+    string container_name = 5;   // 根据容器筛选
+    string username       = 6;   // 用户筛选
+    int64  page_size      = 21;  // 分页大小
+    int64  page_no        = 22;  // 分页页码
+    string sort_by        = 23;  // 排序字段(暂不用)
+    bool   sort_desc      = 24;  // 倒序排序
+}
+
+message ListLogReply {
+    repeated Log logs        = 1;
+    int64        page_size   = 2;
+    int64        page_no     = 3;
+    int64        total_pages = 4;
+}
+
+message UpdateLogRequest {
+    repeated int64 ids       = 1;
+    bool           have_read = 2;  // 是否已读标记
+}
+
+message UpdateLogReply {}
+
+message UpdateFileProtectRequest {
+    int64                  node_id      = 1;
+    int64                  container_id = 2;
+    common.FileProtectList file_protect = 3;
+}
+
+message UpdateFileProtectReply {}
+
+message UpdateNetworkRuleRequest {
+    int64                  node_id      = 1;
+    int64                  container_id = 2;
+    common.NetworkRuleList network_rule = 3;
+}
+
+message UpdateNetworkRuleReply {}
+
+/***** DATA TYPES *****/
+
+message NodeInfo {
+    int64  id          = 1;
+    string name        = 2;
+    string address     = 3;
+    string comment     = 4;
+    int64  unread_warn = 5;
+
+    NodeStatus    status    = 21;
+    ResourceLimit rsc_limit = 22;  // 节点资源限制配置
+}
+
+enum NodeState {
+    Offline = 0;
+    Unknown = 1;
+    Online  = 10;
+}
+
+message ContainerStat {
+    int64 total   = 1;
+    int64 running = 2;
+}
+
+message CpuStat {
+    double total           = 1;
+    double used            = 2;
+    double used_percentage = 3;
+}
+
+message MemoryStat {
+    uint64 total           = 1;  // 单位MB
+    uint64 used            = 2;  // 单位MB
+    uint64 free            = 3;  // 单位MB
+    double used_percentage = 4;
+}
+
+message DiskStat {
+    uint64 total           = 1;  // 单位MB
+    uint64 used            = 2;  // 单位MB
+    uint64 free            = 3;  // 单位MB
+    double used_percentage = 4;
+}
+
+message NodeStatus {
+    int64 node_id = 1;
+    int64 state   = 2;  // NodeState
+
+    ContainerStat container_stat = 3;
+    CpuStat       cpu_stat       = 4;
+    MemoryStat    mem_stat       = 5;
+    DiskStat      disk_stat      = 6;
+
+    // TODO network, etc;
+}
+
+message ResourceLimit {
+    double cpu_limit    = 1;  // CPU使用核心数
+    double memory_limit = 2;  // 内存限制 单位MB
+    double disk_limit   = 3;  // 磁盘限制 单位MB
+}
+
+message Log {
+    int64  id             = 1;
+    int64  level          = 2;  // 日志等级 1:info 2:warn
+    int64  node_id        = 3;
+    string node_info      = 4;  // 节点名或IP
+    string container_name = 5;
+    string username       = 6;  // 操作用户
+    string event_type     = 7;  // 事件/操作类型
+    int64  event_status   = 8;  // 事件/操作状态
+    string detail         = 9;
+    bool   have_read      = 10;
+    int64  create_at      = 11;
+    int64  update_at      = 12;
+}

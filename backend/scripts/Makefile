@@ -1,4 +1,4 @@
-PROJECT = ksc-mcube
+PROJECT = ks-scmc
 PREFIX  := /usr
 VAR     := /var
 ETC     := /etc

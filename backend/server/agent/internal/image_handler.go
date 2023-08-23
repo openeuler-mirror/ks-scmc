@@ -7,8 +7,8 @@ import (
 	"github.com/docker/docker/api/types"
 	log "github.com/sirupsen/logrus"
 
-	"ksc-mcube/rpc"
-	pb "ksc-mcube/rpc/pb/image"
+	"scmc/rpc"
+	pb "scmc/rpc/pb/image"
 )
 
 type ImageServer struct {

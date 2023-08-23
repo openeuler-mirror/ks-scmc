@@ -15,7 +15,7 @@ import (
 )
 
 func loadTLSCredentials() (credentials.TransportCredentials, error) {
-	caPEM, err := ioutil.ReadFile("/etc/ksc-mcube/x509/ca-cert.pem")
+	caPEM, err := ioutil.ReadFile("/etc/ks-scmc/x509/ca-cert.pem")
 	if err != nil {
 		return nil, err
 	}
@@ -25,7 +25,7 @@ func loadTLSCredentials() (credentials.TransportCredentials, error) {
 		return nil, fmt.Errorf("failed to add server CA's certificate")
 	}
 
-	cert, err := tls.LoadX509KeyPair("/etc/ksc-mcube/x509/client-cert.pem", "/etc/ksc-mcube/x509/client-key.pem")
+	cert, err := tls.LoadX509KeyPair("/etc/ks-scmc/x509/client-cert.pem", "/etc/ks-scmc/x509/client-key.pem")
 	if err != nil {
 		return nil, err
 	}

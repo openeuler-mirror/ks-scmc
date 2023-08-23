@@ -1,5 +1,0 @@
-syntax = "proto3";
-
-option go_package = "scmc/rpc/pb/user";
-
-package user;

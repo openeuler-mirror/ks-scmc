@@ -33,17 +33,3 @@ enum Errno {
     SessionExpired      = 205;  // Unauthenticated
     NoPermission        = 206;  // PermissionDenied
 }
-
-message RequestHeader {
-    string client_type = 1;
-    string client_version = 2;
-    string client_key = 3;
-
-    int64 user_id = 10;
-    string session_key = 11;
-}
-
-message ReplyHeader {
-    int32 err_no = 1;
-    string err_msg = 2;
-}

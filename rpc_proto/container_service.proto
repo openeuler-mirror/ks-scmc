@@ -4,9 +4,6 @@ option go_package = "scmc/rpc/pb/container";
 
 package container;
 
-import "common.proto";
-import "container_types.proto";
-
 service Container {
   rpc List(ListRequest) returns (ListReply) {}
   rpc Create(CreateRequest) returns (CreateReply) {}
@@ -19,144 +16,353 @@ service Container {
   rpc Kill(KillRequest) returns (KillReply) {}
   rpc Status(StatusRequest) returns (StatusReply) {}
 
+  rpc ListTemplate(ListTemplateRequest) returns (ListTemplateReply) {}
+  rpc CreateTemplate(CreateTemplateRequest) returns (CreateTemplateReply) {}
+  rpc UpdateTemplate(UpdateTemplateRequest) returns (UpdateTemplateReply) {}
+  rpc RemoveTemplate(RemoveTemplateRequest) returns (RemoveTemplateReply) {}
+
   // 监控历史数据查询
   rpc MonitorHistory(MonitorHistoryRequest) returns (MonitorHistoryReply) {}
 }
 
 message ListRequest {
-    common.RequestHeader header = 1;
-    repeated int64 node_ids = 2;
-    bool list_all = 3;
+    repeated int64 node_ids = 1;
+    bool list_all = 2;
 }
 
 message ListReply {
-    common.ReplyHeader header = 1;
-
-    repeated NodeContainer containers = 2;
+    repeated NodeContainer containers = 1;
 }
 
 message CreateRequest {
-    common.RequestHeader header = 1;
-    int64 node_id = 2;
-    string name = 3;
-    bool enable_graphic = 4;
+    int64 node_id = 1;
+    string name = 2;
+    bool enable_graphic = 3;
 
     ContainerConfig config = 11;
     HostConfig host_config = 12;
-    map<string, EndpointSetting> network_config = 13;
+    repeated NetworkConfig network_config = 13;
 }
 
 message CreateReply {
-    common.ReplyHeader header = 1;
-    string container_id = 2;
-    repeated string warnings = 3;
+    string container_id = 1;
+    repeated string warnings = 2;
 }
 
 message InspectRequest {
-    common.RequestHeader header = 1;
-    int64 node_id = 2;
-    string container_id = 3;
+    int64 node_id = 1;
+    string container_id = 2;
 }
 
 message InspectReply {
-    common.ReplyHeader header = 1;
-    ContainerInfo info = 2;
-    HostConfig host_config = 3;
-    repeated Mount mounts = 4;
-    ContainerConfig config = 5;
-    map<string, EndpointSetting> network_settings = 6;
+    ContainerInfo info = 1;
+    HostConfig host_config = 2;
+    repeated Mount mounts = 3;
+    ContainerConfig config = 4;
+    repeated NetworkConfig network_config = 5;
 }
 
 message StartRequest {
-    common.RequestHeader header = 1;
-    repeated ContainerIdList ids = 2;
+    repeated ContainerIdList ids = 1;
 }
 
 message StartReply {
-    common.ReplyHeader header = 1;
-    repeated string ok_ids = 2;
+    repeated string ok_ids = 1;
 }
 
 message StopRequest {
-    common.RequestHeader header = 1;
-    repeated ContainerIdList ids = 2;
+    repeated ContainerIdList ids = 1;
 }
 
 message StopReply {
-    common.ReplyHeader header = 1;
-    repeated string ok_ids = 2;
+    repeated string ok_ids = 1;
 }
 
 message KillRequest {
-    common.RequestHeader header = 1;
-    repeated ContainerIdList ids = 2;
+    repeated ContainerIdList ids = 1;
 }
 
 message KillReply {
-    common.ReplyHeader header = 1;
-    repeated string ok_ids = 2;
+    repeated string ok_ids = 1;
 }
 
 message RestartRequest {
-    common.RequestHeader header = 1;
-    repeated ContainerIdList ids = 2;
+    repeated ContainerIdList ids = 1;
 }
 
 message RestartReply {
-    common.ReplyHeader header = 1;
-    repeated string ok_ids = 2;
+    repeated string ok_ids = 1;
 }
 
 message UpdateRequest {
-    common.RequestHeader header = 1;
-    int64 node_id = 2;
-    string container_id = 3;
-    ResourceConfig resource_config = 4;
-    RestartPolicy restart_policy = 5;
+    int64 node_id = 1;
+    string container_id = 2;
+    ResourceConfig resource_config = 3;
+    RestartPolicy restart_policy = 4;
 }
 
-message UpdateReply {
-    common.ReplyHeader header = 1;
-}
+message UpdateReply {}
 
 message RemoveRequest {
-    common.RequestHeader header = 1;
-    repeated ContainerIdList ids = 2;
-    bool remove_volumes = 4;
+    repeated ContainerIdList ids = 1;
+    bool remove_volumes = 2;
 }
 
 message RemoveReply {
-    common.ReplyHeader header = 1;
-    repeated string ok_ids = 2;
+    repeated string ok_ids = 1;
 }
 
 message StatusRequest {
-    common.RequestHeader header = 1;
-    int64 node_id = 2;
+    int64 node_id = 1;
 }
 
 message StatusReply {
-    common.ReplyHeader header = 1;
-    repeated ResourceStat status = 2;
+    repeated ResourceStat status = 1;
 }
 
 message MonitorHistoryRequest {
-    common.RequestHeader header = 1;
-    int64 node_id = 2;
-    int64 start_time = 3;
-    int64 end_time = 4;
-    string container_id = 5;
-    string data_type = 6;	// CPU, memory, disk, network
+    int64 node_id = 1;
+    int64 start_time = 2;       // 起始时间 UNIX时间戳
+    int64 end_time = 3;         // 结束时间 UNIX时间戳
+    uint32 interval = 4;        // 取样间隔 单位分钟
+    string container_id = 5;    // 容器名 空表示取节点总和信息
 }
 
 message MonitorHistoryReply {
-    common.ReplyHeader header = 1;
-    repeated MonitorSample data = 2;
+    repeated MonitorSample cpu_usage = 1;
+    repeated MonitorSample memory_usage = 2;
+    repeated MonitorSample disk_usage = 3;
+    repeated MonitorSample net_rx = 4;
+    repeated MonitorSample net_tx = 5;
+}
+
+message ListTemplateRequest {
+    int64 per_page = 1;
+    int64 next_page = 2;
+    string sort = 3;
+    string like_search = 4;
+}
+
+message ListTemplateReply {
+    int64 per_page = 1;
+    int64 cur_page = 2;
+    int64 total_rows = 3;
+    int64 total_pages = 4;
+    repeated ContainerTemplate data = 5;
+}
+
+message CreateTemplateRequest {
+    ContainerTemplate data = 1;
+}
+
+message CreateTemplateReply {
+    int64 id = 1;
+}
+
+message UpdateTemplateRequest {
+    ContainerTemplate data = 2;
+}
+
+message UpdateTemplateReply {}
+
+message RemoveTemplateRequest {
+    repeated int64 ids = 1;
+}
+
+message RemoveTemplateReply {}
+
+/***** DATA TYPES *****/
+
+message Port {
+    string ip = 1;
+    uint32 private_port = 2;
+    uint32 public_port = 3;
+    string type = 4;
+}
+
+message MountPoint {
+    string type = 1;
+    string name = 2;
+    string source = 3;
+    string destination = 4;
+    string driver = 5;
+    string mode = 6;
+    bool rw = 7;
+    string propagation = 8;
+}
+
+message NodeContainer {
+    int64 node_id = 1;
+    string node_address = 2;
+    ContainerInfo info = 10;
+}
+
+message ContainerInfo {
+    string id = 1;
+    string name = 2;
+    string image = 3;
+    string image_id = 4;
+    string command = 5;
+    string state = 6;   // "created", "running", "paused", "restarting", "removing", "exited", or "dead"
+    int64 created = 7;
+    int64 size_rw = 8;
+    int64 size_root_fs = 9;
+    map<string, string> labels = 10;
+
+    ResourceStat resource_stat = 101;
+}
+
+message ContainerIdList {
+    int64 node_id = 1;
+    repeated string container_ids = 2;
+}
+
+message Mount {
+    string type = 1;    // "bind" "volume" "tmpfs" "npipe"
+    string source = 2;
+    string target = 3;
+    bool read_only = 4;
+    string consistency = 5; // "consistent" "cached" "delegated" "default"
+
+	// bind_options
+	// volume_options
+	// tmpfs_options
+}
+
+message RestartPolicy {
+	string name = 1;
+	int32 max_retry = 2;
+}
+
+message DeviceMapping {
+	string path_on_host = 1;
+	string path_in_container = 2;
+	string cgroup_permissions = 3;
+}
+
+message ResourceConfig {
+    int64 nano_cpus = 1;    // CPU quota in units of 10e-9 CPUs
+    int64 cpu_shares = 2;   // CPU shares (relative weight vs. other containers)
+
+    int64 mem_limit = 11;   // Memory limit (in bytes)
+    int64 mem_soft_limit = 12;  // Memory soft limit (in bytes)
+
+    repeated DeviceMapping devices = 101; // List of devices to map inside the container
+}
+
+message HostConfig {
+    string network_mode = 1;
+    RestartPolicy restart_policy = 2;
+    bool auto_remove = 3;
+    bool privileged = 4;
+    string ipc_mode = 5;    // "", "none", "private", "shareable", "container: <_name-or-ID_>", "host"
+    repeated Mount mounts = 6;
+    repeated string masked_paths = 7;
+    repeated string readonly_paths = 8;
+
+    ResourceConfig resource_config = 31;
+    map<string, string> storage_opt = 32;    // disk quota(k=size, v=1G)
+}
+
+message ContainerConfig {
+    string hostname = 1;
+    string domain_name = 2;
+    string user = 3;   // user user:group
+    map<string, string> env = 4;
+
+    string image = 5;           // required
+    string working_dir = 6;
+
+    repeated string entrypoint = 7;
+    repeated string cmd = 8;
+
+    bool network_disabled = 9;
+
+    map<string, string> labels = 10;
+}
+
+message CpuStat {
+    double core_used = 1;
+}
+
+message MemoryStat {
+    uint64 used = 1;
+    uint64 limit = 2;
+    double percentage = 3;
+}
+
+message BlockStat {
+    uint64 read = 1;
+    uint64 write = 2;
+}
+
+message NetworkStats {
+    uint64 rx = 1;
+    uint64 tx = 2;
+}
+
+message ResourceStat {
+    string id = 1;
+    string state = 2;
+    CpuStat cpu_stat = 3;
+    MemoryStat mem_stat = 4;
+    BlockStat block_stat = 5;
+    NetworkStats net_stat = 6;
 }
 
 message MonitorSample {
-    int64 time = 1;
-    double cpu_usage = 10;
-    double memory_usage = 20;
-    double disk_usage = 30;
+    int64 timestamp = 1;
+    double value = 2;
+}
+
+message NetworkConfig {
+    string interface = 1;       // required
+    string container_id = 2;    // required
+    string ip_address = 3;      // required
+    string ip_mask = 4;
+    string mac_address = 5;
+    string gateway = 6;
+}
+
+message ResourceLimit {
+    double cpu_limit = 1;   // CPU使用核心数限制
+    int64 cpu_prio = 2;     // CPU优先级
+    int64 memory_limit = 11; // 内存限制 单位MB
+    int64 memory_soft_limit = 12;    // 内存软限制 单位MB 数值低于memory_limit
+    int64 disk_limit = 21;   // 磁盘使用限制 单位MB
+}
+
+message SecurityConfig {
+    bool network_host_enabled = 1;  // 宿主机网络可联通
+    bool network_container_enabled = 2; // 宿主机其他容器可联通
+    bool network_external_enabled = 3; // 外部可联通
+    bool cmd_operate_enabled = 4;   // 运行命令行操作
+    // to be extended
+}
+
+message ContainerConfigs {
+    string name = 1;                // required 容器名 不支持中文字符
+    string desc = 2;                // 描述信息 支持中文
+    string image = 3;               // required 镜像
+    string hostname = 4;
+    string domain_name = 5;
+    string user = 6;                // user | user:group
+    bool graphic_enabled = 7;       // 支持图形界面访问
+    bool privileged = 8;
+
+
+    map<string, string> env = 30;    // 环境变量
+    repeated Mount mounts = 31;       // 挂载目录
+    repeated string masked_paths = 32;
+    repeated string readonly_paths = 33; // 只读的路径
+
+    RestartPolicy restart_policy = 40;          // 重启策略(高可用)
+    ResourceLimit resource_limit = 41;          // 资源使用限制
+    repeated NetworkConfig network_conf = 42;   // 网络配置
+    SecurityConfig security_conf = 43;          // 安全配置
+}
+
+message ContainerTemplate {
+    int64 id = 1;
+    ContainerConfigs conf = 2;
 }

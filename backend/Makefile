@@ -9,7 +9,7 @@ ETC     := /etc
 all: $(BINARY)
 
 $(BINARY): $(RPC)
-	go build scmc/cmd/$@
+	go build -ldflags="-s -w" scmc/cmd/$@
 
 .PHONY: $(RPC)
 $(RPC):
@@ -33,9 +33,5 @@ clean:
 
 .PHONY: install
 install:
-	install -d $(DESTDIR)$(ETC)/$(PROJECT)/
-	install -d $(DESTDIR)$(VAR)/lib/$(PROJECT)/containers
-	install -d $(DESTDIR)$(VAR)/log/$(PROJECT)/
-	install -d $(DESTDIR)$(PREFIX)/bin/
-	install -m 755 $(BINARY) $(DESTDIR)$(PREFIX)/bin/
-	cd scripts/ && make DESTDIR=$(DESTDIR) install
+	install -m 755 -D $(BINARY) $(DESTDIR)$(PREFIX)/bin/$(BINARY)
+	cd scripts/ && make install

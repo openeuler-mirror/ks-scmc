@@ -43,7 +43,7 @@ KylinSec security container magic cube provides simply, effecient and secure con
 
 %build
 cd backend && make env && make && cd -
-cd client && ./build.sh && cd -
+cd client && make && cd -
 
 %install
 cd backend && make DESTDIR=$RPM_BUILD_ROOT install && cd -

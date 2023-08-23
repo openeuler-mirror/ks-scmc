@@ -26,19 +26,19 @@
     <name>CPUConfPage</name>
     <message>
         <location filename="../src/pages/container/base-configuration/cpu-conf-page.ui" line="14"/>
-        <location filename="../build/src/ksc-mcube-client_autogen/include/ui_cpu-conf-page.h" line="100"/>
+        <location filename="../build/src/ks-scmc-client_autogen/include/ui_cpu-conf-page.h" line="100"/>
         <source>Form</source>
         <translation></translation>
     </message>
     <message>
         <location filename="../src/pages/container/base-configuration/cpu-conf-page.ui" line="75"/>
-        <location filename="../build/src/ksc-mcube-client_autogen/include/ui_cpu-conf-page.h" line="101"/>
+        <location filename="../build/src/ks-scmc-client_autogen/include/ui_cpu-conf-page.h" line="101"/>
         <source>&lt;font color=red&gt;*&lt;/font&gt; Total CPU cores:</source>
         <translation>CPU总核数:</translation>
     </message>
     <message>
         <location filename="../src/pages/container/base-configuration/cpu-conf-page.ui" line="82"/>
-        <location filename="../build/src/ksc-mcube-client_autogen/include/ui_cpu-conf-page.h" line="102"/>
+        <location filename="../build/src/ks-scmc-client_autogen/include/ui_cpu-conf-page.h" line="102"/>
         <source>Scheduling priority:</source>
         <translation>调度优先级:</translation>
     </message>
@@ -47,7 +47,7 @@
     <name>CommonPage</name>
     <message>
         <location filename="../src/common/common-page.ui" line="14"/>
-        <location filename="../build/src/ksc-mcube-client_autogen/include/ui_common-page.h" line="103"/>
+        <location filename="../build/src/ks-scmc-client_autogen/include/ui_common-page.h" line="103"/>
         <source>Form</source>
         <translation></translation>
     </message>
@@ -91,7 +91,7 @@
     <name>ConfigTable</name>
     <message>
         <location filename="../src/common/configtable.ui" line="14"/>
-        <location filename="../build/src/ksc-mcube-client_autogen/include/ui_configtable.h" line="51"/>
+        <location filename="../build/src/ks-scmc-client_autogen/include/ui_configtable.h" line="51"/>
         <source>ConfigTable</source>
         <translation type="unfinished"></translation>
     </message>
@@ -241,74 +241,74 @@
     <name>ContainerSetting</name>
     <message>
         <location filename="../src/pages/container/container-setting.ui" line="14"/>
-        <location filename="../build/src/ksc-mcube-client_autogen/include/ui_container-setting.h" line="262"/>
+        <location filename="../build/src/ks-scmc-client_autogen/include/ui_container-setting.h" line="262"/>
         <source>Form</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/pages/container/container-setting.ui" line="78"/>
-        <location filename="../build/src/ksc-mcube-client_autogen/include/ui_container-setting.h" line="263"/>
+        <location filename="../build/src/ks-scmc-client_autogen/include/ui_container-setting.h" line="263"/>
         <source>Node:</source>
         <translation>节点：</translation>
     </message>
     <message>
         <location filename="../src/pages/container/container-setting.ui" line="85"/>
-        <location filename="../build/src/ksc-mcube-client_autogen/include/ui_container-setting.h" line="264"/>
+        <location filename="../build/src/ks-scmc-client_autogen/include/ui_container-setting.h" line="264"/>
         <source>Container Describe:</source>
         <translation>描述：</translation>
     </message>
     <message>
         <location filename="../src/pages/container/container-setting.ui" line="108"/>
-        <location filename="../build/src/ksc-mcube-client_autogen/include/ui_container-setting.h" line="265"/>
+        <location filename="../build/src/ks-scmc-client_autogen/include/ui_container-setting.h" line="265"/>
         <source>Image:</source>
         <translation>镜像：</translation>
     </message>
     <message>
         <location filename="../src/pages/container/container-setting.ui" line="115"/>
-        <location filename="../build/src/ksc-mcube-client_autogen/include/ui_container-setting.h" line="266"/>
+        <location filename="../build/src/ks-scmc-client_autogen/include/ui_container-setting.h" line="266"/>
         <source>Container Name:</source>
         <translation>容器名：</translation>
     </message>
     <message>
         <location filename="../src/pages/container/container-setting.ui" line="205"/>
-        <location filename="../build/src/ksc-mcube-client_autogen/include/ui_container-setting.h" line="267"/>
+        <location filename="../build/src/ks-scmc-client_autogen/include/ui_container-setting.h" line="267"/>
         <source>Desribe:</source>
         <translation>描述：</translation>
     </message>
     <message>
         <location filename="../src/pages/container/container-setting.ui" line="212"/>
-        <location filename="../build/src/ksc-mcube-client_autogen/include/ui_container-setting.h" line="268"/>
+        <location filename="../build/src/ks-scmc-client_autogen/include/ui_container-setting.h" line="268"/>
         <source>Container Template Name:</source>
         <translation>模板名：</translation>
     </message>
     <message>
         <location filename="../src/pages/container/container-setting.ui" line="248"/>
-        <location filename="../build/src/ksc-mcube-client_autogen/include/ui_container-setting.h" line="270"/>
+        <location filename="../build/src/ks-scmc-client_autogen/include/ui_container-setting.h" line="270"/>
         <source>Basic configuration</source>
         <translation>基本配置</translation>
     </message>
     <message>
         <location filename="../src/pages/container/container-setting.ui" line="305"/>
-        <location filename="../build/src/ksc-mcube-client_autogen/include/ui_container-setting.h" line="269"/>
+        <location filename="../build/src/ks-scmc-client_autogen/include/ui_container-setting.h" line="269"/>
         <location filename="../src/pages/container/container-setting.cpp" line="96"/>
         <source>Add</source>
         <translation>添加</translation>
     </message>
     <message>
         <location filename="../src/pages/container/container-setting.ui" line="315"/>
-        <location filename="../build/src/ksc-mcube-client_autogen/include/ui_container-setting.h" line="271"/>
+        <location filename="../build/src/ks-scmc-client_autogen/include/ui_container-setting.h" line="271"/>
         <source>Advanced configuration</source>
         <translation>高级配置</translation>
     </message>
     <message>
         <location filename="../src/pages/container/container-setting.ui" line="392"/>
-        <location filename="../build/src/ksc-mcube-client_autogen/include/ui_container-setting.h" line="272"/>
+        <location filename="../build/src/ks-scmc-client_autogen/include/ui_container-setting.h" line="272"/>
         <source>Confirm</source>
         <translation>确定</translation>
     </message>
     <message>
         <location filename="../src/pages/container/container-setting.ui" line="411"/>
-        <location filename="../build/src/ksc-mcube-client_autogen/include/ui_container-setting.h" line="273"/>
+        <location filename="../build/src/ks-scmc-client_autogen/include/ui_container-setting.h" line="273"/>
         <source>Cancel</source>
         <translation>取消</translation>
     </message>
@@ -468,7 +468,7 @@
     <name>EnvsConfPage</name>
     <message>
         <location filename="../src/pages/container/advanced-configuration/envs-conf-page.ui" line="16"/>
-        <location filename="../build/src/ksc-mcube-client_autogen/include/ui_envs-conf-page.h" line="35"/>
+        <location filename="../build/src/ks-scmc-client_autogen/include/ui_envs-conf-page.h" line="35"/>
         <source>Form</source>
         <translation></translation>
     </message>
@@ -477,13 +477,13 @@
     <name>GraphicConfPage</name>
     <message>
         <location filename="../src/pages/container/advanced-configuration/graphic-conf-page.ui" line="14"/>
-        <location filename="../build/src/ksc-mcube-client_autogen/include/ui_graphic-conf-page.h" line="76"/>
+        <location filename="../build/src/ks-scmc-client_autogen/include/ui_graphic-conf-page.h" line="76"/>
         <source>Form</source>
         <translation></translation>
     </message>
     <message>
         <location filename="../src/pages/container/advanced-configuration/graphic-conf-page.ui" line="43"/>
-        <location filename="../build/src/ksc-mcube-client_autogen/include/ui_graphic-conf-page.h" line="77"/>
+        <location filename="../build/src/ks-scmc-client_autogen/include/ui_graphic-conf-page.h" line="77"/>
         <source>Graphic:</source>
         <translation>图形化使用:</translation>
     </message>
@@ -492,7 +492,7 @@
     <name>GuideItem</name>
     <message>
         <location filename="../src/common/guide-item.ui" line="20"/>
-        <location filename="../build/src/ksc-mcube-client_autogen/include/ui_guide-item.h" line="78"/>
+        <location filename="../build/src/ks-scmc-client_autogen/include/ui_guide-item.h" line="78"/>
         <source>Form</source>
         <translation></translation>
     </message>
@@ -501,25 +501,25 @@
     <name>HighAvailabilityPage</name>
     <message>
         <location filename="../src/pages/container/advanced-configuration/high-availability-page.ui" line="14"/>
-        <location filename="../build/src/ksc-mcube-client_autogen/include/ui_high-availability-page.h" line="102"/>
+        <location filename="../build/src/ks-scmc-client_autogen/include/ui_high-availability-page.h" line="102"/>
         <source>Form</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/pages/container/advanced-configuration/high-availability-page.ui" line="69"/>
-        <location filename="../build/src/ksc-mcube-client_autogen/include/ui_high-availability-page.h" line="103"/>
+        <location filename="../build/src/ks-scmc-client_autogen/include/ui_high-availability-page.h" line="103"/>
         <source>High availability policy: </source>
         <translation>高可用策略:</translation>
     </message>
     <message>
         <location filename="../src/pages/container/advanced-configuration/high-availability-page.ui" line="105"/>
-        <location filename="../build/src/ksc-mcube-client_autogen/include/ui_high-availability-page.h" line="104"/>
+        <location filename="../build/src/ks-scmc-client_autogen/include/ui_high-availability-page.h" line="104"/>
         <source>Auto pulling times:         </source>
         <translation>自动拉起次数:</translation>
     </message>
     <message>
         <location filename="../src/pages/container/advanced-configuration/high-availability-page.ui" line="112"/>
-        <location filename="../build/src/ksc-mcube-client_autogen/include/ui_high-availability-page.h" line="105"/>
+        <location filename="../build/src/ks-scmc-client_autogen/include/ui_high-availability-page.h" line="105"/>
         <source>times</source>
         <translation>次</translation>
     </message>
@@ -549,7 +549,7 @@
     <name>MainWindow</name>
     <message>
         <location filename="../src/main-window.ui" line="14"/>
-        <location filename="../build/src/ksc-mcube-client_autogen/include/ui_main-window.h" line="117"/>
+        <location filename="../build/src/ks-scmc-client_autogen/include/ui_main-window.h" line="117"/>
         <source>MainWindow</source>
         <translation type="unfinished"></translation>
     </message>
@@ -619,19 +619,19 @@
     <name>MemoryConfPage</name>
     <message>
         <location filename="../src/pages/container/base-configuration/memory-conf-page.ui" line="14"/>
-        <location filename="../build/src/ksc-mcube-client_autogen/include/ui_memory-conf-page.h" line="114"/>
+        <location filename="../build/src/ks-scmc-client_autogen/include/ui_memory-conf-page.h" line="114"/>
         <source>Form</source>
         <translation></translation>
     </message>
     <message>
         <location filename="../src/pages/container/base-configuration/memory-conf-page.ui" line="40"/>
-        <location filename="../build/src/ksc-mcube-client_autogen/include/ui_memory-conf-page.h" line="115"/>
+        <location filename="../build/src/ks-scmc-client_autogen/include/ui_memory-conf-page.h" line="115"/>
         <source>&lt;font color=red&gt;*&lt;/font&gt; Memory soft limit:</source>
         <translation>内存软限制:</translation>
     </message>
     <message>
         <location filename="../src/pages/container/base-configuration/memory-conf-page.ui" line="117"/>
-        <location filename="../build/src/ksc-mcube-client_autogen/include/ui_memory-conf-page.h" line="116"/>
+        <location filename="../build/src/ks-scmc-client_autogen/include/ui_memory-conf-page.h" line="116"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Maximum limit:&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation>最大限制:</translation>
     </message>
@@ -640,15 +640,15 @@
     <name>MessageDialog</name>
     <message>
         <location filename="../src/common/message-dialog.ui" line="14"/>
-        <location filename="../build/src/ksc-mcube-client_autogen/include/ui_message-dialog.h" line="97"/>
+        <location filename="../build/src/ks-scmc-client_autogen/include/ui_message-dialog.h" line="97"/>
         <source>Dialog</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/common/message-dialog.ui" line="70"/>
         <location filename="../src/common/message-dialog.ui" line="77"/>
-        <location filename="../build/src/ksc-mcube-client_autogen/include/ui_message-dialog.h" line="99"/>
-        <location filename="../build/src/ksc-mcube-client_autogen/include/ui_message-dialog.h" line="100"/>
+        <location filename="../build/src/ks-scmc-client_autogen/include/ui_message-dialog.h" line="99"/>
+        <location filename="../build/src/ks-scmc-client_autogen/include/ui_message-dialog.h" line="100"/>
         <source>TextLabel</source>
         <translation type="unfinished"></translation>
     </message>
@@ -657,37 +657,37 @@
     <name>NetworkConfPage</name>
     <message>
         <location filename="../src/pages/container/base-configuration/network-conf-page.ui" line="14"/>
-        <location filename="../build/src/ksc-mcube-client_autogen/include/ui_network-conf-page.h" line="132"/>
+        <location filename="../build/src/ks-scmc-client_autogen/include/ui_network-conf-page.h" line="132"/>
         <source>Form</source>
         <translation></translation>
     </message>
     <message>
         <location filename="../src/pages/container/base-configuration/network-conf-page.ui" line="40"/>
-        <location filename="../build/src/ksc-mcube-client_autogen/include/ui_network-conf-page.h" line="133"/>
+        <location filename="../build/src/ks-scmc-client_autogen/include/ui_network-conf-page.h" line="133"/>
         <source>Virtual network card:</source>
         <translation>虚拟网卡:</translation>
     </message>
     <message>
         <location filename="../src/pages/container/base-configuration/network-conf-page.ui" line="47"/>
-        <location filename="../build/src/ksc-mcube-client_autogen/include/ui_network-conf-page.h" line="134"/>
+        <location filename="../build/src/ks-scmc-client_autogen/include/ui_network-conf-page.h" line="134"/>
         <source>Network type:</source>
         <translation>网络类型:</translation>
     </message>
     <message>
         <location filename="../src/pages/container/base-configuration/network-conf-page.ui" line="54"/>
-        <location filename="../build/src/ksc-mcube-client_autogen/include/ui_network-conf-page.h" line="135"/>
+        <location filename="../build/src/ks-scmc-client_autogen/include/ui_network-conf-page.h" line="135"/>
         <source>IP:</source>
         <translation></translation>
     </message>
     <message>
         <location filename="../src/pages/container/base-configuration/network-conf-page.ui" line="119"/>
-        <location filename="../build/src/ksc-mcube-client_autogen/include/ui_network-conf-page.h" line="136"/>
+        <location filename="../build/src/ks-scmc-client_autogen/include/ui_network-conf-page.h" line="136"/>
         <source>MAC address:</source>
         <translation>MAC地址:</translation>
     </message>
     <message>
         <location filename="../src/pages/container/base-configuration/network-conf-page.ui" line="168"/>
-        <location filename="../build/src/ksc-mcube-client_autogen/include/ui_network-conf-page.h" line="137"/>
+        <location filename="../build/src/ks-scmc-client_autogen/include/ui_network-conf-page.h" line="137"/>
         <source>Bridge</source>
         <translation></translation>
     </message>
@@ -708,7 +708,7 @@
     <name>NodeAddition</name>
     <message>
         <location filename="../src/pages/node/node-addition.ui" line="26"/>
-        <location filename="../build/src/ksc-mcube-client_autogen/include/ui_node-addition.h" line="118"/>
+        <location filename="../build/src/ks-scmc-client_autogen/include/ui_node-addition.h" line="118"/>
         <source>Form</source>
         <translation></translation>
     </message>
@@ -722,25 +722,25 @@
     </message>
     <message>
         <location filename="../src/pages/node/node-addition.ui" line="71"/>
-        <location filename="../build/src/ksc-mcube-client_autogen/include/ui_node-addition.h" line="119"/>
+        <location filename="../build/src/ks-scmc-client_autogen/include/ui_node-addition.h" line="119"/>
         <source>Node Name:   &lt;font color=red&gt;*&lt;/font&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/pages/node/node-addition.ui" line="78"/>
-        <location filename="../build/src/ksc-mcube-client_autogen/include/ui_node-addition.h" line="120"/>
+        <location filename="../build/src/ks-scmc-client_autogen/include/ui_node-addition.h" line="120"/>
         <source>Node IP:  &lt;font color=red&gt;*&lt;/font&gt; </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/pages/node/node-addition.ui" line="146"/>
-        <location filename="../build/src/ksc-mcube-client_autogen/include/ui_node-addition.h" line="121"/>
+        <location filename="../build/src/ks-scmc-client_autogen/include/ui_node-addition.h" line="121"/>
         <source>Save</source>
         <translation>保存</translation>
     </message>
     <message>
         <location filename="../src/pages/node/node-addition.ui" line="165"/>
-        <location filename="../build/src/ksc-mcube-client_autogen/include/ui_node-addition.h" line="122"/>
+        <location filename="../build/src/ks-scmc-client_autogen/include/ui_node-addition.h" line="122"/>
         <source>Cancel</source>
         <translation>取消</translation>
     </message>
@@ -847,7 +847,7 @@
     <name>OperateWidget</name>
     <message>
         <location filename="../src/common/operatewidget.ui" line="20"/>
-        <location filename="../build/src/ksc-mcube-client_autogen/include/ui_operatewidget.h" line="153"/>
+        <location filename="../build/src/ks-scmc-client_autogen/include/ui_operatewidget.h" line="153"/>
         <source>Form</source>
         <translation type="unfinished"></translation>
     </message>
@@ -959,7 +959,7 @@
     <name>VolumesConfPage</name>
     <message>
         <location filename="../src/pages/container/advanced-configuration/volumes-conf-page.ui" line="16"/>
-        <location filename="../build/src/ksc-mcube-client_autogen/include/ui_volumes-conf-page.h" line="35"/>
+        <location filename="../build/src/ks-scmc-client_autogen/include/ui_volumes-conf-page.h" line="35"/>
         <source>Form</source>
         <translation type="unfinished"></translation>
     </message>

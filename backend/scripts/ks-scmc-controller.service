@@ -2,7 +2,7 @@
 Description=KylinSec security magic Cube controller service
 
 [Service]
-ExecStart=/usr/bin/ksc-mcube-server controller /etc/ksc-mcube/server.toml
+ExecStart=/usr/bin/ks-scmc-server controller /etc/ks-scmc/server.toml
 
 Restart=on-failure
 

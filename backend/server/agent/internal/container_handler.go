@@ -12,8 +12,8 @@ import (
 	"github.com/docker/docker/api/types/network"
 	log "github.com/sirupsen/logrus"
 
-	"ksc-mcube/rpc"
-	pb "ksc-mcube/rpc/pb/container"
+	"scmc/rpc"
+	pb "scmc/rpc/pb/container"
 )
 
 type ContainerServer struct {

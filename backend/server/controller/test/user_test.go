@@ -6,8 +6,8 @@ import (
 
 	"google.golang.org/grpc"
 
-	common "ksc-mcube/rpc/pb/common"
-	pb "ksc-mcube/rpc/pb/user"
+	common "scmc/rpc/pb/common"
+	pb "scmc/rpc/pb/user"
 )
 
 func TestUserSignup(t *testing.T) {

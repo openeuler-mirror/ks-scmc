@@ -7,8 +7,8 @@ import (
 	v1 "github.com/google/cadvisor/info/v1"
 	log "github.com/sirupsen/logrus"
 
-	"ksc-mcube/common"
-	pb "ksc-mcube/rpc/pb/container"
+	"scmc/common"
+	pb "scmc/rpc/pb/container"
 )
 
 func cadvisorClient() (*client.Client, error) {

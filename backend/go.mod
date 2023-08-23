@@ -1,4 +1,4 @@
-module ksc-mcube
+module scmc
 
 go 1.15
 
@@ -20,6 +20,7 @@ require (
 	github.com/rogpeppe/godef v1.1.2 // indirect
 	github.com/shirou/gopsutil v2.21.11+incompatible
 	github.com/sirupsen/logrus v1.8.1
+	github.com/spf13/viper v1.4.0
 	github.com/uudashr/gopkgs/v2 v2.1.2 // indirect
 	github.com/yusufpapurcu/wmi v1.2.2 // indirect
 	golang.org/x/crypto v0.0.0-20210322153248-0c34fe9e7dc2

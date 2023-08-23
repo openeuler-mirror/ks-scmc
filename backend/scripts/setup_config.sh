@@ -17,14 +17,35 @@ EOF
 
 # server config file
 cat << EOF > $1
--agent-port=10051
--controller-port=10050
--cadvisor-addr=127.0.0.1:8080
--graphic-conf-base=/var/lib/ks-scmc/containers
--logdir=/var/log/ks-scmc
--host=0.0.0.0
--mysql-dsn=ks-scmc:${DB_PASSWD}@tcp(127.0.0.1:3306)/ks-scmc?charset=utf8mb4&timeout=10s
--stdout=0
--verbose=4
-EOF
+[log]
+basedir = "/var/log/ks-scmc"
+level   = "info"
+stdout  = false
 
+[tls]
+enable = false
+ca = ""
+server_cert = ""
+server_key = ""
+
+[agent]
+host = "0.0.0.0"
+port = 10051
+container-extra-data-basedir = "/var/lib/ks-scmc/containers"
+
+[controller]
+host = "0.0.0.0"
+port = 10050
+
+[mysql]
+addr = "localhost:3306"
+user = "ks-scmc"
+password = "${DB_PASSWD}"
+db = "ks-scmc"
+
+[cadvisor]
+addr = "127.0.0.1:8080"
+
+[influxdb]
+addr = "127.0.0.1:8086"
+EOF

@@ -1,8 +1,8 @@
 set(RPC_INCLUDE_DIRS "../rpc/")
 set(PAGE_HEAD_DIR "pages/container/")
 set(DATA_DIR "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_DATADIR}")
-set(TRANSLATIONS_DIR "${DATA_DIR}/ksc-mcube/translations/")
-set(TS_FILES "../translations/ksc-mcube.zh_CN.ts" )
+set(TRANSLATIONS_DIR "${DATA_DIR}/ks-scmc/translations/")
+set(TS_FILES "../translations/ks-scmc.zh_CN.ts" )
 
 include_directories(include ${RPC_INCLUDE_DIRS})
 file(GLOB_RECURSE rpc_src "../rpc/*.cc")
@@ -16,7 +16,7 @@ add_definitions(-std=gnu++11)
 
 qt5_create_translation( QM_FILES ${CMAKE_SOURCE_DIR} ${TS_FILES} )
 
-add_executable(ksc-mcube-client
+add_executable(ks-scmc-client
 	${cur_src} 
 	${rpc_src} 
 	${RESOURCES} 
@@ -25,12 +25,12 @@ add_executable(ksc-mcube-client
         ${QM_FILES})
 
 
-target_include_directories(ksc-mcube-client PRIVATE
+target_include_directories(ks-scmc-client PRIVATE
         ${CMAKE_BINARY_DIR}
         ${KLOG_QT5_INCLUDE_DIRS}
         ${PAGE_HEAD_DIR})
 
-target_link_libraries(ksc-mcube-client
+target_link_libraries(ks-scmc-client
         grpc++
         grpc++_reflection
         gpr
@@ -41,5 +41,5 @@ target_link_libraries(ksc-mcube-client
 install(FILES ${QM_FILES}
     DESTINATION ${TRANSLATIONS_DIR})
 
-install(TARGETS ksc-mcube-client
+install(TARGETS ks-scmc-client
     DESTINATION ${BIN_DIR})

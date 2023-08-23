@@ -17,8 +17,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 set(DATA_DIR "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_DATADIR}")
 set(BIN_DIR "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR}")
-set(ICON_DIR "${DATA_DIR}/ksc-mcube/icons")
-set(TRANSLATIONS_DIR "${DATA_DIR}/ksc-mcube/translations/")
+set(ICON_DIR "${DATA_DIR}/ks-scmc/icons")
+set(TRANSLATIONS_DIR "${DATA_DIR}/ks-scmc/translations/")
 # QtCreator supports the following variables for Android, which are identical to qmake Android variables.
 # Check http://doc.qt.io/qt-5/deployment-android.html for more information.
 # They need to be set before the find_package(Qt5 ...) call.

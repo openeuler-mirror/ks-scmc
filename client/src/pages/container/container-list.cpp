@@ -21,7 +21,7 @@
 
 // TODO read from config file.
 const QString TERMINAL_CMD = "mate-terminal -e";
-const QString BASHRC_FILE = "/etc/ksc-mcube/graphic_rc";
+const QString BASHRC_FILE = "/etc/ks-scmc/graphic_rc";
 
 ContainerList::ContainerList(QWidget *parent)
     : CommonPage(parent),

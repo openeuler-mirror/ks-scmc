@@ -13,7 +13,7 @@
 int main(int argc, char *argv[])
 {
     //设置日志输出
-    if (klog_qt5_init("", "kylinsec-session", "ksc-mcube-client", "ksc-mcube-client") < 0)
+    if (klog_qt5_init("", "kylinsec-session", "ks-scmc-client", "ks-scmc-client") < 0)
     {
         std::cout << "init klog error" << std::endl;
     }
@@ -36,7 +36,7 @@ int main(int argc, char *argv[])
     }
     //加载翻译文件
     QTranslator *qtTranslator = new QTranslator(qApp);
-    if (qtTranslator->load(QLocale(), "ksc-mcube", ".", TRANSLATION_DIR, ".qm"))
+    if (qtTranslator->load(QLocale(), "ks-scmc", ".", TRANSLATION_DIR, ".qm"))
     {
         a.installTranslator(qtTranslator);
     }

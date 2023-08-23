@@ -1,7 +1,7 @@
-CREATE DATABASE IF NOT EXISTS `ksc-mcube`
+CREATE DATABASE IF NOT EXISTS `ks-scmc`
 CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;	-- utf8mb4_0900_ai_ci utf8_general_ci
 
-USE `ksc-mcube`;
+USE `ks-scmc`;
 
 CREATE TABLE IF NOT EXISTS `user_infos` (
   `id` BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,

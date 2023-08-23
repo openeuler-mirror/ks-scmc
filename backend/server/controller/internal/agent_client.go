@@ -7,7 +7,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 
-	"ksc-mcube/common"
+	"scmc/common"
 )
 
 var (

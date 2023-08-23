@@ -1,1 +1,1 @@
-./ksc-mcube -stdout=1 -verbose=5 controller
+./ks-scmc -stdout=1 -verbose=5 controller

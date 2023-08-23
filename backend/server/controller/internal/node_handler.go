@@ -8,10 +8,10 @@ import (
 
 	log "github.com/sirupsen/logrus"
 
-	"ksc-mcube/model"
-	"ksc-mcube/rpc"
-	"ksc-mcube/rpc/pb/common"
-	pb "ksc-mcube/rpc/pb/node"
+	"scmc/model"
+	"scmc/rpc"
+	"scmc/rpc/pb/common"
+	pb "scmc/rpc/pb/node"
 )
 
 type NodeServer struct {

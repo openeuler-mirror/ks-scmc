@@ -6,8 +6,8 @@ import (
 
 	"google.golang.org/grpc"
 
-	common "ksc-mcube/rpc/pb/common"
-	pb "ksc-mcube/rpc/pb/container"
+	common "scmc/rpc/pb/common"
+	pb "scmc/rpc/pb/container"
 )
 
 func TestContainerList(t *testing.T) {

@@ -6,11 +6,23 @@ USE `ks-scmc`;
 CREATE TABLE IF NOT EXISTS `user_infos` (
   `id` BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
   `username` VARCHAR(255) NOT NULL DEFAULT '' UNIQUE,
+  `real_name` VARCHAR(255) NOT NULL DEFAULT '',
   `password_en` VARCHAR(255) NOT NULL DEFAULT '',
-  `role` VARCHAR(255) NOT NULL DEFAULT '',
+  `is_active` TINYINT(1) NOT NULL DEFAULT '0',
+  `is_editable` TINYINT(1) NOT NULL DEFAULT '0',
+  `role_id` BIGINT(20) NOT NULL DEFAULT '0',
   `created_at` INT(20) NOT NULL DEFAULT 0,
   `updated_at` INT(20) NOT NULL DEFAULT 0
 ) ENGINE=InnoDB AUTO_INCREMENT=1000;
+
+CREATE TABLE IF NOT EXISTS `user_roles` (
+  `id` BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  `name` VARCHAR(255) NOT NULL DEFAULT '' UNIQUE,
+  `is_editable` TINYINT(1) NOT NULL DEFAULT '0',
+  `perms_json` TEXT NOT NULL COMMENT '权限数组 用JSON形式保存 [{"id":1, "name":"NODE", "read":1, "write":0}, ...]',
+  `created_at` INT(20) NOT NULL DEFAULT 0,
+  `updated_at` INT(20) NOT NULL DEFAULT 0
+) ENGINE=InnoDB AUTO_INCREMENT=1;
 
 CREATE TABLE IF NOT EXISTS `user_sessions` (
   `id` BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
@@ -22,35 +34,58 @@ CREATE TABLE IF NOT EXISTS `user_sessions` (
   `updated_at` INT(20) NOT NULL DEFAULT 0
 ) ENGINE=InnoDB AUTO_INCREMENT=1;
 
-CREATE TABLE IF NOT EXISTS `user_operation_history` (
-  `id` BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
-  `user_id` BIGINT(20) UNSIGNED NOT NULL,
-  `operator` VARCHAR(255) NOT NULL DEFAULT '',
-  `target` VARCHAR(255) NOT NULL DEFAULT '',
-  `operation` VARCHAR(255) NOT NULL DEFAULT '',	/* signup login logout alter_password */
-  `source` VARCHAR(255) NOT NULL DEFAULT '',
-  `created_at` INT(20) NOT NULL DEFAULT 0
-) ENGINE=InnoDB AUTO_INCREMENT=1;
-
 CREATE TABLE IF NOT EXISTS `node_infos` (
   `id` BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
   `name` VARCHAR(255) NOT NULL DEFAULT '' UNIQUE,
   `address` VARCHAR(255) NOT NULL DEFAULT '' UNIQUE,
   `comment` VARCHAR(255) NOT NULL DEFAULT '',
+  `unread_warn` BIGINT(20) NOT NULL DEFAULT 0 COMMENT '未读告警消息计数 ',
+  `cpu_limit` DECIMAL NOT NULL DEFAULT 0 COMMENT 'CPU核心数',
+  `memory_limit` DECIMAL(20) NOT NULL DEFAULT 0 COMMENT '内存使用 单位MB',
+  `disk_limit` DECIMAL(20) NOT NULL DEFAULT 0 COMMENT '磁盘使用 单位MB',
   `created_at` INT(20) NOT NULL DEFAULT 0,
   `updated_at` INT(20) NOT NULL DEFAULT 0
 ) ENGINE=InnoDB AUTO_INCREMENT=1;
 
-/*
 CREATE TABLE IF NOT EXISTS `image_infos` (
   `id` BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
-  `name` VARCHAR(255) NOT NULL DEFAULT '' UNIQUE,
-  `version` VARCHAR(255) NOT NULL DEFAULT '' UNIQUE,
-  `file_size` VARCHAR(255) NOT NULL DEFAULT '',
+  `name` VARCHAR(255) NOT NULL DEFAULT '',
+  `version` VARCHAR(255) NOT NULL DEFAULT '',
+  `description` VARCHAR(255) NOT NULL DEFAULT '',
+  `file_size`  INT(20) NOT NULL DEFAULT 0,
   `file_type` VARCHAR(255) NOT NULL DEFAULT '',
-  `file_data` LONGBLOB NOT NULL,
-  `checksum`
+  `check_sum` VARCHAR(255) NOT NULL DEFAULT '',
+  `image_id` VARCHAR(255) NOT NULL DEFAULT '',
+  `file_path` TEXT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  `sign_path` TEXT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  `reject_reason` TEXT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  `approval_status` TINYINT(1) NOT NULL DEFAULT 0 COMMENT '0:待审批 1:审批拒绝 2:审批通过',
+  `verify_status` TINYINT(1) NOT NULL DEFAULT 0 COMMENT '0:验签失败 1:异常 2:验签成功',
+  `created_at` INT(20) NOT NULL DEFAULT 0,
+  `updated_at` INT(20) NOT NULL DEFAULT 0,
+  UNIQUE KEY index_uniqe (name, version)
+) ENGINE=InnoDB AUTO_INCREMENT=1;
+
+/* 后续可能要把info warn日志分开存放 */
+CREATE TABLE IF NOT EXISTS `runtime_logs` (
+  `id` BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  `level` TINYINT(1) NOT NULL DEFAULT '0' COMMENT '1:info 2:warn',
+  `node_id` BIGINT(20) NOT NULL DEFAULT 0,
+  `node_info` VARCHAR(255) NOT NULL DEFAULT '' COMMENT '节点名+节点IP',
+  `container_name` VARCHAR(255) NOT NULL DEFAULT '' COMMENT '容器名称',
+  `event_type` VARCHAR(255) NOT NULL DEFAULT '' COMMENT '事件类型',
+  `username` VARCHAR(255) NOT NULL DEFAULT '' COMMENT '用户名',
+  `detail` VARCHAR(255) NOT NULL DEFAULT '' COMMENT '详情',
+  `have_read` TINYINT(1) NOT NULL DEFAULT 0 COMMENT '0:未读 1:已读',
   `created_at` INT(20) NOT NULL DEFAULT 0,
   `updated_at` INT(20) NOT NULL DEFAULT 0
 ) ENGINE=InnoDB AUTO_INCREMENT=1;
-*/
+
+CREATE TABLE IF NOT EXISTS `container_templates` (
+  `id` BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  `name` VARCHAR(255) NOT NULL UNIQUE DEFAULT '' COMMENT '容器名',
+  `config_json` TEXT NOT NULL COMMENT '配置参数 以JSON形式存储',
+  `created_at` INT(20) NOT NULL DEFAULT 0,
+  `updated_at` INT(20) NOT NULL DEFAULT 0
+) ENGINE=InnoDB AUTO_INCREMENT=1;
+

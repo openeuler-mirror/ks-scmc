@@ -47,7 +47,7 @@ func getContainerStats() (map[string]*pb.ResourceStat, error) {
 
 			p = &pb.ResourceStat{
 				MemStat: &pb.MemoryStat{
-					Used: tail.Memory.WorkingSet,
+					Used: tail.Memory.WorkingSet / megaBytes,
 				},
 			}
 

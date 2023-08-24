@@ -12,6 +12,7 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/grpc/metadata"
 )
 
 func loadTLSCredentials() (credentials.TransportCredentials, error) {
@@ -39,7 +40,7 @@ func loadTLSCredentials() (credentials.TransportCredentials, error) {
 func testRunner(fn func(context.Context, *grpc.ClientConn)) error {
 	var opts []grpc.DialOption
 
-	if true {
+	if false {
 		creds, err := loadTLSCredentials()
 		if err != nil {
 			log.Fatalf("load tls error=%v", err)
@@ -56,6 +57,8 @@ func testRunner(fn func(context.Context, *grpc.ClientConn)) error {
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+	ctx = metadata.AppendToOutgoingContext(ctx, "authorization", "")
+
 	defer cancel()
 	fn(ctx, conn)
 	return nil

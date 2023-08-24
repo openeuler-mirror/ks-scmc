@@ -4,6 +4,7 @@ import (
 	"time"
 
 	log "github.com/sirupsen/logrus"
+	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm/clause"
 )
 
@@ -20,6 +21,21 @@ type UserInfo struct {
 
 func (UserInfo) TableName() string {
 	return "user_infos"
+}
+
+func (u *UserInfo) CheckPassword(input string) error {
+	return bcrypt.CompareHashAndPassword([]byte(u.PasswordEn), []byte(input))
+}
+
+func (u *UserInfo) UpdatePassword(newPassword string) error {
+	db, err := getConn()
+	if err != nil {
+		return err
+	}
+
+	u.PasswordEn = newPassword
+	result := db.Save(u)
+	return result.Error
 }
 
 type UserSession struct {
@@ -70,6 +86,26 @@ func QueryUser(username string) (*UserInfo, error) {
 	return &userInfo, nil
 }
 
+func QueryUserByID(id string) (*UserInfo, error) {
+	db, err := getConn()
+	if err != nil {
+		return nil, err
+	}
+
+	var userInfo UserInfo
+	result := db.First(&userInfo, id)
+	if result.Error != nil {
+		log.Warnf("db query user: %v", result.Error)
+		return nil, result.Error
+	}
+
+	log.Debugf("db query user: RowsAffected=%v", result.RowsAffected)
+	if result.RowsAffected == 0 {
+		return nil, nil
+	}
+	return &userInfo, nil
+}
+
 func CreateSession(userID int64, sessionKey, source string) error {
 	db, err := getConn()
 	if err != nil {
@@ -103,19 +139,27 @@ func CheckUserSession(userID, sessionKey string) (bool, error) {
 		return false, err
 	}
 
-	now := time.Now()
-	expiredAt := now.Add(sessionLivePeriod).Unix()
-	result := db.Model(UserSession{}).Where("user_id = ? AND session_key = ? AND expired_at > ?", userID, sessionKey, now.Unix()).
-		Updates(UserSession{ExpiredAt: expiredAt, UpdatedAt: now.Unix()})
+	var (
+		now      = time.Now()
+		sessList []UserSession
+	)
+	result := db.Where("user_id = ? AND session_key = ? AND expired_at > ?", userID, sessionKey, now.Unix()).Find(&sessList)
 
 	if result.Error != nil {
 		log.Warnf("CheckUserSession user_id=%v error=%v", userID, result.Error)
 		return false, result.Error
-	}
-
-	if result.RowsAffected < 1 {
+	} else if len(sessList) != 1 {
 		log.Infof("CheckUserSession user_id=%v session=%s affected rows=%d", userID, sessionKey, result.RowsAffected)
 		return false, nil
+	}
+
+	sess := sessList[0]
+	if now.Unix() > sess.UpdatedAt {
+		sess.ExpiredAt = now.Add(sessionLivePeriod).Unix()
+		sess.UpdatedAt = now.Unix()
+		if r := db.Save(&sess); r.Error != nil {
+			log.Infof("CheckUserSession update session for user_id=%v error=%v", userID, r.Error)
+		}
 	}
 
 	return true, nil
@@ -145,9 +189,6 @@ func RemoveSession(userID, sessionKey string) error {
 }
 
 /*
-func UpdatePassword(username, oldPass, newPass string) {
-}
-
 func UpdatePermission() {
 }
 

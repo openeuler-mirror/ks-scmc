@@ -3,13 +3,16 @@ package server
 import (
 	"context"
 	"strings"
+	"time"
 
 	"scmc/model"
 	"scmc/rpc"
 
+	"github.com/golang/protobuf/proto"
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
+	"google.golang.org/grpc/peer"
 )
 
 const AuthKeySeprator = ':'
@@ -25,15 +28,44 @@ func NewAuthInterceptor() *AuthInterceptor {
 
 // Unary returns server interceptor for unary RPC
 func (interceptor *AuthInterceptor) Unary() grpc.UnaryServerInterceptor {
-	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
-		err := interceptor.check(ctx, info.FullMethod)
-		if err != nil {
-			log.Infof("AuthInterceptor error: %v", err)
-			return nil, err
+	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (reply interface{}, err error) {
+		var addr string
+		if p, ok := peer.FromContext(ctx); ok {
+			addr = p.Addr.String()
 		}
 
-		log.Debug("--> unary interceptor: ", info.FullMethod)
-		return handler(ctx, req)
+		ts := time.Now()
+		defer func() {
+			logger := log.Debugf
+			if err != nil {
+				logger = log.Infof
+			}
+
+			reqDump := ""
+			if r, ok := req.(proto.Message); ok {
+				reqDump = proto.MarshalTextString(r)
+			}
+
+			repDump := ""
+			if r, ok := reply.(proto.Message); ok {
+				repDump = proto.MarshalTextString(r)
+			}
+
+			logger("%s %s\nREQUEST: %sREPLY: %sERR: %v", addr, info.FullMethod, reqDump, repDump, err)
+			log.Infof("%s %s COST: %v ms", addr, info.FullMethod, time.Since(ts).Milliseconds())
+
+			// TODO append runtime logs
+			// AppendRuntimeLog(info.FullMethod, req, err)
+		}()
+
+		e := interceptor.check(ctx, info.FullMethod)
+		if e != nil {
+			log.Infof("AuthInterceptor error: %v", e)
+			return nil, e
+		} else {
+			reply, err = handler(ctx, req)
+			return reply, err
+		}
 	}
 }
 

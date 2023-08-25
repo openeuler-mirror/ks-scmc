@@ -8,6 +8,7 @@ import (
 	"google.golang.org/grpc/keepalive"
 
 	"scmc/common"
+	"scmc/model"
 	"scmc/rpc/pb/container"
 	"scmc/rpc/pb/image"
 	"scmc/rpc/pb/network"
@@ -49,6 +50,10 @@ func Server() (*grpc.Server, error) {
 	network.RegisterNetworkServer(s, &internal.NetworkServer{})
 	node.RegisterNodeServer(s, &internal.NodeServer{})
 	user.RegisterUserServer(s, &internal.UserServer{})
+
+	// go internal.Watchdog()
+	go internal.RuntimeLogWriter()
+	go model.PushImgae()
 
 	return s, nil
 }

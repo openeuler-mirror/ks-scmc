@@ -2,11 +2,12 @@ package test
 
 import (
 	"context"
+	"fmt"
+	"log"
 	"testing"
 
 	"google.golang.org/grpc"
 
-	common "scmc/rpc/pb/common"
 	pb "scmc/rpc/pb/container"
 )
 
@@ -14,7 +15,6 @@ func TestContainerList(t *testing.T) {
 	testRunner(func(ctx context.Context, conn *grpc.ClientConn) {
 		cli := pb.NewContainerClient(conn)
 		request := pb.ListRequest{
-			Header:  &common.RequestHeader{},
 			NodeIds: []int64{1},
 			ListAll: true,
 		}
@@ -35,7 +35,6 @@ func TestContainerCreate(t *testing.T) {
 	testRunner(func(ctx context.Context, conn *grpc.ClientConn) {
 		cli := pb.NewContainerClient(conn)
 		request := pb.CreateRequest{
-			Header: &common.RequestHeader{},
 			NodeId: 1,
 			Name:   "cadvisor",
 			Config: &pb.ContainerConfig{
@@ -99,9 +98,9 @@ func TestContainerCreate(t *testing.T) {
 					},
 				},
 			},
-			NetworkConfig: map[string]*pb.EndpointSetting{
-				"bridge": {},
-			},
+			// NetworkConfig: map[string]*pb.EndpointSetting{
+			// 	"bridge": {},
+			// },
 		}
 
 		reply, err := cli.Create(ctx, &request)
@@ -117,7 +116,6 @@ func TestContainerCreate2(t *testing.T) {
 	testRunner(func(ctx context.Context, conn *grpc.ClientConn) {
 		cli := pb.NewContainerClient(conn)
 		request := pb.CreateRequest{
-			Header: &common.RequestHeader{},
 			NodeId: 1,
 			Name:   "gparted",
 			Config: &pb.ContainerConfig{
@@ -139,7 +137,6 @@ func TestContainerCreateWithCmd(t *testing.T) {
 	testRunner(func(ctx context.Context, conn *grpc.ClientConn) {
 		cli := pb.NewContainerClient(conn)
 		request := pb.CreateRequest{
-			Header: &common.RequestHeader{},
 			NodeId: 1,
 			Name:   "busybox",
 			Config: &pb.ContainerConfig{
@@ -149,14 +146,14 @@ func TestContainerCreateWithCmd(t *testing.T) {
 			HostConfig: &pb.HostConfig{
 				Privileged: true,
 			},
-			NetworkConfig: map[string]*pb.EndpointSetting{
-				"br0": {
-					IpamConfig: &pb.IPAMConfig{
-						Ipv4Address: "172.28.5.10",
-					},
-					MacAddress: "12:34:56:78:9a:bc",
-				},
-			},
+			// NetworkConfig: map[string]*pb.EndpointSetting{
+			// 	"br0": {
+			// 		IpamConfig: &pb.IPAMConfig{
+			// 			Ipv4Address: "172.28.5.10",
+			// 		},
+			// 		MacAddress: "12:34:56:78:9a:bc",
+			// 	},
+			// },
 		}
 
 		reply, err := cli.Create(ctx, &request)
@@ -167,11 +164,11 @@ func TestContainerCreateWithCmd(t *testing.T) {
 		t.Logf("Create reply: %+v", reply)
 	})
 }
+
 func TestContainerStart(t *testing.T) {
 	testRunner(func(ctx context.Context, conn *grpc.ClientConn) {
 		cli := pb.NewContainerClient(conn)
 		request := pb.StartRequest{
-			Header: &common.RequestHeader{},
 			Ids: []*pb.ContainerIdList{
 				{
 					NodeId:       1,
@@ -193,7 +190,6 @@ func TestContainerStop(t *testing.T) {
 	testRunner(func(ctx context.Context, conn *grpc.ClientConn) {
 		cli := pb.NewContainerClient(conn)
 		request := pb.StopRequest{
-			Header: &common.RequestHeader{},
 			Ids: []*pb.ContainerIdList{
 				{
 					NodeId:       1,
@@ -215,7 +211,6 @@ func TestContainerRestart(t *testing.T) {
 	testRunner(func(ctx context.Context, conn *grpc.ClientConn) {
 		cli := pb.NewContainerClient(conn)
 		request := pb.RestartRequest{
-			Header: &common.RequestHeader{},
 			Ids: []*pb.ContainerIdList{
 				{
 					NodeId:       1,
@@ -236,7 +231,6 @@ func TestContainerRemove(t *testing.T) {
 	testRunner(func(ctx context.Context, conn *grpc.ClientConn) {
 		cli := pb.NewContainerClient(conn)
 		request := pb.RemoveRequest{
-			Header: &common.RequestHeader{},
 			Ids: []*pb.ContainerIdList{
 				{
 					NodeId:       1,
@@ -257,7 +251,6 @@ func TestContainerInspect(t *testing.T) {
 	testRunner(func(ctx context.Context, conn *grpc.ClientConn) {
 		cli := pb.NewContainerClient(conn)
 		request := pb.InspectRequest{
-			Header:      &common.RequestHeader{},
 			NodeId:      1,
 			ContainerId: "cadvisor",
 		}
@@ -275,7 +268,6 @@ func TestContainerStatus(t *testing.T) {
 	testRunner(func(ctx context.Context, conn *grpc.ClientConn) {
 		cli := pb.NewContainerClient(conn)
 		request := pb.StatusRequest{
-			Header: &common.RequestHeader{},
 			NodeId: 1,
 		}
 
@@ -292,7 +284,6 @@ func TestContainerUpdate(t *testing.T) {
 	testRunner(func(ctx context.Context, conn *grpc.ClientConn) {
 		cli := pb.NewContainerClient(conn)
 		request := pb.UpdateRequest{
-			Header:      &common.RequestHeader{},
 			NodeId:      1,
 			ContainerId: "cadvisor",
 			ResourceConfig: &pb.ResourceConfig{
@@ -306,6 +297,287 @@ func TestContainerUpdate(t *testing.T) {
 		}
 
 		reply, err := cli.Update(ctx, &request)
+		if err != nil {
+			t.Errorf("Update: %v", err)
+		}
+
+		t.Logf("Update reply: %+v", reply)
+	})
+}
+
+func TestCreateTemplate(t *testing.T) {
+
+	ctx, conn, err := initTestRunner()
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	type args struct {
+		ctx  context.Context
+		conf *pb.CreateTemplateRequest
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    *pb.CreateTemplateReply
+		wantErr bool
+	}{
+		{
+			name: "test01",
+			args: args{
+				ctx: ctx,
+				conf: &pb.CreateTemplateRequest{
+					Data: &pb.ContainerTemplate{
+						Conf: &pb.ContainerConfigs{
+							Name: "test01",
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "test02",
+			args: args{
+				ctx: ctx,
+				conf: &pb.CreateTemplateRequest{
+					Data: &pb.ContainerTemplate{
+						Conf: &pb.ContainerConfigs{
+							Name: "test02",
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "test03",
+			args: args{
+				ctx: ctx,
+				conf: &pb.CreateTemplateRequest{
+					Data: &pb.ContainerTemplate{
+						Conf: &pb.ContainerConfigs{
+							Name: "test03",
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "test04",
+			args: args{
+				ctx: ctx,
+				conf: &pb.CreateTemplateRequest{
+					Data: &pb.ContainerTemplate{
+						Conf: &pb.ContainerConfigs{
+							Name: "test04",
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "test05",
+			args: args{
+				ctx: ctx,
+				conf: &pb.CreateTemplateRequest{
+					Data: &pb.ContainerTemplate{
+						Conf: &pb.ContainerConfigs{
+							Name: "test05",
+						},
+					},
+				},
+			},
+		},
+	}
+	cli := pb.NewContainerClient(conn)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			_, err := cli.CreateTemplate(tt.args.ctx, tt.args.conf)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("CreateTemplate() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+
+		})
+	}
+
+	// testRunner(func(ctx context.Context, conn *grpc.ClientConn) {
+	// 	cli := pb.NewContainerClient(conn)
+	// 	request := pb.CreateTemplateRequest{
+	// 		Data: &pb.ContainerTemplate{
+	// 			Id: 1,
+	// 			Conf: &pb.ContainerConfigs{
+	// 				Name:  "sean1",
+	// 				Image: "aaaaa:v1",
+	// 			},
+	// 		},
+	// 	}
+	// 	reply, err := cli.CreateTemplate(ctx, &request)
+	// 	if err != nil {
+	// 		t.Errorf("Update: %v", err)
+	// 	}
+
+	// 	t.Logf("Update reply: %+v", reply)
+	// })
+}
+
+func TestUpdateTemplate(t *testing.T) {
+	testRunner(func(ctx context.Context, conn *grpc.ClientConn) {
+		cli := pb.NewContainerClient(conn)
+		request := pb.UpdateTemplateRequest{
+			Data: &pb.ContainerTemplate{
+				Id: 131,
+				Conf: &pb.ContainerConfigs{
+					Name:  "sean04",
+					Image: "sean:sean",
+				},
+			},
+		}
+		reply, err := cli.UpdateTemplate(ctx, &request)
+		if err != nil {
+			t.Errorf("Update: %v", err)
+		}
+
+		t.Logf("Update reply: %+v", reply)
+	})
+}
+
+func TestListemplate(t *testing.T) {
+
+	ctx, conn, err := initTestRunner()
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	type args struct {
+		ctx context.Context
+		req *pb.ListTemplateRequest
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    *pb.ListTemplateReply
+		wantErr bool
+	}{
+		{
+			name: "test01",
+			args: args{
+				ctx: ctx,
+				req: &pb.ListTemplateRequest{
+					PerPage:  0,
+					NextPage: 1,
+				},
+			},
+		},
+		{
+			name: "test02",
+			args: args{
+				ctx: ctx,
+				req: &pb.ListTemplateRequest{
+					PerPage:  1,
+					NextPage: 2,
+				},
+			},
+		},
+		{
+			name: "test03",
+			args: args{
+				ctx: ctx,
+				req: &pb.ListTemplateRequest{
+					PerPage:  3,
+					NextPage: 0,
+				},
+			},
+		},
+		{
+			name: "test04",
+			args: args{
+				ctx: ctx,
+				req: &pb.ListTemplateRequest{
+					PerPage:  3,
+					NextPage: 5,
+				},
+			},
+		},
+		{
+			name: "test05",
+			args: args{
+				ctx: ctx,
+				req: &pb.ListTemplateRequest{
+					PerPage:  3,
+					NextPage: 3,
+				},
+			},
+		},
+		{
+			name: "test06",
+			args: args{
+				ctx: ctx,
+				req: &pb.ListTemplateRequest{
+					PerPage:  10,
+					NextPage: 10,
+				},
+			},
+		},
+		{
+			name: "test07",
+			args: args{
+				ctx: ctx,
+				req: &pb.ListTemplateRequest{
+					PerPage:  0,
+					NextPage: 0,
+				},
+			},
+		},
+	}
+	cli := pb.NewContainerClient(conn)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := cli.ListTemplate(tt.args.ctx, tt.args.req)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("CreateTemplate() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+
+			fmt.Printf("got.CurPage: %v, got.PerPage: %v, got.TotalPages: %v, got.TotalRows: %v\n",
+				got.CurPage, got.PerPage, got.TotalPages, got.TotalRows)
+			for _, record := range got.Data {
+				fmt.Printf("id: %v, config: %v\n", record.Id, record.Conf)
+			}
+
+		})
+	}
+
+	// testRunner(func(ctx context.Context, conn *grpc.ClientConn) {
+	// 	cli := pb.NewContainerClient(conn)
+	// 	request := pb.ListTemplateRequest{
+	// 		NextPage: 3,
+	// 		PerPage:  4,
+	// 		CurPage:  0,
+	// 	}
+	// 	reply, err := cli.ListTemplate(ctx, &request)
+	// 	if err != nil {
+	// 		log.Fatalln(err)
+	// 	}
+	// 	for _, re := range reply.Data {
+	// 		fmt.Printf("id: %v,   config: %v\n", re.Id, re.Conf)
+	// 	}
+	// 	if err != nil {
+	// 		t.Errorf("Update: %v", err)
+	// 	}
+
+	// 	t.Logf("Update reply: %+v", reply)
+	// })
+}
+
+func TestRemovetemplate(t *testing.T) {
+	testRunner(func(ctx context.Context, conn *grpc.ClientConn) {
+		cli := pb.NewContainerClient(conn)
+
+		request := pb.RemoveTemplateRequest{
+			Ids: []int64{},
+		}
+		reply, err := cli.RemoveTemplate(ctx, &request)
+
 		if err != nil {
 			t.Errorf("Update: %v", err)
 		}

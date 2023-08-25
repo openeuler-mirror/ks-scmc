@@ -2,6 +2,7 @@ package internal
 
 import (
 	"context"
+	"fmt"
 	"net"
 	"regexp"
 	"time"
@@ -10,31 +11,11 @@ import (
 
 	"scmc/model"
 	"scmc/rpc"
-	"scmc/rpc/pb/common"
 	pb "scmc/rpc/pb/node"
 )
 
 type NodeServer struct {
 	pb.UnimplementedNodeServer
-}
-
-func getNodeStatus(node *model.NodeInfo) (*pb.StatusReply, error) {
-	conn, err := getAgentConn(node.Address)
-	if err != nil {
-		log.Warnf("Failed to connect to agent service, node=%+v", node)
-		return nil, rpc.ErrInternal
-	}
-
-	cli := pb.NewNodeClient(conn)
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*2)
-	defer cancel()
-	r, err := cli.Status(ctx, &pb.StatusRequest{})
-	if err != nil {
-		log.Warnf("get node status ID=%v address=%v: %v", node.ID, node.Address, err)
-		return nil, rpc.ErrInternal
-	}
-
-	return r, nil
 }
 
 func (s *NodeServer) List(ctx context.Context, in *pb.ListRequest) (*pb.ListReply, error) {
@@ -46,12 +27,7 @@ func (s *NodeServer) List(ctx context.Context, in *pb.ListRequest) (*pb.ListRepl
 	}
 
 	for _, node := range nodes {
-		r, _ := getNodeStatus(&node)
-		var s *pb.NodeStatus
-		if r != nil && len(r.StatusList) > 0 {
-			s = r.StatusList[0]
-		}
-
+		s, _ := getNodeStatus(&node)
 		reply.Nodes = append(reply.Nodes, &pb.NodeInfo{
 			Id:      node.ID,
 			Name:    node.Name,
@@ -84,13 +60,10 @@ func (s *NodeServer) Create(ctx context.Context, in *pb.CreateRequest) (*pb.Crea
 	}
 
 	cli := pb.NewNodeClient(conn)
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+	ctx_, cancel := context.WithTimeout(context.Background(), time.Second*10)
 	defer cancel()
-	request := pb.StatusRequest{
-		Header: &common.RequestHeader{},
-	}
 
-	_, err = cli.Status(ctx, &request)
+	_, err = cli.Status(ctx_, &pb.StatusRequest{})
 	if err != nil {
 		log.Warnf("Status: %v", err)
 		return nil, rpc.ErrInternal
@@ -148,9 +121,9 @@ func (s *NodeServer) Status(ctx context.Context, in *pb.StatusRequest) (*pb.Stat
 		}
 
 		cli := pb.NewNodeClient(conn)
-		ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+		ctx_, cancel := context.WithTimeout(context.Background(), time.Second*10)
 		defer cancel()
-		subReply, err := cli.Status(ctx, in)
+		subReply, err := cli.Status(ctx_, in)
 		if err != nil {
 			log.Warnf("get node status ID=%v address=%v: %v", node.ID, node.Address, err)
 			return nil, rpc.ErrInternal
@@ -164,4 +137,88 @@ func (s *NodeServer) Status(ctx context.Context, in *pb.StatusRequest) (*pb.Stat
 	}
 
 	return &reply, nil
+}
+
+func (s *NodeServer) Update(ctx context.Context, in *pb.UpdateRequest) (*pb.UpdateReply, error) {
+	nodeInfo, err := model.QueryNodeByID(in.NodeId)
+	if err != nil {
+		if err == model.ErrRecordNotFound {
+			return nil, rpc.ErrNotFound
+		}
+		return nil, rpc.ErrInternal
+	}
+
+	// TODO 检查参数是否超过节点资源上限值
+	// get node status
+
+	if in.Comment != "" {
+		nodeInfo.Comment = in.Comment
+	}
+	if in.Name != "" {
+		nodeInfo.Name = in.Name
+	}
+	if in.RscLimit != nil {
+		nodeInfo.CpuLimit = in.RscLimit.CpuLimit
+		nodeInfo.MemoryLimit = in.RscLimit.MemoryLimit
+		nodeInfo.DiskLimit = in.RscLimit.DiskLimit
+	}
+
+	if err := model.UpdateNode(nodeInfo); err != nil {
+		log.Infof("UpdateNode %+v err=%v", nodeInfo, err)
+		return nil, rpc.ErrInternal
+	}
+
+	return &pb.UpdateReply{}, nil
+}
+
+func (s *NodeServer) ListLog(ctx context.Context, in *pb.ListLogRequest) (*pb.ListLogReply, error) {
+	// 查询日志
+	condition := ""
+	if in.StartTime > 0 && in.StartTime < in.EndTime {
+		condition += fmt.Sprintf("create_at >= %d AND create_at <= %d", in.StartTime, in.EndTime)
+	}
+	if in.Level > 0 {
+		condition += fmt.Sprintf(" level = %d", in.Level)
+	}
+	if in.ContainerName != "" {
+		condition += fmt.Sprintf(" container_name = '%s'", model.MysqlEscape(in.ContainerName))
+	}
+	if in.Username != "" {
+		condition += fmt.Sprintf(" username = '%s'", model.MysqlEscape(in.Username))
+	}
+
+	p, data, err := model.ListLog(in.PageSize, in.PageNo, condition)
+	if err != nil {
+		log.Infof("ListLog err=%v", err)
+		return nil, rpc.ErrInternal
+	}
+
+	var reply pb.ListLogReply
+	for _, l := range data {
+		reply.Logs = append(reply.Logs, &pb.Log{
+			Id:            l.ID,
+			Level:         int64(l.Level),
+			NodeId:        l.NodeId,
+			NodeInfo:      l.NodeInfo,
+			ContainerName: l.ContainerName,
+			Username:      l.Username,
+			EventType:     l.EventType,
+			Detail:        l.Detail,
+			CreateAt:      l.CreatedAt,
+			UpdateAt:      l.UpdatedAt,
+			// HaveRead:      bool(l.HaveRead),
+			// EventStatus: ,
+		})
+	}
+	reply.PageNo = p.PageNo
+	reply.PageSize = p.PageSize
+	reply.TotalPages = p.TotalPages
+
+	return &reply, nil
+}
+
+func (s *NodeServer) UpdateLog(ctx context.Context, in *pb.UpdateLogRequest) (*pb.UpdateLogReply, error) {
+	// 更新日志 是否已读
+	// 同时也要更新节点信息未读告警总数(数据库事务)
+	return nil, nil
 }

@@ -82,6 +82,12 @@ func (s *UserServer) Login(ctx context.Context, in *pb.LoginRequest) (*pb.LoginR
 		return &pb.LoginReply{}, nil
 	}
 
+	appendRuntimeLog(&model.RuntimeLog{
+		Level:     1,
+		EventType: model.EventUserLogin,
+		Username:  in.Username,
+	})
+
 	return &pb.LoginReply{
 		UserId:  userInfo.ID,
 		AuthKey: fmt.Sprintf("%d%c%s", userInfo.ID, server.AuthKeySeprator, sessionKey),
@@ -116,6 +122,12 @@ func (s *UserServer) Logout(ctx context.Context, in *pb.LogoutRequest) (*pb.Logo
 	} else if err == model.ErrRecordNotFound {
 		return nil, rpc.ErrNotFound
 	}
+
+	appendRuntimeLog(&model.RuntimeLog{
+		Level:     1,
+		EventType: model.EventUserLogout,
+		Username:  userID,
+	})
 
 	return &pb.LogoutReply{}, nil
 }

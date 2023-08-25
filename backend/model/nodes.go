@@ -6,12 +6,16 @@ import (
 )
 
 type NodeInfo struct {
-	ID        int64 `gorm:"primaryKey"`
-	Name      string
-	Address   string
-	Comment   string
-	CreatedAt int64 `gorm:"autoCreateTime"`
-	UpdatedAt int64 `gorm:"autoUpdateTime"`
+	ID          int64 `gorm:"primaryKey"`
+	Name        string
+	Address     string
+	Comment     string
+	UnreadWarn  int64
+	CpuLimit    float64
+	MemoryLimit float64
+	DiskLimit   float64
+	CreatedAt   int64 `gorm:"autoCreateTime"`
+	UpdatedAt   int64 `gorm:"autoUpdateTime"`
 }
 
 func (NodeInfo) TableName() string {
@@ -78,6 +82,21 @@ func RemoveNode(ids []int64) error {
 	}
 
 	log.Debugf("db remove node ids=%v OK", ids)
+	return nil
+}
+
+func UpdateNode(n *NodeInfo) error {
+	db, err := getConn()
+	if err != nil {
+		return err
+	}
+
+	result := db.Save(n)
+	if result.Error != nil {
+		log.Warnf("save node info=%+v err=%v", n, result.Error)
+		return translateError(result.Error)
+	}
+
 	return nil
 }
 

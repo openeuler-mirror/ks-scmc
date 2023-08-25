@@ -3,10 +3,10 @@ package test
 import (
 	"context"
 	"testing"
+	"time"
 
 	"google.golang.org/grpc"
 
-	common "scmc/rpc/pb/common"
 	pb "scmc/rpc/pb/container"
 )
 
@@ -14,7 +14,6 @@ func TestContainerList(t *testing.T) {
 	testRunner(func(ctx context.Context, conn *grpc.ClientConn) {
 		cli := pb.NewContainerClient(conn)
 		request := pb.ListRequest{
-			Header:  &common.RequestHeader{},
 			ListAll: true,
 		}
 
@@ -34,7 +33,6 @@ func TestContainerInspect1(t *testing.T) {
 	testRunner(func(ctx context.Context, conn *grpc.ClientConn) {
 		cli := pb.NewContainerClient(conn)
 		request := pb.InspectRequest{
-			Header:      &common.RequestHeader{},
 			ContainerId: "030f6ec2fede",
 		}
 
@@ -44,5 +42,28 @@ func TestContainerInspect1(t *testing.T) {
 		}
 
 		t.Logf("Inspect reply: %+v", reply)
+	})
+}
+
+func TestMonitorHistory(t *testing.T) {
+	testRunner(func(ctx context.Context, conn *grpc.ClientConn) {
+		cli := pb.NewContainerClient(conn)
+		request := pb.MonitorHistoryRequest{
+			StartTime:   time.Now().Unix() - 3600,
+			EndTime:     time.Now().Unix(),
+			Interval:    1,
+			ContainerId: "cadvisor",
+		}
+
+		reply, err := cli.MonitorHistory(ctx, &request)
+		if err != nil {
+			t.Errorf("MonitorHistory: %v", err)
+		} else {
+			t.Logf("MonitorHistory %+v", reply.CpuUsage)
+			t.Logf("MonitorHistory %+v", reply.MemoryUsage)
+			t.Logf("MonitorHistory %+v", reply.DiskUsage)
+			t.Logf("MonitorHistory %+v", reply.NetRx)
+			t.Logf("MonitorHistory %+v", reply.NetTx)
+		}
 	})
 }

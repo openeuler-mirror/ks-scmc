@@ -9,6 +9,12 @@ service Network {
     rpc Connect(ConnectRequest) returns (ConnectReply) {}
     rpc Disconnect(DisconnectRequest) returns (DisconnectReply) {}
 
+    rpc ListIPtables(ListIPtablesRequest) returns (ListIPtablesReply) {}
+    rpc EnableIPtables(EnableIPtablesRequest) returns (EnableIPtablesReply) {}
+    rpc CreateIPtables(CreateIPtablesRequest) returns (CreateIPtablesReply) {}
+    rpc ModifyIPtables(ModifyIPtablesRequest) returns (ModifyIPtablesReply) {}
+    rpc RemoveIPtables(RemoveIPtablesRequest) returns (RemoveIPtablesReply) {}
+
     // not implemented
     rpc Create(CreateRequest) returns (CreateReply) {}
     rpc Remove(RemoveRequest) returns (RemoveReply) {}
@@ -24,13 +30,13 @@ message ListReply {
 }
 
 message ConnectRequest {
-    int64  node_id      = 1;  // required
-    string interface    = 2;  // required
-    string container_id = 3;  // required
-    string ip_address   = 4;  // required
-    string ip_mask      = 5;
-    string mac_address  = 6;
-    string gateway      = 7;
+    int64  node_id       = 1;  // required
+    string interface     = 2;  // required
+    string container_id  = 3;  // required
+    string ip_address    = 4;  // required
+    int32  ip_prefix_len = 5;
+    string mac_address   = 6;
+    string gateway       = 7;
 }
 
 message ConnectReply {}
@@ -50,6 +56,55 @@ message CreateReply {}
 message RemoveRequest {}
 
 message RemoveReply {}
+
+message ListIPtablesRequest {
+    int64  node_id      = 1;  //require
+    string container_id = 2;  //for container require
+}
+
+message ListIPtablesReply {
+    repeated ChianRule chain_rules = 1;
+}
+
+message EnableIPtablesRequest {
+    int64  node_id      = 1;  //require
+    string container_id = 2;  //for container require
+    bool   enable       = 3;
+}
+
+message EnableIPtablesReply {}
+
+message CreateIPtablesRequest {
+    int64    node_id      = 1;  //require
+    string   container_id = 2;  //for container require
+    string   chain        = 3;
+    RuleInfo rule         = 4;  //require
+}
+
+message CreateIPtablesReply {
+}
+
+message ModifyIPtablesRequest {
+    int64    node_id      = 1;  //require
+    string   container_id = 2;  //for container require
+    string   old_chain    = 3;
+    string   new_chain    = 4;
+    RuleInfo old_rule     = 5;  //require
+    RuleInfo new_rule     = 6;  //require
+}
+
+message ModifyIPtablesReply {
+}
+
+message RemoveIPtablesRequest {
+    int64    node_id      = 1;  //require
+    string   container_id = 2;  //for container require
+    string   chain        = 3;
+    RuleInfo rule         = 4;  //require
+}
+
+message RemoveIPtablesReply {
+}
 
 /***** DATA TYPES *****/
 
@@ -77,4 +132,20 @@ message ContainerNetwork {
     int32  ip_mask_len  = 5;
     string gateway      = 6;
     string mac_address  = 7;
+}
+
+message RuleInfo {
+    string source        = 1;  //源ip 可为ip或者网段
+    string destination   = 2;  //目标ip 可为ip或者网段
+    string protocol      = 3;  //协议 tcp udp
+    string src_port      = 4;  //源端口 与protocol的TCP、UDP一起使用
+    string dest_port     = 5;  //目标端口 与protocol的TCP、UDP一起使用
+    string in_interface  = 6;  //输入网卡
+    string out_interface = 7;  //输出网卡
+    string policy        = 8;  //动作 ACCEPT DROP REJECT， 使用白名单模式，默认为ACCEPT 客户端不填
+}
+
+message ChianRule {
+    string            chain = 1;
+    repeated RuleInfo rule  = 2;
 }

@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+option go_package = "scmc/rpc/pb/authz";
+
+package authz;
+
+enum AUTHZ_ACTION {
+    NONE                    = 0;
+    ADD_SENSITIVE_CONTAINER = 1;  // 添加敏感容器 阻止命令行管理行为
+    DEL_SENSITIVE_CONTAINER = 2;  // 移除敏感容器 允许命令行管理行为
+}
+
+service authz {
+    rpc UpdateConfig(UpdateConfigRequest) returns (UpdateConfigReply) {}
+}
+
+message UpdateConfigRequest {
+    int64           action        = 1;  // AUTHZ_ACTION
+    repeated string container_ids = 2;
+}
+
+message UpdateConfigReply {}

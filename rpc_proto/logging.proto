@@ -1,0 +1,129 @@
+syntax = "proto3";
+
+option go_package = "scmc/rpc/pb/logging";
+
+import "common.proto";
+
+package logging;
+
+service Logging {
+    rpc ListRuntime(ListRuntimeRequest) returns (ListRuntimeReply) {}  // 日志列表
+    rpc ListWarn(ListWarnRequest) returns (ListWarnReply) {}           // 告警列表
+    rpc ReadWarn(ReadWarnRequest) returns (ReadWarnReply) {}           // 设置告警已读
+}
+
+message ListRuntimeRequest {
+    int64  start_time   = 1;
+    int64  end_time     = 2;
+    int64  node_id      = 4;
+    int64  event_module = 5;
+    string username     = 6;   // 用户筛选
+    int64  page_size    = 21;  // 分页大小
+    int64  page_no      = 22;  // 分页页码
+    string sort_by      = 23;  // 排序字段(暂不用)
+    bool   sort_desc    = 24;  // 倒序排序
+}
+
+message ListRuntimeReply {
+    repeated RuntimeLog logs        = 1;
+    int64               page_size   = 2;  // 页大小
+    int64               page_no     = 3;  // 当前页
+    int64               total_pages = 4;  // 总页数
+}
+
+message ListWarnRequest {
+    int64  node_id        = 1;
+    string container_id   = 2;
+    string container_name = 3;
+    int64  event_module   = 4;
+    int64  page_size      = 21;  // 分页大小
+    int64  page_no        = 22;  // 分页页码
+    string sort_by        = 23;  // 排序字段(暂不用)
+    bool   sort_desc      = 24;  // 倒序排序
+}
+
+message ListWarnReply {
+    repeated WarnLog logs        = 1;
+    int64            page_size   = 2;  // 页大小
+    int64            page_no     = 3;  // 当前页
+    int64            total_pages = 4;  // 总页数
+}
+
+message ReadWarnRequest {
+    repeated int64 ids = 1;
+}
+
+message ReadWarnReply {}
+
+enum EVENT_MODULE {
+    NONE      = 0;
+    NODE      = 1;
+    CONTAINER = 2;
+    IMAGE     = 3;
+    USER      = 4;
+}
+
+// NODE 100 - 199
+// CONTAINER 200 - 299
+// IMAGE 300 - 399
+// USER 400 - 499
+enum EVENT_TYPE {
+    TYPE_NONE         = 0;
+    CREATE_NODE       = 101;
+    UPDATE_NODE       = 102;
+    REMOVE_NODE       = 103;
+    CREATE_CONTAINER  = 201;
+    START_CONTAINER   = 202;
+    STOP_CONTAINER    = 203;
+    REMOVE_CONTAINER  = 204;
+    RESTART_CONTAINER = 205;
+    UPLOAD_IMAGE      = 301;
+    DOWNLOAD_IMAGE    = 302;
+    APPROVE_IMAGE     = 303;
+    UPDATE_IMAGE      = 304;
+    REMOVE_IMAGE      = 305;
+    USER_LOGIN        = 401;
+    USER_LOGOUT       = 402;
+    CREATE_USER       = 403;
+    UPDATE_USER       = 404;
+    REMOVE_USER       = 405;
+    CREATE_ROLE       = 406;
+    UPDATE_ROLE       = 407;
+    REMOVE_ROLE       = 408;
+    UPDATE_PASSWORD   = 409;
+
+    WARN_RESOURCE_USAGE    = 1001;
+    WARN_NODE_OFFLINE      = 1002;
+    WARN_ILLEGAL_CONTAINER = 1003;
+    WARN_NODE_ABNORMAL     = 1004;
+}
+
+message RuntimeLog {
+    int64  id           = 1;
+    int64  event_type   = 2;
+    int64  event_module = 3;
+    int64  node_id      = 4;
+    string node_info    = 5;
+    int64  user_id      = 6;  // 操作用户
+    string username     = 7;  // 操作用户
+    string target       = 8;  // 操作对象
+    string detail       = 9;
+    int64  status_code  = 10;  // 错误码
+    string error        = 11;  // 错误消息
+    int64  created_at   = 21;
+    int64  updated_at   = 22;
+}
+
+message WarnLog {
+    int64  id             = 1;
+    int64  event_type     = 2;
+    int64  event_module   = 3;
+    int64  node_id        = 4;
+    string node_info      = 5;
+    string container_id   = 6;
+    string container_name = 7;
+    string detail         = 8;
+    bool   have_read      = 9;  // 是否已读
+    int64  created_at     = 21;
+    int64  updated_at     = 22;
+}

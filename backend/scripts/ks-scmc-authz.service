@@ -1,0 +1,9 @@
+[Unit]
+Description=KylinSec security magic Cube authz plugin
+
+[Service]
+ExecStart=/usr/bin/ks-scmc-authz
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

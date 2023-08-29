@@ -1,12 +1,10 @@
 [Unit]
 Description=KylinSec security magic Cube agent service
+Requires=docker.service opensnitch.service ks-scmc-authz.service
 
 [Service]
 ExecStart=/usr/bin/ks-scmc-server agent /etc/ks-scmc/server.toml
-
 Restart=on-failure
-
-RestartPreventExitStatus=1
 
 [Install]
 WantedBy=multi-user.target

@@ -2,4 +2,4 @@
 
 source $HOME/.bashrc
 
-access-container-gui ${CONTAINER_NAME}
+/etc/ks-scmc/access-container-gui ${CONTAINER_NAME}

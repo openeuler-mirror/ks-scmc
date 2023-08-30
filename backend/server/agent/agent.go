@@ -38,6 +38,8 @@ func Server() (*grpc.Server, error) {
 	image.RegisterImageServer(s, &internal.ImageServer{})
 	network.RegisterNetworkServer(s, &internal.NetworkServer{})
 	node.RegisterNodeServer(s, &internal.NodeServer{})
+	go internal.NodeWhitelistConfig()
+	go internal.ContainerWhiteCongig()
 
 	return s, nil
 }

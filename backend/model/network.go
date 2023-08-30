@@ -6,48 +6,69 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"net"
 	"os"
+	"os/exec"
 	"strconv"
 	"strings"
 
 	log "github.com/sirupsen/logrus"
-	"github.com/vishvananda/netlink"
-	"github.com/vishvananda/netlink/nl"
 
 	"scmc/common"
 )
 
+//node: iptables -A OUTPUT -d 172.21.1.5 -j ACCEPT
+//container: iptables -A INPUT -s 192.168.122.10 -p all -j ACCEPT
+type RuleInfo struct {
+	Source       string //源ip -s
+	Destination  string //目标ip -d
+	Protocol     string //协议类型 TCP、UDP、ICMP和ALL -p
+	SrcPort      string //源端口 与protocol的TCP、UDP一起使用 --sport
+	DestPort     string //目标端口 与protocol的TCP、UDP一起使用  --dport
+	InInterface  string //指定数据包从哪个网络接口进入 -i
+	OutInterface string //指定数据包从哪个网络接口输出 -o
+	Policy       string //动作 ACCEPT DROP REJECT ... -j
+}
+
+type ChainRules struct {
+	Chain string //链 INPUT FORWARD OUTPUT -A
+	Rules []RuleInfo
+}
+
+const cmdTable = "iptables -t filter"
+const outputRule = "-A OUTPUT -m state --state RELATED,ESTABLISHED -j ACCEPT"
+const inputRule = "-A INPUT -m state --state RELATED,ESTABLISHED -j ACCEPT"
 const maxJsonFileSize = 1048576 //1M
+const (
+	OperateContainer = 1
+	OperateNode      = 2
+)
 
-type VirNicInfo struct {
-	IPAddress      string
-	IPMaskLen      int
-	MinAvailableIP string
+type IPtablesEnableInfo map[string]bool
+
+func iptablesPath() string {
+	return common.Config.Network.IPtablesPath
 }
 
-type ContainerNetwork struct {
-	IpAddress string
-	MaskLen   int
-	ForShell  string
+func nodeIPtablesFile() string {
+	return common.Config.Network.IPtablesPath + "/node.rule"
 }
 
-type ContainerNic struct {
-	ContainerNetworks map[string]*ContainerNetwork //[LinkIfs][ContainerNetwork]
+func nodeIPtablesInitFile() string {
+	return common.Config.Network.IPtablesPath + "/node-default.rule"
 }
 
-type NetworkInfo struct {
-	NodeNicIPAddr map[string]struct{}
-	VirtualNic    map[string]*VirNicInfo   //[LinkIfs][VirNicInfo]
-	Containers    map[string]*ContainerNic //[ContainerId][ContainerNic]
+func iptablesJSONFile() string {
+	return common.Config.Network.IPtablesJsonFile
 }
 
-func ReadJSON() (*NetworkInfo, error) {
-	JsonFile := common.Config.Network.JsonFile
+func readJSON() (IPtablesEnableInfo, error) {
+	JsonFile := iptablesJSONFile()
 	log.Debugf("read file [%v]", JsonFile)
 	file, err := os.Open(JsonFile)
 	if err != nil {
-		log.Errorf("open file err: %v", err)
+		log.Warnf("open file err: %v", err)
 		return nil, err
 	}
 	defer file.Close()
@@ -67,20 +88,20 @@ func ReadJSON() (*NetworkInfo, error) {
 	}
 	log.Debugf("read file %v size: %v", JsonFile, n)
 
-	network := &NetworkInfo{}
-	err = json.Unmarshal(buffer, network)
+	info := make(IPtablesEnableInfo)
+	err = json.Unmarshal(buffer, &info)
 	if err != nil {
 		log.Errorf("Unmarshal failed: %v", err)
 		return nil, err
 	}
 
-	return network, nil
+	return info, nil
 }
 
-func writeJSON(network *NetworkInfo) error {
-	JsonFile := common.Config.Network.JsonFile
+func writeJSON(info IPtablesEnableInfo) error {
+	JsonFile := iptablesJSONFile()
 	log.Debugf("write to file [%v]", JsonFile)
-	data, err := json.MarshalIndent(network, "", "\t")
+	data, err := json.MarshalIndent(info, "", "\t")
 	if err != nil {
 		log.Errorf("json err: %v", err)
 		return err
@@ -101,49 +122,58 @@ func writeJSON(network *NetworkInfo) error {
 	return nil
 }
 
-func AddJSON(containerId string, info *NetworkInfo) error {
-	netinfo, _ := ReadJSON()
-	if netinfo == nil {
-		return writeJSON(info)
-	}
-	if netinfo.VirtualNic == nil {
-		netinfo.VirtualNic = make(map[string]*VirNicInfo)
-	}
-	if netinfo.Containers == nil {
-		netinfo.Containers = make(map[string]*ContainerNic)
-	}
-	for k, v := range info.VirtualNic {
-		netinfo.VirtualNic[k] = v
+func updateJSON(who string, enbale bool) error {
+	info, _ := readJSON()
+	if info == nil {
+		info = make(IPtablesEnableInfo)
 	}
 
-	netinfo.Containers[containerId] = info.Containers[containerId]
-	return writeJSON(netinfo)
+	info[who] = enbale
+	return writeJSON(info)
 }
 
-func DelContainerNetInfo(containerId string) error {
-	netinfo, err := ReadJSON()
-	if err != nil {
-		return err
+func dealJSON(who string) error {
+	info, _ := readJSON()
+	if info != nil {
+		if _, ok := info[who]; ok {
+			delete(info, who)
+			return writeJSON(info)
+		}
 	}
 
-	if _, ok := netinfo.Containers[containerId]; ok {
-		for k, v := range netinfo.Containers[containerId].ContainerNetworks {
-			if _, ok := netinfo.VirtualNic[k]; ok {
-				if len(v.IpAddress) < len(netinfo.VirtualNic[k].MinAvailableIP) {
-					netinfo.VirtualNic[k].MinAvailableIP = v.IpAddress
-				} else if len(v.IpAddress) == len(netinfo.VirtualNic[k].MinAvailableIP) && v.IpAddress < netinfo.VirtualNic[k].MinAvailableIP {
-					netinfo.VirtualNic[k].MinAvailableIP = v.IpAddress
-				}
+	return nil
+}
+
+func getEnableStatus(who string) bool {
+	info, _ := readJSON()
+	if info != nil {
+		if _, ok := info[who]; ok {
+			return info[who]
+		}
+	}
+
+	return false
+}
+
+func ContainerIPtablesFile(containerId string) string {
+	fileInfoList, err := ioutil.ReadDir(iptablesPath())
+	if err != nil {
+		log.Warnf("readdir err: %v", err)
+		return ""
+	}
+
+	for i := range fileInfoList {
+		fileName := fileInfoList[i].Name()
+		array := strings.Split(fileName, "-")
+		if len(array) == 2 {
+			if array[0] == containerId || array[1] == containerId {
+				log.Debugf("fileName:%v, containerId:%v", fileName, containerId)
+				return iptablesPath() + "/" + fileName
 			}
 		}
-		for k, v := range netinfo.VirtualNic {
-			log.Debugf("update VirtualNic:[%+v][%+v]", k, v)
-		}
-
-		delete(netinfo.Containers, containerId)
 	}
 
-	return writeJSON(netinfo)
+	return ""
 }
 
 func TransMask(mask string) int {
@@ -169,79 +199,434 @@ func TransMask(mask string) int {
 	return masklen
 }
 
-func GetNodeIP() map[string]struct{} {
-	links, err := netlink.LinkList()
+func callShell(arg string) ([]byte, error) {
+	log.Debugf("shell param: %v", arg)
+	cmd := exec.Command("/bin/bash", "-c", arg)
+	stdout, _ := cmd.StdoutPipe()
+	if err := cmd.Start(); err != nil {
+		log.Errorf("Execute failed when Start %v", err)
+		return nil, err
+	}
+
+	out_bytes, _ := ioutil.ReadAll(stdout)
+	stdout.Close()
+
+	if err := cmd.Wait(); err != nil {
+		log.Errorf("Execute failed when Wait: %v", err)
+		return nil, err
+	}
+
+	log.Debugf("Execute finished: %v", string(out_bytes))
+
+	return out_bytes, nil
+}
+
+func parseRule(rule string) RuleInfo {
+	split := strings.Split(rule, " ")
+	var info RuleInfo
+	for j := 0; j < len(split); j++ {
+		match := true
+		switch split[j] {
+		case "-s":
+			info.Source = split[j+1]
+		case "-d":
+			info.Destination = split[j+1]
+		case "-p":
+			info.Protocol = split[j+1]
+		case "--sport":
+			info.SrcPort = split[j+1]
+		case "--dport":
+			info.DestPort = split[j+1]
+		case "-i":
+			info.InInterface = split[j+1]
+		case "-o":
+			info.OutInterface = split[j+1]
+		case "-j":
+			info.Policy = split[j+1]
+		default:
+			match = false
+			break
+		}
+		if match {
+			j++
+		}
+	}
+
+	return info
+}
+
+func listRule(cmd string) ([]string, error) {
+	out, err := callShell(cmd)
 	if err != nil {
-		log.Errorf("call LinkList : %v", err)
-		return nil
+		return nil, err
 	}
 
-	nodeIPs := make(map[string]struct{})
-	for _, l := range links {
-		attrs := l.Attrs()
-		if attrs.Flags&net.FlagLoopback != 0 {
+	list := strings.Trim(string(out), " \n\t")
+	rules := strings.Split(list, "\n")
+	return rules, nil
+}
+
+func ListChains(who int, pid int) ([]string, error) {
+	var cmd string
+	if who == OperateNode {
+		cmd = fmt.Sprintf("%s -S", cmdTable)
+	} else {
+		cmd = fmt.Sprintf("nsenter -t %d -n %s -S", pid, cmdTable)
+	}
+
+	rules, err := listRule(cmd)
+	if err != nil {
+		return nil, err
+	}
+
+	var chains []string
+	for _, val := range rules {
+		if strings.HasPrefix(val, "-P") || strings.HasPrefix(val, "-N") {
+			chains = append(chains, strings.Fields(val)[1])
+		} else {
+			break
+		}
+	}
+
+	return chains, nil
+}
+
+func ListChainRules(who int, pid int, chain string) ([]RuleInfo, error) {
+	var cmd string
+	if who == OperateNode {
+		cmd = fmt.Sprintf("%s -S %s", cmdTable, chain)
+	} else {
+		cmd = fmt.Sprintf("nsenter -t %d -n %s -S %s", pid, cmdTable, chain)
+	}
+
+	rules, err := listRule(cmd)
+	if err != nil {
+		return nil, err
+	}
+
+	var infos []RuleInfo
+	for _, rule := range rules {
+		if strings.Contains(rule, "DOCKER") {
 			continue
 		}
-		addrs, err := netlink.AddrList(l, nl.FAMILY_V4)
+		info := parseRule(rule)
+		if info != (RuleInfo{}) {
+			infos = append(infos, info)
+		}
+	}
+
+	return infos, nil
+}
+
+func ListRules(who int, pid int) ([]ChainRules, error) {
+	chains, err := ListChains(who, pid)
+	if err != nil {
+		return nil, err
+	}
+
+	var chainRules []ChainRules
+	for _, chain := range chains {
+		info, _ := ListChainRules(who, pid, chain)
+		rules := ChainRules{
+			Chain: chain,
+			Rules: info,
+		}
+
+		chainRules = append(chainRules, rules)
+	}
+
+	return chainRules, nil
+}
+
+func spliceRules(info RuleInfo) (string, error) {
+	var arr []string
+	if info.Source != "" {
+		addr := net.ParseIP(info.Source)
+		if addr == nil {
+			if _, _, err := net.ParseCIDR(info.Source); err != nil {
+				log.Warnf("incorrect source ip address")
+				return "", os.ErrInvalid
+			} else {
+				str := "-s " + info.Source
+				arr = append(arr, str)
+			}
+		} else {
+			str := "-s " + info.Source + "/32"
+			arr = append(arr, str)
+		}
+	}
+
+	if info.Destination != "" {
+		addr := net.ParseIP(info.Destination)
+		if addr == nil {
+			if _, _, err := net.ParseCIDR(info.Destination); err != nil {
+				log.Warnf("incorrect destination ip address")
+				return "", os.ErrInvalid
+			} else {
+				str := "-d " + info.Destination
+				arr = append(arr, str)
+			}
+		} else {
+			str := "-d " + info.Destination + "/32"
+			arr = append(arr, str)
+		}
+	}
+
+	if info.Protocol != "" {
+		str := "-p " + info.Protocol
+		arr = append(arr, str)
+		if info.Protocol == "TCP" || info.Protocol == "UDP" || info.Protocol == "tcp" || info.Protocol == "udp" {
+			if info.SrcPort != "" {
+				str := "--sport " + info.SrcPort
+				arr = append(arr, str)
+			}
+			if info.DestPort != "" {
+				str := "--dport " + info.DestPort
+				arr = append(arr, str)
+			}
+		}
+	}
+
+	if info.InInterface != "" {
+		str := "-i " + info.InInterface
+		arr = append(arr, str)
+	}
+
+	if info.OutInterface != "" {
+		str := "-o " + info.OutInterface
+		arr = append(arr, str)
+	}
+
+	if info.Policy != "" {
+		str := "-j " + info.Policy
+		arr = append(arr, str)
+	}
+
+	res := strings.Join(arr, " ")
+	return res, nil
+}
+
+func AddRule(who int, containerId string, pid int, chain string, info RuleInfo) error {
+	rule, err := spliceRules(info)
+	if err != nil || rule == "" {
+		log.Warnf("invalid parameter:[%+v]", info)
+		return os.ErrInvalid
+	}
+
+	fullRule := fmt.Sprintf("-A %s %s", chain, rule)
+	fileName := nodeIPtablesFile()
+	if who == OperateContainer {
+		fileName = ContainerIPtablesFile(containerId)
+	}
+	var cmd string
+	if who == OperateNode {
+		cmd = fmt.Sprintf("grep -xe \"%s\" %s || sed -i '/%s/a\\%s' %s && iptables-restore %s", fullRule, fileName, outputRule, fullRule, fileName, fileName)
+	} else {
+		cmd = fmt.Sprintf("grep -xe \"%s\" %s || sed -i '/COMMIT/i \\%s' %s && nsenter -t %d -n iptables-restore %s", fullRule, fileName, fullRule, fileName, pid, fileName)
+	}
+
+	if _, err := callShell(cmd); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func getRuleLineNumber(fullRule, fileName string) (int, error) {
+	cmd := fmt.Sprintf("grep -nxe \"%s\" %s | cut -f1 -d:", fullRule, fileName)
+	out, err := callShell(cmd)
+	if err != nil || len(out) == 0 {
+		log.Warnf("Failed to get the line number where the rule is located: %v", err)
+		return 0, os.ErrInvalid
+	}
+	linNum, err := strconv.Atoi(strings.Trim(string(out), " \n\t"))
+	if err != nil {
+		log.Warnf("Failed to convert line number to int: %v", err)
+		return 0, os.ErrInvalid
+	}
+
+	return linNum, nil
+}
+
+func DelRule(who int, containerId string, pid int, chain string, info RuleInfo) error {
+	rule, err := spliceRules(info)
+	if err != nil || rule == "" {
+		log.Warnf("invalid parameter:[%+v]", info)
+		return os.ErrInvalid
+	}
+
+	fullRule := fmt.Sprintf("-A %s %s", chain, rule)
+	fileName := nodeIPtablesFile()
+	if who == OperateContainer {
+		fileName = ContainerIPtablesFile(containerId)
+	}
+	linNum, err := getRuleLineNumber(fullRule, fileName)
+	if err != nil {
+		return err
+	}
+
+	var cmd string
+	if who == OperateNode {
+		cmd = fmt.Sprintf("sed -i '%dd' %s && iptables-restore %s", linNum, fileName, fileName)
+	} else {
+		cmd = fmt.Sprintf("sed -i '%dd' %s && nsenter -t %d -n iptables-restore %s", linNum, fileName, pid, fileName)
+	}
+
+	if _, err := callShell(cmd); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func ModifyRule(who int, containerId string, pid int, oldchain string, oldRule RuleInfo, newchain string, newRule RuleInfo) error {
+	old, err := spliceRules(oldRule)
+	if err != nil || old == "" {
+		log.Warnf("invalid parameter:[%+v]", old)
+		return os.ErrInvalid
+	}
+	new, err := spliceRules(newRule)
+	if err != nil || new == "" {
+		log.Warnf("invalid parameter:[%+v]", new)
+		return os.ErrInvalid
+	}
+
+	fileName := nodeIPtablesFile()
+	if who == OperateContainer {
+		fileName = ContainerIPtablesFile(containerId)
+	}
+	oldFullRule := fmt.Sprintf("-A %s %s", oldchain, old)
+	linNum, err := getRuleLineNumber(oldFullRule, fileName)
+	if err != nil {
+		return err
+	}
+
+	newFullRule := fmt.Sprintf("-A %s %s", newchain, new)
+	var cmd string
+	if who == OperateNode {
+		cmd = fmt.Sprintf("sed -i '%dd' %s && sed -i '%di %s' %s  && iptables-restore %s", linNum, fileName, linNum, newFullRule, fileName, fileName)
+	} else {
+		cmd = fmt.Sprintf("sed -i '%dd' %s && sed -i '%di %s' %s  && nsenter -t %d -n iptables-restore %s", linNum, fileName, linNum, newFullRule, fileName, pid, fileName)
+	}
+
+	if _, err := callShell(cmd); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func ContainerRemveIPtables(file string) {
+	fileName := iptablesPath() + "/" + file
+	err := os.Remove(fileName)
+	log.Infof("remove filename(%v): %v", fileName, err)
+	dealJSON(file)
+}
+
+func ContainerWhitelistInitialization(containerIdName string, pid int) error {
+	enable := getEnableStatus(containerIdName)
+	if enable {
+		fileName := iptablesPath() + "/" + containerIdName
+		cmd := fmt.Sprintf("ls -l %s > /dev/null 2>&1", fileName)
+		_, err := callShell(cmd)
 		if err != nil {
-			log.Warnf("name=%v get address list error=%v", attrs.Name, err)
-			continue
+			cmd = fmt.Sprintf("echo '*filter\n:INPUT DROP [0:0]\n:FORWARD ACCEPT [0:0]\n:OUTPUT ACCEPT [0:0]\n%s\nCOMMIT' > %s; nsenter -t %d -n iptables-restore %s", inputRule, fileName, pid, fileName)
+		} else {
+			cmd = fmt.Sprintf("grep -xe \"%s\" %s || echo '*filter\n:INPUT DROP [0:0]\n:FORWARD ACCEPT [0:0]\n:OUTPUT ACCEPT [0:0]\n%s\nCOMMIT' > %s && nsenter -t %d -n iptables-restore %s", inputRule, fileName, inputRule, fileName, pid, fileName)
 		}
 
-		for i := 0; i < len(addrs); i++ {
-			nodeIPs[addrs[i].IP.String()] = struct{}{}
+		if _, err := callShell(cmd); err != nil {
+			return err
 		}
 	}
 
-	netinfo, err := ReadJSON()
-	if netinfo == nil {
-		netinfo = &NetworkInfo{}
-	}
-	netinfo.NodeNicIPAddr = nodeIPs
-	writeJSON(netinfo)
-	return nodeIPs
+	return nil
 }
 
-func isSameNetworkSegment(s, d string) bool {
-	_, subnet, _ := net.ParseCIDR(s)
-	ip, _, _ := net.ParseCIDR(d)
-	if !subnet.Contains(ip) {
-		log.Warnf("%v is not within the range of %v", s, d)
-		return false
+func DisableContainerIPtables(containerIdName string, pid int) error {
+	cmd := fmt.Sprintf("nsenter -t %d -n iptables -F; nsenter -t %d -n iptables -P INPUT ACCEPT", pid, pid)
+	if _, err := callShell(cmd); err != nil {
+		return err
 	}
 
-	return true
+	return updateJSON(containerIdName, false)
 }
 
-func IsConflict(linkifs, ipaddr string, masklen int) bool {
-	netinfo, _ := ReadJSON()
-	if netinfo != nil {
-		if netinfo.NodeNicIPAddr != nil {
-			if _, ok := netinfo.NodeNicIPAddr[ipaddr]; ok {
-				return true
-			}
-		}
-
-		if netinfo.VirtualNic != nil {
-			if _, ok := netinfo.VirtualNic[linkifs]; ok {
-				subnet := fmt.Sprintf("%v/%d", netinfo.VirtualNic[linkifs].IPAddress, netinfo.VirtualNic[linkifs].IPMaskLen)
-				ip := fmt.Sprintf("%v/%d", ipaddr, masklen)
-
-				if ok := isSameNetworkSegment(subnet, ip); !ok {
-					return true
-				}
-			}
-		}
-
-		for _, v := range netinfo.Containers {
-			if _, ok := v.ContainerNetworks[linkifs]; ok {
-				if ipaddr == v.ContainerNetworks[linkifs].IpAddress {
-					log.Warnf("%v already used", ipaddr)
-					return true
-				}
-			}
-		}
+func EnableContainerIPtables(containerIdName string, pid int) error {
+	fileName := iptablesPath() + "/" + containerIdName
+	cmd := fmt.Sprintf("ls -l %s > /dev/null 2>&1", fileName)
+	_, err := callShell(cmd)
+	if err != nil {
+		cmd = fmt.Sprintf("echo '*filter\n:INPUT DROP [0:0]\n:FORWARD ACCEPT [0:0]\n:OUTPUT ACCEPT [0:0]\n%s\nCOMMIT' > %s; nsenter -t %d -n iptables-restore %s", inputRule, fileName, pid, fileName)
+	} else {
+		cmd = fmt.Sprintf("grep -xe \"%s\" %s || echo '*filter\n:INPUT DROP [0:0]\n:FORWARD ACCEPT [0:0]\n:OUTPUT ACCEPT [0:0]\n%s\nCOMMIT' > %s && nsenter -t %d -n iptables-restore %s", inputRule, fileName, inputRule, fileName, pid, fileName)
 	}
 
-	return false
+	if _, err := callShell(cmd); err != nil {
+		return err
+	}
+
+	return updateJSON(containerIdName, true)
+}
+
+func NodeWhitelistInitialization(linkifs string) error {
+	initFile := nodeIPtablesInitFile()
+	cmd := fmt.Sprintf("ls -l %s > /dev/null 2>&1 || iptables-save > %s", initFile, initFile)
+	if _, err := callShell(cmd); err != nil {
+		return err
+	}
+
+	enable := getEnableStatus("Node")
+	if enable {
+		rejectRule := fmt.Sprintf("-A OUTPUT -o %s -j REJECT", linkifs)
+		fileName := nodeIPtablesFile()
+		cmd = fmt.Sprintf("ls -l %s > /dev/null 2>&1", fileName)
+		_, err := callShell(cmd)
+		if err != nil {
+			cmd = fmt.Sprintf("%s %s; %s %s; iptables-save > %s", cmdTable, outputRule, cmdTable, rejectRule, fileName)
+		} else {
+			cmd = fmt.Sprintf("iptables-restore %s; (grep -xe \"%s\" %s || %s %s); (grep -we \"%s\" %s || %s %s); iptables-save > %s",
+				fileName, outputRule, fileName, cmdTable, outputRule, rejectRule, fileName, cmdTable, rejectRule, fileName)
+		}
+
+		if _, err := callShell(cmd); err != nil {
+			return err
+		}
+	} /*else {
+		cmd = fmt.Sprintf("iptables-restore %s", initFile)
+		if _, err := callShell(cmd); err != nil {
+			return err
+		}
+	}*/
+
+	return nil
+}
+
+func DisableNodeIPtables() error {
+	initFile := nodeIPtablesInitFile()
+	cmd := fmt.Sprintf("ls -l %s > /dev/null 2>&1 && iptables-restore %s", initFile, initFile)
+	if _, err := callShell(cmd); err != nil {
+		return err
+	}
+
+	return updateJSON("Node", false)
+}
+
+func EnableNodeIPtables(linkifs string) error {
+	rejectRule := fmt.Sprintf("-A OUTPUT -o %s -j REJECT", linkifs)
+	fileName := nodeIPtablesFile()
+	cmd := fmt.Sprintf("ls -l %s > /dev/null 2>&1", fileName)
+	_, err := callShell(cmd)
+	if err != nil {
+		cmd = fmt.Sprintf("%s %s; %s %s; iptables-save > %s", cmdTable, outputRule, cmdTable, rejectRule, fileName)
+	} else {
+		cmd = fmt.Sprintf("iptables-restore %s; (grep -xe \"%s\" %s || %s %s); (grep -we \"%s\" %s || %s %s); iptables-save > %s",
+			fileName, outputRule, fileName, cmdTable, outputRule, rejectRule, fileName, cmdTable, rejectRule, fileName)
+	}
+
+	if _, err := callShell(cmd); err != nil {
+		return err
+	}
+
+	return updateJSON("Node", true)
 }

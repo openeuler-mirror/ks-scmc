@@ -2,10 +2,11 @@ package internal
 
 import (
 	"context"
+	"strings"
 
+	"github.com/docker/docker/api/types"
 	log "github.com/sirupsen/logrus"
 
-	"scmc/model"
 	"scmc/rpc"
 	pb "scmc/rpc/pb/image"
 )
@@ -14,7 +15,6 @@ type ImageServer struct {
 	pb.UnimplementedImageServer
 }
 
-/*
 func (s *ImageServer) List(ctx context.Context, in *pb.ListRequest) (*pb.ListReply, error) {
 	reply := pb.ListReply{}
 
@@ -46,29 +46,5 @@ func (s *ImageServer) List(ctx context.Context, in *pb.ListRequest) (*pb.ListRep
 			}
 		}
 	}
-	return &reply, nil
-}
-*/
-
-func (s *ImageServer) List(ctx context.Context, in *pb.ListRequest) (*pb.ListReply, error) {
-	images, err := model.ListImages()
-	if err != nil {
-		log.Warnf("Failed to get images list: %v", err)
-		return nil, rpc.ErrInternal
-	}
-
-	reply := pb.ListReply{}
-	for _, image := range images {
-		// if image.VerifyStatus != model.VerifyPass || image.ApprovalStatus != model.ApprovalPass {
-		if image.VerifyStatus != model.VerifyPass {
-			continue
-		}
-		reply.Images = append(reply.Images, &pb.ImageInfo{
-			Name: image.Name + ":" + image.Version,
-			Repo: image.Name,
-			Tag:  image.Version,
-		})
-	}
-
 	return &reply, nil
 }

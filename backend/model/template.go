@@ -10,11 +10,11 @@ import (
 )
 
 type ContainerTemplates struct {
-	Id          int64 `gorm:"primaryKey"`
-	Name        string
-	Config_json string
-	CreatedAt   int64 `gorm:"autoCreateTime"`
-	UpdatedAt   int64 `gorm:"autoUpdateTime"`
+	Id         int64 `gorm:"primaryKey"`
+	Name       string
+	ConfigJSON string
+	CreatedAt  int64 `gorm:"autoCreateTime"`
+	UpdatedAt  int64 `gorm:"autoUpdateTime"`
 }
 
 type PageInfo struct {
@@ -130,9 +130,9 @@ func CreateTemplate(ctx context.Context, id int64, name string, configbyte []byt
 	}
 
 	templateInfo := ContainerTemplates{
-		Id:          id,
-		Name:        name,
-		Config_json: string(configbyte),
+		Id:         id,
+		Name:       name,
+		ConfigJSON: string(configbyte),
 	}
 	if result := db.WithContext(ctx).Create(&templateInfo); result.Error != nil {
 		log.Errorf("db create template %v", result.Error)
@@ -177,4 +177,20 @@ func RemoveTemplate(ctx context.Context, ids []int64) error {
 	}
 
 	return nil
+}
+
+func FindTemplate(id int64) (*ContainerTemplates, error) {
+	db, err := getConn()
+	if err != nil {
+		return nil, err
+	}
+
+	var data ContainerTemplates
+
+	if err := db.First(&data, "id = ?", id).Error; err != nil {
+		log.Warnf("FindTemplate id=%v err=%v", id, err)
+		return nil, translateError(err)
+	}
+
+	return &data, nil
 }

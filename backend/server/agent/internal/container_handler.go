@@ -11,6 +11,9 @@ import (
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/mount"
 	"github.com/docker/docker/api/types/network"
+	"github.com/docker/docker/client"
+	"google.golang.org/grpc/status"
+
 	"github.com/shirou/gopsutil/mem"
 	log "github.com/sirupsen/logrus"
 
@@ -18,6 +21,54 @@ import (
 	"scmc/rpc"
 	pb "scmc/rpc/pb/container"
 )
+
+const defaultCPUShares = 1024
+
+func toCPUShares(cpuPrio int64) int64 {
+	if cpuPrio <= 0 {
+		return defaultCPUShares
+	}
+	return cpuPrio + defaultCPUShares // default cpu shares 1024
+}
+
+func fromCPUShares(cpuShares int64) int64 {
+	if cpuShares <= defaultCPUShares {
+		return 0
+	}
+	return cpuShares - defaultCPUShares
+}
+
+func ensureImage(cli *client.Client, image string) error {
+	list, err := cli.ImageList(context.Background(), types.ImageListOptions{})
+	if err != nil {
+		log.Warnf("ImageList: %v", err)
+		return nil
+	}
+
+	for _, i := range list {
+		if i.ID == image {
+			return nil
+		}
+		for _, s := range i.RepoTags {
+			if s == image {
+				return nil
+			}
+		}
+	}
+
+	imageExists, err := model.IsImageExist(image)
+	if err != nil {
+		return err
+	} else if !imageExists {
+		return rpc.ErrInvalidArgument
+	}
+
+	if err = model.PullImage(image); err != nil {
+		log.Errorf("pull image[%v] err: %v", image, err)
+		return err
+	}
+	return nil
+}
 
 type ContainerServer struct {
 	pb.UnimplementedContainerServer
@@ -45,15 +96,12 @@ func (s *ContainerServer) List(ctx context.Context, in *pb.ListRequest) (*pb.Lis
 
 	for _, c := range containers {
 		info := pb.ContainerInfo{
-			Id:         c.ID,
-			Image:      c.Image,
-			ImageId:    c.ImageID,
-			Command:    c.Command,
-			State:      c.State,
-			SizeRw:     c.SizeRw,
-			SizeRootFs: c.SizeRootFs,
-			Labels:     c.Labels,
-			Created:    c.Created,
+			Id:      c.ID,
+			Image:   c.Image,
+			ImageId: c.ImageID,
+			Command: c.Command,
+			State:   c.State,
+			Created: c.Created,
 		}
 
 		// 参考docker cli实现 去掉link特性连接的其他容器名
@@ -70,6 +118,22 @@ func (s *ContainerServer) List(ctx context.Context, in *pb.ListRequest) (*pb.Lis
 			}
 		}
 
+		diskStat := &pb.DiskStat{
+			Used: float64(c.SizeRootFs) / megaBytes,
+		}
+
+		if v, ok := c.Labels["KS_SCMC_DISK_LIMIT"]; ok {
+			fmt.Sscanf(v, "%f", &diskStat.Limit)
+		}
+
+		if info.ResourceStat != nil {
+			info.ResourceStat.DiskStat = diskStat
+		} else {
+			info.ResourceStat = &pb.ResourceStat{
+				DiskStat: diskStat,
+			}
+		}
+
 		reply.Containers = append(reply.Containers, &pb.NodeContainer{Info: &info})
 	}
 
@@ -77,10 +141,7 @@ func (s *ContainerServer) List(ctx context.Context, in *pb.ListRequest) (*pb.Lis
 }
 
 func (s *ContainerServer) Create(ctx context.Context, in *pb.CreateRequest) (*pb.CreateReply, error) {
-	reply := pb.CreateReply{}
-
-	// TODO check args
-	if in.Config.Image == "" || !containerNamePattern.MatchString(in.Name) {
+	if in.Configs == nil || in.Configs.Image == "" || !containerNamePattern.MatchString(in.Configs.Name) {
 		return nil, rpc.ErrInvalidArgument
 	}
 
@@ -89,121 +150,77 @@ func (s *ContainerServer) Create(ctx context.Context, in *pb.CreateRequest) (*pb
 		return nil, rpc.ErrInternal
 	}
 
-	list, err := cli.ImageList(context.Background(), types.ImageListOptions{})
-	if err != nil {
-		log.Warnf("ImageList: %v", err)
-		return nil, transDockerError(err)
-	}
-
-	imageExist := false
-	for _, image := range list {
-		for _, s := range image.RepoTags {
-			if s == in.Config.Image {
-				imageExist = true
-				break
-			}
+	if err := ensureImage(cli, in.Configs.Image); err != nil {
+		if _, ok := status.FromError(err); ok {
+			return nil, err
 		}
+		return nil, rpc.ErrInternal
 	}
 
-	if !imageExist {
-		if err = model.Pull(in.Config.Image); err != nil {
-			log.Errorf("pull image[%v] err: %v", in.Config.Image, err)
+	config := container.Config{
+		Image: in.Configs.Image, // should check
+		Labels: map[string]string{
+			"KS_SCMC_DESC": in.Configs.Desc,
+			"KS_SCMC_UUID": in.Configs.Uuid,
+		},
+	}
+	hostConfig := container.HostConfig{
+		Privileged: false, // force non-privileged
+	}
+	var networkConfig *network.NetworkingConfig
+
+	for k, v := range in.Configs.Envs {
+		config.Env = append(config.Env, fmt.Sprintf("%s=%s", k, v))
+	}
+	config.Env = append(config.Env, fmt.Sprintf("KS_SCMC_UUID=%s", in.Configs.Uuid))
+
+	if in.Configs.EnableGraphic {
+		if err := containerGraphicSetup(in.Configs.Name, &config, &hostConfig); err != nil {
+			log.Infof("containerGraphicSetup err=%v", err)
 			return nil, rpc.ErrInternal
 		}
+		config.Labels["KS_SCMC_GRAPHIC"] = "1"
 	}
 
-	var (
-		envs          []string
-		mounts        []mount.Mount
-		config        container.Config
-		hostConfig    *container.HostConfig
-		networkConfig *network.NetworkingConfig
-	)
-
-	for k, v := range in.Config.Env {
-		envs = append(envs, fmt.Sprintf("%s=%s", k, v))
+	for _, m := range in.Configs.Mounts {
+		hostConfig.Mounts = append(hostConfig.Mounts, mount.Mount{
+			Type:     mount.Type(m.Type),
+			Source:   m.Source,
+			Target:   m.Target,
+			ReadOnly: m.ReadOnly,
+			// Consistency: mount.Consistency(m.Consistency),
+		})
 	}
 
-	config = container.Config{
-		Hostname:   in.Config.Hostname,
-		Domainname: in.Config.DomainName,
-		User:       in.Config.User,
-		Env:        envs,
-		Image:      in.Config.Image, // should check
-		Entrypoint: in.Config.Entrypoint,
-		Cmd:        in.Config.Cmd,
-		Labels:     in.Config.Labels,
+	if in.Configs.RestartPolicy != nil {
+		hostConfig.RestartPolicy.Name = in.Configs.RestartPolicy.Name
+		hostConfig.RestartPolicy.MaximumRetryCount = int(in.Configs.RestartPolicy.MaxRetry)
 	}
 
-	if in.HostConfig != nil {
-		for _, m := range in.HostConfig.Mounts {
-			mounts = append(mounts, mount.Mount{
-				Type:     mount.Type(m.Type),
-				Source:   m.Source,
-				Target:   m.Target,
-				ReadOnly: m.ReadOnly,
-				// Consistency: mount.Consistency(m.Consistency),
-			})
+	if in.Configs.ResouceLimit != nil {
+		hostConfig.Resources = container.Resources{
+			NanoCPUs:          int64(in.Configs.ResouceLimit.CpuLimit * 10e9),
+			CPUShares:         toCPUShares(in.Configs.ResouceLimit.CpuPrio),
+			Memory:            int64(in.Configs.ResouceLimit.MemoryLimit * megaBytes),
+			MemoryReservation: int64(in.Configs.ResouceLimit.MemorySoftLimit * megaBytes),
 		}
 
-		hostConfig = &container.HostConfig{
-			NetworkMode: container.NetworkMode(in.HostConfig.NetworkMode),
-			AutoRemove:  in.HostConfig.AutoRemove,
-			IpcMode:     container.IpcMode(in.HostConfig.IpcMode),
-			Mounts:      mounts,
-			Privileged:  false, // force no privilege
-			StorageOpt:  in.HostConfig.StorageOpt,
-		}
-
-		if in.HostConfig.RestartPolicy != nil {
-			hostConfig.RestartPolicy = container.RestartPolicy{
-				Name:              in.HostConfig.RestartPolicy.Name,
-				MaximumRetryCount: int(in.HostConfig.RestartPolicy.MaxRetry),
-			}
-		}
-
-		if in.HostConfig.ResourceConfig != nil {
-			hostConfig.Resources = container.Resources{
-				NanoCPUs:          in.HostConfig.ResourceConfig.NanoCpus,
-				CPUShares:         in.HostConfig.ResourceConfig.CpuShares,
-				Memory:            in.HostConfig.ResourceConfig.MemLimit,
-				MemoryReservation: in.HostConfig.ResourceConfig.MemSoftLimit,
-			}
-
-			for _, d := range in.HostConfig.ResourceConfig.Devices {
-				hostConfig.Resources.Devices = append(hostConfig.Resources.Devices, container.DeviceMapping{
-					PathOnHost:        d.PathOnHost,
-					PathInContainer:   d.PathInContainer,
-					CgroupPermissions: d.CgroupPermissions,
-				})
+		if in.Configs.ResouceLimit.DiskLimit > 0.0 {
+			config.Labels["KS_SCMC_DISK_LIMIT"] = fmt.Sprintf("%f", in.Configs.ResouceLimit.DiskLimit)
+			hostConfig.StorageOpt = map[string]string{
+				"size": fmt.Sprintf("%fM", in.Configs.ResouceLimit.DiskLimit),
 			}
 		}
 	}
 
-	// do not use docker default bridge network
-	// networkConfig := &network.NetworkingConfig{
-	// 	EndpointsConfig: map[string]*network.EndpointSettings{"none": {}},
-	// }
-
-	containerNet := make(map[string]*model.ContainerNetwork)
-	virtualInfo := make(map[string]*model.VirNicInfo)
-	if len(in.NetworkConfig) > 0 {
+	var networkConfigCreate *network.NetworkingConfig
+	if len(in.Configs.Networks) > 0 {
 		networkConfig = &network.NetworkingConfig{
-			EndpointsConfig: make(map[string]*network.EndpointSettings, len(in.NetworkConfig)),
+			EndpointsConfig: make(map[string]*network.EndpointSettings, len(in.Configs.Networks)),
 		}
-		for _, v := range in.NetworkConfig {
-			virinfo := getVirNicInfo(v.Interface)
-			containerIP := v.IpAddress
-			masklen := virinfo.IPMaskLen
-			nextIP := virinfo.MinAvailableIP
-			if v.IpMask != "" {
-				masklen = model.TransMask(v.IpMask)
-			}
-
-			if v.IpAddress == "" {
-				containerIP, nextIP = assignIP(v.Interface, virinfo)
-			} else {
-				if conflic := model.IsConflict(v.Interface, v.IpAddress, masklen); conflic {
+		for _, v := range in.Configs.Networks {
+			if v.IpAddress != "" {
+				if !checkConfilt(v.Interface, v.IpAddress, int(v.IpPrefixLen)) {
 					return nil, rpc.ErrInvalidArgument
 				}
 			}
@@ -212,50 +229,40 @@ func (s *ContainerServer) Create(ctx context.Context, in *pb.CreateRequest) (*pb
 				IPAMConfig: &network.EndpointIPAMConfig{},
 			}
 
-			networkConfig.EndpointsConfig[v.Interface].IPAMConfig.IPv4Address = containerIP
-			networkConfig.EndpointsConfig[v.Interface].IPAddress = containerIP
-			networkConfig.EndpointsConfig[v.Interface].IPPrefixLen = masklen
+			networkConfig.EndpointsConfig[v.Interface].IPAMConfig.IPv4Address = v.IpAddress
+			networkConfig.EndpointsConfig[v.Interface].IPAddress = v.IpAddress
+			networkConfig.EndpointsConfig[v.Interface].IPPrefixLen = int(v.IpPrefixLen)
 			networkConfig.EndpointsConfig[v.Interface].MacAddress = v.MacAddress
 			networkConfig.EndpointsConfig[v.Interface].Gateway = v.Gateway
-			containerNet[v.Interface] = &model.ContainerNetwork{
-				IpAddress: containerIP,
-				MaskLen:   masklen,
-			}
-			virtualInfo[v.Interface] = &model.VirNicInfo{
-				IPAddress:      virinfo.IPAddress,
-				IPMaskLen:      virinfo.IPMaskLen,
-				MinAvailableIP: nextIP,
-			}
 		}
+
+		ifs := in.Configs.Networks[0].Interface
+		networkConfigCreate = &network.NetworkingConfig{
+			EndpointsConfig: make(map[string]*network.EndpointSettings, 1),
+		}
+		networkConfigCreate.EndpointsConfig[ifs] = networkConfig.EndpointsConfig[ifs]
 	}
 
-	if in.EnableGraphic {
-		if hostConfig == nil {
-			hostConfig = &container.HostConfig{}
-		}
-		containerGraphicSetup(in.Name, &config, hostConfig)
-	}
-
-	body, err := cli.ContainerCreate(context.Background(), &config, hostConfig, networkConfig, nil, in.Name)
+	body, err := cli.ContainerCreate(context.Background(), &config, &hostConfig, networkConfigCreate, nil, in.Configs.Name)
 	if err != nil {
 		log.Warnf("ContainerCreate: %v", err)
 		return nil, transDockerError(err)
 	}
 
-	for k, v := range containerNet {
-		v.ForShell = fmt.Sprintf("%s/%s/%s/%d", body.ID, k, v.IpAddress, v.MaskLen)
+	if len(in.Configs.Networks) > 1 {
+		for i := 1; i < len(in.Configs.Networks); i++ {
+			ifs := in.Configs.Networks[i].Interface
+			network := networkConfig.EndpointsConfig[ifs]
+			err = cli.NetworkConnect(context.Background(), ifs, body.ID, network)
+			if err != nil {
+				log.Warnf("NetworkConnect: %v", err)
+			}
+		}
 	}
-	cntrs := make(map[string]*model.ContainerNic)
-	cntrs[body.ID] = &model.ContainerNic{
-		ContainerNetworks: containerNet,
-	}
-	netinfo := &model.NetworkInfo{
-		Containers: cntrs,
-		VirtualNic: virtualInfo,
-	}
-	model.AddJSON(body.ID, netinfo)
 
-	reply.ContainerId = body.ID
+	reply := pb.CreateReply{
+		ContainerId: body.ID,
+	}
 	return &reply, nil
 }
 
@@ -354,7 +361,7 @@ func (s *ContainerServer) Restart(ctx context.Context, in *pb.RestartRequest) (*
 func (s *ContainerServer) Update(ctx context.Context, in *pb.UpdateRequest) (*pb.UpdateReply, error) {
 	reply := pb.UpdateReply{}
 
-	if in.ContainerId == "" || (in.ResourceConfig == nil && in.RestartPolicy == nil) {
+	if in.ContainerId == "" || (in.ResourceLimit == nil && in.RestartPolicy == nil && in.Networks == nil && in.SecurityConfig == nil) {
 		return nil, rpc.ErrInvalidArgument
 	}
 
@@ -364,11 +371,12 @@ func (s *ContainerServer) Update(ctx context.Context, in *pb.UpdateRequest) (*pb
 	}
 
 	config := container.UpdateConfig{}
-	if in.ResourceConfig != nil {
+	if in.ResourceLimit != nil {
 		config.Resources = container.Resources{
-			NanoCPUs:          in.ResourceConfig.NanoCpus,
-			Memory:            in.ResourceConfig.MemLimit,
-			MemoryReservation: in.ResourceConfig.MemSoftLimit,
+			NanoCPUs:          int64(in.ResourceLimit.CpuLimit * 10e9),
+			CPUShares:         toCPUShares(in.ResourceLimit.CpuPrio),
+			Memory:            int64(in.ResourceLimit.MemoryLimit * megaBytes),
+			MemoryReservation: int64(in.ResourceLimit.MemorySoftLimit * megaBytes),
 		}
 	}
 
@@ -383,6 +391,79 @@ func (s *ContainerServer) Update(ctx context.Context, in *pb.UpdateRequest) (*pb
 	if err != nil {
 		log.Warnf("ContainerUpdate: %v", err)
 		return nil, transDockerError(err)
+	}
+
+	if in.Networks != nil {
+		info, err := cli.ContainerInspect(context.Background(), in.ContainerId)
+		if err != nil {
+			log.Warnf("ContainerInspectWithRaw: %v", err)
+			return nil, transDockerError(err)
+		}
+
+		if info.NetworkSettings != nil {
+			m := make(map[string]struct{})
+			for _, v := range in.Networks {
+				m[v.Interface] = struct{}{}
+			}
+			for k, _ := range info.NetworkSettings.Networks {
+				if _, ok := m[k]; !ok {
+					if err = cli.NetworkDisconnect(context.Background(), k, in.ContainerId, true); err != nil {
+						log.Warnf("NetworkDisconnect: %v", err)
+					}
+				}
+			}
+
+			for _, v := range in.Networks {
+				_, ok := info.NetworkSettings.Networks[v.Interface]
+				if ok {
+					//修改
+					if v.IpAddress != info.NetworkSettings.Networks[v.Interface].IPAddress {
+						if err = cli.NetworkDisconnect(context.Background(), v.Interface, in.ContainerId, true); err != nil {
+							log.Warnf("NetworkDisconnect: %v", err)
+						}
+					} else {
+						continue
+					}
+				}
+				config := &network.EndpointSettings{
+					NetworkID:   v.Interface,
+					Gateway:     v.Gateway,
+					IPAddress:   v.IpAddress,
+					IPPrefixLen: int(v.IpPrefixLen),
+					MacAddress:  v.MacAddress,
+				}
+
+				config.IPAMConfig = &network.EndpointIPAMConfig{
+					IPv4Address: v.IpAddress,
+				}
+
+				err = cli.NetworkConnect(context.Background(), v.Interface, in.ContainerId, config)
+				if err != nil {
+					log.Warnf("NetworkConnect: %v", err)
+					return nil, transDockerError(err)
+				}
+			}
+		} else {
+			for _, v := range in.Networks {
+				config := &network.EndpointSettings{
+					NetworkID:   v.Interface,
+					Gateway:     v.Gateway,
+					IPAddress:   v.IpAddress,
+					IPPrefixLen: int(v.IpPrefixLen),
+					MacAddress:  v.MacAddress,
+				}
+
+				config.IPAMConfig = &network.EndpointIPAMConfig{
+					IPv4Address: v.IpAddress,
+				}
+
+				err = cli.NetworkConnect(context.Background(), v.Interface, in.ContainerId, config)
+				if err != nil {
+					log.Warnf("NetworkConnect: %v", err)
+					return nil, transDockerError(err)
+				}
+			}
+		}
 	}
 
 	if len(body.Warnings) > 0 {
@@ -413,14 +494,12 @@ func (s *ContainerServer) Remove(ctx context.Context, in *pb.RemoveRequest) (*pb
 			return nil, rpc.ErrInternal
 		}
 		reply.OkIds = append(reply.OkIds, id)
-		model.DelContainerNetInfo(id)
 	}
 
 	return &reply, nil
 }
 
 func (s *ContainerServer) Inspect(ctx context.Context, in *pb.InspectRequest) (*pb.InspectReply, error) {
-	reply := pb.InspectReply{}
 
 	cli, err := dockerCli()
 	if err != nil {
@@ -433,68 +512,91 @@ func (s *ContainerServer) Inspect(ctx context.Context, in *pb.InspectRequest) (*
 		return nil, transDockerError(err)
 	}
 
-	reply.Info = &pb.ContainerInfo{
-		Id:    info.ID,
-		Name:  strings.TrimPrefix(info.Name, "/"),
-		Image: info.Image,
-		State: info.State.Status,
+	image := info.Image
+	if info.Config != nil {
+		image = info.Config.Image
+	}
+
+	reply := pb.InspectReply{
+		Configs: &pb.ContainerConfigs{
+			ContainerId:  info.ID,
+			Name:         strings.TrimPrefix(info.Name, "/"),
+			Image:        image,
+			ResouceLimit: &pb.ResourceLimit{},
+		},
+	}
+
+	if info.State != nil {
+		reply.Configs.Status = info.State.Status
 	}
 
 	if info.Config != nil {
-		reply.Config = &pb.ContainerConfig{
-			Hostname:        info.Config.Hostname,
-			DomainName:      info.Config.Domainname,
-			User:            info.Config.User,
-			Image:           info.Config.Image,
-			WorkingDir:      info.Config.WorkingDir,
-			Entrypoint:      info.Config.Entrypoint,
-			Cmd:             info.Config.Cmd,
-			NetworkDisabled: info.Config.NetworkDisabled,
-			Labels:          info.Config.Labels,
+		if v, ok := info.Config.Labels["KS_SCMC_DESC"]; ok {
+			reply.Configs.Desc = v
 		}
+
+		if v, ok := info.Config.Labels["KS_SCMC_GRAPHIC"]; ok {
+			if v == "1" {
+				reply.Configs.EnableGraphic = true
+			}
+		}
+
 		if len(info.Config.Env) > 0 {
-			reply.Config.Env = make(map[string]string, len(info.Config.Env))
+			reply.Configs.Envs = make(map[string]string, len(info.Config.Env))
 			for _, e := range info.Config.Env {
 				parts := strings.SplitN(e, "=", 2)
 				if len(parts) >= 2 {
-					reply.Config.Env[parts[0]] = parts[1]
+					reply.Configs.Envs[parts[0]] = parts[1]
 				}
 			}
 		}
+
+		for _, m := range info.Mounts {
+			reply.Configs.Mounts = append(reply.Configs.Mounts, &pb.Mount{
+				Type:     string(m.Type),
+				Source:   m.Source,
+				Target:   m.Destination,
+				ReadOnly: !m.RW,
+			})
+		}
 	}
+
 	if info.HostConfig != nil {
-		reply.HostConfig = &pb.HostConfig{
-			RestartPolicy: &pb.RestartPolicy{
-				Name:     info.HostConfig.RestartPolicy.Name,
-				MaxRetry: int32(info.HostConfig.RestartPolicy.MaximumRetryCount),
-			},
-			ResourceConfig: &pb.ResourceConfig{
-				NanoCpus:     info.HostConfig.Resources.NanoCPUs,
-				CpuShares:    info.HostConfig.Resources.CPUShares,
-				MemLimit:     info.HostConfig.Resources.Memory,
-				MemSoftLimit: info.HostConfig.Resources.MemoryReservation,
-			},
+		reply.Configs.RestartPolicy = &pb.RestartPolicy{
+			Name:     info.HostConfig.RestartPolicy.Name,
+			MaxRetry: int32(info.HostConfig.RestartPolicy.MaximumRetryCount),
 		}
-		if len(info.HostConfig.StorageOpt) > 0 {
-			reply.HostConfig.StorageOpt = make(map[string]string, len(info.HostConfig.StorageOpt))
-			for k, v := range info.HostConfig.StorageOpt {
-				reply.HostConfig.StorageOpt[k] = v
-			}
+
+		reply.Configs.ResouceLimit = &pb.ResourceLimit{
+			CpuLimit:        float64(info.HostConfig.Resources.NanoCPUs) / 10e9,
+			CpuPrio:         fromCPUShares(info.HostConfig.Resources.CPUShares),
+			MemoryLimit:     float64(info.HostConfig.Resources.Memory) / megaBytes,
+			MemorySoftLimit: float64(info.HostConfig.Resources.MemoryReservation) / megaBytes,
+		}
+
+		if s, ok := info.HostConfig.StorageOpt["size"]; ok {
+			fmt.Sscanf(s, "%fM", &reply.Configs.ResouceLimit.DiskLimit)
 		}
 	}
 
-	// TODO retrive network infomation
-
-	for _, m := range info.Mounts {
-		reply.Mounts = append(reply.Mounts, &pb.Mount{
-			Type:     string(m.Type),
-			Source:   m.Source,
-			Target:   m.Destination,
-			ReadOnly: !m.RW,
-		})
+	if info.NetworkSettings != nil {
+		for k, m := range info.NetworkSettings.Networks {
+			if k == "bridge" {
+				continue // "bridge" 是默认创建的网络连接, 需要忽略
+			}
+			reply.Configs.Networks = append(reply.Configs.Networks, &pb.NetworkConfig{
+				Interface:   k,
+				ContainerId: info.ID,
+				IpAddress:   m.IPAddress,
+				IpPrefixLen: int32(m.IPPrefixLen),
+				MacAddress:  m.MacAddress,
+				Gateway:     m.Gateway,
+			})
+		}
 	}
 
 	return &reply, nil
+
 }
 
 func (s *ContainerServer) MonitorHistory(ctx context.Context, in *pb.MonitorHistoryRequest) (*pb.MonitorHistoryReply, error) {

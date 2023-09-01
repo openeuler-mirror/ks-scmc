@@ -16,7 +16,7 @@ func RuntimeLogWriter() {
 	for {
 		select {
 		case r := <-runtimeLogChan:
-			if err := model.CreateLog([]model.RuntimeLog{*r}); err != nil {
+			if err := model.CreateRuntimeLog([]*model.RuntimeLog{r}); err != nil {
 				log.Warnf("CreateLog %+v err=%v", *r, err)
 			}
 		}

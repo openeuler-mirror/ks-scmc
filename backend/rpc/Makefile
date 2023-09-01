@@ -13,6 +13,5 @@ $(BASE)/%: $(INC)/%.proto
 	mkdir -p $@
 	protoc -I $(INC) --go_out=$@ --go_opt=paths=source_relative \
 		--go-grpc_out=$@ --go-grpc_opt=paths=source_relative $(notdir $^)
-
 clean:
 	rm -rf $(BASE)

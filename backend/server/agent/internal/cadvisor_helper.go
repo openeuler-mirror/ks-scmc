@@ -64,34 +64,3 @@ func getContainerStats() (map[string]*pb.ResourceStat, error) {
 
 	return m, nil
 }
-
-func cpuUsage() (float64, error) {
-	cli, err := cadvisorClient()
-	if err != nil {
-		return 0, err
-	}
-
-	now := time.Now()
-	request := v1.ContainerInfoRequest{
-		Start: now.Add(-time.Second * 10),
-		End:   now,
-	}
-
-	info, err := cli.ContainerInfo("/", &request)
-	if err != nil {
-		log.Warnf("get container info(/) from cadvisor: %v", err)
-		return 0, err
-	}
-
-	if len(info.Stats) > 1 {
-		head := info.Stats[0]
-		tail := info.Stats[len(info.Stats)-1]
-
-		d := tail.Timestamp.Sub(head.Timestamp)
-		u := float64(tail.Cpu.Usage.Total-head.Cpu.Usage.Total) / float64(d.Nanoseconds())
-
-		return u, nil
-	}
-
-	return 0, nil
-}

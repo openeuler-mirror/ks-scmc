@@ -2,7 +2,6 @@ package internal
 
 import (
 	"context"
-	"fmt"
 	"net"
 	"regexp"
 	"time"
@@ -169,56 +168,4 @@ func (s *NodeServer) Update(ctx context.Context, in *pb.UpdateRequest) (*pb.Upda
 	}
 
 	return &pb.UpdateReply{}, nil
-}
-
-func (s *NodeServer) ListLog(ctx context.Context, in *pb.ListLogRequest) (*pb.ListLogReply, error) {
-	// 查询日志
-	condition := ""
-	if in.StartTime > 0 && in.StartTime < in.EndTime {
-		condition += fmt.Sprintf("create_at >= %d AND create_at <= %d", in.StartTime, in.EndTime)
-	}
-	if in.Level > 0 {
-		condition += fmt.Sprintf(" level = %d", in.Level)
-	}
-	if in.ContainerName != "" {
-		condition += fmt.Sprintf(" container_name = '%s'", model.MysqlEscape(in.ContainerName))
-	}
-	if in.Username != "" {
-		condition += fmt.Sprintf(" username = '%s'", model.MysqlEscape(in.Username))
-	}
-
-	p, data, err := model.ListLog(in.PageSize, in.PageNo, condition)
-	if err != nil {
-		log.Infof("ListLog err=%v", err)
-		return nil, rpc.ErrInternal
-	}
-
-	var reply pb.ListLogReply
-	for _, l := range data {
-		reply.Logs = append(reply.Logs, &pb.Log{
-			Id:            l.ID,
-			Level:         int64(l.Level),
-			NodeId:        l.NodeId,
-			NodeInfo:      l.NodeInfo,
-			ContainerName: l.ContainerName,
-			Username:      l.Username,
-			EventType:     l.EventType,
-			Detail:        l.Detail,
-			CreateAt:      l.CreatedAt,
-			UpdateAt:      l.UpdatedAt,
-			// HaveRead:      bool(l.HaveRead),
-			// EventStatus: ,
-		})
-	}
-	reply.PageNo = p.PageNo
-	reply.PageSize = p.PageSize
-	reply.TotalPages = p.TotalPages
-
-	return &reply, nil
-}
-
-func (s *NodeServer) UpdateLog(ctx context.Context, in *pb.UpdateLogRequest) (*pb.UpdateLogReply, error) {
-	// 更新日志 是否已读
-	// 同时也要更新节点信息未读告警总数(数据库事务)
-	return nil, nil
 }

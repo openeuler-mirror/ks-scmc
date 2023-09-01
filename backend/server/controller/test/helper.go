@@ -85,10 +85,5 @@ func initTestRunner() (context.Context, *grpc.ClientConn, error) {
 
 	ctx := context.TODO()
 
-	// ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
-	// ctx = metadata.AppendToOutgoingContext(ctx, "authorization", "")
-
-	// defer cancel()
-	// fn(ctx, conn)
 	return ctx, conn, nil
 }

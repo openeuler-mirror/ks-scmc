@@ -93,17 +93,3 @@ func TestUpdateNode(t *testing.T) {
 		}
 	})
 }
-
-func TestListLog(t *testing.T) {
-	testRunner(func(ctx context.Context, conn *grpc.ClientConn) {
-		cli := pb.NewNodeClient(conn)
-		request := pb.ListLogRequest{}
-
-		reply, err := cli.ListLog(ctx, &request)
-		if err != nil {
-			t.Errorf("ListLog: %v", err)
-		} else {
-			t.Logf("ListLog reply: %v", reply)
-		}
-	})
-}

@@ -8,6 +8,7 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"scmc/model"
+	"scmc/rpc/pb/logging"
 	pb "scmc/rpc/pb/node"
 )
 
@@ -67,59 +68,70 @@ func getAllNodeData(needStatus bool) []*pb.NodeInfo {
 	return nodeInfos
 }
 
-func writeNodeWatchLogs(n *pb.NodeInfo) []model.RuntimeLog {
-	var r []model.RuntimeLog
+func writeNodeWatchLogs(n *pb.NodeInfo) []*model.WarnLog {
+	var r []*model.WarnLog
 
 	if n.Status == nil {
-		r = append(r, model.RuntimeLog{
-			Level:     1,
-			NodeId:    n.Id,
-			NodeInfo:  n.Name + " " + n.Address,
-			EventType: "NODE_OFFLINE",
+		r = append(r, &model.WarnLog{
+			NodeId:      n.Id,
+			NodeInfo:    n.Name + " " + n.Address,
+			EventType:   int64(logging.EVENT_TYPE_WARN_NODE_OFFLINE),
+			EventModule: int64(logging.EVENT_MODULE_NODE),
+			Detail:      "节点离线",
 		})
 		return r
+	}
+
+	if n.Status.State != int64(pb.NodeState_Online) {
+		r = append(r, &model.WarnLog{
+			NodeId:      n.Id,
+			NodeInfo:    n.Name + " " + n.Address,
+			EventType:   int64(logging.EVENT_TYPE_WARN_NODE_ABNORMAL),
+			EventModule: int64(logging.EVENT_MODULE_NODE),
+			Detail:      "节点状态异常",
+		})
 	}
 
 	if n.RscLimit != nil {
 		if n.RscLimit.CpuLimit > 0 && n.Status.CpuStat != nil {
 			if n.Status.CpuStat.Used > n.RscLimit.CpuLimit {
-				r = append(r, model.RuntimeLog{
-					Level:     1,
-					NodeId:    n.Id,
-					NodeInfo:  n.Name + " " + n.Address,
-					EventType: "CPU_USAGE_EXCEED",
-					Detail:    fmt.Sprintf("CPU usage %.2f", n.Status.CpuStat.Used),
+				r = append(r, &model.WarnLog{
+					NodeId:      n.Id,
+					NodeInfo:    n.Name + " " + n.Address,
+					EventType:   int64(logging.EVENT_TYPE_WARN_RESOURCE_USAGE),
+					EventModule: int64(logging.EVENT_MODULE_NODE),
+					Detail:      fmt.Sprintf("CPU使用率 %.2f%%", n.Status.CpuStat.Used*100),
 				})
 			}
 		}
 
 		if n.RscLimit.MemoryLimit > 0 && n.Status.MemStat != nil {
 			if float64(n.Status.MemStat.Used) > n.RscLimit.MemoryLimit {
-				r = append(r, model.RuntimeLog{
-					Level:     1,
-					NodeId:    n.Id,
-					NodeInfo:  n.Name + " " + n.Address,
-					EventType: "MEMORY_USAGE_EXCEED",
-					Detail:    fmt.Sprintf("Memory usage %d", n.Status.MemStat.Used),
+				r = append(r, &model.WarnLog{
+					NodeId:      n.Id,
+					NodeInfo:    n.Name + " " + n.Address,
+					EventType:   int64(logging.EVENT_TYPE_WARN_RESOURCE_USAGE),
+					EventModule: int64(logging.EVENT_MODULE_NODE),
+					Detail:      fmt.Sprintf("内存使用 %d", n.Status.MemStat.Used),
 				})
 			}
 		}
 
 		if n.RscLimit.DiskLimit > 0 && n.Status.DiskStat != nil {
 			if float64(n.Status.DiskStat.Used) > n.RscLimit.DiskLimit {
-				r = append(r, model.RuntimeLog{
-					Level:     1,
-					NodeId:    n.Id,
-					NodeInfo:  n.Name + " " + n.Address,
-					EventType: "DISK_USAGE_EXCEED",
-					Detail:    fmt.Sprintf("Disk usage %d", n.Status.DiskStat.Used),
+				r = append(r, &model.WarnLog{
+					NodeId:      n.Id,
+					NodeInfo:    n.Name + " " + n.Address,
+					EventType:   int64(logging.EVENT_TYPE_WARN_RESOURCE_USAGE),
+					EventModule: int64(logging.EVENT_MODULE_NODE),
+					Detail:      fmt.Sprintf("磁盘使用 %d", n.Status.DiskStat.Used),
 				})
 			}
 		}
 	}
 
 	if len(r) > 0 {
-		model.CreateLog(r)
+		model.CreateWarnLog(r)
 	}
 
 	return r
@@ -129,10 +141,10 @@ func Watchdog() {
 	// TODO: check current host is the master
 	// TODO: container monitor data
 	for {
-		time.Sleep(10 * time.Second)
 		nodeData := getAllNodeData(true)
 		for _, n := range nodeData {
 			writeNodeWatchLogs(n)
 		}
+		time.Sleep(time.Minute)
 	}
 }

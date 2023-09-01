@@ -60,3 +60,7 @@ func getConn() (*gorm.DB, error) {
 
 	return db, nil
 }
+
+func GetConn() (*gorm.DB, error) {
+	return getConn()
+}

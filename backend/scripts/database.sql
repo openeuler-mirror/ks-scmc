@@ -40,9 +40,9 @@ CREATE TABLE IF NOT EXISTS `node_infos` (
   `address` VARCHAR(255) NOT NULL DEFAULT '' UNIQUE,
   `comment` VARCHAR(255) NOT NULL DEFAULT '',
   `unread_warn` BIGINT(20) NOT NULL DEFAULT 0 COMMENT '未读告警消息计数 ',
-  `cpu_limit` DECIMAL NOT NULL DEFAULT 0 COMMENT 'CPU核心数',
-  `memory_limit` DECIMAL(20) NOT NULL DEFAULT 0 COMMENT '内存使用 单位MB',
-  `disk_limit` DECIMAL(20) NOT NULL DEFAULT 0 COMMENT '磁盘使用 单位MB',
+  `cpu_limit` DECIMAL(10, 1) NOT NULL DEFAULT 0 COMMENT 'CPU核心数',
+  `memory_limit` DECIMAL(20, 1) NOT NULL DEFAULT 0 COMMENT '内存使用 单位MB',
+  `disk_limit` DECIMAL(20, 1) NOT NULL DEFAULT 0 COMMENT '磁盘使用 单位MB',
   `created_at` INT(20) NOT NULL DEFAULT 0,
   `updated_at` INT(20) NOT NULL DEFAULT 0
 ) ENGINE=InnoDB AUTO_INCREMENT=1;
@@ -66,7 +66,37 @@ CREATE TABLE IF NOT EXISTS `image_infos` (
   UNIQUE KEY index_uniqe (name, version)
 ) ENGINE=InnoDB AUTO_INCREMENT=1;
 
-/* 后续可能要把info warn日志分开存放 */
+CREATE TABLE IF NOT EXISTS `runtime_logs` (
+  `id` BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  `event_type` INT(10) NOT NULL DEFAULT '0' COMMENT '事件类型',
+  `event_type_` VARCHAR(255) NOT NULL DEFAULT '' COMMENT 'event_type调试',
+  `event_module` INT(10) NOT NULL DEFAULT '0' COMMENT '事件模块',
+  `node_id` BIGINT(20) NOT NULL DEFAULT 0,
+  `node_info` VARCHAR(255) NOT NULL DEFAULT '' COMMENT '节点名+节点IP',
+  `user_id` BIGINT(20) NOT NULL DEFAULT 0 COMMENT '操作用户ID',
+  `target` VARCHAR(255) NOT NULL DEFAULT '' COMMENT '操作对象',
+  `detail` VARCHAR(255) NOT NULL DEFAULT '' COMMENT '详情',
+  `status_code` INT(10) NOT NULL DEFAULT 0 COMMENT '错误码 0:OK',
+  `error` VARCHAR(255) NOT NULL DEFAULT '' COMMENT '错误信息',
+  `created_at` INT(20) NOT NULL DEFAULT 0,
+  `updated_at` INT(20) NOT NULL DEFAULT 0
+) ENGINE=InnoDB AUTO_INCREMENT=1;
+
+CREATE TABLE IF NOT EXISTS `warn_logs` (
+  `id` BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  `event_type` INT(10) NOT NULL DEFAULT '0' COMMENT '事件类型',
+  `event_module` INT(10) NOT NULL DEFAULT '0' COMMENT '事件模块',
+  `node_id` BIGINT(20) NOT NULL DEFAULT 0,
+  `node_info` VARCHAR(255) NOT NULL DEFAULT '' COMMENT '节点名+节点IP',
+  `container_id` VARCHAR(255) NOT NULL DEFAULT '' COMMENT '容器ID',
+  `container_name` VARCHAR(255) NOT NULL DEFAULT '' COMMENT '容器ID',
+  `detail` VARCHAR(255) NOT NULL DEFAULT '' COMMENT '详情',
+  `have_read` TINYINT(1) NOT NULL DEFAULT 0 COMMENT '0:未读 1:已读',
+  `created_at` INT(20) NOT NULL DEFAULT 0,
+  `updated_at` INT(20) NOT NULL DEFAULT 0
+) ENGINE=InnoDB AUTO_INCREMENT=1;
+
+/*
 CREATE TABLE IF NOT EXISTS `runtime_logs` (
   `id` BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
   `level` TINYINT(1) NOT NULL DEFAULT '0' COMMENT '1:info 2:warn',
@@ -77,9 +107,12 @@ CREATE TABLE IF NOT EXISTS `runtime_logs` (
   `username` VARCHAR(255) NOT NULL DEFAULT '' COMMENT '用户名',
   `detail` VARCHAR(255) NOT NULL DEFAULT '' COMMENT '详情',
   `have_read` TINYINT(1) NOT NULL DEFAULT 0 COMMENT '0:未读 1:已读',
+  `status` TINYINT(1) NOT NULL DEFAULT 0 COMMENT '0:fail 1:successful',
+  `response` VARCHAR(255) NOT NULL DEFAULT '' COMMENT 'err信息',
   `created_at` INT(20) NOT NULL DEFAULT 0,
   `updated_at` INT(20) NOT NULL DEFAULT 0
 ) ENGINE=InnoDB AUTO_INCREMENT=1;
+*/
 
 CREATE TABLE IF NOT EXISTS `container_templates` (
   `id` BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
@@ -89,3 +122,28 @@ CREATE TABLE IF NOT EXISTS `container_templates` (
   `updated_at` INT(20) NOT NULL DEFAULT 0
 ) ENGINE=InnoDB AUTO_INCREMENT=1;
 
+CREATE TABLE IF NOT EXISTS `container_configs` (
+  `id` BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  `node_id` BIGINT(20) NOT NULL DEFAULT 0,
+  `uuid` VARCHAR(255) NOT NULL UNIQUE DEFAULT '' COMMENT '内部生成UUID',
+  `container_id` VARCHAR(255) NOT NULL DEFAULT '' COMMENT 'docker容器ID',
+  `container_name` VARCHAR(255) NOT NULL DEFAULT '' COMMENT 'docker容器名称',
+  `security_config` TEXT NOT NULL COMMENT '安全配置 以JSON形式存储',
+  `created_at` INT(20) NOT NULL DEFAULT 0,
+  `updated_at` INT(20) NOT NULL DEFAULT 0
+) ENGINE=InnoDB AUTO_INCREMENT=1;
+
+CREATE TABLE IF NOT EXISTS `container_backups` (
+  `id` BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  `node_id` BIGINT(20) NOT NULL DEFAULT 0,
+  `uuid` VARCHAR(255) NOT NULL DEFAULT '' COMMENT '内部生成UUID',
+  `container_id` VARCHAR(255) NOT NULL DEFAULT '' COMMENT 'docker容器ID',
+  `backup_name` VARCHAR(255) NOT NULL DEFAULT '' UNIQUE COMMENT '备份名称',
+  `backup_desc` VARCHAR(255) NOT NULL DEFAULT '' COMMENT '备份描述',
+  `image_ref` VARCHAR(255) NOT NULL COMMENT '备份镜像repo:tag',
+  `image_id` VARCHAR(255) NOT NULL COMMENT '备份镜像ID',
+  `image_size` INT(20) NOT NULL DEFAULT 0 COMMENT '备份文件大小',
+  `status` TINYINT NOT NULL DEFAULT 0 COMMENT '备份任务状态 0:进行中 1:成功 2:失败',
+  `created_at` INT(20) NOT NULL DEFAULT 0,
+  `updated_at` INT(20) NOT NULL DEFAULT 0
+) ENGINE=InnoDB AUTO_INCREMENT=1;

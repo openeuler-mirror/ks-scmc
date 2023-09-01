@@ -38,6 +38,7 @@ func Server() (*grpc.Server, error) {
 	node.RegisterNodeServer(s, &internal.NodeServer{})
 	go internal.NodeWhitelistConfig()
 	go internal.ContainerWhiteCongig()
+	go internal.CPUUsageProbe()
 
 	return s, nil
 }

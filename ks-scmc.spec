@@ -36,16 +36,20 @@ cd backend && make DESTDIR=$RPM_BUILD_ROOT install && cd -
 %post
 %systemd_post %{name}-agent.service
 %systemd_post %{name}-controller.service
+%systemd_post %{name}-authz.service
 
 %preun
 %systemd_preun %{name}-agent.service
 %systemd_preun %{name}-controller.service
+%systemd_preun %{name}-authz.service
 
 %files
 %defattr(-,root,root)
 %{_bindir}/%{name}-server
+%{_bindir}/%{name}-authz
 %{_unitdir}/%{name}-agent.service
 %{_unitdir}/%{name}-controller.service
+%{_unitdir}/%{name}-authz.service
 %dir %attr(755, root, root) %{_var}/lib/%{name}
 %dir %attr(755, root, root) %{_var}/log/%{name}
 %dir %attr(755, root, root) %{_sysconfdir}/%{name}/

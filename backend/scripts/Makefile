@@ -10,6 +10,7 @@ all: access-container-gui \
 	graphic_rc \
 	$(PROJECT)-agent.service \
 	$(PROJECT)-controller.service \
+	$(PROJECT)-authz.service \
 
 .PHONY: install
 install:
@@ -23,3 +24,4 @@ install:
 	install -m 755 -d $(DESTDIR)$(SYSTEMD)/
 	install -m 644 $(PROJECT)-agent.service $(DESTDIR)$(SYSTEMD)/
 	install -m 644 $(PROJECT)-controller.service $(DESTDIR)$(SYSTEMD)/
+	install -m 644 $(PROJECT)-authz.service $(DESTDIR)$(SYSTEMD)/

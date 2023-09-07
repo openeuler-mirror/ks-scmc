@@ -28,17 +28,23 @@ type ContainerClient interface {
 	Update(ctx context.Context, in *UpdateRequest, opts ...grpc.CallOption) (*UpdateReply, error)
 	Kill(ctx context.Context, in *KillRequest, opts ...grpc.CallOption) (*KillReply, error)
 	Status(ctx context.Context, in *StatusRequest, opts ...grpc.CallOption) (*StatusReply, error)
+	// 容器备份客户端接口
+	CreateBackup(ctx context.Context, in *CreateBackupRequest, opts ...grpc.CallOption) (*CreateBackupReply, error)
+	UpdateBackup(ctx context.Context, in *UpdateBackupRequest, opts ...grpc.CallOption) (*UpdateBackupReply, error)
+	ResumeBackup(ctx context.Context, in *ResumeBackupRequest, opts ...grpc.CallOption) (*ResumeBackupReply, error)
+	RemoveBackup(ctx context.Context, in *RemoveBackupRequest, opts ...grpc.CallOption) (*RemoveBackupReply, error)
+	ListBackup(ctx context.Context, in *ListBackupRequest, opts ...grpc.CallOption) (*ListBackupReply, error)
+	// 容器备份内部接口
+	AddBackupJob(ctx context.Context, in *AddBackupJobRequest, opts ...grpc.CallOption) (*AddBackupJobReply, error)
+	GetBackupJob(ctx context.Context, in *GetBackupJobRequest, opts ...grpc.CallOption) (*GetBackupJobReply, error)
+	DelBackupJob(ctx context.Context, in *DelBackupJobRequest, opts ...grpc.CallOption) (*DelBackupJobReply, error)
 	ListTemplate(ctx context.Context, in *ListTemplateRequest, opts ...grpc.CallOption) (*ListTemplateReply, error)
 	CreateTemplate(ctx context.Context, in *CreateTemplateRequest, opts ...grpc.CallOption) (*CreateTemplateReply, error)
 	UpdateTemplate(ctx context.Context, in *UpdateTemplateRequest, opts ...grpc.CallOption) (*UpdateTemplateReply, error)
 	RemoveTemplate(ctx context.Context, in *RemoveTemplateRequest, opts ...grpc.CallOption) (*RemoveTemplateReply, error)
+	InspectTemplate(ctx context.Context, in *InspectTemplateRequest, opts ...grpc.CallOption) (*InspectTemplateReply, error)
 	// 监控历史数据查询
 	MonitorHistory(ctx context.Context, in *MonitorHistoryRequest, opts ...grpc.CallOption) (*MonitorHistoryReply, error)
-	// 安全配置
-	UpdateProcProtect(ctx context.Context, in *UpdateProcProtectRequest, opts ...grpc.CallOption) (*UpdateProcProtectReply, error)
-	UpdateNetProcProtect(ctx context.Context, in *UpdateNetProcProtectRequest, opts ...grpc.CallOption) (*UpdateNetProcProtectReply, error)
-	UpdateFileProtect(ctx context.Context, in *UpdateFileProtectRequest, opts ...grpc.CallOption) (*UpdateFileProtectReply, error)
-	UpdateNetworkRule(ctx context.Context, in *UpdateNetworkRuleRequest, opts ...grpc.CallOption) (*UpdateNetworkRuleReply, error)
 }
 
 type containerClient struct {
@@ -139,6 +145,78 @@ func (c *containerClient) Status(ctx context.Context, in *StatusRequest, opts ..
 	return out, nil
 }
 
+func (c *containerClient) CreateBackup(ctx context.Context, in *CreateBackupRequest, opts ...grpc.CallOption) (*CreateBackupReply, error) {
+	out := new(CreateBackupReply)
+	err := c.cc.Invoke(ctx, "/container.Container/CreateBackup", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *containerClient) UpdateBackup(ctx context.Context, in *UpdateBackupRequest, opts ...grpc.CallOption) (*UpdateBackupReply, error) {
+	out := new(UpdateBackupReply)
+	err := c.cc.Invoke(ctx, "/container.Container/UpdateBackup", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *containerClient) ResumeBackup(ctx context.Context, in *ResumeBackupRequest, opts ...grpc.CallOption) (*ResumeBackupReply, error) {
+	out := new(ResumeBackupReply)
+	err := c.cc.Invoke(ctx, "/container.Container/ResumeBackup", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *containerClient) RemoveBackup(ctx context.Context, in *RemoveBackupRequest, opts ...grpc.CallOption) (*RemoveBackupReply, error) {
+	out := new(RemoveBackupReply)
+	err := c.cc.Invoke(ctx, "/container.Container/RemoveBackup", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *containerClient) ListBackup(ctx context.Context, in *ListBackupRequest, opts ...grpc.CallOption) (*ListBackupReply, error) {
+	out := new(ListBackupReply)
+	err := c.cc.Invoke(ctx, "/container.Container/ListBackup", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *containerClient) AddBackupJob(ctx context.Context, in *AddBackupJobRequest, opts ...grpc.CallOption) (*AddBackupJobReply, error) {
+	out := new(AddBackupJobReply)
+	err := c.cc.Invoke(ctx, "/container.Container/AddBackupJob", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *containerClient) GetBackupJob(ctx context.Context, in *GetBackupJobRequest, opts ...grpc.CallOption) (*GetBackupJobReply, error) {
+	out := new(GetBackupJobReply)
+	err := c.cc.Invoke(ctx, "/container.Container/GetBackupJob", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *containerClient) DelBackupJob(ctx context.Context, in *DelBackupJobRequest, opts ...grpc.CallOption) (*DelBackupJobReply, error) {
+	out := new(DelBackupJobReply)
+	err := c.cc.Invoke(ctx, "/container.Container/DelBackupJob", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *containerClient) ListTemplate(ctx context.Context, in *ListTemplateRequest, opts ...grpc.CallOption) (*ListTemplateReply, error) {
 	out := new(ListTemplateReply)
 	err := c.cc.Invoke(ctx, "/container.Container/ListTemplate", in, out, opts...)
@@ -175,45 +253,18 @@ func (c *containerClient) RemoveTemplate(ctx context.Context, in *RemoveTemplate
 	return out, nil
 }
 
+func (c *containerClient) InspectTemplate(ctx context.Context, in *InspectTemplateRequest, opts ...grpc.CallOption) (*InspectTemplateReply, error) {
+	out := new(InspectTemplateReply)
+	err := c.cc.Invoke(ctx, "/container.Container/InspectTemplate", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *containerClient) MonitorHistory(ctx context.Context, in *MonitorHistoryRequest, opts ...grpc.CallOption) (*MonitorHistoryReply, error) {
 	out := new(MonitorHistoryReply)
 	err := c.cc.Invoke(ctx, "/container.Container/MonitorHistory", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *containerClient) UpdateProcProtect(ctx context.Context, in *UpdateProcProtectRequest, opts ...grpc.CallOption) (*UpdateProcProtectReply, error) {
-	out := new(UpdateProcProtectReply)
-	err := c.cc.Invoke(ctx, "/container.Container/UpdateProcProtect", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *containerClient) UpdateNetProcProtect(ctx context.Context, in *UpdateNetProcProtectRequest, opts ...grpc.CallOption) (*UpdateNetProcProtectReply, error) {
-	out := new(UpdateNetProcProtectReply)
-	err := c.cc.Invoke(ctx, "/container.Container/UpdateNetProcProtect", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *containerClient) UpdateFileProtect(ctx context.Context, in *UpdateFileProtectRequest, opts ...grpc.CallOption) (*UpdateFileProtectReply, error) {
-	out := new(UpdateFileProtectReply)
-	err := c.cc.Invoke(ctx, "/container.Container/UpdateFileProtect", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *containerClient) UpdateNetworkRule(ctx context.Context, in *UpdateNetworkRuleRequest, opts ...grpc.CallOption) (*UpdateNetworkRuleReply, error) {
-	out := new(UpdateNetworkRuleReply)
-	err := c.cc.Invoke(ctx, "/container.Container/UpdateNetworkRule", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -234,17 +285,23 @@ type ContainerServer interface {
 	Update(context.Context, *UpdateRequest) (*UpdateReply, error)
 	Kill(context.Context, *KillRequest) (*KillReply, error)
 	Status(context.Context, *StatusRequest) (*StatusReply, error)
+	// 容器备份客户端接口
+	CreateBackup(context.Context, *CreateBackupRequest) (*CreateBackupReply, error)
+	UpdateBackup(context.Context, *UpdateBackupRequest) (*UpdateBackupReply, error)
+	ResumeBackup(context.Context, *ResumeBackupRequest) (*ResumeBackupReply, error)
+	RemoveBackup(context.Context, *RemoveBackupRequest) (*RemoveBackupReply, error)
+	ListBackup(context.Context, *ListBackupRequest) (*ListBackupReply, error)
+	// 容器备份内部接口
+	AddBackupJob(context.Context, *AddBackupJobRequest) (*AddBackupJobReply, error)
+	GetBackupJob(context.Context, *GetBackupJobRequest) (*GetBackupJobReply, error)
+	DelBackupJob(context.Context, *DelBackupJobRequest) (*DelBackupJobReply, error)
 	ListTemplate(context.Context, *ListTemplateRequest) (*ListTemplateReply, error)
 	CreateTemplate(context.Context, *CreateTemplateRequest) (*CreateTemplateReply, error)
 	UpdateTemplate(context.Context, *UpdateTemplateRequest) (*UpdateTemplateReply, error)
 	RemoveTemplate(context.Context, *RemoveTemplateRequest) (*RemoveTemplateReply, error)
+	InspectTemplate(context.Context, *InspectTemplateRequest) (*InspectTemplateReply, error)
 	// 监控历史数据查询
 	MonitorHistory(context.Context, *MonitorHistoryRequest) (*MonitorHistoryReply, error)
-	// 安全配置
-	UpdateProcProtect(context.Context, *UpdateProcProtectRequest) (*UpdateProcProtectReply, error)
-	UpdateNetProcProtect(context.Context, *UpdateNetProcProtectRequest) (*UpdateNetProcProtectReply, error)
-	UpdateFileProtect(context.Context, *UpdateFileProtectRequest) (*UpdateFileProtectReply, error)
-	UpdateNetworkRule(context.Context, *UpdateNetworkRuleRequest) (*UpdateNetworkRuleReply, error)
 	mustEmbedUnimplementedContainerServer()
 }
 
@@ -282,6 +339,30 @@ func (UnimplementedContainerServer) Kill(context.Context, *KillRequest) (*KillRe
 func (UnimplementedContainerServer) Status(context.Context, *StatusRequest) (*StatusReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Status not implemented")
 }
+func (UnimplementedContainerServer) CreateBackup(context.Context, *CreateBackupRequest) (*CreateBackupReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateBackup not implemented")
+}
+func (UnimplementedContainerServer) UpdateBackup(context.Context, *UpdateBackupRequest) (*UpdateBackupReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateBackup not implemented")
+}
+func (UnimplementedContainerServer) ResumeBackup(context.Context, *ResumeBackupRequest) (*ResumeBackupReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ResumeBackup not implemented")
+}
+func (UnimplementedContainerServer) RemoveBackup(context.Context, *RemoveBackupRequest) (*RemoveBackupReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RemoveBackup not implemented")
+}
+func (UnimplementedContainerServer) ListBackup(context.Context, *ListBackupRequest) (*ListBackupReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListBackup not implemented")
+}
+func (UnimplementedContainerServer) AddBackupJob(context.Context, *AddBackupJobRequest) (*AddBackupJobReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AddBackupJob not implemented")
+}
+func (UnimplementedContainerServer) GetBackupJob(context.Context, *GetBackupJobRequest) (*GetBackupJobReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetBackupJob not implemented")
+}
+func (UnimplementedContainerServer) DelBackupJob(context.Context, *DelBackupJobRequest) (*DelBackupJobReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DelBackupJob not implemented")
+}
 func (UnimplementedContainerServer) ListTemplate(context.Context, *ListTemplateRequest) (*ListTemplateReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListTemplate not implemented")
 }
@@ -294,20 +375,11 @@ func (UnimplementedContainerServer) UpdateTemplate(context.Context, *UpdateTempl
 func (UnimplementedContainerServer) RemoveTemplate(context.Context, *RemoveTemplateRequest) (*RemoveTemplateReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RemoveTemplate not implemented")
 }
+func (UnimplementedContainerServer) InspectTemplate(context.Context, *InspectTemplateRequest) (*InspectTemplateReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method InspectTemplate not implemented")
+}
 func (UnimplementedContainerServer) MonitorHistory(context.Context, *MonitorHistoryRequest) (*MonitorHistoryReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method MonitorHistory not implemented")
-}
-func (UnimplementedContainerServer) UpdateProcProtect(context.Context, *UpdateProcProtectRequest) (*UpdateProcProtectReply, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method UpdateProcProtect not implemented")
-}
-func (UnimplementedContainerServer) UpdateNetProcProtect(context.Context, *UpdateNetProcProtectRequest) (*UpdateNetProcProtectReply, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method UpdateNetProcProtect not implemented")
-}
-func (UnimplementedContainerServer) UpdateFileProtect(context.Context, *UpdateFileProtectRequest) (*UpdateFileProtectReply, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method UpdateFileProtect not implemented")
-}
-func (UnimplementedContainerServer) UpdateNetworkRule(context.Context, *UpdateNetworkRuleRequest) (*UpdateNetworkRuleReply, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method UpdateNetworkRule not implemented")
 }
 func (UnimplementedContainerServer) mustEmbedUnimplementedContainerServer() {}
 
@@ -502,6 +574,150 @@ func _Container_Status_Handler(srv interface{}, ctx context.Context, dec func(in
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Container_CreateBackup_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateBackupRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ContainerServer).CreateBackup(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/container.Container/CreateBackup",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ContainerServer).CreateBackup(ctx, req.(*CreateBackupRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Container_UpdateBackup_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateBackupRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ContainerServer).UpdateBackup(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/container.Container/UpdateBackup",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ContainerServer).UpdateBackup(ctx, req.(*UpdateBackupRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Container_ResumeBackup_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ResumeBackupRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ContainerServer).ResumeBackup(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/container.Container/ResumeBackup",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ContainerServer).ResumeBackup(ctx, req.(*ResumeBackupRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Container_RemoveBackup_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RemoveBackupRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ContainerServer).RemoveBackup(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/container.Container/RemoveBackup",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ContainerServer).RemoveBackup(ctx, req.(*RemoveBackupRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Container_ListBackup_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListBackupRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ContainerServer).ListBackup(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/container.Container/ListBackup",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ContainerServer).ListBackup(ctx, req.(*ListBackupRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Container_AddBackupJob_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AddBackupJobRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ContainerServer).AddBackupJob(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/container.Container/AddBackupJob",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ContainerServer).AddBackupJob(ctx, req.(*AddBackupJobRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Container_GetBackupJob_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetBackupJobRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ContainerServer).GetBackupJob(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/container.Container/GetBackupJob",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ContainerServer).GetBackupJob(ctx, req.(*GetBackupJobRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Container_DelBackupJob_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DelBackupJobRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ContainerServer).DelBackupJob(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/container.Container/DelBackupJob",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ContainerServer).DelBackupJob(ctx, req.(*DelBackupJobRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _Container_ListTemplate_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(ListTemplateRequest)
 	if err := dec(in); err != nil {
@@ -574,6 +790,24 @@ func _Container_RemoveTemplate_Handler(srv interface{}, ctx context.Context, dec
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Container_InspectTemplate_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(InspectTemplateRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ContainerServer).InspectTemplate(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/container.Container/InspectTemplate",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ContainerServer).InspectTemplate(ctx, req.(*InspectTemplateRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _Container_MonitorHistory_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(MonitorHistoryRequest)
 	if err := dec(in); err != nil {
@@ -588,78 +822,6 @@ func _Container_MonitorHistory_Handler(srv interface{}, ctx context.Context, dec
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(ContainerServer).MonitorHistory(ctx, req.(*MonitorHistoryRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Container_UpdateProcProtect_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(UpdateProcProtectRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(ContainerServer).UpdateProcProtect(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/container.Container/UpdateProcProtect",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ContainerServer).UpdateProcProtect(ctx, req.(*UpdateProcProtectRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Container_UpdateNetProcProtect_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(UpdateNetProcProtectRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(ContainerServer).UpdateNetProcProtect(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/container.Container/UpdateNetProcProtect",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ContainerServer).UpdateNetProcProtect(ctx, req.(*UpdateNetProcProtectRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Container_UpdateFileProtect_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(UpdateFileProtectRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(ContainerServer).UpdateFileProtect(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/container.Container/UpdateFileProtect",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ContainerServer).UpdateFileProtect(ctx, req.(*UpdateFileProtectRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Container_UpdateNetworkRule_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(UpdateNetworkRuleRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(ContainerServer).UpdateNetworkRule(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/container.Container/UpdateNetworkRule",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ContainerServer).UpdateNetworkRule(ctx, req.(*UpdateNetworkRuleRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -712,6 +874,38 @@ var Container_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Container_Status_Handler,
 		},
 		{
+			MethodName: "CreateBackup",
+			Handler:    _Container_CreateBackup_Handler,
+		},
+		{
+			MethodName: "UpdateBackup",
+			Handler:    _Container_UpdateBackup_Handler,
+		},
+		{
+			MethodName: "ResumeBackup",
+			Handler:    _Container_ResumeBackup_Handler,
+		},
+		{
+			MethodName: "RemoveBackup",
+			Handler:    _Container_RemoveBackup_Handler,
+		},
+		{
+			MethodName: "ListBackup",
+			Handler:    _Container_ListBackup_Handler,
+		},
+		{
+			MethodName: "AddBackupJob",
+			Handler:    _Container_AddBackupJob_Handler,
+		},
+		{
+			MethodName: "GetBackupJob",
+			Handler:    _Container_GetBackupJob_Handler,
+		},
+		{
+			MethodName: "DelBackupJob",
+			Handler:    _Container_DelBackupJob_Handler,
+		},
+		{
 			MethodName: "ListTemplate",
 			Handler:    _Container_ListTemplate_Handler,
 		},
@@ -728,24 +922,12 @@ var Container_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Container_RemoveTemplate_Handler,
 		},
 		{
+			MethodName: "InspectTemplate",
+			Handler:    _Container_InspectTemplate_Handler,
+		},
+		{
 			MethodName: "MonitorHistory",
 			Handler:    _Container_MonitorHistory_Handler,
-		},
-		{
-			MethodName: "UpdateProcProtect",
-			Handler:    _Container_UpdateProcProtect_Handler,
-		},
-		{
-			MethodName: "UpdateNetProcProtect",
-			Handler:    _Container_UpdateNetProcProtect_Handler,
-		},
-		{
-			MethodName: "UpdateFileProtect",
-			Handler:    _Container_UpdateFileProtect_Handler,
-		},
-		{
-			MethodName: "UpdateNetworkRule",
-			Handler:    _Container_UpdateNetworkRule_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

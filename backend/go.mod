@@ -11,6 +11,7 @@ require (
 	github.com/docker/docker v20.10.12+incompatible
 	github.com/docker/docker-credential-helpers v0.6.4 // indirect
 	github.com/docker/go-connections v0.4.0 // indirect
+	github.com/docker/go-plugins-helpers v0.0.0-20211224144127-6eecb7beb651
 	github.com/fatih/gomodifytags v1.16.0 // indirect
 	github.com/fvbommel/sortorder v1.0.2 // indirect
 	github.com/go-sql-driver/mysql v1.6.0
@@ -30,10 +31,11 @@ require (
 	github.com/spf13/viper v1.4.0
 	github.com/stretchr/testify v1.7.0
 	github.com/theupdateframework/notary v0.7.0 // indirect
+	github.com/tklauser/go-sysconf v0.3.10 // indirect
 	github.com/uudashr/gopkgs/v2 v2.1.2 // indirect
-	github.com/vishvananda/netlink v1.1.1-0.20201029203352-d40f9887b852
 	github.com/yusufpapurcu/wmi v1.2.2 // indirect
 	golang.org/x/crypto v0.0.0-20210322153248-0c34fe9e7dc2
+	golang.org/x/sys v0.0.0-20220128215802-99c3d69c2c27
 	golang.org/x/tools/gopls v0.7.5 // indirect
 	google.golang.org/grpc v1.43.0
 	google.golang.org/grpc/cmd/protoc-gen-go-grpc v1.1.0 // indirect

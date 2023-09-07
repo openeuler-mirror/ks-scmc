@@ -31,140 +31,6 @@ func TestContainerList(t *testing.T) {
 	})
 }
 
-func TestContainerCreate(t *testing.T) {
-	testRunner(func(ctx context.Context, conn *grpc.ClientConn) {
-		cli := pb.NewContainerClient(conn)
-		request := pb.CreateRequest{
-			NodeId: 1,
-			Name:   "cadvisor",
-			Config: &pb.ContainerConfig{
-				Image: "gcr.io/cadvisor/cadvisor:v0.36.0",
-				Env: map[string]string{
-					"ENV_TEST": "1",
-				},
-				Cmd: []string{
-					"-storage_driver=influxdb",
-					"-storage_driver_db=cadvisor",
-					"-storage_driver_host=influxdb:8086",
-				},
-			},
-			HostConfig: &pb.HostConfig{
-				Privileged: true,
-				RestartPolicy: &pb.RestartPolicy{
-					Name: "always",
-				},
-				ResourceConfig: &pb.ResourceConfig{
-					NanoCpus:     1e9,
-					MemLimit:     1 << 30,
-					MemSoftLimit: 512 * (1 << 20),
-					Devices: []*pb.DeviceMapping{
-						{
-							PathOnHost:        "/dev/kmsg",
-							PathInContainer:   "/dev/kmsg",
-							CgroupPermissions: "rwm",
-						},
-					},
-				},
-				Mounts: []*pb.Mount{
-					{
-						Type:     "bind",
-						Source:   "/",
-						Target:   "/rootfs",
-						ReadOnly: true,
-					},
-					{
-						Type:     "bind",
-						Source:   "/var/run",
-						Target:   "/var/run",
-						ReadOnly: true,
-					},
-					{
-						Type:     "bind",
-						Source:   "/sys",
-						Target:   "/sys",
-						ReadOnly: true,
-					},
-					{
-						Type:     "bind",
-						Source:   "/var/lib/docker/",
-						Target:   "/var/lib/docker/",
-						ReadOnly: true,
-					},
-					{
-						Type:     "bind",
-						Source:   "/dev/disk/",
-						Target:   "/dev/disk/",
-						ReadOnly: true,
-					},
-				},
-			},
-			// NetworkConfig: map[string]*pb.EndpointSetting{
-			// 	"bridge": {},
-			// },
-		}
-
-		reply, err := cli.Create(ctx, &request)
-		if err != nil {
-			t.Errorf("Create: %v", err)
-		}
-
-		t.Logf("Create reply: %+v", reply)
-	})
-}
-
-func TestContainerCreate2(t *testing.T) {
-	testRunner(func(ctx context.Context, conn *grpc.ClientConn) {
-		cli := pb.NewContainerClient(conn)
-		request := pb.CreateRequest{
-			NodeId: 1,
-			Name:   "gparted",
-			Config: &pb.ContainerConfig{
-				Image: "jess/gparted",
-			},
-			EnableGraphic: true,
-		}
-
-		reply, err := cli.Create(ctx, &request)
-		if err != nil {
-			t.Errorf("Create: %v", err)
-		}
-
-		t.Logf("Create reply: %+v", reply)
-	})
-}
-
-func TestContainerCreateWithCmd(t *testing.T) {
-	testRunner(func(ctx context.Context, conn *grpc.ClientConn) {
-		cli := pb.NewContainerClient(conn)
-		request := pb.CreateRequest{
-			NodeId: 1,
-			Name:   "busybox",
-			Config: &pb.ContainerConfig{
-				Image: "busybox",
-				Cmd:   []string{"ip", "addr"},
-			},
-			HostConfig: &pb.HostConfig{
-				Privileged: true,
-			},
-			// NetworkConfig: map[string]*pb.EndpointSetting{
-			// 	"br0": {
-			// 		IpamConfig: &pb.IPAMConfig{
-			// 			Ipv4Address: "172.28.5.10",
-			// 		},
-			// 		MacAddress: "12:34:56:78:9a:bc",
-			// 	},
-			// },
-		}
-
-		reply, err := cli.Create(ctx, &request)
-		if err != nil {
-			t.Errorf("Create: %v", err)
-		}
-
-		t.Logf("Create reply: %+v", reply)
-	})
-}
-
 func TestContainerStart(t *testing.T) {
 	testRunner(func(ctx context.Context, conn *grpc.ClientConn) {
 		cli := pb.NewContainerClient(conn)
@@ -277,31 +143,6 @@ func TestContainerStatus(t *testing.T) {
 		}
 
 		t.Logf("Status reply: %v", reply)
-	})
-}
-
-func TestContainerUpdate(t *testing.T) {
-	testRunner(func(ctx context.Context, conn *grpc.ClientConn) {
-		cli := pb.NewContainerClient(conn)
-		request := pb.UpdateRequest{
-			NodeId:      1,
-			ContainerId: "cadvisor",
-			ResourceConfig: &pb.ResourceConfig{
-				NanoCpus:     2e9,
-				MemLimit:     512 * (1 << 20),
-				MemSoftLimit: 256 * (1 << 20),
-			},
-			RestartPolicy: &pb.RestartPolicy{
-				Name: "unless-stopped",
-			},
-		}
-
-		reply, err := cli.Update(ctx, &request)
-		if err != nil {
-			t.Errorf("Update: %v", err)
-		}
-
-		t.Logf("Update reply: %+v", reply)
 	})
 }
 
@@ -545,5 +386,96 @@ func TestRemovetemplate(t *testing.T) {
 		}
 
 		t.Logf("Update reply: %+v", reply)
+	})
+}
+
+func TestContainerCreateBackup(t *testing.T) {
+	testRunner(func(ctx context.Context, conn *grpc.ClientConn) {
+		cli := pb.NewContainerClient(conn)
+
+		request := pb.CreateBackupRequest{
+			NodeId:      1,
+			ContainerId: "",
+			BackupDesc:  "backup test",
+		}
+		reply, err := cli.CreateBackup(ctx, &request)
+
+		if err != nil {
+			t.Errorf("CreateBackup: %v", err)
+		} else {
+			t.Logf("CreateBackup reply: %+v", reply)
+		}
+	})
+}
+
+func TestContainerListBackup(t *testing.T) {
+	testRunner(func(ctx context.Context, conn *grpc.ClientConn) {
+		cli := pb.NewContainerClient(conn)
+
+		request := pb.ListBackupRequest{
+			NodeId:      1,
+			ContainerId: "",
+		}
+		reply, err := cli.ListBackup(ctx, &request)
+
+		if err != nil {
+			t.Errorf("ListBackup: %v", err)
+		} else {
+			t.Logf("ListBackup reply: %+v", reply)
+		}
+	})
+}
+
+func TestContainerUpdateBackup(t *testing.T) {
+	testRunner(func(ctx context.Context, conn *grpc.ClientConn) {
+		cli := pb.NewContainerClient(conn)
+
+		request := pb.UpdateBackupRequest{
+			Id:         1,
+			BackupDesc: "update backup desc",
+		}
+		reply, err := cli.UpdateBackup(ctx, &request)
+
+		if err != nil {
+			t.Errorf("UpdateBackup: %v", err)
+		} else {
+			t.Logf("UpdateBackup reply: %+v", reply)
+		}
+	})
+}
+
+func TestContainerRemoveBackup(t *testing.T) {
+	testRunner(func(ctx context.Context, conn *grpc.ClientConn) {
+		cli := pb.NewContainerClient(conn)
+
+		request := pb.RemoveBackupRequest{
+			Id: 1,
+		}
+		reply, err := cli.RemoveBackup(ctx, &request)
+
+		if err != nil {
+			t.Errorf("RemoveBackup: %v", err)
+		} else {
+			t.Logf("RemoveBackup reply: %+v", reply)
+		}
+	})
+}
+
+func TestContainerResumeBackup(t *testing.T) {
+	testRunner(func(ctx context.Context, conn *grpc.ClientConn) {
+		cli := pb.NewContainerClient(conn)
+
+		request := pb.ResumeBackupRequest{
+			NodeId:      1,
+			ContainerId: "",
+			BackupId:    3,
+		}
+		reply, err := cli.ResumeBackup(ctx, &request)
+
+		if err != nil {
+			t.Errorf("ResumeBackup: %v", err)
+		} else {
+			t.Logf("ResumeBackup reply: %+v", reply)
+		}
 	})
 }

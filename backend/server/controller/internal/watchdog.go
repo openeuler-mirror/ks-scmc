@@ -137,7 +137,7 @@ func writeNodeWatchLogs(n *pb.NodeInfo) []*model.WarnLog {
 	return r
 }
 
-func Watchdog() {
+func NodeStatusMonitor() {
 	// TODO: check current host is the master
 	// TODO: container monitor data
 	for {

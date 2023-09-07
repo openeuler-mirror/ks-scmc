@@ -109,7 +109,7 @@ func CreateWarnLog(logs []*WarnLog) error {
 		}
 
 		for nodeID, c := range nodeCnt {
-			if err := tx.Model(&NodeInfo{}).Where("id = ?", nodeID).Update("unread_warn = unread_warn + ?", c).Error; err != nil {
+			if err := tx.Model(&NodeInfo{}).Where("id = ?", nodeID).Update("unread_warn", gorm.Expr("unread_warn+?", c)).Error; err != nil {
 				log.Warnf("db increase unread_warn %v", err)
 				return translateError(err)
 			}
@@ -171,7 +171,7 @@ func SetWarnLogRead(ids []int64) error {
 		}
 
 		for nodeID, c := range nodeCnt {
-			if err := tx.Model(&NodeInfo{}).Where("id = ?", nodeID).Update("unread_warn = unread_warn + ?", c).Error; err != nil {
+			if err := tx.Model(&NodeInfo{}).Where("id = ?", nodeID).Update("unread_warn", gorm.Expr("unread_warn-?", c)).Error; err != nil {
 				log.Warnf("db increase unread_warn %v", err)
 				return translateError(err)
 			}

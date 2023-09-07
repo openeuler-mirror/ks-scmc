@@ -10,6 +10,7 @@ import (
 	"scmc/rpc/pb/image"
 	"scmc/rpc/pb/network"
 	"scmc/rpc/pb/node"
+	"scmc/rpc/pb/security"
 	"scmc/server"
 	"scmc/server/agent/internal"
 )
@@ -36,6 +37,8 @@ func Server() (*grpc.Server, error) {
 	image.RegisterImageServer(s, &internal.ImageServer{})
 	network.RegisterNetworkServer(s, &internal.NetworkServer{})
 	node.RegisterNodeServer(s, &internal.NodeServer{})
+	security.RegisterSecurityServer(s, &internal.SecurityServer{})
+
 	go internal.NodeWhitelistConfig()
 	go internal.ContainerWhiteCongig()
 	go internal.CPUUsageProbe()

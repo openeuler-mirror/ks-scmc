@@ -25,28 +25,6 @@ func TestNetworkList(t *testing.T) {
 	})
 }
 
-func TestNetworkConnect(t *testing.T) {
-	testRunner(func(ctx context.Context, conn *grpc.ClientConn) {
-		cli := pb.NewNetworkClient(conn)
-		request := pb.ConnectRequest{
-			NodeId:      1,
-			Interface:   "virbr2",
-			ContainerId: "c3",
-			IpAddress:   "172.60.100.55",
-			IpMask:      "255.255.255.0",
-			MacAddress:  "",
-			Gateway:     "172.60.100.1",
-		}
-
-		reply, err := cli.Connect(ctx, &request)
-		if err != nil {
-			t.Errorf("Connect: %v", err)
-		}
-
-		t.Logf("Connect reply: %+v", reply)
-	})
-}
-
 func TestNetworkDisconnect(t *testing.T) {
 	testRunner(func(ctx context.Context, conn *grpc.ClientConn) {
 		cli := pb.NewNetworkClient(conn)

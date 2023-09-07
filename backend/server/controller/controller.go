@@ -14,6 +14,7 @@ import (
 	"scmc/rpc/pb/logging"
 	"scmc/rpc/pb/network"
 	"scmc/rpc/pb/node"
+	"scmc/rpc/pb/security"
 	"scmc/rpc/pb/user"
 	"scmc/server"
 	"scmc/server/controller/internal"
@@ -53,10 +54,14 @@ func Server() (*grpc.Server, error) {
 	node.RegisterNodeServer(s, &internal.NodeServer{})
 	user.RegisterUserServer(s, &internal.UserServer{})
 	logging.RegisterLoggingServer(s, &internal.LoggingServer{})
+	security.RegisterSecurityServer(s, &internal.SecurityServer{})
 
-	go internal.Watchdog()
+	go internal.NodeStatusMonitor()
 	go internal.RuntimeLogWriter()
 	go model.PushImgae()
+	go internal.ResumeContainerConfigs()
+	go internal.CheckContainerBackupJob()
+	go internal.DetectIllegalContainer()
 
 	return s, nil
 }

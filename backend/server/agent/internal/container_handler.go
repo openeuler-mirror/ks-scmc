@@ -775,10 +775,16 @@ func (s *ContainerServer) inspect(id string) (*pb.ContainerConfigs, error) {
 			if k == "bridge" {
 				continue // "bridge" 是默认创建的网络连接, 需要忽略
 			}
+
+			IpAddress := m.IPAddress
+			if IpAddress == "" && m.IPAMConfig != nil {
+				// 当容器未运行时, 返回用户填的IP地址
+				IpAddress = m.IPAMConfig.IPv4Address
+			}
 			configs.Networks = append(configs.Networks, &pb.NetworkConfig{
 				Interface:   k,
 				ContainerId: info.ID,
-				IpAddress:   m.IPAddress,
+				IpAddress:   IpAddress,
 				IpPrefixLen: int32(m.IPPrefixLen),
 				MacAddress:  m.MacAddress,
 				Gateway:     m.Gateway,

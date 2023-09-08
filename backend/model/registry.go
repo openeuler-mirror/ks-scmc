@@ -284,14 +284,16 @@ func IsImageExist(repoTag string) (bool, error) {
 		return false, nil
 	}
 
-	repo, tag := strs[0], strs[1]
+	repo, tag := imageRepoPrefix+strs[0], strs[1]
 	cli, err := newRegistryClient()
 	if err != nil {
+		log.Warnf("create registry client err=%v", err)
 		return false, err
 	}
 
 	tags, err := cli.Tags(repo)
 	if err != nil {
+		log.Warnf("get tags of repo=%v err=%v", repo, err)
 		return false, err
 	}
 

@@ -1,0 +1,24 @@
+{
+    "role_info": {
+        "name": "audadm_r",
+        "is_editable": true,
+        "perms": [
+            {
+                "id": 4001,
+                "allow": true
+            },
+            {
+                "id": 4002,
+                "allow": true
+            },
+            {
+                "id": 4011,
+                "allow": true
+            },
+            {
+                "id": 4021,
+                "allow": true
+            }
+        ]
+    }
+}

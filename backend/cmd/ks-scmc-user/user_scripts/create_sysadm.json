@@ -1,0 +1,9 @@
+{
+    "user_info": {
+        "login_name": "sysadm",
+        "password": "12345678",
+        "is_active": true,
+        "is_editable": true,
+        "role_id": 1
+    }
+}

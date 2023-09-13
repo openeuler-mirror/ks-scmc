@@ -129,6 +129,7 @@ message ListRequest {
 
 message ListReply {
     repeated NodeContainer containers = 1;
+    repeated string        fail_nodes = 2;
 }
 
 message CreateRequest {
@@ -199,7 +200,8 @@ message RemoveRequest {
 }
 
 message RemoveReply {
-    repeated string ok_ids = 1;
+    repeated string ok_ids   = 1;
+    repeated string fail_ids = 2;
 }
 
 message StatusRequest {
@@ -308,6 +310,7 @@ message ContainerInfo {
     int64               size_rw      = 8;
     int64               size_root_fs = 9;
     map<string, string> labels       = 10;
+    int64               started      = 11;  // 上次开机时间
 
     ResourceStat resource_stat = 101;
 }
@@ -393,7 +396,7 @@ message NetworkConfig {
 }
 
 message ResourceLimit {
-    double cpu_limit         = 1;   // CPU使用核心数限制; NanoCPUs = cpus * 10e9
+    double cpu_limit         = 1;   // CPU使用核心数限制; NanoCPUs = cpus * 1e9
     int64  cpu_prio          = 2;   // CPU优先级(0-10)
     double memory_limit      = 11;  // 内存限制 单位MB
     double memory_soft_limit = 12;  // 内存软限制 单位MB 数值低于memory_limit
@@ -435,8 +438,9 @@ message ContainerConfigs {
 }
 
 message ContainerTemplate {
-    int64            id   = 1;
-    ContainerConfigs conf = 2;
+    int64            id      = 1;
+    ContainerConfigs conf    = 2;
+    int64            node_id = 3;
 }
 
 enum BACKUP_STATUS {

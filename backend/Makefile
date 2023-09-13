@@ -1,5 +1,5 @@
 PROJECT = ks-scmc
-BINARY  = ks-scmc-server ks-scmc-authz
+BINARY  = ks-scmc-server ks-scmc-authz ks-scmc-user
 RPC     = rpc/pb
 DESTDIR :=
 PREFIX  := /usr
@@ -35,3 +35,4 @@ install:
 	mkdir -p $(DESTDIR)$(PREFIX)/bin
 	install -m 755 -D $(BINARY) $(DESTDIR)$(PREFIX)/bin
 	cd scripts/ && make install
+	cd cmd/ks-scmc-user && make install

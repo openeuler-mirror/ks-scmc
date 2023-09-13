@@ -23,7 +23,7 @@ func main() {
 	}
 
 	if err := initRPCServer(rpcSocket); err != nil {
-		log.Printf("initRPCServer: %v", err)
+		log.Fatalf("initRPCServer: %v", err)
 	}
 
 	u, _ := user.Lookup("root")

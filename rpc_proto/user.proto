@@ -127,6 +127,9 @@ enum PERMISSION {
     CONTAINER_INFO_WRITE = 1002;  // 容器-信息-管理
     CONTAINER_TEMP_READ  = 1031;  // 容器-模板-查看
     CONTAINER_TEMP_WRITE = 1032;  // 容器-模板-管理
+    CONTAINER_CONF_WRITE = 1041;  // 容器-更新接口 sysadm & secadm
+    CONTAINER_CONF_BASIC = 1042;  // 容器-更新接口-常规项 sysadm
+    CONTAINER_CONF_SEC   = 1043;  // 容器-更新接口-安全配置 secadm
 
     // 节点
     NODE_INFO_READ  = 2001;  // 节点-信息-查看

@@ -32,4 +32,11 @@ enum Errno {
     InvalidSession   = 204;  // Unauthenticated
     SessionExpired   = 205;  // Unauthenticated
     NoPermission     = 206;  // PermissionDenied
+
+    // containers
+    CProcProtectionFailed  = 301;  // 进程保护配置失败
+    CNprocProtectionFailed = 302;  // 网络进程白名单配置失败
+    CFileProtectionFailed  = 303;  // 文件保护配置失败
+    CCmdOperationFailed    = 304;  // 启停控制配置失败
+    CNetworkRuleFailed     = 305;  // 网络访问规则配置失败
 }

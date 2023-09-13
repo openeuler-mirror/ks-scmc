@@ -21,7 +21,7 @@ service Network {
 }
 
 message ListRequest {
-    int64 node_id = 1;
+    int64 node_id = 1;  // -1返回所有节点的网卡信息
 }
 
 message ListReply {

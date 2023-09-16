@@ -342,8 +342,6 @@ func (s *ContainerServer) Restart(ctx context.Context, in *pb.RestartRequest) (*
 }
 
 func (s *ContainerServer) Remove(ctx context.Context, in *pb.RemoveRequest) (*pb.RemoveReply, error) {
-	reply := pb.RemoveReply{}
-
 	if len(in.Ids) <= 0 {
 		return nil, rpc.ErrInvalidArgument
 	}
@@ -381,18 +379,16 @@ func (s *ContainerServer) Remove(ctx context.Context, in *pb.RemoveRequest) (*pb
 
 		var imageIds []string
 		var uuids []string
-		if configs != nil {
-			for _, v := range configs {
-				backup, err := model.QueryContainerBackupByUUID(v.UUID)
-				if err != nil {
-					log.Warnf("model.QueryContainerBackupByID err=%v", err)
-					continue
-				}
+		for _, v := range configs {
+			backup, err := model.QueryContainerBackupByUUID(v.UUID)
+			if err != nil {
+				log.Warnf("model.QueryContainerBackupByID err=%v", err)
+				continue
+			}
 
-				uuids = append(uuids, v.UUID)
-				for _, v := range backup {
-					imageIds = append(imageIds, v.ImageID)
-				}
+			uuids = append(uuids, v.UUID)
+			for _, v := range backup {
+				imageIds = append(imageIds, v.ImageID)
 			}
 		}
 
@@ -412,7 +408,8 @@ func (s *ContainerServer) Remove(ctx context.Context, in *pb.RemoveRequest) (*pb
 		_, err = cli.Remove(ctx_, &request)
 		if err != nil {
 			log.Warnf("remove container ErrInternal: %v", err)
-			continue
+			// TODO remove container configs and backups
+			return nil, err
 		}
 
 		if err = model.RemoveContainerConfigs(c.NodeId, containerIds); err != nil {
@@ -424,7 +421,7 @@ func (s *ContainerServer) Remove(ctx context.Context, in *pb.RemoveRequest) (*pb
 		}
 	}
 
-	return &reply, nil
+	return &pb.RemoveReply{}, nil
 }
 
 func (s *ContainerServer) Inspect(ctx context.Context, in *pb.InspectRequest) (*pb.InspectReply, error) {
@@ -471,8 +468,6 @@ func (s *ContainerServer) Inspect(ctx context.Context, in *pb.InspectRequest) (*
 }
 
 func (s *ContainerServer) Status(ctx context.Context, in *pb.StatusRequest) (*pb.StatusReply, error) {
-	// reply := pb.StatusReply{}
-
 	if in.NodeId <= 0 {
 		return nil, rpc.ErrInvalidArgument
 	}
@@ -587,7 +582,7 @@ func (s *ContainerServer) ListTemplate(ctx context.Context, in *pb.ListTemplateR
 		// log.Println(template.Id, template.Name, template.Config_json)
 		var containerConfig *pb.ContainerConfigs
 		json.Unmarshal([]byte(template.ConfigJSON), &containerConfig)
-		templatestruct := pb.ContainerTemplate{Id: template.Id, Conf: containerConfig}
+		templatestruct := pb.ContainerTemplate{Id: template.Id, Conf: containerConfig, NodeId: template.NodeId}
 		reply.Data = append(reply.Data, &templatestruct)
 	}
 
@@ -602,13 +597,18 @@ func (s *ContainerServer) CreateTemplate(ctx context.Context, in *pb.CreateTempl
 			reply.Id = -1
 			return &reply, errors.New("id error")
 		}
+		nodeId := data.NodeId
+		if nodeId <= 0 {
+			return nil, rpc.ErrInvalidArgument
+		}
+
 		name := data.GetConf().Name
 		confbyte, err := json.Marshal(data.Conf)
 		if err != nil {
 			return nil, err
 		}
 
-		id, err = model.CreateTemplate(ctx, id, name, confbyte)
+		id, err = model.CreateTemplate(ctx, id, name, confbyte, nodeId)
 		if err != nil {
 			log.Println(err)
 		}
@@ -627,12 +627,16 @@ func (s *ContainerServer) UpdateTemplate(ctx context.Context, in *pb.UpdateTempl
 		if id < 1 {
 			return &reply, errors.New("id error")
 		}
+		nodeId := data.NodeId
+		if nodeId <= 0 {
+			return nil, rpc.ErrInvalidArgument
+		}
 		name := data.GetConf().Name
 		confbyte, err := json.Marshal(data.Conf)
 		if err != nil {
 			return nil, err
 		}
-		err = model.UpdateTemplate(ctx, id, name, confbyte)
+		err = model.UpdateTemplate(ctx, id, name, confbyte, nodeId)
 		if err != nil {
 			log.Println(err)
 		}
@@ -681,8 +685,9 @@ func (*ContainerServer) InspectTemplate(ctx context.Context, in *pb.InspectTempl
 
 	reply := pb.InspectTemplateReply{
 		Data: &pb.ContainerTemplate{
-			Id:   data.Id,
-			Conf: &c,
+			Id:     data.Id,
+			Conf:   &c,
+			NodeId: data.NodeId,
 		},
 	}
 

@@ -7,6 +7,7 @@ import (
 	"github.com/docker/docker/api/types"
 	log "github.com/sirupsen/logrus"
 
+	"scmc/model"
 	"scmc/rpc"
 	pb "scmc/rpc/pb/image"
 )
@@ -18,7 +19,7 @@ type ImageServer struct {
 func (s *ImageServer) List(ctx context.Context, in *pb.ListRequest) (*pb.ListReply, error) {
 	reply := pb.ListReply{}
 
-	cli, err := dockerCli()
+	cli, err := model.DockerClient()
 	if err != nil {
 		return nil, rpc.ErrInternal
 	}

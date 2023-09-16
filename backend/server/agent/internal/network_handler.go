@@ -39,7 +39,7 @@ func parseSubnet(s string) (string, int, error) {
 func (s *NetworkServer) List(ctx context.Context, in *pb.ListRequest) (*pb.ListReply, error) {
 	reply := pb.ListReply{}
 
-	cli, err := dockerCli()
+	cli, err := model.DockerClient()
 	if err != nil {
 		return nil, rpc.ErrInternal
 	}
@@ -89,6 +89,7 @@ func (s *NetworkServer) List(ctx context.Context, in *pb.ListRequest) (*pb.ListR
 		}
 
 		netInfo := pb.NetworkInterface{
+			NodeId:     in.NodeId,
 			Name:       i.Name,
 			BindReal:   linkIfs,
 			IpAddress:  addr,
@@ -111,7 +112,7 @@ func (s *NetworkServer) Connect(ctx context.Context, in *pb.ConnectRequest) (*pb
 		return nil, rpc.ErrInvalidArgument
 	}
 
-	cli, err := dockerCli()
+	cli, err := model.DockerClient()
 	if err != nil {
 		return nil, rpc.ErrInternal
 	}
@@ -144,7 +145,7 @@ func (s *NetworkServer) Disconnect(ctx context.Context, in *pb.DisconnectRequest
 		return nil, rpc.ErrInvalidArgument
 	}
 
-	cli, err := dockerCli()
+	cli, err := model.DockerClient()
 	if err != nil {
 		return nil, rpc.ErrInternal
 	}
@@ -163,7 +164,7 @@ func (s *NetworkServer) ListIPtables(ctx context.Context, in *pb.ListIPtablesReq
 	who := model.OperateNode
 	pid := 0
 	if in.ContainerId != "" {
-		cli, err := dockerCli()
+		cli, err := model.DockerClient()
 		if err != nil {
 			return nil, rpc.ErrInternal
 		}
@@ -210,7 +211,7 @@ func (s *NetworkServer) EnableIPtables(ctx context.Context, in *pb.EnableIPtable
 	reply := pb.EnableIPtablesReply{}
 
 	if in.ContainerId != "" {
-		cli, err := dockerCli()
+		cli, err := model.DockerClient()
 		if err != nil {
 			return nil, rpc.ErrInternal
 		}
@@ -258,7 +259,7 @@ func (s *NetworkServer) CreateIPtables(ctx context.Context, in *pb.CreateIPtable
 	chain := defaultNodeChain
 
 	if in.ContainerId != "" {
-		cli, err := dockerCli()
+		cli, err := model.DockerClient()
 		if err != nil {
 			return nil, rpc.ErrInternal
 		}
@@ -311,7 +312,7 @@ func (s *NetworkServer) ModifyIPtables(ctx context.Context, in *pb.ModifyIPtable
 	newChain := defaultNodeChain
 
 	if in.ContainerId != "" {
-		cli, err := dockerCli()
+		cli, err := model.DockerClient()
 		if err != nil {
 			return nil, rpc.ErrInternal
 		}
@@ -381,7 +382,7 @@ func (s *NetworkServer) RemoveIPtables(ctx context.Context, in *pb.RemoveIPtable
 	chain := defaultNodeChain
 
 	if in.ContainerId != "" {
-		cli, err := dockerCli()
+		cli, err := model.DockerClient()
 		if err != nil {
 			return nil, rpc.ErrInternal
 		}

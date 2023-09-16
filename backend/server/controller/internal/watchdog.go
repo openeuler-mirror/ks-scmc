@@ -112,7 +112,7 @@ func writeNodeWatchLogs(n *pb.NodeInfo) []*model.WarnLog {
 					NodeInfo:    n.Name + " " + n.Address,
 					EventType:   int64(logging.EVENT_TYPE_WARN_RESOURCE_USAGE),
 					EventModule: int64(logging.EVENT_MODULE_NODE),
-					Detail:      fmt.Sprintf("内存使用 %d", n.Status.MemStat.Used),
+					Detail:      fmt.Sprintf("内存使用 %dMB", n.Status.MemStat.Used),
 				})
 			}
 		}
@@ -124,7 +124,7 @@ func writeNodeWatchLogs(n *pb.NodeInfo) []*model.WarnLog {
 					NodeInfo:    n.Name + " " + n.Address,
 					EventType:   int64(logging.EVENT_TYPE_WARN_RESOURCE_USAGE),
 					EventModule: int64(logging.EVENT_MODULE_NODE),
-					Detail:      fmt.Sprintf("磁盘使用 %d", n.Status.DiskStat.Used),
+					Detail:      fmt.Sprintf("磁盘使用 %dMB", n.Status.DiskStat.Used),
 				})
 			}
 		}

@@ -43,6 +43,9 @@ func dockerResourceConfig(in *pb.ResourceLimit) container.Resources {
 
 	if in != nil {
 		r.NanoCPUs = int64(in.CpuLimit * 1e9)
+		if r.NanoCPUs == 0 {
+			r.NanoCPUs = int64(runtime.NumCPU()) * 1e9
+		}
 		r.CPUShares = toCPUShares(in.CpuPrio)
 		r.Memory = int64(in.MemoryLimit * megaBytes)
 		r.MemoryReservation = int64(in.MemorySoftLimit * megaBytes)
@@ -273,6 +276,8 @@ func (s *ContainerServer) create(configs *pb.ContainerConfigs) (string, error) {
 			"KS_SCMC_DESC": configs.Desc,
 			"KS_SCMC_UUID": configs.Uuid,
 		},
+		AttachStdin: true, // AttachStdin, Tty: make sure container like OS(ubuntu, centos) will not exit after start
+		Tty:         true,
 	}
 	hostConfig := container.HostConfig{
 		Privileged: false, // force non-privileged
@@ -630,6 +635,10 @@ func (s *ContainerServer) remove(cli *client.Client, containerID string, force b
 		return err
 	}
 
+	if configs.Status == "running" {
+		return rpc.ErrRemoveContainerWhenRunning
+	}
+
 	opts := types.ContainerRemoveOptions{RemoveVolumes: true, Force: force}
 	if err := cli.ContainerRemove(context.Background(), containerID, opts); err != nil {
 		log.Warnf("ContainerRemove: id=%v %v", containerID, err)
@@ -674,7 +683,7 @@ func (s *ContainerServer) Remove(ctx context.Context, in *pb.RemoveRequest) (*pb
 	for _, id := range in.Ids[0].ContainerIds {
 		err := s.remove(cli, id, false)
 		if err != nil {
-			return &pb.RemoveReply{FailIds: []string{id}}, rpc.ErrInternal
+			return &pb.RemoveReply{FailIds: []string{id}}, err
 		}
 	}
 

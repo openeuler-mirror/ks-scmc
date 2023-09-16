@@ -702,18 +702,8 @@ func ruleToCmd(filePath, fileName string, isOn bool, rules []NetworkRule) string
 	return cmd
 }
 
-func AddContainerIPtablesFile(containerIdName string, isOn bool, rules []NetworkRule) error {
-	filePath := iptablesPath() + "/" + containerIdName
-	cmd := ruleToCmd(filePath, containerIdName, isOn, rules)
-	if _, err := callShell(cmd); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func UpdateContainerIPtablesFile(containerId string, isOn bool, rules []NetworkRule, pid int) error {
-	filePath, fileName := ContainerIPtablesFile(containerId)
+func UpdateContainerIPtablesFile(fileName string, isOn bool, rules []NetworkRule, pid int) error {
+	filePath := iptablesPath() + "/" + fileName
 	cmd := ruleToCmd(filePath, fileName, isOn, rules)
 	if pid != 0 {
 		cmd = fmt.Sprintf("%s; nsenter -t %d -n iptables-restore %s", cmd, pid, filePath)

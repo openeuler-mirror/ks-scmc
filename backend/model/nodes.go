@@ -14,6 +14,7 @@ type NodeInfo struct {
 	CpuLimit    float64
 	MemoryLimit float64
 	DiskLimit   float64
+	Deleted     bool
 	CreatedAt   int64 `gorm:"autoCreateTime"`
 	UpdatedAt   int64 `gorm:"autoUpdateTime"`
 }
@@ -29,7 +30,7 @@ func ListNodes() ([]NodeInfo, error) {
 	}
 
 	var nodes []NodeInfo
-	result := db.Find(&nodes)
+	result := db.Where("deleted = 0").Find(&nodes)
 	if result.Error != nil {
 		log.Errorf("db query nodes: %v", result.Error)
 		return nil, result.Error
@@ -61,21 +62,7 @@ func RemoveNode(ids []int64) error {
 		return err
 	}
 
-	/*
-		var nodeInfo NodeInfo
-		result := db.First(&nodeInfo, id)
-
-		if result.Error == gorm.ErrRecordNotFound {
-			log.Printf("DeleteNode query id=%v not found", id)
-			return ErrRecordNotFound
-		} else if result.Error != nil {
-			log.Printf("DeleteNode query: %v", result.Error)
-			return result.Error
-		}
-	*/
-
-	// result = db.Delete(&nodeInfo)
-	result := db.Where("id IN ?", ids).Delete(NodeInfo{})
+	result := db.Model(&NodeInfo{}).Where("id IN ?", ids).Update("deleted", 1)
 	if result.Error != nil {
 		log.Errorf("db remove node ids=%v: %v", ids, result.Error)
 		return result.Error
@@ -107,12 +94,31 @@ func QueryNodeByID(id int64) (*NodeInfo, error) {
 	}
 
 	var nodeInfo NodeInfo
-	result := db.First(&nodeInfo, id)
+	result := db.Where("deleted = 0").First(&nodeInfo, id)
 	if result.Error != nil {
 		log.Warnf("query node id=%v: %v", id, err)
 		return nil, translateError(result.Error)
 	} else if result.RowsAffected == 0 {
 		log.Warnf("query node id=%v not found", id)
+		return nil, ErrRecordNotFound
+	}
+
+	return &nodeInfo, nil
+}
+
+func QueryNodeByAddr(addr string) (*NodeInfo, error) {
+	db, err := getConn()
+	if err != nil {
+		return nil, err
+	}
+
+	var nodeInfo NodeInfo
+	result := db.Where("address = ?", addr).First(&nodeInfo)
+	if result.Error != nil {
+		log.Warnf("query node addr=%v: %v", addr, err)
+		return nil, translateError(result.Error)
+	} else if result.RowsAffected == 0 {
+		log.Infof("query node addr=%v not found", addr)
 		return nil, ErrRecordNotFound
 	}
 

@@ -89,5 +89,5 @@ func (s *LoggingServer) ReadWarn(ctx context.Context, in *pb.ReadWarnRequest) (*
 		return nil, rpc.ErrInternal
 	}
 
-	return nil, nil
+	return &pb.ReadWarnReply{}, nil
 }

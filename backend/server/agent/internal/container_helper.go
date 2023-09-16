@@ -35,10 +35,6 @@ func containerGraphicSetup(containerName string, config *container.Config, hostC
 		return err
 	}
 
-	// AttachStdin, Tty: make sure container like OS(ubuntu, centos) will not exit after start
-	config.AttachStdin = true
-	config.Tty = true
-
 	// set environment for display, shared X11 socket/auth file
 	config.Env = append(config.Env, "DISPLAY=:0", "XAUTHORITY="+filepath.Join(containerAuthPath, authFile))
 

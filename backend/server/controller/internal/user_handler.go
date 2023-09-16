@@ -242,8 +242,8 @@ func (s *UserServer) CreateUser(ctx context.Context, in *pb.CreateUserRequest) (
 	} else if len(in.UserInfo.LoginName) < 4 || len(in.UserInfo.Password) < 8 || in.UserInfo.RoleId <= 0 {
 		return nil, rpc.ErrInvalidArgument
 	}
-
-	if _, err := model.QueryRoleById(ctx, in.UserInfo.RoleId); err != nil {
+	roleInfo, err := model.QueryRoleById(ctx, in.UserInfo.RoleId)
+	if err != nil {
 		log.Warnf("QueryRoleById: %v", err)
 		if err == model.ErrRecordNotFound {
 			return nil, rpc.ErrInvalidArgument
@@ -265,16 +265,40 @@ func (s *UserServer) CreateUser(ctx context.Context, in *pb.CreateUserRequest) (
 		IsEditable: in.UserInfo.IsEditable,
 		RoleID:     in.UserInfo.RoleId,
 	}
-
-	if err := model.CreateUser(ctx, userInfo); err != nil {
+	err = model.CreateUser(ctx, userInfo)
+	if err != nil {
 		log.Warnf("createUser: %v", err)
 		if err == model.ErrDuplicateKey {
 			return nil, rpc.ErrAlreadyExists
 		}
-
 		return nil, rpc.ErrInternal
 	}
-	return &pb.CreateUserReply{}, nil
+
+	var perms []*pb.Permission
+	err = json.Unmarshal([]byte(roleInfo.PermsJson), &perms)
+	if err != nil {
+		log.Warnf("json unmarshal err: %v", err)
+	}
+	return &pb.CreateUserReply{
+		UserInfo: &pb.UserInfo{
+			Id:         userInfo.ID,
+			LoginName:  userInfo.Username,
+			RealName:   userInfo.RealName,
+			IsActive:   userInfo.IsActive,
+			IsEditable: userInfo.IsEditable,
+			RoleId:     userInfo.RoleID,
+			CreatedAt:  userInfo.CreatedAt,
+			UpdatedAt:  userInfo.UpdatedAt,
+			RoleInfo: &pb.UserRole{
+				Id:         roleInfo.ID,
+				Name:       roleInfo.Name,
+				IsEditable: roleInfo.IsEditable,
+				CreatedAt:  roleInfo.CreatedAt,
+				UpdatedAt:  roleInfo.UpdatedAt,
+				Perms:      perms,
+			},
+		},
+	}, nil
 }
 
 // 更新用户信息
@@ -307,8 +331,9 @@ func (s *UserServer) UpdateUser(ctx context.Context, in *pb.UpdateUserRequest) (
 		}
 		userInfo.PasswordEn = string(rawBytes)
 	}
+	var roleInfo *model.UserRole
 	if in.UserInfo.RoleId > 0 {
-		if _, err := model.QueryRoleById(ctx, in.UserInfo.RoleId); err != nil {
+		if roleInfo, err = model.QueryRoleById(ctx, in.UserInfo.RoleId); err != nil {
 			log.Warnf("QueryRoleById: %v", err)
 			if err == model.ErrRecordNotFound {
 				return nil, rpc.ErrNotFound
@@ -318,14 +343,40 @@ func (s *UserServer) UpdateUser(ctx context.Context, in *pb.UpdateUserRequest) (
 		userInfo.RoleID = in.UserInfo.RoleId
 	}
 
-	if err := model.UpdateUser(ctx, userInfo); err != nil {
+	if err = model.UpdateUser(ctx, userInfo); err != nil {
 		log.Warnf("updateUser: %v", err)
 		if err == model.ErrRecordNotFound {
 			return nil, rpc.ErrNotFound
 		}
 		return nil, rpc.ErrInternal
 	}
-	return &pb.UpdateUserReply{}, nil
+
+	var perms []*pb.Permission
+	err = json.Unmarshal([]byte(roleInfo.PermsJson), &perms)
+	if err != nil {
+		log.Warnf("json unmarshal err: %v", err)
+	}
+	return &pb.UpdateUserReply{
+		UserInfo: &pb.UserInfo{
+			Id:         userInfo.ID,
+			LoginName:  userInfo.Username,
+			RealName:   userInfo.RealName,
+			IsActive:   userInfo.IsActive,
+			IsEditable: userInfo.IsEditable,
+			RoleId:     userInfo.RoleID,
+			CreatedAt:  userInfo.CreatedAt,
+			UpdatedAt:  userInfo.UpdatedAt,
+			RoleInfo: &pb.UserRole{
+				Id:         roleInfo.ID,
+				Name:       roleInfo.Name,
+				IsEditable: roleInfo.IsEditable,
+				CreatedAt:  roleInfo.CreatedAt,
+				UpdatedAt:  roleInfo.UpdatedAt,
+				Perms:      perms,
+			},
+		},
+	}, nil
+
 }
 
 // 删除用户
@@ -412,7 +463,7 @@ func (s *UserServer) CreateRole(ctx context.Context, in *pb.CreateRoleRequest) (
 		PermsJson:  string(permsJSON),
 	}
 
-	if err := model.CreateRole(ctx, role); err != nil {
+	if err = model.CreateRole(ctx, role); err != nil {
 		log.Warnf("createUser: %v", err)
 		if err == model.ErrDuplicateKey {
 			return nil, rpc.ErrAlreadyExists
@@ -420,7 +471,21 @@ func (s *UserServer) CreateRole(ctx context.Context, in *pb.CreateRoleRequest) (
 		return nil, rpc.ErrInternal
 	}
 
-	return &pb.CreateRoleReply{}, nil
+	var perms []*pb.Permission
+	err = json.Unmarshal([]byte(role.PermsJson), &perms)
+	if err != nil {
+		log.Warnf("json unmarshal err: %v", err)
+	}
+	return &pb.CreateRoleReply{
+		RoleInfo: &pb.UserRole{
+			Id:         role.ID,
+			Name:       role.Name,
+			IsEditable: role.IsEditable,
+			CreatedAt:  role.CreatedAt,
+			UpdatedAt:  role.UpdatedAt,
+			Perms:      perms,
+		},
+	}, nil
 }
 
 // 更新角色信息
@@ -430,15 +495,6 @@ func (s *UserServer) UpdateRole(ctx context.Context, in *pb.UpdateRoleRequest) (
 	} else if in.RoleInfo.Id < 0 || len(in.RoleInfo.Name) < 4 || len(in.RoleInfo.Perms) == 0 {
 		return nil, rpc.ErrInvalidArgument
 	}
-
-	// trailer := metadata.Pairs("role", roleInfo.Name)
-	// grpc.SendHeader(ctx, trailer)
-	// grpc.SetTrailer(ctx, trailer)
-	// md, ok := metadata.FromIncomingContext(ctx)
-	// fmt.Println(md)
-	// if ok {
-	// 	fmt.Println(md["role"])
-	// }
 
 	role, err := model.QueryRoleById(ctx, in.RoleInfo.Id)
 	if err != nil && err != model.ErrRecordNotFound {
@@ -462,7 +518,21 @@ func (s *UserServer) UpdateRole(ctx context.Context, in *pb.UpdateRoleRequest) (
 		return nil, err
 	}
 
-	return &pb.UpdateRoleReply{}, nil
+	var perms []*pb.Permission
+	err = json.Unmarshal([]byte(role.PermsJson), &perms)
+	if err != nil {
+		log.Warnf("json unmarshal err: %v", err)
+	}
+	return &pb.UpdateRoleReply{
+		RoleInfo: &pb.UserRole{
+			Id:         role.ID,
+			Name:       role.Name,
+			IsEditable: role.IsEditable,
+			CreatedAt:  role.CreatedAt,
+			UpdatedAt:  role.UpdatedAt,
+			Perms:      perms,
+		},
+	}, nil
 }
 
 // 删除角色

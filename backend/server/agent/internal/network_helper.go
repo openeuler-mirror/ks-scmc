@@ -2,6 +2,7 @@ package internal
 
 import (
 	"context"
+	"encoding/binary"
 	"fmt"
 	"net"
 	"os"
@@ -31,42 +32,57 @@ func checkIfs(ifs string) bool {
 			continue
 		}
 		if ifs == i.Name {
-			return false
+			return true
 		}
 	}
 
 	log.Errorf("%v not in docker nic", ifs)
-	return true
+	return false
 }
 
-func checkConflict(ifs, ipAddr string, masklen int, containerId string) bool {
+func ipv4ToUint(ipaddr net.IP) uint32 {
+	if ipaddr.To4() == nil {
+		return 0
+	}
+	return binary.BigEndian.Uint32(ipaddr.To4())
+}
+
+func ipStrToUint(ipaddr string) uint32 {
+	ip := net.ParseIP(ipaddr)
+	if ip == nil {
+		return 0
+	}
+
+	return ipv4ToUint(ip)
+}
+
+func uintToIPv4(ipaddr uint32) net.IP {
+	ip := make(net.IP, net.IPv4len)
+
+	// Proceed conversion
+	binary.BigEndian.PutUint32(ip, ipaddr)
+
+	return ip
+}
+
+func checkConflict(containerId, ifs string, ipAddr *string, masklen int) bool {
 	cli, err := model.DockerClient()
 	if err != nil {
 		return false
 	}
 
+	//获取网卡信息
 	inspect, err := cli.NetworkInspect(context.Background(), ifs, types.NetworkInspectOptions{})
 	if err != nil {
 		log.Warnf("NetworkInspect: %v", err)
 		return false
 	}
 
-	if inspect.IPAM.Config != nil {
-		if len(inspect.IPAM.Config) >= 1 {
-			conf := inspect.IPAM.Config[0]
-			_, subnet, _ := net.ParseCIDR(conf.Subnet)
-			if masklen == 0 {
-				masklen, _ = subnet.Mask.Size()
-			}
-			ipAddr := fmt.Sprintf("%s/%d", ipAddr, masklen)
-			ip, _, _ := net.ParseCIDR(ipAddr)
-			if !subnet.Contains(ip) {
-				log.Warnf("%v(%v) is not within the range of %v(%v)", conf.Subnet, subnet, ipAddr, ip)
-				return false
-			}
-		}
+	if inspect.IPAM.Config == nil || len(inspect.IPAM.Config) < 1 {
+		return false
 	}
 
+	//获取已使用的ip
 	opts := types.ContainerListOptions{All: true, Size: true}
 	containers, err := cli.ContainerList(context.Background(), opts)
 	if err != nil {
@@ -74,23 +90,79 @@ func checkConflict(ifs, ipAddr string, masklen int, containerId string) bool {
 		return true
 	}
 
-	containerIPs := make(map[string]struct{})
+	containerIPs := make(map[uint32]struct{})
 	for _, c := range containers {
 		if containerId == c.ID {
 			continue
 		}
 
-		for _, n := range c.NetworkSettings.Networks {
+		for k, n := range c.NetworkSettings.Networks {
+			if k != ifs {
+				continue
+			}
 			if n.IPAMConfig != nil && n.IPAMConfig.IPv4Address != "" {
-				containerIPs[n.IPAMConfig.IPv4Address] = struct{}{}
+				if ip := ipStrToUint(n.IPAMConfig.IPv4Address); ip != 0 {
+					containerIPs[ip] = struct{}{}
+				}
 			} else if n.IPAddress != "" {
-				containerIPs[n.IPAddress] = struct{}{}
+				if ip := ipStrToUint(n.IPAddress); ip != 0 {
+					containerIPs[ip] = struct{}{}
+				}
 			}
 		}
 	}
 
-	if _, ok := containerIPs[ipAddr]; ok {
-		log.Warnf("ipAddr:%v is used", ipAddr)
+	nicIP, subnet, _ := net.ParseCIDR(inspect.IPAM.Config[0].Subnet)
+
+	//判断输入的IP
+	if *ipAddr != "" {
+		//判断ip是否在网段内
+		if masklen == 0 {
+			masklen, _ = subnet.Mask.Size()
+		}
+		splitIP := fmt.Sprintf("%s/%d", *ipAddr, masklen)
+		netIP, _, _ := net.ParseCIDR(splitIP)
+		if !subnet.Contains(netIP) {
+			log.Warnf("%v(%v) is not within the range of %v(%v)", subnet, nicIP, splitIP, netIP)
+			return false
+		}
+
+		//判断IP是否已使用
+		ip := ipStrToUint(*ipAddr)
+		if _, ok := containerIPs[ip]; ok {
+			log.Warnf("*ipAddr:%v is used", *ipAddr)
+			return false
+		}
+		return true
+	}
+
+	uintIP := ipv4ToUint(subnet.IP)
+
+	//没有输入IP，分配IP
+	for i := uint32(2); ; i++ {
+		tmp := uintIP + i
+		if _, ok := containerIPs[tmp]; ok {
+			continue
+		}
+
+		ip := uintToIPv4(tmp)
+		if !subnet.Contains(ip) {
+			break
+		}
+		*ipAddr = ip.String()
+		return true
+	}
+
+	log.Warnf("ip has run out")
+	return false
+}
+
+func checkNetworkInfo(containerId, ifs string, ipAddr *string, masklen int) bool {
+	if !checkIfs(ifs) {
+		return false
+	}
+
+	if !checkConflict(containerId, ifs, ipAddr, masklen) {
 		return false
 	}
 

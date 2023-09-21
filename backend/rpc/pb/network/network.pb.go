@@ -25,7 +25,7 @@ type ListRequest struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	NodeId int64 `protobuf:"varint,1,opt,name=node_id,json=nodeId,proto3" json:"node_id,omitempty"`
+	NodeId int64 `protobuf:"varint,1,opt,name=node_id,json=nodeId,proto3" json:"node_id,omitempty"` // -1返回所有节点的网卡信息
 }
 
 func (x *ListRequest) Reset() {

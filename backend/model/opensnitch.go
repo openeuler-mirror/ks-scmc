@@ -83,8 +83,8 @@ func LoadOpensnitchRule(path string, containerID string) (*OpensnitchRule, error
 
 // SaveOpensnitchRule 将网络进程白名单规则写入文件
 func SaveOpensnitchRule(p *ProcProtection, containerID, uuid string) error {
-	if !p.IsOn || len(p.ExeList) == 0 {
-		return nil
+	if uuid == "" {
+		return fmt.Errorf("opensnitch rule cannot has empty uuid") // 保存空uuid导致所有连接都异常
 	}
 
 	var allowRule = OpensnitchRule{

@@ -10,6 +10,8 @@ import (
 
 	"github.com/google/uuid"
 	log "github.com/sirupsen/logrus"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
 
 	"scmc/common"
 	"scmc/model"
@@ -205,11 +207,26 @@ func (s *ContainerServer) Start(ctx context.Context, in *pb.StartRequest) (*pb.S
 			},
 		}
 
-		_, err = cli.Start(ctx_, &request)
+		subReply, err := cli.Start(ctx_, &request)
 		if err != nil {
 			log.Warnf("start container ErrInternal: %v", err)
 			continue
 		}
+
+		for i := range subReply.FailInfos {
+			subReply.FailInfos[i].NodeInfo = nodeInfo.Address
+		}
+		reply.FailInfos = append(reply.FailInfos, subReply.FailInfos...)
+		reply.OkIds = append(reply.OkIds, subReply.OkIds...)
+	}
+
+	// 操作对象只有一个出错时确保返回错误码
+	if len(in.Ids) == 1 && len(reply.OkIds) == 0 {
+		if len(reply.FailInfos) == 0 {
+			return nil, rpc.ErrInternal
+		}
+
+		return nil, grpc.Errorf(codes.Internal, reply.FailInfos[0].FailReason)
 	}
 
 	return &reply, nil
@@ -258,11 +275,26 @@ func (s *ContainerServer) Stop(ctx context.Context, in *pb.StopRequest) (*pb.Sto
 			},
 		}
 
-		_, err = cli.Stop(ctx_, &request)
+		subReply, err := cli.Stop(ctx_, &request)
 		if err != nil {
 			log.Warnf("stop container ErrInternal: %v", err)
 			continue
 		}
+
+		for i := range subReply.FailInfos {
+			subReply.FailInfos[i].NodeInfo = nodeInfo.Address
+		}
+		reply.FailInfos = append(reply.FailInfos, subReply.FailInfos...)
+		reply.OkIds = append(reply.OkIds, subReply.OkIds...)
+	}
+
+	// 操作对象只有一个出错时确保返回错误码
+	if len(in.Ids) == 1 && len(reply.OkIds) == 0 {
+		if len(reply.FailInfos) == 0 {
+			return nil, rpc.ErrInternal
+		}
+
+		return nil, grpc.Errorf(codes.Internal, reply.FailInfos[0].FailReason)
 	}
 
 	return &reply, nil
@@ -310,11 +342,26 @@ func (s *ContainerServer) Kill(ctx context.Context, in *pb.KillRequest) (*pb.Kil
 			},
 		}
 
-		_, err = cli.Kill(ctx_, &request)
+		subReply, err := cli.Kill(ctx_, &request)
 		if err != nil {
 			log.Warnf("kill container ErrInternal: %v", err)
 			continue
 		}
+
+		for i := range subReply.FailInfos {
+			subReply.FailInfos[i].NodeInfo = nodeInfo.Address
+		}
+		reply.FailInfos = append(reply.FailInfos, subReply.FailInfos...)
+		reply.OkIds = append(reply.OkIds, subReply.OkIds...)
+	}
+
+	// 操作对象只有一个出错时确保返回错误码
+	if len(in.Ids) == 1 && len(reply.OkIds) == 0 {
+		if len(reply.FailInfos) == 0 {
+			return nil, rpc.ErrInternal
+		}
+
+		return nil, grpc.Errorf(codes.Internal, reply.FailInfos[0].FailReason)
 	}
 
 	return &reply, nil
@@ -363,17 +410,33 @@ func (s *ContainerServer) Restart(ctx context.Context, in *pb.RestartRequest) (*
 			},
 		}
 
-		_, err = cli.Restart(ctx_, &request)
+		subReply, err := cli.Restart(ctx_, &request)
 		if err != nil {
 			log.Warnf("restart container ErrInternal: %v", err)
 			continue
 		}
+
+		for i := range subReply.FailInfos {
+			subReply.FailInfos[i].NodeInfo = nodeInfo.Address
+		}
+		reply.FailInfos = append(reply.FailInfos, subReply.FailInfos...)
+		reply.OkIds = append(reply.OkIds, subReply.OkIds...)
+	}
+
+	// 操作对象只有一个出错时确保返回错误码
+	if len(in.Ids) == 1 && len(reply.OkIds) == 0 {
+		if len(reply.FailInfos) == 0 {
+			return nil, rpc.ErrInternal
+		}
+
+		return nil, grpc.Errorf(codes.Internal, reply.FailInfos[0].FailReason)
 	}
 
 	return &reply, nil
 }
 
 func (s *ContainerServer) Remove(ctx context.Context, in *pb.RemoveRequest) (*pb.RemoveReply, error) {
+	reply := pb.RemoveReply{}
 	if len(in.Ids) <= 0 {
 		return nil, rpc.ErrInvalidArgument
 	}
@@ -437,12 +500,18 @@ func (s *ContainerServer) Remove(ctx context.Context, in *pb.RemoveRequest) (*pb
 			},
 		}
 
-		_, err = cli.Remove(ctx_, &request)
+		subReply, err := cli.Remove(ctx_, &request)
 		if err != nil {
 			log.Warnf("remove container ErrInternal: %v", err)
 			// TODO remove container configs and backups
-			return nil, err
+			continue
 		}
+
+		for i := range subReply.FailInfos {
+			subReply.FailInfos[i].NodeInfo = nodeInfo.Address
+		}
+		reply.FailInfos = append(reply.FailInfos, subReply.FailInfos...)
+		reply.OkIds = append(reply.OkIds, subReply.OkIds...)
 
 		if err = model.RemoveContainerConfigs(c.NodeId, containerIds); err != nil {
 			log.Warnf("remove container configs err: %v", err)
@@ -453,7 +522,16 @@ func (s *ContainerServer) Remove(ctx context.Context, in *pb.RemoveRequest) (*pb
 		}
 	}
 
-	return &pb.RemoveReply{}, nil
+	// 操作对象只有一个出错时确保返回错误码
+	if len(in.Ids) == 1 && len(reply.OkIds) == 0 {
+		if len(reply.FailInfos) == 0 {
+			return nil, rpc.ErrInternal
+		}
+
+		return nil, grpc.Errorf(codes.Internal, reply.FailInfos[0].FailReason)
+	}
+
+	return &reply, nil
 }
 
 func (s *ContainerServer) Inspect(ctx context.Context, in *pb.InspectRequest) (*pb.InspectReply, error) {

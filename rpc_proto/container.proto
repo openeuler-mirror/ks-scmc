@@ -77,7 +77,7 @@ message RemoveBackupRequest {
     int64 id = 1;
 
     // for agent service
-    string image_id = 11;
+    string image_ref = 11;
 }
 
 message RemoveBackupReply {}
@@ -156,7 +156,8 @@ message StartRequest {
 }
 
 message StartReply {
-    repeated string ok_ids = 1;
+    repeated string            ok_ids     = 1;
+    repeated ContainerFailInfo fail_infos = 2;
 }
 
 message StopRequest {
@@ -164,7 +165,8 @@ message StopRequest {
 }
 
 message StopReply {
-    repeated string ok_ids = 1;
+    repeated string            ok_ids     = 1;
+    repeated ContainerFailInfo fail_infos = 2;
 }
 
 message KillRequest {
@@ -172,7 +174,8 @@ message KillRequest {
 }
 
 message KillReply {
-    repeated string ok_ids = 1;
+    repeated string            ok_ids     = 1;
+    repeated ContainerFailInfo fail_infos = 2;
 }
 
 message RestartRequest {
@@ -180,7 +183,8 @@ message RestartRequest {
 }
 
 message RestartReply {
-    repeated string ok_ids = 1;
+    repeated string            ok_ids     = 1;
+    repeated ContainerFailInfo fail_infos = 2;
 }
 
 message UpdateRequest {
@@ -200,8 +204,9 @@ message RemoveRequest {
 }
 
 message RemoveReply {
-    repeated string ok_ids   = 1;
-    repeated string fail_ids = 2;
+    repeated string            ok_ids     = 1;
+    repeated string            fail_ids   = 2;
+    repeated ContainerFailInfo fail_infos = 3;
 }
 
 message StatusRequest {
@@ -461,4 +466,11 @@ message ContainerBackup {
     int64  image_size   = 9;   // 备份镜像大小
     int64  status       = 10;  // 参考 BACKUP_STATUS 定义
     int64  created_at   = 21;
+}
+
+message ContainerFailInfo {
+    string node_info      = 1;
+    string container_id   = 2;
+    string container_name = 3;
+    string fail_reason    = 4;
 }

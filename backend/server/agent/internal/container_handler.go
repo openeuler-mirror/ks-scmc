@@ -600,7 +600,7 @@ func (s *ContainerServer) Update(ctx context.Context, in *pb.UpdateRequest) (*pb
 		}
 	}
 
-	if err := s.setSecurityConfig(in.ContainerId, "", inspectConfigs.Name, pid, true, in.SecurityConfig); err != nil {
+	if err := s.setSecurityConfig(in.ContainerId, inspectConfigs.Uuid, inspectConfigs.Name, pid, true, in.SecurityConfig); err != nil {
 		log.Warnf("Update setSecurityConfig err=%v", err)
 		return nil, err
 	}

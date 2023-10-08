@@ -38,7 +38,7 @@ func nodeStatus() (*pb.NodeStatus, error) {
 		}
 	}
 
-	if cpuUsage, err := cpuUsage(); err != nil {
+	if cpuUsage, err := globalCPUUsage.get(); err != nil {
 		log.Infof("cpuUsage err=%v", err)
 	} else {
 		ret.CpuStat = &pb.CpuStat{

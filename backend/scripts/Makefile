@@ -24,6 +24,7 @@ install:
 	install -m 755 ./etc/access-container-gui $(DESTDIR)$(ETC)/$(PROJECT)
 	install -m 755 ./etc/create_network.sh $(DESTDIR)$(ETC)/$(PROJECT)
 	install -m 755 ./etc/sync_image.sh $(DESTDIR)$(ETC)/$(PROJECT)
+	install -m 755 ./etc/setup_agent.sh $(DESTDIR)$(ETC)/$(PROJECT)
 	install -m 755 ./ha/keepalived.sh $(DESTDIR)$(ETC)/$(PROJECT)
 	install -m 755 ./ha/mysql_double_master.sh $(DESTDIR)$(ETC)/$(PROJECT)
 	install -m 755 -d $(DESTDIR)$(SYSTEMD)/

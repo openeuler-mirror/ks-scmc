@@ -89,7 +89,6 @@ func (s *NetworkServer) List(ctx context.Context, in *pb.ListRequest) (*pb.ListR
 		}
 
 		netInfo := pb.NetworkInterface{
-			NodeId:     in.NodeId,
 			Name:       i.Name,
 			BindReal:   linkIfs,
 			IpAddress:  addr,

@@ -24,6 +24,7 @@ func (m *AgentConfig) Addr() string {
 type ControllerConfig struct {
 	Host        string `mapstructure:"host"`
 	Port        uint   `mapstructure:"port"`
+	VirtualIf   string `mapstructure:"virtual-if"`
 	VirtualIP   string `mapstructure:"virtual-ip"`
 	ImageDir    string `mapstructure:"image-dir"`
 	ImageSigner string `mapstructure:"image-signer"`

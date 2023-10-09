@@ -178,34 +178,37 @@ func dealDbData() (map[int64]pb.LoadSecurityConfigRequset, error) {
 	return mapDatas, nil
 }
 
-func ResumeContainerConfigs() {
-	var d time.Duration = 60 * time.Second
-	for {
-		datas, err := dealDbData()
+func resumeContainerConfigs() {
+	datas, err := dealDbData()
+	if err != nil {
+		return
+	}
+
+	for k, v := range datas {
+		// log.Debugf("datas: [%v][%v]", k, v.Configs)
+		nodeInfo, err := model.QueryNodeByID(k)
 		if err != nil {
-			time.Sleep(d)
-			continue
+			return
 		}
 
-		for k, v := range datas {
-			// log.Debugf("datas: [%v][%v]", k, v.Configs)
-			nodeInfo, err := model.QueryNodeByID(k)
-			if err != nil {
-				continue
-			}
-
-			conn, err := getAgentConn(nodeInfo.Address)
-			if err != nil {
-				continue
-			}
-			cli := pb.NewSecurityClient(conn)
-			ctx_, cancel := context.WithTimeout(context.Background(), time.Second*10)
-			defer cancel()
-
-			cli.LoadSecurityConfig(ctx_, &v)
+		conn, err := getAgentConn(nodeInfo.Address)
+		if err != nil {
+			return
 		}
+		cli := pb.NewSecurityClient(conn)
+		ctx_, cancel := context.WithTimeout(context.Background(), time.Second*10)
+		defer cancel()
 
-		time.Sleep(d)
+		cli.LoadSecurityConfig(ctx_, &v)
+	}
+}
+
+func ResumeContainerConfigs() {
+	for {
+		if isMaster() {
+			resumeContainerConfigs()
+		}
+		time.Sleep(time.Minute)
 	}
 }
 

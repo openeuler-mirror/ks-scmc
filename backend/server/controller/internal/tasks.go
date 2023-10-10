@@ -2,8 +2,8 @@ package internal
 
 import (
 	"context"
+	"fmt"
 	"net"
-	"strings"
 	"time"
 
 	log "github.com/sirupsen/logrus"
@@ -13,6 +13,12 @@ import (
 	"scmc/model"
 	pb "scmc/rpc/pb/container"
 	"scmc/rpc/pb/logging"
+)
+
+const (
+	ImageSourceNone   = 0
+	ImageSourceUpload = 1
+	ImageSourceBackup = 2
 )
 
 func isMaster() bool {
@@ -44,6 +50,30 @@ func isMaster() bool {
 	}
 
 	return false
+}
+
+func allValidImages() (map[string]int, error) {
+	dbImages, err := model.QueryImageByStatus()
+	if err != nil {
+		log.Warnf("query db images err=%v", err)
+		return nil, err
+	}
+
+	backups, err := model.ListContainerBackup()
+	if err != nil {
+		log.Warnf("query backup images err=%v", err)
+		return nil, err
+	}
+
+	data := make(map[string]int, len(dbImages)+len(backups))
+	for _, i := range dbImages {
+		data[i.Name+":"+i.Version] = ImageSourceUpload
+	}
+	for _, b := range backups {
+		data[b.ImageRef] = ImageSourceBackup
+	}
+
+	return data, nil
 }
 
 func GetBackupJob(conn *grpc.ClientConn, id int64) (*pb.GetBackupJobReply, error) {
@@ -143,8 +173,8 @@ func StopContainer(conn *grpc.ClientConn, id string) (*pb.StopReply, error) {
 
 type IllegalContainerDetection struct{}
 
-func (IllegalContainerDetection) ScanNodeContainers(imageIDs map[string]bool, node *model.NodeInfo) {
-	conn, err := getAgentConn(node.Address)
+func (IllegalContainerDetection) ScanNodeContainers(images map[string]int, n *model.NodeInfo) {
+	conn, err := getAgentConn(n.Address)
 	if err != nil {
 		log.Warnf("restart container ErrInternal")
 		return
@@ -161,8 +191,7 @@ func (IllegalContainerDetection) ScanNodeContainers(imageIDs map[string]bool, no
 			continue
 		}
 
-		imageID := strings.TrimPrefix(c.Info.ImageId, "sha256:")
-		if _, ok := imageIDs[imageID]; !ok {
+		if _, ok := images[c.Info.Image]; !ok {
 			log.Debugf("stop container=%s", c.Info.Name)
 			if _, err := StopContainer(conn, c.Info.Id); err != nil {
 				log.Infof("StopContainer %v err=%v", c.Info.Id, err)
@@ -170,8 +199,8 @@ func (IllegalContainerDetection) ScanNodeContainers(imageIDs map[string]bool, no
 
 			warnLog := []*model.WarnLog{
 				{
-					NodeId:        node.ID,
-					NodeInfo:      node.Name + " " + node.Address,
+					NodeId:        n.ID,
+					NodeInfo:      fmt.Sprintf("%s (%s)", n.Name, n.Address),
 					EventType:     int64(logging.EVENT_TYPE_WARN_ILLEGAL_CONTAINER),
 					EventModule:   int64(logging.EVENT_MODULE_CONTAINER),
 					ContainerName: c.Info.Name,
@@ -185,34 +214,20 @@ func (IllegalContainerDetection) ScanNodeContainers(imageIDs map[string]bool, no
 }
 
 func (t IllegalContainerDetection) Run() {
+	validImages, err := allValidImages()
+	if err != nil {
+		log.Infof("get valid images err=%v", err)
+		return
+	}
+
 	nodes, err := model.ListNodes()
 	if err != nil {
 		log.Infof("get node list from DB err=%v", err)
 		return
 	}
 
-	imageInfo, err := model.QueryImageByStatus()
-	if err != nil {
-		log.Warnf("query images err=%v", err)
-		return
-	}
-
-	backups, err := model.ListContainerBackup()
-	if err != nil {
-		log.Warnf("query backups err=%v", err)
-		return
-	}
-
-	imageIDs := make(map[string]bool)
-	for _, info := range imageInfo {
-		imageIDs[info.ImageId] = true
-	}
-	for _, b := range backups {
-		imageIDs[b.ImageID] = true
-	}
-
 	for _, n := range nodes {
-		t.ScanNodeContainers(imageIDs, &n)
+		t.ScanNodeContainers(validImages, &n)
 	}
 }
 

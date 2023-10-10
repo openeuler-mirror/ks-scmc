@@ -49,3 +49,34 @@ func (s *ImageServer) List(ctx context.Context, in *pb.ListRequest) (*pb.ListRep
 	}
 	return &reply, nil
 }
+
+func (s *ImageServer) agentSync(toRemove, toPull []string) {
+	cli, err := model.DockerClient()
+	if err != nil {
+		log.Infof("agentSync get docker client err=%v", err)
+		goto stagePull
+	}
+
+	for _, i := range toRemove {
+		if _, err := cli.ImageRemove(context.Background(), i, types.ImageRemoveOptions{}); err != nil {
+			log.Infof("agentSync remove image=%v err=%v", i, err)
+		}
+	}
+
+stagePull:
+	for _, i := range toPull {
+		if err := ensureImage(cli, i); err != nil {
+			log.Infof("agentSync pull image=%v err=%v", i, err)
+		}
+	}
+}
+
+func (s *ImageServer) AgentSync(ctx context.Context, in *pb.AgentSyncRequest) (*pb.AgentSyncReply, error) {
+	if len(in.ToRemove) == 0 && len(in.ToPull) == 0 {
+		return nil, rpc.ErrInvalidArgument
+	}
+
+	go s.agentSync(in.ToRemove, in.ToPull)
+
+	return &pb.AgentSyncReply{}, nil
+}

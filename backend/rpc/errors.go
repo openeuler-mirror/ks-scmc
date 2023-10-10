@@ -31,8 +31,11 @@ var (
 	ErrUnauthenticated    = status.Error(codes.Unauthenticated, "用户请求未认证")
 	ErrWrongPassword      = status.Error(codes.Code(pb.Errno_WrongPassword), "密码错误")
 	ErrInvalidImage       = status.Error(codes.Internal, "无效的镜像")
+	ErrDatabaseFail       = status.Error(codes.InvalidArgument, "内部错误：数据库访问失败")
 
-	ErrRemoveContainerWhenRunning    = status.Error(codes.Internal, "容器正在运行，无法删除")
+	ErrRemoveContainerWhenRunning       = status.Error(codes.Internal, "容器正在运行，无法删除")
+	ErrRemoveContainerBackupWhenRunning = status.Error(codes.Internal, "容器正在使用此备份点，无法删除")
+
 	ErrContainerBasicConfigNoPerm    = status.Error(codes.PermissionDenied, "无权限设置容器常规配置")
 	ErrContainerSecurityConfigNoPerm = status.Error(codes.PermissionDenied, "无权限设置容器安全策略")
 

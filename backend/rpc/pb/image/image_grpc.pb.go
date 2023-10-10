@@ -25,6 +25,7 @@ type ImageClient interface {
 	Download(ctx context.Context, in *DownloadRequest, opts ...grpc.CallOption) (Image_DownloadClient, error)
 	Approve(ctx context.Context, in *ApproveRequest, opts ...grpc.CallOption) (*ApproveReply, error)
 	Remove(ctx context.Context, in *RemoveRequest, opts ...grpc.CallOption) (*RemoveReply, error)
+	AgentSync(ctx context.Context, in *AgentSyncRequest, opts ...grpc.CallOption) (*AgentSyncReply, error)
 }
 
 type imageClient struct {
@@ -171,6 +172,15 @@ func (c *imageClient) Remove(ctx context.Context, in *RemoveRequest, opts ...grp
 	return out, nil
 }
 
+func (c *imageClient) AgentSync(ctx context.Context, in *AgentSyncRequest, opts ...grpc.CallOption) (*AgentSyncReply, error) {
+	out := new(AgentSyncReply)
+	err := c.cc.Invoke(ctx, "/image.Image/AgentSync", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // ImageServer is the server API for Image service.
 // All implementations must embed UnimplementedImageServer
 // for forward compatibility
@@ -182,6 +192,7 @@ type ImageServer interface {
 	Download(*DownloadRequest, Image_DownloadServer) error
 	Approve(context.Context, *ApproveRequest) (*ApproveReply, error)
 	Remove(context.Context, *RemoveRequest) (*RemoveReply, error)
+	AgentSync(context.Context, *AgentSyncRequest) (*AgentSyncReply, error)
 	mustEmbedUnimplementedImageServer()
 }
 
@@ -209,6 +220,9 @@ func (UnimplementedImageServer) Approve(context.Context, *ApproveRequest) (*Appr
 }
 func (UnimplementedImageServer) Remove(context.Context, *RemoveRequest) (*RemoveReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Remove not implemented")
+}
+func (UnimplementedImageServer) AgentSync(context.Context, *AgentSyncRequest) (*AgentSyncReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AgentSync not implemented")
 }
 func (UnimplementedImageServer) mustEmbedUnimplementedImageServer() {}
 
@@ -368,6 +382,24 @@ func _Image_Remove_Handler(srv interface{}, ctx context.Context, dec func(interf
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Image_AgentSync_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AgentSyncRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ImageServer).AgentSync(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/image.Image/AgentSync",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ImageServer).AgentSync(ctx, req.(*AgentSyncRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Image_ServiceDesc is the grpc.ServiceDesc for Image service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -390,6 +422,10 @@ var Image_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Remove",
 			Handler:    _Image_Remove_Handler,
+		},
+		{
+			MethodName: "AgentSync",
+			Handler:    _Image_AgentSync_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{

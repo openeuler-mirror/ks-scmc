@@ -68,6 +68,11 @@ func (s *NodeServer) Create(ctx context.Context, in *pb.CreateRequest) (*pb.Crea
 	_, err = cli.Status(ctx_, &pb.StatusRequest{})
 	if err != nil {
 		log.Warnf("check agent service err=%v", err)
+		if st, ok := status.FromError(err); ok {
+			if st.Code() == codes.Unavailable {
+				return nil, status.Errorf(codes.Internal, "节点连接失败")
+			}
+		}
 		return nil, rpc.ErrInternal
 	}
 

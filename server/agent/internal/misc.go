@@ -2,6 +2,7 @@
 package internal
 
 import (
+	"runtime"
 	"sync"
 	"time"
 
@@ -71,4 +72,12 @@ func CPUUsageProbe() {
 
 		time.Sleep(time.Second)
 	}
+}
+
+func numCPU() int {
+	c, err := cpu.Counts(true)
+	if err != nil {
+		return runtime.NumCPU()
+	}
+	return c
 }

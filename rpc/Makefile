@@ -1,6 +1,6 @@
 PATH := $(shell go env GOPATH)/bin:$(PATH)
 
-INC := ../../rpc_proto
+INC := ../rpc_proto
 BASE := pb
 
 GRPC_SERVICES := $(patsubst $(INC)/%,%, $(wildcard $(INC)/*.proto))

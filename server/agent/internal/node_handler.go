@@ -2,7 +2,6 @@ package internal
 
 import (
 	"context"
-	"runtime"
 
 	"github.com/shirou/gopsutil/disk"
 	"github.com/shirou/gopsutil/mem"
@@ -42,8 +41,8 @@ func nodeStatus() (*pb.NodeStatus, error) {
 		log.Infof("cpuUsage err=%v", err)
 	} else {
 		ret.CpuStat = &pb.CpuStat{
-			Total: float64(runtime.NumCPU()),
 			Used:  cpuUsage,
+			Total: float64(numCPU()),
 		}
 		ret.CpuStat.UsedPercentage = ret.CpuStat.Used / ret.CpuStat.Total
 	}

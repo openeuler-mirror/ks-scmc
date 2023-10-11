@@ -124,21 +124,18 @@ func UpdateImage(image *ImageInfo) error {
 	return nil
 }
 
-func QueryImageByStatus() ([]ImageInfo, error) {
+func QueryImageByStatus() ([]*ImageInfo, error) {
 	db, err := getConn()
 	if err != nil {
 		return nil, err
 	}
 
-	var imageInfo []ImageInfo
+	var imageInfo []*ImageInfo
 	result := db.Where("approval_status = ?", ApprovalPass).Find(&imageInfo)
 
 	if result.Error != nil {
 		log.Warnf("query approved image failed: %v", result.Error)
 		return nil, translateError(result.Error)
-	} else if result.RowsAffected == 0 {
-		log.Warnf("query approved image not found")
-		return nil, ErrRecordNotFound
 	}
 
 	return imageInfo, nil

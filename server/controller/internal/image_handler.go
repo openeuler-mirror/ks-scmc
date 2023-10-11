@@ -548,7 +548,7 @@ func (s *ImageServer) noticeAgentSync(toRemove, toPull []string) {
 
 		req := pb.AgentSyncRequest{
 			ToRemove: toRemove,
-			ToPull: toPull,
+			ToPull:   toPull,
 		}
 
 		cli := pb.NewImageClient(conn)
@@ -556,11 +556,11 @@ func (s *ImageServer) noticeAgentSync(toRemove, toPull []string) {
 			ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 			defer cancel()
 			if _, err = cli.AgentSync(ctx, &req); err != nil {
-				log.Infof("sync image %+v on node address=%v err=%v", req , n.Address, err)
+				log.Infof("sync image %+v on node address=%v err=%v", &req, n.Address, err)
 				continue
 			}
 
-			log.Debugf("sync image %+v on node address=%v", req , n.Address)
+			log.Debugf("sync image %+v on node address=%v", &req, n.Address)
 			break
 		}
 	}
@@ -575,18 +575,15 @@ func (s *ImageServer) Approve(ctx context.Context, in *pb.ApproveRequest) (*pb.A
 		return nil, rpc.ErrDatabaseFail
 	}
 
-	if i.VerifyStatus != model.VerifyPass {
-		log.Warnf("the signature does not pass")
-		return nil, status.Errorf(codes.FailedPrecondition, "镜像校验未通过，无法审批")
-	}
-
-	if !in.Approve && in.RejectReason != "" {
-		return nil, status.Errorf(codes.InvalidArgument, "参数错误：拒绝原因不能为空")
-	}
-
 	if in.Approve {
+		if i.VerifyStatus != model.VerifyPass {
+			return nil, status.Errorf(codes.FailedPrecondition, "镜像校验未通过，无法审批通过")
+		}
 		i.ApprovalStatus = model.ApprovalPass
 	} else {
+		if in.RejectReason == "" && i.VerifyStatus == model.VerifyPass {
+			return nil, status.Errorf(codes.InvalidArgument, "参数错误：拒绝原因不能为空")
+		}
 		i.ApprovalStatus = model.ApprovalReject
 	}
 	i.RejectReason = in.RejectReason

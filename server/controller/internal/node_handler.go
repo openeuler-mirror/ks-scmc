@@ -6,7 +6,6 @@ import (
 	"unicode/utf8"
 
 	log "github.com/sirupsen/logrus"
-	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
@@ -167,9 +166,9 @@ func (s *NodeServer) Status(ctx context.Context, in *pb.StatusRequest) (*pb.Stat
 
 func (s *NodeServer) Update(ctx context.Context, in *pb.UpdateRequest) (*pb.UpdateReply, error) {
 	if utf8.RuneCountInString(in.Name) < 1 || utf8.RuneCountInString(in.Name) > 50 {
-		return nil, grpc.Errorf(codes.InvalidArgument, "节点名长度限制1-50")
+		return nil, status.Errorf(codes.InvalidArgument, "节点名长度限制1-50")
 	} else if utf8.RuneCountInString(in.Comment) > 200 {
-		return nil, grpc.Errorf(codes.InvalidArgument, "节点备注长度限制0-200")
+		return nil, status.Errorf(codes.InvalidArgument, "节点备注长度限制0-200")
 	}
 
 	nodeInfo, err := model.QueryNodeByID(in.NodeId)

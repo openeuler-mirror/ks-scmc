@@ -6,6 +6,8 @@ BIN="ks-scmc-user"
 
 set -e
 
+cd $(dirname $0)
+
 echo "创建角色 sysadm_r ..."
 ${BIN} -s ${SERVER_ADDR} -c create_role "$(cat create_sysadm_r.json)"
 

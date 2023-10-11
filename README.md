@@ -21,19 +21,9 @@
 # make install
 ```
 
-## 运行
+## 配置运行
 
-后端运行
-
-```
-systemctl enable --now docker.service
-systemctl enable --now mysqld.service
-
-bash /etc/ks-scmc/setup_config.sh /etc/ks-scmc/server.toml
-
-systemctl start ks-scmc-agent.service
-systemctl start ks-scmc-controller.service
-```
+参考 [INSTALLING.md](./INSTALLING.md)
 
 ## 日志
 

@@ -161,9 +161,21 @@ func (s *ContainerServer) List(ctx context.Context, in *pb.ListRequest) (*pb.Lis
 			}
 		}
 
+		if c.State == "running" {
+			info.ResourceStat = &pb.ResourceStat{
+				CpuStat: &pb.CpuStat{},
+				MemStat: &pb.MemoryStat{},
+			}
+		}
+
 		if stats != nil {
 			if stat, ok := stats[c.ID]; ok {
-				info.ResourceStat = stat
+				if stat.CpuStat != nil {
+					info.ResourceStat.CpuStat = stat.CpuStat
+				}
+				if stat.MemStat != nil {
+					info.ResourceStat.MemStat = stat.MemStat
+				}
 			}
 		}
 

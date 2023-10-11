@@ -10,7 +10,6 @@ import (
 
 	"github.com/google/uuid"
 	log "github.com/sirupsen/logrus"
-	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
@@ -231,7 +230,7 @@ func (s *ContainerServer) Start(ctx context.Context, in *pb.StartRequest) (*pb.S
 			return nil, rpc.ErrInternal
 		}
 
-		return nil, grpc.Errorf(codes.Internal, reply.FailInfos[0].FailReason)
+		return nil, status.Errorf(codes.Internal, reply.FailInfos[0].FailReason)
 	}
 
 	return &reply, nil
@@ -299,7 +298,7 @@ func (s *ContainerServer) Stop(ctx context.Context, in *pb.StopRequest) (*pb.Sto
 			return nil, rpc.ErrInternal
 		}
 
-		return nil, grpc.Errorf(codes.Internal, reply.FailInfos[0].FailReason)
+		return nil, status.Errorf(codes.Internal, reply.FailInfos[0].FailReason)
 	}
 
 	return &reply, nil
@@ -366,7 +365,7 @@ func (s *ContainerServer) Kill(ctx context.Context, in *pb.KillRequest) (*pb.Kil
 			return nil, rpc.ErrInternal
 		}
 
-		return nil, grpc.Errorf(codes.Internal, reply.FailInfos[0].FailReason)
+		return nil, status.Errorf(codes.Internal, reply.FailInfos[0].FailReason)
 	}
 
 	return &reply, nil
@@ -434,7 +433,7 @@ func (s *ContainerServer) Restart(ctx context.Context, in *pb.RestartRequest) (*
 			return nil, rpc.ErrInternal
 		}
 
-		return nil, grpc.Errorf(codes.Internal, reply.FailInfos[0].FailReason)
+		return nil, status.Errorf(codes.Internal, reply.FailInfos[0].FailReason)
 	}
 
 	return &reply, nil
@@ -533,7 +532,7 @@ func (s *ContainerServer) Remove(ctx context.Context, in *pb.RemoveRequest) (*pb
 			return nil, rpc.ErrInternal
 		}
 
-		return nil, grpc.Errorf(codes.Internal, reply.FailInfos[0].FailReason)
+		return nil, status.Errorf(codes.Internal, reply.FailInfos[0].FailReason)
 	}
 
 	return &reply, nil
@@ -740,9 +739,9 @@ func (s *ContainerServer) CreateTemplate(ctx context.Context, in *pb.CreateTempl
 	if in.Data == nil || in.Data.Conf == nil || in.Data.NodeId <= 0 {
 		return nil, rpc.ErrInvalidArgument
 	} else if !isValidContainerName(in.Data.Conf.Name) {
-		return nil, grpc.Errorf(codes.InvalidArgument, "模板名参数错误")
+		return nil, status.Errorf(codes.InvalidArgument, "模板名参数错误")
 	} else if !isValidContainerDesc(in.Data.Conf.Desc) {
-		return nil, grpc.Errorf(codes.InvalidArgument, "模板描述参数错误")
+		return nil, status.Errorf(codes.InvalidArgument, "模板描述参数错误")
 	}
 
 	reply := pb.CreateTemplateReply{}
@@ -750,7 +749,7 @@ func (s *ContainerServer) CreateTemplate(ctx context.Context, in *pb.CreateTempl
 	id := data.Id
 	if id < 0 {
 		reply.Id = -1
-		return &reply, grpc.Errorf(codes.InvalidArgument, "id error")
+		return &reply, status.Errorf(codes.InvalidArgument, "id error")
 	}
 
 	confbyte, err := json.Marshal(data.Conf)
@@ -771,9 +770,9 @@ func (s *ContainerServer) UpdateTemplate(ctx context.Context, in *pb.UpdateTempl
 	if in.Data == nil || in.Data.Conf == nil || in.Data.NodeId <= 0 {
 		return nil, rpc.ErrInvalidArgument
 	} else if !isValidContainerName(in.Data.Conf.Name) {
-		return nil, grpc.Errorf(codes.InvalidArgument, "模板名参数错误")
+		return nil, status.Errorf(codes.InvalidArgument, "模板名参数错误")
 	} else if !isValidContainerDesc(in.Data.Conf.Desc) {
-		return nil, grpc.Errorf(codes.InvalidArgument, "模板描述参数错误")
+		return nil, status.Errorf(codes.InvalidArgument, "模板描述参数错误")
 	}
 
 	reply := pb.UpdateTemplateReply{}

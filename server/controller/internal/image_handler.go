@@ -4,6 +4,8 @@ import (
 	"archive/tar"
 	"bufio"
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
 	"fmt"
 	"io"
 	"os"
@@ -96,7 +98,6 @@ func contextError(ctx context.Context) error {
 	}
 }
 
-/*
 func getHash(filename, sendHashStr string) error {
 	file, err := os.Open(filename)
 	if err != nil {
@@ -120,7 +121,6 @@ func getHash(filename, sendHashStr string) error {
 
 	return nil
 }
-*/
 
 func getImageID(imageFile string) string {
 	file, err := os.Open(imageFile)
@@ -475,13 +475,11 @@ func (s *ImageServer) Download(in *pb.DownloadRequest, stream pb.Image_DownloadS
 		return rpc.ErrInternal
 	}
 
-	/*
-		if err = getHash(imageInfo.FilePath, imageInfo.CheckSum); err != nil {
-			tmpErr := model.RemoveImage([]int64{in.ImageId})
-			log.Warnf("image file %v hash %v err and remove, remove result:%v", imageInfo.FilePath, imageInfo.CheckSum, tmpErr)
-			return rpc.ErrInternal
-		}
-	*/
+	if err = getHash(imageInfo.FilePath, imageInfo.CheckSum); err != nil {
+		// tmpErr := model.RemoveImage([]int64{in.ImageId})
+		// log.Warnf("image file %v hash %v err and remove, remove result:%v", imageInfo.FilePath, imageInfo.CheckSum, tmpErr)
+		return status.Errorf(codes.Internal, "镜像文件被破坏")
+	}
 
 	file, err := os.Open(imageInfo.FilePath)
 	if err != nil {

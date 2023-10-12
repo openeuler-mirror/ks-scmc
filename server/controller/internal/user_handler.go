@@ -303,9 +303,11 @@ func (s *UserServer) CreateUser(ctx context.Context, in *pb.CreateUserRequest) (
 
 // 更新用户信息
 func (s *UserServer) UpdateUser(ctx context.Context, in *pb.UpdateUserRequest) (*pb.UpdateUserReply, error) {
-	if in.UserInfo != nil {
+	if in.UserInfo == nil {
 		return nil, rpc.ErrInvalidArgument
-	} else if len(in.UserInfo.LoginName) < 4 || len(in.UserInfo.Password) < 8 || in.UserInfo.RoleId <= 0 {
+	} else if len(in.UserInfo.LoginName) < 4 || in.UserInfo.RoleId <= 0 {
+		return nil, rpc.ErrInvalidArgument
+	} else if len(in.UserInfo.Password) > 0 && len(in.UserInfo.Password) < 8 {
 		return nil, rpc.ErrInvalidArgument
 	}
 

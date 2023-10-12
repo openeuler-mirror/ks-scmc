@@ -81,8 +81,7 @@ message CreateIPtablesRequest {
     RuleInfo rule         = 4;  //require
 }
 
-message CreateIPtablesReply {
-}
+message CreateIPtablesReply {}
 
 message ModifyIPtablesRequest {
     int64    node_id      = 1;  //require
@@ -93,8 +92,7 @@ message ModifyIPtablesRequest {
     RuleInfo new_rule     = 6;  //require
 }
 
-message ModifyIPtablesReply {
-}
+message ModifyIPtablesReply {}
 
 message RemoveIPtablesRequest {
     int64    node_id      = 1;  //require
@@ -103,8 +101,7 @@ message RemoveIPtablesRequest {
     RuleInfo rule         = 4;  //require
 }
 
-message RemoveIPtablesReply {
-}
+message RemoveIPtablesReply {}
 
 /***** DATA TYPES *****/
 

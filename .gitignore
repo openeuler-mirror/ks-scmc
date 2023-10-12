@@ -1,11 +1,8 @@
-./ks-scmc-server
-./ks-scmc-authz
-./ks-scmc-user
+ks-scmc-server
+ks-scmc-authz
+ks-scmc-user
 
-ks-scmc-*.tar.gz
-
-.vscode
-
+.vscode/***
 
 # comment off when coding, comment on when you need to merge code
 # go.mod

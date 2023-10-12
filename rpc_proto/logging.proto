@@ -7,9 +7,18 @@ import "common.proto";
 package logging;
 
 service Logging {
-    rpc ListRuntime(ListRuntimeRequest) returns (ListRuntimeReply) {}  // 日志列表
-    rpc ListWarn(ListWarnRequest) returns (ListWarnReply) {}           // 告警列表
-    rpc ReadWarn(ReadWarnRequest) returns (ReadWarnReply) {}           // 设置告警已读
+    // 查询审计事件日志列表
+    rpc ListRuntime(ListRuntimeRequest) returns (ListRuntimeReply) {}
+    // 查询告警事件列表
+    rpc ListWarn(ListWarnRequest) returns (ListWarnReply) {}
+    // 设置告警事件已读
+    rpc ReadWarn(ReadWarnRequest) returns (ReadWarnReply) {}
+}
+
+message Filter {
+    string property = 1;  // 匹配字段 'target' 'detail'
+    string query    = 2;  // 匹配值
+    bool   fuzzy    = 3;  // 是否模糊匹配
 }
 
 message ListRuntimeRequest {
@@ -22,6 +31,7 @@ message ListRuntimeRequest {
     int64  page_no      = 22;  // 分页页码
     string sort_by      = 23;  // 排序字段(暂不用)
     bool   sort_desc    = 24;  // 倒序排序
+    Filter filter       = 25;  // 字段匹配搜索
 }
 
 message ListRuntimeReply {

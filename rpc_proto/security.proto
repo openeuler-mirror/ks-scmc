@@ -68,8 +68,7 @@ message LoadSecurityConfigRequset {
     repeated FullSeucirytConfig configs = 1;
 }
 
-message LoadSecurityConfigReply {
-}
+message LoadSecurityConfigReply {}
 
 message ProcProtection {
     int64           protection_type = 1;  // PROC_PROTECTION 必填

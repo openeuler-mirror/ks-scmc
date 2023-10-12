@@ -1015,10 +1015,10 @@ func (s *ContainerServer) GetBackupJob(ctx context.Context, in *pb.GetBackupJobR
 		return nil, rpc.ErrInvalidArgument
 	}
 
-	job := model.GetContainerBackupJob(in.Id)
-	if job == nil {
-		log.Infof("model.GetContainerBackupJob id=%v not exist", in.Id)
-		return nil, rpc.ErrNotFound
+	job, err := model.GetContainerBackupJob(in.Id)
+	if err != nil {
+		log.Infof("GetContainerBackupJob err=%v", err)
+		return nil, rpc.ErrInternal
 	}
 
 	return &pb.GetBackupJobReply{

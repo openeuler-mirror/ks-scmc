@@ -1,12 +1,8 @@
 package model
 
 import (
-	"context"
-	"strings"
 	"sync"
-	"time"
 
-	"github.com/docker/docker/api/types"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -28,17 +24,6 @@ type ContainerBackup struct {
 	Status      int8  // 0:备份中 1:成功 2:失败
 	CreatedAt   int64 `gorm:"autoCreateTime"`
 	UpdatedAt   int64 `gorm:"autoUpdateTime"`
-}
-
-type ContainerBackupJob struct {
-	ID          int64
-	ContainerID string
-	BackupName  string
-	ImageRef    string
-	ImageID     string
-	ImageSize   int64
-	Status      int64
-	UpdatedAt   int64
 }
 
 func CreateContainerBackup(nodeID int64, uuid string, backupName, backupDesc string) (*ContainerBackup, error) {
@@ -163,93 +148,4 @@ func ListContainerBackup() ([]*ContainerBackup, error) {
 	}
 
 	return data, nil
-}
-
-func AddContainerBackupJob(id int64, containerID, name string) error {
-	job := &ContainerBackupJob{
-		ID:          id,
-		ContainerID: containerID,
-		BackupName:  name,
-		Status:      0,
-		UpdatedAt:   time.Now().Unix(),
-	}
-
-	go func(job *ContainerBackupJob) {
-		containerBackupJobsGuard.Lock()
-		defer containerBackupJobsGuard.Unlock()
-
-		if _, ok := containerBackupJobs[job.ID]; ok {
-			log.Infof("backup job id=%v already exists", job.ID)
-			return
-		}
-
-		containerBackupJobs[job.ID] = job
-
-		cli, err := DockerClient()
-		if err != nil {
-			log.Warnf("create docker cli err=%v", err)
-			job.Status = 2
-			return
-		}
-
-		info, err := cli.ContainerInspect(context.Background(), job.ContainerID)
-		if err != nil {
-			log.Warnf("inspect container=%v err=%v", job.ContainerID, err)
-			job.Status = 2
-			return
-		}
-
-		if info.Config == nil {
-			log.Warnf("inspect container=%v .Config=nil", job.ContainerID)
-			job.Status = 2
-			return
-		}
-
-		job.ImageRef = strings.Split(info.Config.Image, ":")[0] + ":" + job.BackupName
-		newImage, err := cli.ContainerCommit(context.Background(), job.ContainerID, types.ContainerCommitOptions{
-			Reference: job.ImageRef,
-			Pause:     true,
-		})
-		if err != nil {
-			log.Warnf("commit container=%v err=%v", job.ContainerID, err)
-			job.Status = 2
-			return
-		}
-
-		imageInfo, _, err := cli.ImageInspectWithRaw(context.Background(), newImage.ID)
-		if err != nil {
-			log.Warnf("inspect image=%v err=%v", newImage.ID, err)
-		}
-
-		log.Debugf("backup id=%v finished", job.ID)
-		job.ImageID = strings.TrimPrefix(newImage.ID, "sha256:")
-		job.ImageSize = imageInfo.Size
-		job.Status = 1
-
-	}(job)
-
-	return nil
-}
-
-func GetContainerBackupJob(id int64) *ContainerBackupJob {
-	containerBackupJobsGuard.RLock()
-	defer containerBackupJobsGuard.RUnlock()
-
-	r, ok := containerBackupJobs[id]
-	if ok {
-		return r
-	}
-
-	return nil
-}
-
-func DelContainerBackupJob(id int64) {
-	containerBackupJobsGuard.Lock()
-	defer containerBackupJobsGuard.Unlock()
-
-	_, ok := containerBackupJobs[id]
-	if ok {
-		delete(containerBackupJobs, id)
-		log.Debugf("backup id=%v deleted", id)
-	}
 }

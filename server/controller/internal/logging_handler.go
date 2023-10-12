@@ -19,7 +19,19 @@ func (s *LoggingServer) ListRuntime(ctx context.Context, in *pb.ListRuntimeReque
 		return nil, rpc.ErrInvalidArgument
 	}
 
-	p, data, err := model.ListRuntimeLog(in.PageSize, in.PageNo, in.StartTime, in.EndTime, in.NodeId, in.EventModule)
+	var f *model.LogFilter
+	if in.Filter != nil {
+		if in.Filter.Property != "target" && in.Filter.Property != "detail" {
+			return nil, rpc.ErrInvalidArgument
+		}
+		f = &model.LogFilter{
+			Property: in.Filter.Property,
+			Query:    in.Filter.Query,
+			Fuzzy:    in.Filter.Fuzzy,
+		}
+	}
+
+	p, data, err := model.ListRuntimeLog(in.PageSize, in.PageNo, in.StartTime, in.EndTime, in.NodeId, in.EventModule, f)
 	if err != nil {
 		log.Infof("ListRuntime db err=%v", err)
 		return nil, rpc.ErrInternal

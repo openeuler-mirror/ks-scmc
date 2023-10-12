@@ -143,13 +143,15 @@ func (s *ContainerServer) List(ctx context.Context, in *pb.ListRequest) (*pb.Lis
 			if err != nil {
 				log.Warnf("ContainerInspect id=%v err=%v", c.ID, err)
 				// dont return error
-			}
-
-			startedAt, err := time.ParseInLocation(time.RFC3339Nano, ci.State.StartedAt, time.UTC)
-			if err != nil {
-				log.Warnf("ParseInLocation time=%v err=%v", ci.State.StartedAt, err)
 			} else {
-				info.Started = startedAt.Unix()
+				if ci.State != nil {
+					startedAt, err := time.ParseInLocation(time.RFC3339Nano, ci.State.StartedAt, time.UTC)
+					if err != nil {
+						log.Warnf("ParseInLocation time=%v err=%v", ci.State.StartedAt, err)
+					} else {
+						info.Started = startedAt.Unix()
+					}
+				}
 			}
 		}
 
@@ -161,15 +163,21 @@ func (s *ContainerServer) List(ctx context.Context, in *pb.ListRequest) (*pb.Lis
 			}
 		}
 
-		if c.State == "running" {
+		initResourceStat := func() {
 			info.ResourceStat = &pb.ResourceStat{
 				CpuStat: &pb.CpuStat{},
 				MemStat: &pb.MemoryStat{},
 			}
 		}
+		if c.State == "running" {
+			initResourceStat()
+		}
 
 		if stats != nil {
 			if stat, ok := stats[c.ID]; ok {
+				if info.ResourceStat == nil {
+					initResourceStat()
+				}
 				if stat.CpuStat != nil {
 					info.ResourceStat.CpuStat = stat.CpuStat
 				}

@@ -18,12 +18,19 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type ImageClient interface {
+	// 查询可用镜像列表
 	List(ctx context.Context, in *ListRequest, opts ...grpc.CallOption) (*ListReply, error)
+	// 查询所有镜像列表
 	ListDB(ctx context.Context, in *ListDBRequest, opts ...grpc.CallOption) (*ListDBReply, error)
+	// 上传镜像
 	Upload(ctx context.Context, opts ...grpc.CallOption) (Image_UploadClient, error)
+	// 更新已上传镜像
 	Update(ctx context.Context, opts ...grpc.CallOption) (Image_UpdateClient, error)
+	// 下载镜像文件
 	Download(ctx context.Context, in *DownloadRequest, opts ...grpc.CallOption) (Image_DownloadClient, error)
+	// 镜像审批
 	Approve(ctx context.Context, in *ApproveRequest, opts ...grpc.CallOption) (*ApproveReply, error)
+	// 删除已有镜像
 	Remove(ctx context.Context, in *RemoveRequest, opts ...grpc.CallOption) (*RemoveReply, error)
 	AgentSync(ctx context.Context, in *AgentSyncRequest, opts ...grpc.CallOption) (*AgentSyncReply, error)
 }
@@ -185,12 +192,19 @@ func (c *imageClient) AgentSync(ctx context.Context, in *AgentSyncRequest, opts 
 // All implementations must embed UnimplementedImageServer
 // for forward compatibility
 type ImageServer interface {
+	// 查询可用镜像列表
 	List(context.Context, *ListRequest) (*ListReply, error)
+	// 查询所有镜像列表
 	ListDB(context.Context, *ListDBRequest) (*ListDBReply, error)
+	// 上传镜像
 	Upload(Image_UploadServer) error
+	// 更新已上传镜像
 	Update(Image_UpdateServer) error
+	// 下载镜像文件
 	Download(*DownloadRequest, Image_DownloadServer) error
+	// 镜像审批
 	Approve(context.Context, *ApproveRequest) (*ApproveReply, error)
+	// 删除已有镜像
 	Remove(context.Context, *RemoveRequest) (*RemoveReply, error)
 	AgentSync(context.Context, *AgentSyncRequest) (*AgentSyncReply, error)
 	mustEmbedUnimplementedImageServer()

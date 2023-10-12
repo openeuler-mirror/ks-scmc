@@ -18,18 +18,27 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type UserClient interface {
-	Signup(ctx context.Context, in *SignupRequest, opts ...grpc.CallOption) (*SignupReply, error)
+	// 登录创建会话
 	Login(ctx context.Context, in *LoginRequest, opts ...grpc.CallOption) (*LoginReply, error)
+	// 退出登录删除会话
 	Logout(ctx context.Context, in *LogoutRequest, opts ...grpc.CallOption) (*LogoutReply, error)
+	// 修改登录密码
 	UpdatePassword(ctx context.Context, in *UpdatePasswordRequest, opts ...grpc.CallOption) (*UpdatePasswordReply, error)
-	// 管理员用户/角色管理
+	// 查询用户列表
 	ListUser(ctx context.Context, in *ListUserRequest, opts ...grpc.CallOption) (*ListUserReply, error)
+	// 创建新用户
 	CreateUser(ctx context.Context, in *CreateUserRequest, opts ...grpc.CallOption) (*CreateUserReply, error)
+	// 更新用户信息
 	UpdateUser(ctx context.Context, in *UpdateUserRequest, opts ...grpc.CallOption) (*UpdateUserReply, error)
+	// 删除用户
 	RemoveUser(ctx context.Context, in *RemoveUserRequest, opts ...grpc.CallOption) (*RemoveUserReply, error)
+	// 查询角色列表
 	ListRole(ctx context.Context, in *ListRoleRequest, opts ...grpc.CallOption) (*ListRoleReply, error)
+	// 创建新角色
 	CreateRole(ctx context.Context, in *CreateRoleRequest, opts ...grpc.CallOption) (*CreateRoleReply, error)
+	// 更新角色信息
 	UpdateRole(ctx context.Context, in *UpdateRoleRequest, opts ...grpc.CallOption) (*UpdateRoleReply, error)
+	// 删除角色
 	RemoveRole(ctx context.Context, in *RemoveRoleRequest, opts ...grpc.CallOption) (*RemoveRoleReply, error)
 }
 
@@ -39,15 +48,6 @@ type userClient struct {
 
 func NewUserClient(cc grpc.ClientConnInterface) UserClient {
 	return &userClient{cc}
-}
-
-func (c *userClient) Signup(ctx context.Context, in *SignupRequest, opts ...grpc.CallOption) (*SignupReply, error) {
-	out := new(SignupReply)
-	err := c.cc.Invoke(ctx, "/user.User/Signup", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
 }
 
 func (c *userClient) Login(ctx context.Context, in *LoginRequest, opts ...grpc.CallOption) (*LoginReply, error) {
@@ -153,18 +153,27 @@ func (c *userClient) RemoveRole(ctx context.Context, in *RemoveRoleRequest, opts
 // All implementations must embed UnimplementedUserServer
 // for forward compatibility
 type UserServer interface {
-	Signup(context.Context, *SignupRequest) (*SignupReply, error)
+	// 登录创建会话
 	Login(context.Context, *LoginRequest) (*LoginReply, error)
+	// 退出登录删除会话
 	Logout(context.Context, *LogoutRequest) (*LogoutReply, error)
+	// 修改登录密码
 	UpdatePassword(context.Context, *UpdatePasswordRequest) (*UpdatePasswordReply, error)
-	// 管理员用户/角色管理
+	// 查询用户列表
 	ListUser(context.Context, *ListUserRequest) (*ListUserReply, error)
+	// 创建新用户
 	CreateUser(context.Context, *CreateUserRequest) (*CreateUserReply, error)
+	// 更新用户信息
 	UpdateUser(context.Context, *UpdateUserRequest) (*UpdateUserReply, error)
+	// 删除用户
 	RemoveUser(context.Context, *RemoveUserRequest) (*RemoveUserReply, error)
+	// 查询角色列表
 	ListRole(context.Context, *ListRoleRequest) (*ListRoleReply, error)
+	// 创建新角色
 	CreateRole(context.Context, *CreateRoleRequest) (*CreateRoleReply, error)
+	// 更新角色信息
 	UpdateRole(context.Context, *UpdateRoleRequest) (*UpdateRoleReply, error)
+	// 删除角色
 	RemoveRole(context.Context, *RemoveRoleRequest) (*RemoveRoleReply, error)
 	mustEmbedUnimplementedUserServer()
 }
@@ -173,9 +182,6 @@ type UserServer interface {
 type UnimplementedUserServer struct {
 }
 
-func (UnimplementedUserServer) Signup(context.Context, *SignupRequest) (*SignupReply, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method Signup not implemented")
-}
 func (UnimplementedUserServer) Login(context.Context, *LoginRequest) (*LoginReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Login not implemented")
 }
@@ -220,24 +226,6 @@ type UnsafeUserServer interface {
 
 func RegisterUserServer(s grpc.ServiceRegistrar, srv UserServer) {
 	s.RegisterService(&User_ServiceDesc, srv)
-}
-
-func _User_Signup_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(SignupRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(UserServer).Signup(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/user.User/Signup",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(UserServer).Signup(ctx, req.(*SignupRequest))
-	}
-	return interceptor(ctx, in, info, handler)
 }
 
 func _User_Login_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -445,10 +433,6 @@ var User_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "user.User",
 	HandlerType: (*UserServer)(nil),
 	Methods: []grpc.MethodDesc{
-		{
-			MethodName: "Signup",
-			Handler:    _User_Signup_Handler,
-		},
 		{
 			MethodName: "Login",
 			Handler:    _User_Login_Handler,

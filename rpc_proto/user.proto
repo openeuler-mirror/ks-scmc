@@ -5,20 +5,28 @@ option go_package = "scmc/rpc/pb/user";
 package user;
 
 service User {
-    rpc Signup(SignupRequest) returns (SignupReply) {}
+    // 登录创建会话
     rpc Login(LoginRequest) returns (LoginReply) {}
+    // 退出登录删除会话
     rpc Logout(LogoutRequest) returns (LogoutReply) {}
+    // 修改登录密码
     rpc UpdatePassword(UpdatePasswordRequest) returns (UpdatePasswordReply) {}
-
-    // 管理员用户/角色管理
-    rpc ListUser(ListUserRequest) returns (ListUserReply) {}        // 用户列表
-    rpc CreateUser(CreateUserRequest) returns (CreateUserReply) {}  // 创建新用户
-    rpc UpdateUser(UpdateUserRequest) returns (UpdateUserReply) {}  // 更新用户信息
-    rpc RemoveUser(RemoveUserRequest) returns (RemoveUserReply) {}  // 删除用户
-    rpc ListRole(ListRoleRequest) returns (ListRoleReply) {}        // 用户角色列表
-    rpc CreateRole(CreateRoleRequest) returns (CreateRoleReply) {}  // 创建新角色
-    rpc UpdateRole(UpdateRoleRequest) returns (UpdateRoleReply) {}  // 更新角色信息
-    rpc RemoveRole(RemoveRoleRequest) returns (RemoveRoleReply) {}  // 删除角色
+    // 查询用户列表
+    rpc ListUser(ListUserRequest) returns (ListUserReply) {}
+    // 创建新用户
+    rpc CreateUser(CreateUserRequest) returns (CreateUserReply) {}
+    // 更新用户信息
+    rpc UpdateUser(UpdateUserRequest) returns (UpdateUserReply) {}
+    // 删除用户
+    rpc RemoveUser(RemoveUserRequest) returns (RemoveUserReply) {}
+    // 查询角色列表
+    rpc ListRole(ListRoleRequest) returns (ListRoleReply) {}
+    // 创建新角色
+    rpc CreateRole(CreateRoleRequest) returns (CreateRoleReply) {}
+    // 更新角色信息
+    rpc UpdateRole(UpdateRoleRequest) returns (UpdateRoleReply) {}
+    // 删除角色
+    rpc RemoveRole(RemoveRoleRequest) returns (RemoveRoleReply) {}
 }
 
 message SignupRequest {
@@ -54,8 +62,7 @@ message UpdatePasswordReply {
     bool need_relogin = 1;
 }
 
-message ListUserRequest {
-}
+message ListUserRequest {}
 
 message ListUserReply {
     repeated UserInfo users = 1;

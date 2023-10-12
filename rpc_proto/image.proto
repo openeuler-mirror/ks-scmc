@@ -5,12 +5,19 @@ option go_package = "scmc/rpc/pb/image";
 package image;
 
 service Image {
+    // 查询可用镜像列表
     rpc List(ListRequest) returns (ListReply) {}
+    // 查询所有镜像列表
     rpc ListDB(ListDBRequest) returns (ListDBReply) {}
+    // 上传镜像
     rpc Upload(stream UploadRequest) returns (UploadReply) {}
+    // 更新已上传镜像
     rpc Update(stream UpdateRequest) returns (UpdateReply) {}
+    // 下载镜像文件
     rpc Download(DownloadRequest) returns (stream DownloadReply) {}
+    // 镜像审批
     rpc Approve(ApproveRequest) returns (ApproveReply) {}
+    // 删除已有镜像
     rpc Remove(RemoveRequest) returns (RemoveReply) {}
     rpc AgentSync(AgentSyncRequest) returns (AgentSyncReply) {}
 }

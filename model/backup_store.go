@@ -101,6 +101,7 @@ func (b *backupJobManager) update(j *ContainerBackupJob) error {
 		return nil
 	}
 
+	j.UpdatedAt = time.Now().Unix()
 	return b.withLock(func() error {
 		b.m[j.ID] = j
 		return nil
@@ -170,12 +171,13 @@ func addBackupJob(j *ContainerBackupJob) {
 	imageInfo, _, err := cli.ImageInspectWithRaw(context.Background(), newImage.ID)
 	if err != nil {
 		log.Warnf("inspect image=%v err=%v", newImage.ID, err)
+		j.Status = 2
+	} else {
+		log.Debugf("backup id=%v finished", j.ID)
+		j.ImageID = strings.TrimPrefix(newImage.ID, "sha256:")
+		j.ImageSize = imageInfo.Size
+		j.Status = 1
 	}
-
-	log.Debugf("backup id=%v finished", j.ID)
-	j.ImageID = strings.TrimPrefix(newImage.ID, "sha256:")
-	j.ImageSize = imageInfo.Size
-	j.Status = 1
 
 	backup.update(j)
 }

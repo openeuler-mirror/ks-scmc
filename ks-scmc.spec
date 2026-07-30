@@ -5,12 +5,12 @@
 %global debug_package %{nil}
 
 Summary:        KylinSec security container magic cube
-License:        No License
+License:        MulanPSL-2.0
 Group:          Tools/Container/Docker
 
 Name:           ks-scmc
 Version:        1.0.2
-Release:        3
+Release:        4
 URL:            http://gitlab.kylinos.com.cn/os/%{name}
 Source0:        %{name}-%{version}.tar.gz
 
@@ -76,6 +76,9 @@ rm -rf %{_datadir}/ks-scmc
 %{_sysconfdir}/%{name}/init_users.sh
 
 %changelog
+* Thu Jul 30 2026 yubin <yubin@kylinos.com.cn> - 1.0.2-4
+- Update License to MulanPSL-2.0 (#CZXT44-169760)
+
 * Sat May 21 2022 Haotian Chen <chenhaotian@kylinos.com.cn> - 1.0.1-1.ky3
 - KYOS-F: security settings (file protection, process whitelist). (#54582 #54770)
 - KYOS-F: security settings (net-process whitelist, iptables rules). (#54288 #53553)

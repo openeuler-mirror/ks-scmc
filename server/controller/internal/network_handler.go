@@ -6,7 +6,7 @@ import (
 
 	log "github.com/sirupsen/logrus"
 
-	"scmc/model"
+	"scmc/model/db"
 	"scmc/rpc"
 	pb "scmc/rpc/pb/network"
 )
@@ -17,9 +17,9 @@ type NetworkServer struct {
 
 func (s *NetworkServer) List(ctx context.Context, in *pb.ListRequest) (*pb.ListReply, error) {
 	reply := pb.ListReply{}
-	var nodeToQuery []*model.NodeInfo
+	var nodeToQuery []*db.NodeInfo
 	if in.NodeId == -1 {
-		nodes, err := model.ListNodes()
+		nodes, err := db.ListNodes()
 		if err != nil {
 			log.Warnf("query nodes: %v", err)
 			return nil, rpc.ErrInternal
@@ -28,9 +28,9 @@ func (s *NetworkServer) List(ctx context.Context, in *pb.ListRequest) (*pb.ListR
 			nodeToQuery = append(nodeToQuery, &nodes[i])
 		}
 	} else {
-		nodeInfo, err := model.QueryNodeByID(in.NodeId)
+		nodeInfo, err := db.QueryNodeByID(in.NodeId)
 		if err != nil {
-			if err == model.ErrRecordNotFound {
+			if err == db.ErrRecordNotFound {
 				return nil, rpc.ErrNotFound
 			}
 			return nil, rpc.ErrInternal
@@ -79,9 +79,9 @@ func (s *NetworkServer) Connect(ctx context.Context, in *pb.ConnectRequest) (*pb
 		return nil, rpc.ErrInvalidArgument
 	}
 
-	nodeInfo, err := model.QueryNodeByID(in.NodeId)
+	nodeInfo, err := db.QueryNodeByID(in.NodeId)
 	if err != nil {
-		if err == model.ErrRecordNotFound {
+		if err == db.ErrRecordNotFound {
 			return nil, rpc.ErrNotFound
 		}
 		return nil, rpc.ErrInternal
@@ -110,9 +110,9 @@ func (s *NetworkServer) Disconnect(ctx context.Context, in *pb.DisconnectRequest
 		return nil, rpc.ErrInvalidArgument
 	}
 
-	nodeInfo, err := model.QueryNodeByID(in.NodeId)
+	nodeInfo, err := db.QueryNodeByID(in.NodeId)
 	if err != nil {
-		if err == model.ErrRecordNotFound {
+		if err == db.ErrRecordNotFound {
 			return nil, rpc.ErrNotFound
 		}
 		return nil, rpc.ErrInternal
@@ -141,9 +141,9 @@ func (s *NetworkServer) ListIPtables(ctx context.Context, in *pb.ListIPtablesReq
 		return nil, rpc.ErrInvalidArgument
 	}
 
-	nodeInfo, err := model.QueryNodeByID(in.NodeId)
+	nodeInfo, err := db.QueryNodeByID(in.NodeId)
 	if err != nil {
-		if err == model.ErrRecordNotFound {
+		if err == db.ErrRecordNotFound {
 			return nil, rpc.ErrNotFound
 		}
 		return nil, rpc.ErrInternal
@@ -172,9 +172,9 @@ func (s *NetworkServer) EnableIPtables(ctx context.Context, in *pb.EnableIPtable
 		return nil, rpc.ErrInvalidArgument
 	}
 
-	nodeInfo, err := model.QueryNodeByID(in.NodeId)
+	nodeInfo, err := db.QueryNodeByID(in.NodeId)
 	if err != nil {
-		if err == model.ErrRecordNotFound {
+		if err == db.ErrRecordNotFound {
 			return nil, rpc.ErrNotFound
 		}
 		return nil, rpc.ErrInternal
@@ -203,9 +203,9 @@ func (s *NetworkServer) CreateIPtables(ctx context.Context, in *pb.CreateIPtable
 		return nil, rpc.ErrInvalidArgument
 	}
 
-	nodeInfo, err := model.QueryNodeByID(in.NodeId)
+	nodeInfo, err := db.QueryNodeByID(in.NodeId)
 	if err != nil {
-		if err == model.ErrRecordNotFound {
+		if err == db.ErrRecordNotFound {
 			return nil, rpc.ErrNotFound
 		}
 		return nil, rpc.ErrInternal
@@ -234,9 +234,9 @@ func (s *NetworkServer) ModifyIPtables(ctx context.Context, in *pb.ModifyIPtable
 		return nil, rpc.ErrInvalidArgument
 	}
 
-	nodeInfo, err := model.QueryNodeByID(in.NodeId)
+	nodeInfo, err := db.QueryNodeByID(in.NodeId)
 	if err != nil {
-		if err == model.ErrRecordNotFound {
+		if err == db.ErrRecordNotFound {
 			return nil, rpc.ErrNotFound
 		}
 		return nil, rpc.ErrInternal
@@ -265,9 +265,9 @@ func (s *NetworkServer) RemoveIPtables(ctx context.Context, in *pb.RemoveIPtable
 		return nil, rpc.ErrInvalidArgument
 	}
 
-	nodeInfo, err := model.QueryNodeByID(in.NodeId)
+	nodeInfo, err := db.QueryNodeByID(in.NodeId)
 	if err != nil {
-		if err == model.ErrRecordNotFound {
+		if err == db.ErrRecordNotFound {
 			return nil, rpc.ErrNotFound
 		}
 		return nil, rpc.ErrInternal

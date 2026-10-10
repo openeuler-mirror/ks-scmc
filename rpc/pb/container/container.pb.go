@@ -301,13 +301,13 @@ func (x *InspectBackupReply) Reset() {
 	}
 }
 
-func (x *UpdateBackupReply) String() string {
+func (x *InspectBackupReply) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*UpdateBackupReply) ProtoMessage() {}
+func (*InspectBackupReply) ProtoMessage() {}
 
-func (x *UpdateBackupReply) ProtoReflect() protoreflect.Message {
+func (x *InspectBackupReply) ProtoReflect() protoreflect.Message {
 	mi := &file_container_proto_msgTypes[3]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))

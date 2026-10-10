@@ -353,13 +353,13 @@ func (x *AppEntry) Reset() {
 	}
 }
 
-func (x *ResumeBackupRequest) String() string {
+func (x *AppEntry) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*ResumeBackupRequest) ProtoMessage() {}
+func (*AppEntry) ProtoMessage() {}
 
-func (x *ResumeBackupRequest) ProtoReflect() protoreflect.Message {
+func (x *AppEntry) ProtoReflect() protoreflect.Message {
 	mi := &file_container_proto_msgTypes[4]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))

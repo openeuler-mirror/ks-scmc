@@ -319,27 +319,33 @@ func (x *InspectBackupReply) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use UpdateBackupReply.ProtoReflect.Descriptor instead.
-func (*UpdateBackupReply) Descriptor() ([]byte, []int) {
+// Deprecated: Use InspectBackupReply.ProtoReflect.Descriptor instead.
+func (*InspectBackupReply) Descriptor() ([]byte, []int) {
 	return file_container_proto_rawDescGZIP(), []int{3}
 }
 
-type ResumeBackupRequest struct {
+func (x *InspectBackupReply) GetBackup() *ContainerBackup {
+	if x != nil {
+		return x.Backup
+	}
+	return nil
+}
+
+type AppEntry struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// for client
-	NodeId      int64  `protobuf:"varint,1,opt,name=node_id,json=nodeId,proto3" json:"node_id,omitempty"`
+	Id          int64  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
 	ContainerId string `protobuf:"bytes,2,opt,name=container_id,json=containerId,proto3" json:"container_id,omitempty"`
-	BackupId    int64  `protobuf:"varint,3,opt,name=backup_id,json=backupId,proto3" json:"backup_id,omitempty"`
-	// for agent service
-	ImageRef       string          `protobuf:"bytes,11,opt,name=image_ref,json=imageRef,proto3" json:"image_ref,omitempty"`
-	SecurityConfig *SecurityConfig `protobuf:"bytes,12,opt,name=security_config,json=securityConfig,proto3" json:"security_config,omitempty"` // string backup_name = 12;
+	Name        string `protobuf:"bytes,3,opt,name=name,proto3" json:"name,omitempty"`
+	ExePath     string `protobuf:"bytes,4,opt,name=exe_path,json=exePath,proto3" json:"exe_path,omitempty"`        // 应用程序路径
+	IsGui       bool   `protobuf:"varint,5,opt,name=is_gui,json=isGui,proto3" json:"is_gui,omitempty"`             // 是否是图形程序
+	IsRunning   bool   `protobuf:"varint,6,opt,name=is_running,json=isRunning,proto3" json:"is_running,omitempty"` // 应用是否正在运行
 }
 
-func (x *ResumeBackupRequest) Reset() {
-	*x = ResumeBackupRequest{}
+func (x *AppEntry) Reset() {
+	*x = AppEntry{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_container_proto_msgTypes[4]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))

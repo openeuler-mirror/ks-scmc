@@ -8,7 +8,6 @@ import (
 	"google.golang.org/grpc/keepalive"
 
 	"scmc/common"
-	"scmc/model/registry"
 	"scmc/rpc/pb/container"
 	"scmc/rpc/pb/image"
 	"scmc/rpc/pb/logging"
@@ -18,6 +17,7 @@ import (
 	"scmc/rpc/pb/user"
 	"scmc/server"
 	"scmc/server/controller/internal"
+	"scmc/server/controller/tasks"
 )
 
 func Server() (*grpc.Server, error) {
@@ -56,12 +56,16 @@ func Server() (*grpc.Server, error) {
 	logging.RegisterLoggingServer(s, &internal.LoggingServer{})
 	security.RegisterSecurityServer(s, &internal.SecurityServer{})
 
-	go internal.NodeStatusMonitor()
 	go internal.RuntimeLogWriter()
-	go registry.PushImgae()
-	go internal.ResumeContainerConfigs()
-	go internal.CheckContainerBackupJob()
-	go internal.DetectIllegalContainer()
-	go internal.CronSyncImage()
+
+	tasks.AddTask(
+		&tasks.SyncImages{},
+		&tasks.IllegalContainer{},
+		&tasks.ContainerBackup{},
+		&tasks.ContainerConfig{},
+		&tasks.PushImage{},
+		&tasks.NodeStatus{},
+	)
+
 	return s, nil
 }

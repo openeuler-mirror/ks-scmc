@@ -13,7 +13,7 @@ import (
 	"google.golang.org/grpc/peer"
 	"google.golang.org/grpc/status"
 
-	"scmc/model"
+	"scmc/model/db"
 	"scmc/rpc/pb/container"
 	"scmc/rpc/pb/image"
 	"scmc/rpc/pb/logging"
@@ -126,7 +126,7 @@ func writeRuntimeLog(ctx context.Context, req interface{}, err error) {
 		}
 	}
 
-	var logData *model.RuntimeLog
+	var logData *db.RuntimeLog
 	switch reqMsg := req.(type) {
 	case *user.LoginRequest:
 		logData = RuntimeLogWritter{}.Login(reqMsg)
@@ -192,8 +192,8 @@ func writeRuntimeLog(ctx context.Context, req interface{}, err error) {
 		if t, ok := logging.EVENT_TYPE_name[int32(logData.EventType)]; ok {
 			logData.EventType_ = t
 		}
-		data := []*model.RuntimeLog{logData}
-		if err = model.CreateRuntimeLog(data); err != nil {
+		data := []*db.RuntimeLog{logData}
+		if err = db.CreateRuntimeLog(data); err != nil {
 			log.Warnf("CreateLog %+v err=%v", logData, err)
 		}
 	}

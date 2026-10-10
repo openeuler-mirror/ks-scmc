@@ -189,27 +189,50 @@ func (c *containerClient) ListBackup(ctx context.Context, in *ListBackupRequest,
 	return out, nil
 }
 
-func (c *containerClient) AddBackupJob(ctx context.Context, in *AddBackupJobRequest, opts ...grpc.CallOption) (*AddBackupJobReply, error) {
-	out := new(AddBackupJobReply)
-	err := c.cc.Invoke(ctx, "/container.Container/AddBackupJob", in, out, opts...)
+func (c *containerClient) ExportBackup(ctx context.Context, in *ExportBackupRequest, opts ...grpc.CallOption) (Container_ExportBackupClient, error) {
+	stream, err := c.cc.NewStream(ctx, &Container_ServiceDesc.Streams[0], "/container.Container/ExportBackup", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &containerExportBackupClient{stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+type Container_ExportBackupClient interface {
+	Recv() (*ExportBackupReply, error)
+	grpc.ClientStream
+}
+
+type containerExportBackupClient struct {
+	grpc.ClientStream
+}
+
+func (x *containerExportBackupClient) Recv() (*ExportBackupReply, error) {
+	m := new(ExportBackupReply)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
+func (c *containerClient) ListBackupImage(ctx context.Context, in *ListBackupImageRequest, opts ...grpc.CallOption) (*ListBackupImageReply, error) {
+	out := new(ListBackupImageReply)
+	err := c.cc.Invoke(ctx, "/container.Container/ListBackupImage", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *containerClient) GetBackupJob(ctx context.Context, in *GetBackupJobRequest, opts ...grpc.CallOption) (*GetBackupJobReply, error) {
-	out := new(GetBackupJobReply)
-	err := c.cc.Invoke(ctx, "/container.Container/GetBackupJob", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *containerClient) DelBackupJob(ctx context.Context, in *DelBackupJobRequest, opts ...grpc.CallOption) (*DelBackupJobReply, error) {
-	out := new(DelBackupJobReply)
-	err := c.cc.Invoke(ctx, "/container.Container/DelBackupJob", in, out, opts...)
+func (c *containerClient) InspectBackup(ctx context.Context, in *InspectBackupRequest, opts ...grpc.CallOption) (*InspectBackupReply, error) {
+	out := new(InspectBackupReply)
+	err := c.cc.Invoke(ctx, "/container.Container/InspectBackup", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}

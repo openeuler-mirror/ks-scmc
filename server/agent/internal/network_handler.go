@@ -9,7 +9,8 @@ import (
 	"github.com/docker/docker/api/types/network"
 	log "github.com/sirupsen/logrus"
 
-	"scmc/model"
+	"scmc/model/docker"
+	"scmc/model/iptables"
 	"scmc/rpc"
 	pb "scmc/rpc/pb/network"
 )
@@ -39,7 +40,7 @@ func parseSubnet(s string) (string, int, error) {
 func (s *NetworkServer) List(ctx context.Context, in *pb.ListRequest) (*pb.ListReply, error) {
 	reply := pb.ListReply{}
 
-	cli, err := model.DockerClient()
+	cli, err := docker.Client()
 	if err != nil {
 		return nil, rpc.ErrInternal
 	}
@@ -111,7 +112,7 @@ func (s *NetworkServer) Connect(ctx context.Context, in *pb.ConnectRequest) (*pb
 		return nil, rpc.ErrInvalidArgument
 	}
 
-	cli, err := model.DockerClient()
+	cli, err := docker.Client()
 	if err != nil {
 		return nil, rpc.ErrInternal
 	}
@@ -144,7 +145,7 @@ func (s *NetworkServer) Disconnect(ctx context.Context, in *pb.DisconnectRequest
 		return nil, rpc.ErrInvalidArgument
 	}
 
-	cli, err := model.DockerClient()
+	cli, err := docker.Client()
 	if err != nil {
 		return nil, rpc.ErrInternal
 	}
@@ -160,10 +161,10 @@ func (s *NetworkServer) Disconnect(ctx context.Context, in *pb.DisconnectRequest
 func (s *NetworkServer) ListIPtables(ctx context.Context, in *pb.ListIPtablesRequest) (*pb.ListIPtablesReply, error) {
 	reply := pb.ListIPtablesReply{}
 
-	who := model.OperateNode
+	who := iptables.OperateNode
 	pid := 0
 	if in.ContainerId != "" {
-		cli, err := model.DockerClient()
+		cli, err := docker.Client()
 		if err != nil {
 			return nil, rpc.ErrInternal
 		}
@@ -173,11 +174,11 @@ func (s *NetworkServer) ListIPtables(ctx context.Context, in *pb.ListIPtablesReq
 			log.Warnf("ContainerInspect err(%v) or container not start", err)
 			return nil, transDockerError(err)
 		}
-		who = model.OperateContainer
+		who = iptables.OperateContainer
 		pid = info.State.Pid
 	}
 
-	list, err := model.ListRules(who, pid)
+	list, err := iptables.ListRules(who, pid)
 	if err != nil {
 		return nil, rpc.ErrInternal
 	}
@@ -210,7 +211,7 @@ func (s *NetworkServer) EnableIPtables(ctx context.Context, in *pb.EnableIPtable
 	reply := pb.EnableIPtablesReply{}
 
 	if in.ContainerId != "" {
-		cli, err := model.DockerClient()
+		cli, err := docker.Client()
 		if err != nil {
 			return nil, rpc.ErrInternal
 		}
@@ -228,18 +229,18 @@ func (s *NetworkServer) EnableIPtables(ctx context.Context, in *pb.EnableIPtable
 		fileName := info.ID + "-" + name
 
 		if in.Enable {
-			model.EnableContainerIPtables(fileName, info.State.Pid)
+			iptables.EnableContainer(fileName, info.State.Pid)
 		} else {
-			model.DisableContainerIPtables(fileName, info.State.Pid)
+			iptables.DisableContainer(fileName, info.State.Pid)
 		}
 	} else {
 		if in.Enable {
 			linkifs := getLinkIfs()
 			for _, ifs := range linkifs {
-				model.EnableNodeIPtables(ifs)
+				iptables.EnableNode(ifs)
 			}
 		} else {
-			model.DisableNodeIPtables()
+			iptables.DisableNode()
 		}
 	}
 
@@ -253,12 +254,12 @@ func (s *NetworkServer) CreateIPtables(ctx context.Context, in *pb.CreateIPtable
 		return nil, rpc.ErrInvalidArgument
 	}
 
-	who := model.OperateNode
+	who := iptables.OperateNode
 	pid := 0
 	chain := defaultNodeChain
 
 	if in.ContainerId != "" {
-		cli, err := model.DockerClient()
+		cli, err := docker.Client()
 		if err != nil {
 			return nil, rpc.ErrInternal
 		}
@@ -268,7 +269,7 @@ func (s *NetworkServer) CreateIPtables(ctx context.Context, in *pb.CreateIPtable
 			log.Warnf("ContainerInspect err(%v) or container not start", err)
 			return nil, transDockerError(err)
 		}
-		who = model.OperateContainer
+		who = iptables.OperateContainer
 		pid = info.State.Pid
 		chain = defaultContainerChain
 	}
@@ -280,7 +281,7 @@ func (s *NetworkServer) CreateIPtables(ctx context.Context, in *pb.CreateIPtable
 	if in.Rule.Policy != "" {
 		policy = in.Rule.Policy
 	}
-	rule := model.RuleInfo{
+	rule := iptables.RuleInfo{
 		Source:       in.Rule.Source,
 		Destination:  in.Rule.Destination,
 		Protocol:     in.Rule.Protocol,
@@ -291,7 +292,7 @@ func (s *NetworkServer) CreateIPtables(ctx context.Context, in *pb.CreateIPtable
 		Policy:       policy,
 	}
 
-	if err := model.AddRule(who, in.ContainerId, pid, chain, rule); err != nil {
+	if err := iptables.AddRule(who, in.ContainerId, pid, chain, rule); err != nil {
 		log.Warnf("AddRule: %v", err)
 		return nil, rpc.ErrInternal
 	}
@@ -305,13 +306,13 @@ func (s *NetworkServer) ModifyIPtables(ctx context.Context, in *pb.ModifyIPtable
 		return nil, rpc.ErrInvalidArgument
 	}
 
-	who := model.OperateNode
+	who := iptables.OperateNode
 	pid := 0
 	oldChain := defaultNodeChain
 	newChain := defaultNodeChain
 
 	if in.ContainerId != "" {
-		cli, err := model.DockerClient()
+		cli, err := docker.Client()
 		if err != nil {
 			return nil, rpc.ErrInternal
 		}
@@ -321,7 +322,7 @@ func (s *NetworkServer) ModifyIPtables(ctx context.Context, in *pb.ModifyIPtable
 			log.Warnf("ContainerInspect err(%v) or container not start", err)
 			return nil, transDockerError(err)
 		}
-		who = model.OperateContainer
+		who = iptables.OperateContainer
 		pid = info.State.Pid
 		oldChain = defaultContainerChain
 		newChain = defaultContainerChain
@@ -334,7 +335,7 @@ func (s *NetworkServer) ModifyIPtables(ctx context.Context, in *pb.ModifyIPtable
 	if in.OldRule.Policy != "" {
 		oldPolicy = in.OldRule.Policy
 	}
-	oldrule := model.RuleInfo{
+	oldrule := iptables.RuleInfo{
 		Source:       in.OldRule.Source,
 		Destination:  in.OldRule.Destination,
 		Protocol:     in.OldRule.Protocol,
@@ -352,7 +353,7 @@ func (s *NetworkServer) ModifyIPtables(ctx context.Context, in *pb.ModifyIPtable
 	if in.NewRule.Policy != "" {
 		newPolicy = in.NewRule.Policy
 	}
-	newrule := model.RuleInfo{
+	newrule := iptables.RuleInfo{
 		Source:       in.NewRule.Source,
 		Destination:  in.NewRule.Destination,
 		Protocol:     in.NewRule.Protocol,
@@ -363,7 +364,7 @@ func (s *NetworkServer) ModifyIPtables(ctx context.Context, in *pb.ModifyIPtable
 		Policy:       newPolicy,
 	}
 
-	if err := model.ModifyRule(who, in.ContainerId, pid, oldChain, oldrule, newChain, newrule); err != nil {
+	if err := iptables.ModifyRule(who, in.ContainerId, pid, oldChain, oldrule, newChain, newrule); err != nil {
 		log.Warnf("ModifyContainerRule: %v", err)
 		return nil, rpc.ErrInternal
 	}
@@ -376,12 +377,12 @@ func (s *NetworkServer) RemoveIPtables(ctx context.Context, in *pb.RemoveIPtable
 	if in.Rule == nil {
 		return nil, rpc.ErrInvalidArgument
 	}
-	who := model.OperateNode
+	who := iptables.OperateNode
 	pid := 0
 	chain := defaultNodeChain
 
 	if in.ContainerId != "" {
-		cli, err := model.DockerClient()
+		cli, err := docker.Client()
 		if err != nil {
 			return nil, rpc.ErrInternal
 		}
@@ -391,7 +392,7 @@ func (s *NetworkServer) RemoveIPtables(ctx context.Context, in *pb.RemoveIPtable
 			log.Warnf("ContainerInspect err(%v) or container not start", err)
 			return nil, transDockerError(err)
 		}
-		who = model.OperateContainer
+		who = iptables.OperateContainer
 		pid = info.State.Pid
 		chain = defaultContainerChain
 	}
@@ -403,7 +404,7 @@ func (s *NetworkServer) RemoveIPtables(ctx context.Context, in *pb.RemoveIPtable
 	if in.Rule.Policy != "" {
 		policy = in.Rule.Policy
 	}
-	rule := model.RuleInfo{
+	rule := iptables.RuleInfo{
 		Source:       in.Rule.Source,
 		Destination:  in.Rule.Destination,
 		Protocol:     in.Rule.Protocol,
@@ -414,7 +415,7 @@ func (s *NetworkServer) RemoveIPtables(ctx context.Context, in *pb.RemoveIPtable
 		Policy:       policy,
 	}
 
-	if err := model.DelRule(who, in.ContainerId, pid, chain, rule); err != nil {
+	if err := iptables.DelRule(who, in.ContainerId, pid, chain, rule); err != nil {
 		log.Warnf("DelRule: %v", err)
 		return nil, rpc.ErrInternal
 	}

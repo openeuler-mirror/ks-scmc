@@ -1,7 +1,10 @@
-package server
+package audit
 
 import (
 	"fmt"
+
+	log "github.com/sirupsen/logrus"
+
 	"scmc/model/db"
 	"scmc/rpc/pb/container"
 	"scmc/rpc/pb/image"
@@ -10,9 +13,61 @@ import (
 	"scmc/rpc/pb/user"
 )
 
-type RuntimeLogWritter struct{}
+type parser struct{}
 
-func (RuntimeLogWritter) Login(r *user.LoginRequest) *db.RuntimeLog {
+func (p parser) Parse(v interface{}) *db.RuntimeLog {
+	switch m := v.(type) {
+	case *user.LoginRequest:
+		return p.Login(m)
+	case *user.LogoutRequest:
+		return p.Logout(m)
+	case *user.UpdatePasswordRequest:
+		return p.UpdatePassword(m)
+	case *user.CreateUserRequest:
+		return p.CreateUser(m)
+	case *user.RemoveUserRequest:
+		return p.RemoveUser(m)
+	case *user.UpdateUserRequest:
+		return p.UpdateUser(m)
+	case *user.CreateRoleRequest:
+		return p.CreateRole(m)
+	case *user.RemoveRoleRequest:
+		return p.RemoveRole(m)
+	case *user.UpdateRoleRequest:
+		return p.UpdateRole(m)
+	case *node.CreateRequest:
+		return p.CreateNode(m)
+	case *node.UpdateRequest:
+		return p.UpdateNode(m)
+	case *node.RemoveRequest:
+		return p.RemoveNode(m)
+	case *container.RemoveRequest:
+		return p.RemoveContainer(m)
+	case *container.RestartRequest:
+		return p.RestartContainer(m)
+	case *container.CreateRequest:
+		return p.CreateContainer(m)
+	case *container.StartRequest:
+		return p.StartContainer(m)
+	case *container.StopRequest:
+		return p.StopContainer(m)
+	case *image.RemoveRequest:
+		return p.RemoveImage(m)
+	case *image.ApproveRequest:
+		return p.ApproveImage(m)
+	case *image.UploadRequest:
+		return p.UploadImage(m)
+	case *image.DownloadRequest:
+		return p.DownloadImage(m)
+	case nil:
+		return nil
+	default:
+		log.Debugf("ignore message type=%T", m)
+		return nil
+	}
+}
+
+func (parser) Login(r *user.LoginRequest) *db.RuntimeLog {
 	return &db.RuntimeLog{
 		EventType:   int64(logging.EVENT_TYPE_USER_LOGIN),
 		EventModule: int64(logging.EVENT_MODULE_USER),
@@ -20,21 +75,21 @@ func (RuntimeLogWritter) Login(r *user.LoginRequest) *db.RuntimeLog {
 	}
 }
 
-func (RuntimeLogWritter) Logout(r *user.LogoutRequest) *db.RuntimeLog {
+func (parser) Logout(r *user.LogoutRequest) *db.RuntimeLog {
 	return &db.RuntimeLog{
 		EventType:   int64(logging.EVENT_TYPE_USER_LOGOUT),
 		EventModule: int64(logging.EVENT_MODULE_USER),
 	}
 }
 
-func (RuntimeLogWritter) UpdatePassword(r *user.UpdatePasswordRequest) *db.RuntimeLog {
+func (parser) UpdatePassword(r *user.UpdatePasswordRequest) *db.RuntimeLog {
 	return &db.RuntimeLog{
 		EventType:   int64(logging.EVENT_TYPE_UPDATE_PASSWORD),
 		EventModule: int64(logging.EVENT_MODULE_USER),
 	}
 }
 
-func (RuntimeLogWritter) CreateRole(r *user.CreateRoleRequest) *db.RuntimeLog {
+func (parser) CreateRole(r *user.CreateRoleRequest) *db.RuntimeLog {
 	l := &db.RuntimeLog{
 		EventType:   int64(logging.EVENT_TYPE_CREATE_ROLE),
 		EventModule: int64(logging.EVENT_MODULE_USER),
@@ -48,7 +103,7 @@ func (RuntimeLogWritter) CreateRole(r *user.CreateRoleRequest) *db.RuntimeLog {
 	return l
 }
 
-func (RuntimeLogWritter) RemoveRole(r *user.RemoveRoleRequest) *db.RuntimeLog {
+func (parser) RemoveRole(r *user.RemoveRoleRequest) *db.RuntimeLog {
 	return &db.RuntimeLog{
 		EventType:   int64(logging.EVENT_TYPE_REMOVE_ROLE),
 		EventModule: int64(logging.EVENT_MODULE_USER),
@@ -56,7 +111,7 @@ func (RuntimeLogWritter) RemoveRole(r *user.RemoveRoleRequest) *db.RuntimeLog {
 	}
 }
 
-func (RuntimeLogWritter) UpdateRole(r *user.UpdateRoleRequest) *db.RuntimeLog {
+func (parser) UpdateRole(r *user.UpdateRoleRequest) *db.RuntimeLog {
 	l := &db.RuntimeLog{
 		EventType:   int64(logging.EVENT_TYPE_UPDATE_ROLE),
 		EventModule: int64(logging.EVENT_MODULE_USER),
@@ -70,7 +125,7 @@ func (RuntimeLogWritter) UpdateRole(r *user.UpdateRoleRequest) *db.RuntimeLog {
 	return l
 }
 
-func (RuntimeLogWritter) CreateUser(r *user.CreateUserRequest) *db.RuntimeLog {
+func (parser) CreateUser(r *user.CreateUserRequest) *db.RuntimeLog {
 	l := &db.RuntimeLog{
 		EventType:   int64(logging.EVENT_TYPE_CREATE_ROLE),
 		EventModule: int64(logging.EVENT_MODULE_USER),
@@ -84,7 +139,7 @@ func (RuntimeLogWritter) CreateUser(r *user.CreateUserRequest) *db.RuntimeLog {
 	return l
 }
 
-func (RuntimeLogWritter) RemoveUser(r *user.RemoveUserRequest) *db.RuntimeLog {
+func (parser) RemoveUser(r *user.RemoveUserRequest) *db.RuntimeLog {
 	return &db.RuntimeLog{
 		EventType:   int64(logging.EVENT_TYPE_REMOVE_USER),
 		EventModule: int64(logging.EVENT_MODULE_USER),
@@ -93,7 +148,7 @@ func (RuntimeLogWritter) RemoveUser(r *user.RemoveUserRequest) *db.RuntimeLog {
 	}
 }
 
-func (RuntimeLogWritter) UpdateUser(r *user.UpdateUserRequest) *db.RuntimeLog {
+func (parser) UpdateUser(r *user.UpdateUserRequest) *db.RuntimeLog {
 	l := &db.RuntimeLog{
 		EventType:   int64(logging.EVENT_TYPE_UPDATE_USER),
 		EventModule: int64(logging.EVENT_MODULE_USER),
@@ -107,7 +162,7 @@ func (RuntimeLogWritter) UpdateUser(r *user.UpdateUserRequest) *db.RuntimeLog {
 	return l
 }
 
-func (RuntimeLogWritter) CreateNode(r *node.CreateRequest) *db.RuntimeLog {
+func (parser) CreateNode(r *node.CreateRequest) *db.RuntimeLog {
 	return &db.RuntimeLog{
 		EventType:   int64(logging.EVENT_TYPE_CREATE_NODE),
 		EventModule: int64(logging.EVENT_MODULE_NODE),
@@ -116,7 +171,7 @@ func (RuntimeLogWritter) CreateNode(r *node.CreateRequest) *db.RuntimeLog {
 	}
 }
 
-func (RuntimeLogWritter) RemoveNode(r *node.RemoveRequest) *db.RuntimeLog {
+func (parser) RemoveNode(r *node.RemoveRequest) *db.RuntimeLog {
 	return &db.RuntimeLog{
 		EventType:   int64(logging.EVENT_TYPE_REMOVE_NODE),
 		EventModule: int64(logging.EVENT_MODULE_NODE),
@@ -125,7 +180,7 @@ func (RuntimeLogWritter) RemoveNode(r *node.RemoveRequest) *db.RuntimeLog {
 	}
 }
 
-func (RuntimeLogWritter) UpdateNode(r *node.UpdateRequest) *db.RuntimeLog {
+func (parser) UpdateNode(r *node.UpdateRequest) *db.RuntimeLog {
 	return &db.RuntimeLog{
 		EventType:   int64(logging.EVENT_TYPE_UPDATE_NODE),
 		EventModule: int64(logging.EVENT_MODULE_NODE),
@@ -134,7 +189,7 @@ func (RuntimeLogWritter) UpdateNode(r *node.UpdateRequest) *db.RuntimeLog {
 	}
 }
 
-func (RuntimeLogWritter) CreateContainer(r *container.CreateRequest) *db.RuntimeLog {
+func (parser) CreateContainer(r *container.CreateRequest) *db.RuntimeLog {
 	l := &db.RuntimeLog{
 		EventType:   int64(logging.EVENT_TYPE_CREATE_CONTAINER),
 		EventModule: int64(logging.EVENT_MODULE_CONTAINER),
@@ -147,7 +202,7 @@ func (RuntimeLogWritter) CreateContainer(r *container.CreateRequest) *db.Runtime
 	return l
 }
 
-func (RuntimeLogWritter) RemoveContainer(r *container.RemoveRequest) *db.RuntimeLog {
+func (parser) RemoveContainer(r *container.RemoveRequest) *db.RuntimeLog {
 	return &db.RuntimeLog{
 		EventType:   int64(logging.EVENT_TYPE_REMOVE_CONTAINER),
 		EventModule: int64(logging.EVENT_MODULE_CONTAINER),
@@ -156,7 +211,7 @@ func (RuntimeLogWritter) RemoveContainer(r *container.RemoveRequest) *db.Runtime
 	}
 }
 
-func (RuntimeLogWritter) StartContainer(r *container.StartRequest) *db.RuntimeLog {
+func (parser) StartContainer(r *container.StartRequest) *db.RuntimeLog {
 	return &db.RuntimeLog{
 		EventType:   int64(logging.EVENT_TYPE_START_CONTAINER),
 		EventModule: int64(logging.EVENT_MODULE_CONTAINER),
@@ -165,7 +220,7 @@ func (RuntimeLogWritter) StartContainer(r *container.StartRequest) *db.RuntimeLo
 	}
 }
 
-func (RuntimeLogWritter) StopContainer(r *container.StopRequest) *db.RuntimeLog {
+func (parser) StopContainer(r *container.StopRequest) *db.RuntimeLog {
 	return &db.RuntimeLog{
 		EventType:   int64(logging.EVENT_TYPE_STOP_CONTAINER),
 		EventModule: int64(logging.EVENT_MODULE_CONTAINER),
@@ -174,7 +229,7 @@ func (RuntimeLogWritter) StopContainer(r *container.StopRequest) *db.RuntimeLog 
 	}
 }
 
-func (RuntimeLogWritter) RestartContainer(r *container.RestartRequest) *db.RuntimeLog {
+func (parser) RestartContainer(r *container.RestartRequest) *db.RuntimeLog {
 	return &db.RuntimeLog{
 		EventType:   int64(logging.EVENT_TYPE_RESTART_CONTAINER),
 		EventModule: int64(logging.EVENT_MODULE_CONTAINER),
@@ -183,7 +238,7 @@ func (RuntimeLogWritter) RestartContainer(r *container.RestartRequest) *db.Runti
 	}
 }
 
-func (RuntimeLogWritter) UploadImage(r *image.UploadRequest) *db.RuntimeLog {
+func (parser) UploadImage(r *image.UploadRequest) *db.RuntimeLog {
 	l := &db.RuntimeLog{
 		EventType:   int64(logging.EVENT_TYPE_UPLOAD_IMAGE),
 		EventModule: int64(logging.EVENT_MODULE_IMAGE),
@@ -196,7 +251,7 @@ func (RuntimeLogWritter) UploadImage(r *image.UploadRequest) *db.RuntimeLog {
 	return l
 }
 
-func (RuntimeLogWritter) RemoveImage(r *image.RemoveRequest) *db.RuntimeLog {
+func (parser) RemoveImage(r *image.RemoveRequest) *db.RuntimeLog {
 	return &db.RuntimeLog{
 		EventType:   int64(logging.EVENT_TYPE_REMOVE_IMAGE),
 		EventModule: int64(logging.EVENT_MODULE_IMAGE),
@@ -205,7 +260,7 @@ func (RuntimeLogWritter) RemoveImage(r *image.RemoveRequest) *db.RuntimeLog {
 	}
 }
 
-func (RuntimeLogWritter) ApproveImage(r *image.ApproveRequest) *db.RuntimeLog {
+func (parser) ApproveImage(r *image.ApproveRequest) *db.RuntimeLog {
 	return &db.RuntimeLog{
 		EventType:   int64(logging.EVENT_TYPE_APPROVE_IMAGE),
 		EventModule: int64(logging.EVENT_MODULE_IMAGE),
@@ -213,7 +268,7 @@ func (RuntimeLogWritter) ApproveImage(r *image.ApproveRequest) *db.RuntimeLog {
 	}
 }
 
-func (RuntimeLogWritter) DownloadImage(r *image.DownloadRequest) *db.RuntimeLog {
+func (parser) DownloadImage(r *image.DownloadRequest) *db.RuntimeLog {
 	return &db.RuntimeLog{
 		EventType:   int64(logging.EVENT_TYPE_DOWNLOAD_IMAGE),
 		EventModule: int64(logging.EVENT_MODULE_IMAGE),

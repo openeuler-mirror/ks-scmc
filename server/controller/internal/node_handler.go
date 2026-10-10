@@ -201,3 +201,30 @@ func (s *NodeServer) Update(ctx context.Context, in *pb.UpdateRequest) (*pb.Upda
 
 	return &pb.UpdateReply{}, nil
 }
+
+func GetNodeStatus(node *db.NodeInfo) (*pb.NodeStatus, error) {
+	return getNodeStatus(node)
+}
+
+func getNodeStatus(node *db.NodeInfo) (*pb.NodeStatus, error) {
+	conn, err := getAgentConn(node.Address)
+	if err != nil {
+		log.Warnf("Failed to connect to agent service, node=%+v", node)
+		return nil, err
+	}
+
+	cli := pb.NewNodeClient(conn)
+	ctx_, cancel := context.WithTimeout(context.Background(), time.Second*50)
+	defer cancel()
+	r, err := cli.Status(ctx_, &pb.StatusRequest{})
+	if err != nil {
+		log.Warnf("get node status ID=%v address=%v: %v", node.ID, node.Address, err)
+		return nil, err
+	}
+
+	var s *pb.NodeStatus
+	if len(r.StatusList) > 0 {
+		s = r.StatusList[0]
+	}
+	return s, nil
+}

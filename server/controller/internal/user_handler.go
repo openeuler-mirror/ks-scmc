@@ -4,45 +4,23 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"strings"
 
 	"github.com/google/uuid"
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/crypto/bcrypt"
-	"google.golang.org/grpc/metadata"
+	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/peer"
+	"google.golang.org/grpc/status"
 
+	"scmc/common"
 	"scmc/model/db"
 	"scmc/rpc"
+	"scmc/rpc/middleware/auth"
 	pb "scmc/rpc/pb/user"
-	"scmc/server"
 )
 
 func generatePassword(input string) ([]byte, error) {
 	return bcrypt.GenerateFromPassword([]byte(input), bcrypt.DefaultCost)
-}
-
-func getUserFromContext(ctx context.Context) (string, string, bool) {
-	md, ok := metadata.FromIncomingContext(ctx)
-	if !ok {
-		log.Infof("get metadata from incoming context failed")
-		return "", "", false
-	}
-
-	values := md["authorization"]
-	if len(values) == 0 {
-		log.Infof("'authorization' not exist in request metadata.")
-		return "", "", false
-	}
-
-	authorization := values[0]
-	i := strings.IndexRune(authorization, ':')
-	if i == -1 {
-		log.Infof("invalid authorization metadata: %v", authorization)
-		return "", "", false
-	}
-
-	return authorization[:i], authorization[i+1:], true
 }
 
 type UserServer struct {
@@ -86,17 +64,18 @@ func (s *UserServer) Login(ctx context.Context, in *pb.LoginRequest) (*pb.LoginR
 
 	return &pb.LoginReply{
 		UserId:  userInfo.ID,
-		AuthKey: fmt.Sprintf("%d%c%s", userInfo.ID, server.AuthKeySeprator, sessionKey),
+		AuthKey: fmt.Sprintf("%d%c%s", userInfo.ID, common.UserSessionySeprator, sessionKey),
 	}, nil
 }
 
 func (s *UserServer) Logout(ctx context.Context, in *pb.LogoutRequest) (*pb.LogoutReply, error) {
-	userID, accessToken, ok := getUserFromContext(ctx)
+	userID, sessionKey, ok := auth.UserSessionFromContext(ctx)
 	if !ok {
+		log.Warnf("context no user session, ctx=%+v", ctx)
 		return nil, rpc.ErrInternal
 	}
 
-	err := db.RemoveSession(userID, accessToken)
+	err := db.RemoveSession(userID, sessionKey)
 	if err != nil && err != db.ErrRecordNotFound {
 		log.Infof("database error=%v", err)
 		return nil, rpc.ErrInternal
@@ -144,8 +123,18 @@ func (s *UserServer) Signup(ctx context.Context, in *pb.SignupRequest) (*pb.Sign
 }
 
 func (s *UserServer) UpdatePassword(ctx context.Context, in *pb.UpdatePasswordRequest) (*pb.UpdatePasswordReply, error) {
-	userID, accessToken, ok := getUserFromContext(ctx)
+	userID, session, ok := auth.UserSessionFromContext(ctx)
 	if !ok {
+		log.Warnf("context no user session, ctx=%+v", ctx)
+		return nil, rpc.ErrInternal
+	}
+
+	u, err := db.QueryUserByID(userID)
+	if err != nil {
+		log.Warnf("query user_id=%v err=%v", userID, err)
+		return nil, rpc.ErrDatabaseFail
+	} else if u == nil {
+		log.Warnf("UpdatePassword user_id=%v not exist", userID)
 		return nil, rpc.ErrInternal
 	}
 
@@ -153,24 +142,14 @@ func (s *UserServer) UpdatePassword(ctx context.Context, in *pb.UpdatePasswordRe
 		return nil, rpc.ErrInvalidArgument
 	}
 
-	userInfo, err := db.QueryUserByID(userID)
-	if err != nil {
-		if err == db.ErrRecordNotFound {
-			return nil, rpc.ErrNotFound
-		}
-		return nil, rpc.ErrInternal
-	} else if userInfo == nil {
-		return nil, rpc.ErrNotFound
-	}
-
-	if err := userInfo.CheckPassword(in.OldPassword); err != nil {
+	if err := u.CheckPassword(in.OldPassword); err != nil {
 		log.Infof("check password: %v", err)
 		return nil, rpc.ErrWrongPassword
 	}
 
 	if in.NewPassword == in.OldPassword {
-		log.Infof("new password identical to old one")
-		return nil, rpc.ErrInvalidArgument
+		log.Debugf("new password identical to old one")
+		return nil, status.Error(codes.InvalidArgument, "新密码无变化") // rpc.ErrInvalidArgument
 	}
 
 	rawBytes, err := generatePassword(in.NewPassword)
@@ -179,12 +158,12 @@ func (s *UserServer) UpdatePassword(ctx context.Context, in *pb.UpdatePasswordRe
 		return nil, rpc.ErrInternal
 	}
 
-	if err := userInfo.UpdatePassword(string(rawBytes)); err != nil {
+	if err := u.UpdatePassword(string(rawBytes)); err != nil {
 		return nil, rpc.ErrInternal
 	}
 
-	if err := db.RemoveSession(userID, accessToken); err != nil {
-		log.Info("UpdatePassword user_id=%d, RemoveSession err=%v", userID, err)
+	if err := db.RemoveSession(u.ID, session); err != nil {
+		log.Infof("UpdatePassword user_id=%d, RemoveSession err=%v", u.ID, err)
 	}
 
 	return &pb.UpdatePasswordReply{NeedRelogin: true}, nil

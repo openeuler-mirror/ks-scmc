@@ -15,6 +15,10 @@ var (
 	agentConns    map[string]*grpc.ClientConn
 )
 
+func GetAgentConn(host string) (*grpc.ClientConn, error) {
+	return getAgentConn(host)
+}
+
 func getAgentConn(host string) (*grpc.ClientConn, error) {
 	agentConnLock.RLock()
 

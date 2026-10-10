@@ -71,18 +71,21 @@ func (BACKUP_STATUS) EnumDescriptor() ([]byte, []int) {
 	return file_container_proto_rawDescGZIP(), []int{0}
 }
 
-type CreateBackupRequest struct {
+type ExportBackupRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
 	NodeId      int64  `protobuf:"varint,1,opt,name=node_id,json=nodeId,proto3" json:"node_id,omitempty"`
-	ContainerId string `protobuf:"bytes,2,opt,name=container_id,json=containerId,proto3" json:"container_id,omitempty"`
-	BackupDesc  string `protobuf:"bytes,3,opt,name=backup_desc,json=backupDesc,proto3" json:"backup_desc,omitempty"`
+	BackupId    int64  `protobuf:"varint,2,opt,name=backup_id,json=backupId,proto3" json:"backup_id,omitempty"`
+	IsDownload  bool   `protobuf:"varint,3,opt,name=is_download,json=isDownload,proto3" json:"is_download,omitempty"` // 是否下载到本地
+	ImgName     string `protobuf:"bytes,4,opt,name=img_name,json=imgName,proto3" json:"img_name,omitempty"`
+	ImgVersion  string `protobuf:"bytes,5,opt,name=img_version,json=imgVersion,proto3" json:"img_version,omitempty"` // 镜像版本
+	Description string `protobuf:"bytes,6,opt,name=description,proto3" json:"description,omitempty"`                 // 新镜像描述信息
 }
 
-func (x *CreateBackupRequest) Reset() {
-	*x = CreateBackupRequest{}
+func (x *ExportBackupRequest) Reset() {
+	*x = ExportBackupRequest{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_container_proto_msgTypes[0]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))

@@ -6,10 +6,11 @@ import (
 
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/crypto/bcrypt"
+	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
-)
 
-const sessionLivePeriod = time.Minute * 30
+	"scmc/common"
+)
 
 type UserInfo struct {
 	ID         int64 `gorm:"primaryKey"`
@@ -187,63 +188,76 @@ func QueryUsers(ids []int64) ([]*UserInfo, error) {
 	return users, nil
 }
 
-func CreateSession(userID int64, sessionKey, source string) error {
+func CreateSession(userID int64, sessionKey, source string) (old *UserSession, err error) {
 	db, err := getConn()
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	sess := UserSession{
-		UserID:     userID,
-		SessionKey: sessionKey,
-		Source:     source,
-		ExpiredAt:  time.Now().Add(sessionLivePeriod).Unix(),
-	}
+	err = db.Transaction(func(tx *gorm.DB) error {
+		var o UserSession
+		q0 := tx.Where("user_id = ?", userID).First(&o)
+		if err := q0.Error; err != nil {
+			if err != gorm.ErrRecordNotFound {
+				log.Warnf("CreateSession find user_id=%v err=%v", userID, err)
+				return translateError(err)
+			}
+		} else if o.ExpiredAt > time.Now().Unix() {
+			old = &o
+		}
 
-	result := db.Clauses(clause.OnConflict{
-		Columns:   []clause.Column{{Name: "user_id"}},
-		DoUpdates: clause.AssignmentColumns([]string{"session_key", "source", "expired_at"}),
-	}).Create(&sess)
+		sess := UserSession{
+			UserID:     userID,
+			SessionKey: sessionKey,
+			Source:     source,
+			ExpiredAt:  time.Now().Add(common.Config.Controller.SessionLiveDuration()).Unix(),
+		}
 
-	if result.Error != nil {
-		log.Warnf("db create session: %v", result.Error)
-		return result.Error
-	}
+		q1 := tx.Clauses(clause.OnConflict{
+			Columns:   []clause.Column{{Name: "user_id"}},
+			DoUpdates: clause.AssignmentColumns([]string{"session_key", "source", "expired_at"}),
+		}).Create(&sess)
+		if err := q1.Error; err != nil {
+			log.Warnf("db create session: %v", err)
+			return err
+		}
+		log.Debugf("db create session %+v", sess)
 
-	log.Debugf("db create session %+v", sess)
-	return nil
+		return nil
+	})
+
+	return old, err
 }
 
-func CheckUserSession(userID, sessionKey string) (bool, error) {
+func CheckUserSession(userID, sessionKey string) (*UserSession, error) {
 	db, err := getConn()
 	if err != nil {
-		return false, err
+		return nil, err
 	}
 
 	var (
-		now      = time.Now()
-		sessList []UserSession
+		now = time.Now()
+		s   UserSession
 	)
-	result := db.Where("user_id = ? AND session_key = ? AND expired_at > ?", userID, sessionKey, now.Unix()).Find(&sessList)
 
-	if result.Error != nil {
-		log.Warnf("CheckUserSession user_id=%v error=%v", userID, result.Error)
-		return false, result.Error
-	} else if len(sessList) != 1 {
-		log.Infof("CheckUserSession user_id=%v session=%s affected rows=%d", userID, sessionKey, result.RowsAffected)
-		return false, nil
+	result := db.Where("user_id = ? AND session_key = ? AND expired_at > ?", userID, sessionKey, now.Unix()).First(&s)
+	if err := result.Error; err != nil {
+		if err != gorm.ErrRecordNotFound {
+			log.Warnf("CheckUserSession user_id=%v error=%v", userID, err)
+			return nil, err
+		}
+		return nil, nil
 	}
 
-	sess := sessList[0]
-	if now.Unix() > sess.UpdatedAt {
-		sess.ExpiredAt = now.Add(sessionLivePeriod).Unix()
-		sess.UpdatedAt = now.Unix()
-		if r := db.Save(&sess); r.Error != nil {
-			log.Infof("CheckUserSession update session for user_id=%v error=%v", userID, r.Error)
+	if now.Unix() > s.UpdatedAt {
+		s.ExpiredAt = now.Add(common.Config.Controller.SessionLiveDuration()).Unix()
+		s.UpdatedAt = now.Unix()
+		if r := db.Save(&s); r.Error != nil {
+			log.Warnf("CheckUserSession update session for user_id=%v error=%v", userID, r.Error)
 		}
 	}
 
-	return true, nil
+	return &s, nil
 }
 
 func RemoveSession(userID interface{}, sessionKey string) error {
@@ -267,6 +281,24 @@ func RemoveSession(userID interface{}, sessionKey string) error {
 	}
 
 	return nil
+}
+
+func QuerySession(userID interface{}, sessionKey string) (*UserSession, error) {
+	db, err := getConn()
+	if err != nil {
+		return nil, err
+	}
+
+	var data UserSession
+	result := db.Where("user_id = ? AND session_key = ?", userID, sessionKey).First(&data)
+	if err := result.Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return nil, nil
+		}
+		log.Warnf("QuerySession user_id=%v session_key=%v err=%v", userID, sessionKey, err)
+		return nil, translateError(err)
+	}
+	return &data, nil
 }
 
 func QueryUserRole(userID interface{}) (*UserRoleInfo, error) {

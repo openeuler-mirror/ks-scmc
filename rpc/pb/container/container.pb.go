@@ -247,13 +247,13 @@ func (x *InspectBackupRequest) Reset() {
 	}
 }
 
-func (x *UpdateBackupRequest) String() string {
+func (x *InspectBackupRequest) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*UpdateBackupRequest) ProtoMessage() {}
+func (*InspectBackupRequest) ProtoMessage() {}
 
-func (x *UpdateBackupRequest) ProtoReflect() protoreflect.Message {
+func (x *InspectBackupRequest) ProtoReflect() protoreflect.Message {
 	mi := &file_container_proto_msgTypes[2]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))

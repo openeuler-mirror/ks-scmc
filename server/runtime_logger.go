@@ -2,7 +2,7 @@ package server
 
 import (
 	"fmt"
-	"scmc/model"
+	"scmc/model/db"
 	"scmc/rpc/pb/container"
 	"scmc/rpc/pb/image"
 	"scmc/rpc/pb/logging"
@@ -12,30 +12,30 @@ import (
 
 type RuntimeLogWritter struct{}
 
-func (RuntimeLogWritter) Login(r *user.LoginRequest) *model.RuntimeLog {
-	return &model.RuntimeLog{
+func (RuntimeLogWritter) Login(r *user.LoginRequest) *db.RuntimeLog {
+	return &db.RuntimeLog{
 		EventType:   int64(logging.EVENT_TYPE_USER_LOGIN),
 		EventModule: int64(logging.EVENT_MODULE_USER),
 		Target:      fmt.Sprintf("用户=%v", r.Username),
 	}
 }
 
-func (RuntimeLogWritter) Logout(r *user.LogoutRequest) *model.RuntimeLog {
-	return &model.RuntimeLog{
+func (RuntimeLogWritter) Logout(r *user.LogoutRequest) *db.RuntimeLog {
+	return &db.RuntimeLog{
 		EventType:   int64(logging.EVENT_TYPE_USER_LOGOUT),
 		EventModule: int64(logging.EVENT_MODULE_USER),
 	}
 }
 
-func (RuntimeLogWritter) UpdatePassword(r *user.UpdatePasswordRequest) *model.RuntimeLog {
-	return &model.RuntimeLog{
+func (RuntimeLogWritter) UpdatePassword(r *user.UpdatePasswordRequest) *db.RuntimeLog {
+	return &db.RuntimeLog{
 		EventType:   int64(logging.EVENT_TYPE_UPDATE_PASSWORD),
 		EventModule: int64(logging.EVENT_MODULE_USER),
 	}
 }
 
-func (RuntimeLogWritter) CreateRole(r *user.CreateRoleRequest) *model.RuntimeLog {
-	l := &model.RuntimeLog{
+func (RuntimeLogWritter) CreateRole(r *user.CreateRoleRequest) *db.RuntimeLog {
+	l := &db.RuntimeLog{
 		EventType:   int64(logging.EVENT_TYPE_CREATE_ROLE),
 		EventModule: int64(logging.EVENT_MODULE_USER),
 	}
@@ -48,16 +48,16 @@ func (RuntimeLogWritter) CreateRole(r *user.CreateRoleRequest) *model.RuntimeLog
 	return l
 }
 
-func (RuntimeLogWritter) RemoveRole(r *user.RemoveRoleRequest) *model.RuntimeLog {
-	return &model.RuntimeLog{
+func (RuntimeLogWritter) RemoveRole(r *user.RemoveRoleRequest) *db.RuntimeLog {
+	return &db.RuntimeLog{
 		EventType:   int64(logging.EVENT_TYPE_REMOVE_ROLE),
 		EventModule: int64(logging.EVENT_MODULE_USER),
 		Target:      fmt.Sprintf("角色ID=%v", r.RoleId),
 	}
 }
 
-func (RuntimeLogWritter) UpdateRole(r *user.UpdateRoleRequest) *model.RuntimeLog {
-	l := &model.RuntimeLog{
+func (RuntimeLogWritter) UpdateRole(r *user.UpdateRoleRequest) *db.RuntimeLog {
+	l := &db.RuntimeLog{
 		EventType:   int64(logging.EVENT_TYPE_UPDATE_ROLE),
 		EventModule: int64(logging.EVENT_MODULE_USER),
 	}
@@ -70,8 +70,8 @@ func (RuntimeLogWritter) UpdateRole(r *user.UpdateRoleRequest) *model.RuntimeLog
 	return l
 }
 
-func (RuntimeLogWritter) CreateUser(r *user.CreateUserRequest) *model.RuntimeLog {
-	l := &model.RuntimeLog{
+func (RuntimeLogWritter) CreateUser(r *user.CreateUserRequest) *db.RuntimeLog {
+	l := &db.RuntimeLog{
 		EventType:   int64(logging.EVENT_TYPE_CREATE_ROLE),
 		EventModule: int64(logging.EVENT_MODULE_USER),
 	}
@@ -84,8 +84,8 @@ func (RuntimeLogWritter) CreateUser(r *user.CreateUserRequest) *model.RuntimeLog
 	return l
 }
 
-func (RuntimeLogWritter) RemoveUser(r *user.RemoveUserRequest) *model.RuntimeLog {
-	return &model.RuntimeLog{
+func (RuntimeLogWritter) RemoveUser(r *user.RemoveUserRequest) *db.RuntimeLog {
+	return &db.RuntimeLog{
 		EventType:   int64(logging.EVENT_TYPE_REMOVE_USER),
 		EventModule: int64(logging.EVENT_MODULE_USER),
 		Target:      fmt.Sprintf("用户数=%v", len(r.UserIds)),
@@ -93,8 +93,8 @@ func (RuntimeLogWritter) RemoveUser(r *user.RemoveUserRequest) *model.RuntimeLog
 	}
 }
 
-func (RuntimeLogWritter) UpdateUser(r *user.UpdateUserRequest) *model.RuntimeLog {
-	l := &model.RuntimeLog{
+func (RuntimeLogWritter) UpdateUser(r *user.UpdateUserRequest) *db.RuntimeLog {
+	l := &db.RuntimeLog{
 		EventType:   int64(logging.EVENT_TYPE_UPDATE_USER),
 		EventModule: int64(logging.EVENT_MODULE_USER),
 	}
@@ -107,8 +107,8 @@ func (RuntimeLogWritter) UpdateUser(r *user.UpdateUserRequest) *model.RuntimeLog
 	return l
 }
 
-func (RuntimeLogWritter) CreateNode(r *node.CreateRequest) *model.RuntimeLog {
-	return &model.RuntimeLog{
+func (RuntimeLogWritter) CreateNode(r *node.CreateRequest) *db.RuntimeLog {
+	return &db.RuntimeLog{
 		EventType:   int64(logging.EVENT_TYPE_CREATE_NODE),
 		EventModule: int64(logging.EVENT_MODULE_NODE),
 		Target:      fmt.Sprintf("节点=%s", r.Name),
@@ -116,8 +116,8 @@ func (RuntimeLogWritter) CreateNode(r *node.CreateRequest) *model.RuntimeLog {
 	}
 }
 
-func (RuntimeLogWritter) RemoveNode(r *node.RemoveRequest) *model.RuntimeLog {
-	return &model.RuntimeLog{
+func (RuntimeLogWritter) RemoveNode(r *node.RemoveRequest) *db.RuntimeLog {
+	return &db.RuntimeLog{
 		EventType:   int64(logging.EVENT_TYPE_REMOVE_NODE),
 		EventModule: int64(logging.EVENT_MODULE_NODE),
 		Target:      fmt.Sprintf("节点数=%v", len(r.Ids)),
@@ -125,8 +125,8 @@ func (RuntimeLogWritter) RemoveNode(r *node.RemoveRequest) *model.RuntimeLog {
 	}
 }
 
-func (RuntimeLogWritter) UpdateNode(r *node.UpdateRequest) *model.RuntimeLog {
-	return &model.RuntimeLog{
+func (RuntimeLogWritter) UpdateNode(r *node.UpdateRequest) *db.RuntimeLog {
+	return &db.RuntimeLog{
 		EventType:   int64(logging.EVENT_TYPE_UPDATE_NODE),
 		EventModule: int64(logging.EVENT_MODULE_NODE),
 		Target:      fmt.Sprintf("节点ID=%v", r.NodeId),
@@ -134,8 +134,8 @@ func (RuntimeLogWritter) UpdateNode(r *node.UpdateRequest) *model.RuntimeLog {
 	}
 }
 
-func (RuntimeLogWritter) CreateContainer(r *container.CreateRequest) *model.RuntimeLog {
-	l := &model.RuntimeLog{
+func (RuntimeLogWritter) CreateContainer(r *container.CreateRequest) *db.RuntimeLog {
+	l := &db.RuntimeLog{
 		EventType:   int64(logging.EVENT_TYPE_CREATE_CONTAINER),
 		EventModule: int64(logging.EVENT_MODULE_CONTAINER),
 	}
@@ -147,8 +147,8 @@ func (RuntimeLogWritter) CreateContainer(r *container.CreateRequest) *model.Runt
 	return l
 }
 
-func (RuntimeLogWritter) RemoveContainer(r *container.RemoveRequest) *model.RuntimeLog {
-	return &model.RuntimeLog{
+func (RuntimeLogWritter) RemoveContainer(r *container.RemoveRequest) *db.RuntimeLog {
+	return &db.RuntimeLog{
 		EventType:   int64(logging.EVENT_TYPE_REMOVE_CONTAINER),
 		EventModule: int64(logging.EVENT_MODULE_CONTAINER),
 		Target:      fmt.Sprintf("容器数=%v", len(r.Ids)),
@@ -156,8 +156,8 @@ func (RuntimeLogWritter) RemoveContainer(r *container.RemoveRequest) *model.Runt
 	}
 }
 
-func (RuntimeLogWritter) StartContainer(r *container.StartRequest) *model.RuntimeLog {
-	return &model.RuntimeLog{
+func (RuntimeLogWritter) StartContainer(r *container.StartRequest) *db.RuntimeLog {
+	return &db.RuntimeLog{
 		EventType:   int64(logging.EVENT_TYPE_START_CONTAINER),
 		EventModule: int64(logging.EVENT_MODULE_CONTAINER),
 		Target:      fmt.Sprintf("容器数=%v", len(r.Ids)),
@@ -165,8 +165,8 @@ func (RuntimeLogWritter) StartContainer(r *container.StartRequest) *model.Runtim
 	}
 }
 
-func (RuntimeLogWritter) StopContainer(r *container.StopRequest) *model.RuntimeLog {
-	return &model.RuntimeLog{
+func (RuntimeLogWritter) StopContainer(r *container.StopRequest) *db.RuntimeLog {
+	return &db.RuntimeLog{
 		EventType:   int64(logging.EVENT_TYPE_STOP_CONTAINER),
 		EventModule: int64(logging.EVENT_MODULE_CONTAINER),
 		Target:      fmt.Sprintf("容器数=%v", len(r.Ids)),
@@ -174,8 +174,8 @@ func (RuntimeLogWritter) StopContainer(r *container.StopRequest) *model.RuntimeL
 	}
 }
 
-func (RuntimeLogWritter) RestartContainer(r *container.RestartRequest) *model.RuntimeLog {
-	return &model.RuntimeLog{
+func (RuntimeLogWritter) RestartContainer(r *container.RestartRequest) *db.RuntimeLog {
+	return &db.RuntimeLog{
 		EventType:   int64(logging.EVENT_TYPE_RESTART_CONTAINER),
 		EventModule: int64(logging.EVENT_MODULE_CONTAINER),
 		Target:      fmt.Sprintf("容器数=%v", len(r.Ids)),
@@ -183,8 +183,8 @@ func (RuntimeLogWritter) RestartContainer(r *container.RestartRequest) *model.Ru
 	}
 }
 
-func (RuntimeLogWritter) UploadImage(r *image.UploadRequest) *model.RuntimeLog {
-	l := &model.RuntimeLog{
+func (RuntimeLogWritter) UploadImage(r *image.UploadRequest) *db.RuntimeLog {
+	l := &db.RuntimeLog{
 		EventType:   int64(logging.EVENT_TYPE_UPLOAD_IMAGE),
 		EventModule: int64(logging.EVENT_MODULE_IMAGE),
 	}
@@ -196,8 +196,8 @@ func (RuntimeLogWritter) UploadImage(r *image.UploadRequest) *model.RuntimeLog {
 	return l
 }
 
-func (RuntimeLogWritter) RemoveImage(r *image.RemoveRequest) *model.RuntimeLog {
-	return &model.RuntimeLog{
+func (RuntimeLogWritter) RemoveImage(r *image.RemoveRequest) *db.RuntimeLog {
+	return &db.RuntimeLog{
 		EventType:   int64(logging.EVENT_TYPE_REMOVE_IMAGE),
 		EventModule: int64(logging.EVENT_MODULE_IMAGE),
 		Target:      fmt.Sprintf("镜像数=%v", len(r.ImageIds)),
@@ -205,16 +205,16 @@ func (RuntimeLogWritter) RemoveImage(r *image.RemoveRequest) *model.RuntimeLog {
 	}
 }
 
-func (RuntimeLogWritter) ApproveImage(r *image.ApproveRequest) *model.RuntimeLog {
-	return &model.RuntimeLog{
+func (RuntimeLogWritter) ApproveImage(r *image.ApproveRequest) *db.RuntimeLog {
+	return &db.RuntimeLog{
 		EventType:   int64(logging.EVENT_TYPE_APPROVE_IMAGE),
 		EventModule: int64(logging.EVENT_MODULE_IMAGE),
 		Detail:      fmt.Sprintf("镜像ID=%v 通过=%v", r.ImageId, r.Approve),
 	}
 }
 
-func (RuntimeLogWritter) DownloadImage(r *image.DownloadRequest) *model.RuntimeLog {
-	return &model.RuntimeLog{
+func (RuntimeLogWritter) DownloadImage(r *image.DownloadRequest) *db.RuntimeLog {
+	return &db.RuntimeLog{
 		EventType:   int64(logging.EVENT_TYPE_DOWNLOAD_IMAGE),
 		EventModule: int64(logging.EVENT_MODULE_IMAGE),
 		Detail:      fmt.Sprintf("镜像ID=%v", r.ImageId),

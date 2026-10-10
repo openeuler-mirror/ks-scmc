@@ -371,56 +371,64 @@ func (x *AppEntry) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use ResumeBackupRequest.ProtoReflect.Descriptor instead.
-func (*ResumeBackupRequest) Descriptor() ([]byte, []int) {
+// Deprecated: Use AppEntry.ProtoReflect.Descriptor instead.
+func (*AppEntry) Descriptor() ([]byte, []int) {
 	return file_container_proto_rawDescGZIP(), []int{4}
 }
 
-func (x *ResumeBackupRequest) GetNodeId() int64 {
+func (x *AppEntry) GetId() int64 {
 	if x != nil {
-		return x.NodeId
+		return x.Id
 	}
 	return 0
 }
 
-func (x *ResumeBackupRequest) GetContainerId() string {
+func (x *AppEntry) GetContainerId() string {
 	if x != nil {
 		return x.ContainerId
 	}
 	return ""
 }
 
-func (x *ResumeBackupRequest) GetBackupId() int64 {
+func (x *AppEntry) GetName() string {
 	if x != nil {
-		return x.BackupId
-	}
-	return 0
-}
-
-func (x *ResumeBackupRequest) GetImageRef() string {
-	if x != nil {
-		return x.ImageRef
+		return x.Name
 	}
 	return ""
 }
 
-func (x *ResumeBackupRequest) GetSecurityConfig() *SecurityConfig {
+func (x *AppEntry) GetExePath() string {
 	if x != nil {
-		return x.SecurityConfig
+		return x.ExePath
 	}
-	return nil
+	return ""
 }
 
-type ResumeBackupReply struct {
+func (x *AppEntry) GetIsGui() bool {
+	if x != nil {
+		return x.IsGui
+	}
+	return false
+}
+
+func (x *AppEntry) GetIsRunning() bool {
+	if x != nil {
+		return x.IsRunning
+	}
+	return false
+}
+
+type ListAppEntryRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	ContainerId string `protobuf:"bytes,1,opt,name=container_id,json=containerId,proto3" json:"container_id,omitempty"` // 生成新容器id
+	NodeId      int64  `protobuf:"varint,1,opt,name=node_id,json=nodeId,proto3" json:"node_id,omitempty"`
+	ContainerId string `protobuf:"bytes,2,opt,name=container_id,json=containerId,proto3" json:"container_id,omitempty"`
 }
 
-func (x *ResumeBackupReply) Reset() {
-	*x = ResumeBackupReply{}
+func (x *ListAppEntryRequest) Reset() {
+	*x = ListAppEntryRequest{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_container_proto_msgTypes[5]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))

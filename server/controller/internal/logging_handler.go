@@ -2,11 +2,12 @@ package internal
 
 import (
 	"context"
-	"scmc/model"
-	"scmc/rpc"
-	pb "scmc/rpc/pb/logging"
 
 	log "github.com/sirupsen/logrus"
+
+	"scmc/model/db"
+	"scmc/rpc"
+	pb "scmc/rpc/pb/logging"
 )
 
 type LoggingServer struct {
@@ -19,19 +20,19 @@ func (s *LoggingServer) ListRuntime(ctx context.Context, in *pb.ListRuntimeReque
 		return nil, rpc.ErrInvalidArgument
 	}
 
-	var f *model.LogFilter
+	var f *db.LogFilter
 	if in.Filter != nil {
 		if in.Filter.Property != "target" && in.Filter.Property != "detail" {
 			return nil, rpc.ErrInvalidArgument
 		}
-		f = &model.LogFilter{
+		f = &db.LogFilter{
 			Property: in.Filter.Property,
 			Query:    in.Filter.Query,
 			Fuzzy:    in.Filter.Fuzzy,
 		}
 	}
 
-	p, data, err := model.ListRuntimeLog(in.PageSize, in.PageNo, in.StartTime, in.EndTime, in.NodeId, in.EventModule, f)
+	p, data, err := db.ListRuntimeLog(in.PageSize, in.PageNo, in.StartTime, in.EndTime, in.NodeId, in.EventModule, f)
 	if err != nil {
 		log.Infof("ListRuntime db err=%v", err)
 		return nil, rpc.ErrInternal
@@ -62,7 +63,7 @@ func (s *LoggingServer) ListRuntime(ctx context.Context, in *pb.ListRuntimeReque
 }
 
 func (s *LoggingServer) ListWarn(ctx context.Context, in *pb.ListWarnRequest) (*pb.ListWarnReply, error) {
-	p, data, err := model.ListWarnLog(in.PageSize, in.PageNo, in.NodeId, in.EventModule)
+	p, data, err := db.ListWarnLog(in.PageSize, in.PageNo, in.NodeId, in.EventModule)
 	if err != nil {
 		log.Infof("ListRuntime db err=%v", err)
 		return nil, rpc.ErrInternal
@@ -96,8 +97,8 @@ func (s *LoggingServer) ReadWarn(ctx context.Context, in *pb.ReadWarnRequest) (*
 		return nil, rpc.ErrInvalidArgument
 	}
 
-	if err := model.SetWarnLogRead(in.Ids); err != nil {
-		log.Infof("model.SetWarnLogRead err=%v", err)
+	if err := db.SetWarnLogRead(in.Ids); err != nil {
+		log.Infof("db.SetWarnLogRead err=%v", err)
 		return nil, rpc.ErrInternal
 	}
 

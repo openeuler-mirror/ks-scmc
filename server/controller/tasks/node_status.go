@@ -1,7 +1,6 @@
-package internal
+package tasks
 
 import (
-	"context"
 	"fmt"
 	"time"
 
@@ -10,48 +9,42 @@ import (
 	"scmc/model/db"
 	"scmc/rpc/pb/logging"
 	pb "scmc/rpc/pb/node"
+	"scmc/server/controller/internal"
 )
 
-var nodeStatus = make(map[int64]*pb.NodeStatus)
+type NodeStatus struct{}
 
-func getNodeStatus(node *db.NodeInfo) (*pb.NodeStatus, error) {
-	conn, err := getAgentConn(node.Address)
-	if err != nil {
-		log.Warnf("Failed to connect to agent service, node=%+v", node)
-		return nil, err
-	}
-
-	cli := pb.NewNodeClient(conn)
-	ctx_, cancel := context.WithTimeout(context.Background(), time.Second*50)
-	defer cancel()
-	r, err := cli.Status(ctx_, &pb.StatusRequest{})
-	if err != nil {
-		log.Warnf("get node status ID=%v address=%v: %v", node.ID, node.Address, err)
-		return nil, err
-	}
-
-	var s *pb.NodeStatus
-	if len(r.StatusList) > 0 {
-		s = r.StatusList[0]
-	}
-	return s, nil
+func (n *NodeStatus) Interval() time.Duration {
+	return time.Minute
 }
 
-func getAllNodeData(needStatus bool) []*pb.NodeInfo {
+func (n *NodeStatus) RunAtInit() bool {
+	return true
+}
+
+func (n *NodeStatus) Run() {
+	if isMaster() {
+		nodeData := getAllNodeData(true)
+		for _, n := range nodeData {
+			go writeNodeWatchLogs(n)
+		}
+	}
+}
+
+func getAllNodeData(needStatus bool) (r []*pb.NodeInfo) {
 	nodes, err := db.ListNodes()
 	if err != nil {
-		log.Infof("get node list from DB err=%v", err)
+		log.Infof("db.ListNodes err=%v", err)
 		return nil
 	}
 
-	var nodeInfos []*pb.NodeInfo
 	for _, n := range nodes {
 		var s *pb.NodeStatus
 		if needStatus {
-			s, _ = getNodeStatus(&n)
+			s, _ = internal.GetNodeStatus(n)
 		}
 
-		nodeInfos = append(nodeInfos, &pb.NodeInfo{
+		r = append(r, &pb.NodeInfo{
 			Id:      n.ID,
 			Name:    n.Name,
 			Address: n.Address,
@@ -65,7 +58,7 @@ func getAllNodeData(needStatus bool) []*pb.NodeInfo {
 		})
 	}
 
-	return nodeInfos
+	return
 }
 
 func writeNodeWatchLogs(n *pb.NodeInfo) []*db.WarnLog {
@@ -135,17 +128,4 @@ func writeNodeWatchLogs(n *pb.NodeInfo) []*db.WarnLog {
 	}
 
 	return r
-}
-
-func NodeStatusMonitor() {
-	// TODO: container monitor data
-	for {
-		if isMaster() {
-			nodeData := getAllNodeData(true)
-			for _, n := range nodeData {
-				writeNodeWatchLogs(n)
-			}
-		}
-		time.Sleep(time.Minute)
-	}
 }

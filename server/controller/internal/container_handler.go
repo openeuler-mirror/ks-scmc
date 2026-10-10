@@ -28,13 +28,13 @@ type ContainerServer struct {
 func (s *ContainerServer) List(ctx context.Context, in *pb.ListRequest) (*pb.ListReply, error) {
 	reply := pb.ListReply{}
 
-	nodes, err := model.ListNodes()
+	nodes, err := db.ListNodes()
 	if err != nil {
 		log.Warnf("query nodes: %v", err)
 		return nil, rpc.ErrInternal
 	}
 
-	var nodeToQuery []*model.NodeInfo
+	var nodeToQuery []*db.NodeInfo
 	if in.NodeIds == nil {
 		for i := range nodes {
 			nodeToQuery = append(nodeToQuery, &nodes[i])
@@ -59,7 +59,7 @@ func (s *ContainerServer) List(ctx context.Context, in *pb.ListRequest) (*pb.Lis
 	)
 	for _, node := range nodeToQuery {
 		wg.Add(1)
-		go func(ctx context.Context, node *model.NodeInfo) {
+		go func(ctx context.Context, node *db.NodeInfo) {
 			defer wg.Done()
 			conn, err := getAgentConn(node.Address)
 			if err != nil {
@@ -108,9 +108,9 @@ func (s *ContainerServer) Create(ctx context.Context, in *pb.CreateRequest) (*pb
 		return nil, status.Errorf(codes.InvalidArgument, "容器描述参数错误")
 	}
 
-	nodeInfo, err := model.QueryNodeByID(in.NodeId)
+	nodeInfo, err := db.QueryNodeByID(in.NodeId)
 	if err != nil {
-		if err == model.ErrRecordNotFound {
+		if err == db.ErrRecordNotFound {
 			return nil, rpc.ErrNotFound
 		}
 		return nil, rpc.ErrInternal
@@ -121,7 +121,7 @@ func (s *ContainerServer) Create(ctx context.Context, in *pb.CreateRequest) (*pb
 		return nil, rpc.ErrInternal
 	}
 
-	cfgs := model.ContainerConfigs{
+	cfgs := db.ContainerConfigs{
 		NodeID:        nodeInfo.ID,
 		UUID:          uuid.New().String(),
 		ContainerName: in.Configs.Name,
@@ -143,7 +143,7 @@ func (s *ContainerServer) Create(ctx context.Context, in *pb.CreateRequest) (*pb
 		}
 	}
 
-	if err := model.CreateContainerConfigs(&cfgs); err != nil {
+	if err := db.CreateContainerConfigs(&cfgs); err != nil {
 		log.Infof("Create: CreateContainerConfigs err=%v", err)
 		return nil, rpc.ErrInternal
 	}
@@ -156,12 +156,12 @@ func (s *ContainerServer) Create(ctx context.Context, in *pb.CreateRequest) (*pb
 	agentReply, err := cli.Create(ctx_, in)
 	if err != nil && agentReply == nil {
 		log.Warnf("Create container: %v", err)
-		model.RemoveContainerConfigsByID(cfgs.ID)
+		db.RemoveContainerConfigsByID(cfgs.ID)
 		return nil, err
 	}
 
 	cfgs.ContainerID = agentReply.ContainerId
-	if err := model.UpdateContainerConfigs(&cfgs); err != nil {
+	if err := db.UpdateContainerConfigs(&cfgs); err != nil {
 		log.Infof("Create: UpdateContainerConfigs data=%+v err=%v", cfgs, err)
 		// still return OK
 	}
@@ -183,9 +183,9 @@ func (s *ContainerServer) Start(ctx context.Context, in *pb.StartRequest) (*pb.S
 			continue
 		}
 
-		nodeInfo, err := model.QueryNodeByID(nodeId)
+		nodeInfo, err := db.QueryNodeByID(nodeId)
 		if err != nil {
-			if err == model.ErrRecordNotFound {
+			if err == db.ErrRecordNotFound {
 				log.Warnf("start container ErrRecordNotFound")
 				continue
 			}
@@ -251,9 +251,9 @@ func (s *ContainerServer) Stop(ctx context.Context, in *pb.StopRequest) (*pb.Sto
 			continue
 		}
 
-		nodeInfo, err := model.QueryNodeByID(nodeId)
+		nodeInfo, err := db.QueryNodeByID(nodeId)
 		if err != nil {
-			if err == model.ErrRecordNotFound {
+			if err == db.ErrRecordNotFound {
 				log.Warnf("stop container ErrRecordNotFound")
 				continue
 			}
@@ -319,9 +319,9 @@ func (s *ContainerServer) Restart(ctx context.Context, in *pb.RestartRequest) (*
 			continue
 		}
 
-		nodeInfo, err := model.QueryNodeByID(nodeId)
+		nodeInfo, err := db.QueryNodeByID(nodeId)
 		if err != nil {
-			if err == model.ErrRecordNotFound {
+			if err == db.ErrRecordNotFound {
 				log.Warnf("restart container ErrRecordNotFound")
 				continue
 			}
@@ -387,9 +387,9 @@ func (s *ContainerServer) Remove(ctx context.Context, in *pb.RemoveRequest) (*pb
 			continue
 		}
 
-		nodeInfo, err := model.QueryNodeByID(nodeId)
+		nodeInfo, err := db.QueryNodeByID(nodeId)
 		if err != nil {
-			if err == model.ErrRecordNotFound {
+			if err == db.ErrRecordNotFound {
 				log.Warnf("remove container ErrRecordNotFound")
 				continue
 			}
@@ -403,18 +403,18 @@ func (s *ContainerServer) Remove(ctx context.Context, in *pb.RemoveRequest) (*pb
 			continue
 		}
 
-		configs, err := model.GetContainerConfigsList(nodeId, containerIds)
+		configs, err := db.GetContainerConfigsList(nodeId, containerIds)
 		if err != nil {
-			log.Warnf("model.GetContainerConfigsList err=%v", err)
+			log.Warnf("db.GetContainerConfigsList err=%v", err)
 			continue
 		}
 
 		var imageIds []string
 		var uuids []string
 		for _, v := range configs {
-			backup, err := model.QueryContainerBackupByUUID(v.UUID)
+			backup, err := db.QueryContainerBackupByUUID(v.UUID)
 			if err != nil {
-				log.Warnf("model.QueryContainerBackupByID err=%v", err)
+				log.Warnf("db.QueryContainerBackupByID err=%v", err)
 				continue
 			}
 
@@ -450,11 +450,11 @@ func (s *ContainerServer) Remove(ctx context.Context, in *pb.RemoveRequest) (*pb
 		reply.FailInfos = append(reply.FailInfos, subReply.FailInfos...)
 		reply.OkIds = append(reply.OkIds, subReply.OkIds...)
 
-		if err = model.RemoveContainerConfigs(c.NodeId, containerIds); err != nil {
+		if err = db.RemoveContainerConfigs(c.NodeId, containerIds); err != nil {
 			log.Warnf("remove container configs err: %v", err)
 		}
 
-		if err = model.RemoveContainerBackupByUUID(uuids); err != nil {
+		if err = db.RemoveContainerBackupByUUID(uuids); err != nil {
 			log.Warnf("remove container backup err: %v", err)
 		}
 	}
@@ -476,9 +476,9 @@ func (s *ContainerServer) Inspect(ctx context.Context, in *pb.InspectRequest) (*
 		return nil, rpc.ErrInvalidArgument
 	}
 
-	nodeInfo, err := model.QueryNodeByID(in.NodeId)
+	nodeInfo, err := db.QueryNodeByID(in.NodeId)
 	if err != nil {
-		if err == model.ErrRecordNotFound {
+		if err == db.ErrRecordNotFound {
 			return nil, rpc.ErrNotFound
 		}
 		return nil, rpc.ErrInternal
@@ -498,7 +498,7 @@ func (s *ContainerServer) Inspect(ctx context.Context, in *pb.InspectRequest) (*
 		return nil, err
 	}
 
-	data, err := model.GetContainerConfigs(in.NodeId, in.ContainerId)
+	data, err := db.GetContainerConfigs(in.NodeId, in.ContainerId)
 	if err != nil {
 		log.Infof("db get container configs id=%v err=%v", in.ContainerId, err)
 	} else {
@@ -519,9 +519,9 @@ func (s *ContainerServer) Update(ctx context.Context, in *pb.UpdateRequest) (*pb
 		return nil, rpc.ErrInvalidArgument
 	}
 
-	nodeInfo, err := model.QueryNodeByID(in.NodeId)
+	nodeInfo, err := db.QueryNodeByID(in.NodeId)
 	if err != nil {
-		if err == model.ErrRecordNotFound {
+		if err == db.ErrRecordNotFound {
 			return nil, rpc.ErrNotFound
 		}
 		return nil, rpc.ErrInternal
@@ -549,7 +549,7 @@ func (s *ContainerServer) Update(ctx context.Context, in *pb.UpdateRequest) (*pb
 			return nil, rpc.ErrContainerBasicConfigNoPerm
 		}
 
-		cfgs, err := model.GetContainerConfigs(in.NodeId, in.ContainerId)
+		cfgs, err := db.GetContainerConfigs(in.NodeId, in.ContainerId)
 		if err != nil {
 			log.Infof("db get container configs id=%v err=%v", in.ContainerId, err)
 		} else {
@@ -577,9 +577,9 @@ func (s *ContainerServer) Update(ctx context.Context, in *pb.UpdateRequest) (*pb
 		if data, err := json.Marshal(in.SecurityConfig); err != nil {
 			log.Warnf("Marshal SecurityConfig err: %v", err)
 		} else {
-			if containerConfigs, err := model.GetContainerConfigs(in.NodeId, in.ContainerId); err == nil {
+			if containerConfigs, err := db.GetContainerConfigs(in.NodeId, in.ContainerId); err == nil {
 				containerConfigs.SecurityConfig = string(data)
-				if err := model.UpdateContainerConfigs(containerConfigs); err != nil {
+				if err := db.UpdateContainerConfigs(containerConfigs); err != nil {
 					log.Infof("Update: UpdateContainerConfigs node_id=%v container_id=%s err=%v", in.NodeId, in.ContainerId, err)
 				}
 			}
@@ -590,9 +590,9 @@ func (s *ContainerServer) Update(ctx context.Context, in *pb.UpdateRequest) (*pb
 }
 
 func (s *ContainerServer) MonitorHistory(ctx context.Context, in *pb.MonitorHistoryRequest) (*pb.MonitorHistoryReply, error) {
-	nodeInfo, err := model.QueryNodeByID(in.NodeId)
+	nodeInfo, err := db.QueryNodeByID(in.NodeId)
 	if err != nil {
-		if err == model.ErrRecordNotFound {
+		if err == db.ErrRecordNotFound {
 			return nil, rpc.ErrNotFound
 		}
 		return nil, rpc.ErrInternal
@@ -618,7 +618,7 @@ func (s *ContainerServer) MonitorHistory(ctx context.Context, in *pb.MonitorHist
 func (s *ContainerServer) ListTemplate(ctx context.Context, in *pb.ListTemplateRequest) (*pb.ListTemplateReply, error) {
 	reply := &pb.ListTemplateReply{}
 
-	pageinfo, templates, err := model.ListTemplate(ctx, in.PerPage, in.NextPage)
+	pageinfo, templates, err := db.ListTemplate(ctx, in.PerPage, in.NextPage)
 	if err != nil {
 		return nil, err
 	}
@@ -660,7 +660,7 @@ func (s *ContainerServer) CreateTemplate(ctx context.Context, in *pb.CreateTempl
 		return nil, err
 	}
 
-	id, err = model.CreateTemplate(ctx, id, data.Conf.Name, confbyte, data.NodeId)
+	id, err = db.CreateTemplate(ctx, id, data.Conf.Name, confbyte, data.NodeId)
 	if err != nil {
 		log.Println(err)
 	}
@@ -689,7 +689,7 @@ func (s *ContainerServer) UpdateTemplate(ctx context.Context, in *pb.UpdateTempl
 	if err != nil {
 		return nil, err
 	}
-	err = model.UpdateTemplate(ctx, id, data.Conf.Name, confbyte, data.NodeId)
+	err = db.UpdateTemplate(ctx, id, data.Conf.Name, confbyte, data.NodeId)
 	if err != nil {
 		log.Println(err)
 	}
@@ -700,7 +700,7 @@ func (s *ContainerServer) UpdateTemplate(ctx context.Context, in *pb.UpdateTempl
 func (s *ContainerServer) RemoveTemplate(ctx context.Context, in *pb.RemoveTemplateRequest) (*pb.RemoveTemplateReply, error) {
 	reply := pb.RemoveTemplateReply{}
 	if ids := in.GetIds(); ids != nil {
-		err := model.RemoveTemplate(ctx, in.Ids)
+		err := db.RemoveTemplate(ctx, in.Ids)
 		if err != nil {
 			return nil, err
 		}
@@ -717,10 +717,10 @@ func (*ContainerServer) InspectTemplate(ctx context.Context, in *pb.InspectTempl
 		return nil, rpc.ErrInvalidArgument
 	}
 
-	data, err := model.FindTemplate(in.Id)
+	data, err := db.FindTemplate(in.Id)
 	if err != nil {
-		log.Infof("model.FindTemplate err=%v", err)
-		if err == model.ErrRecordNotFound {
+		log.Infof("db.FindTemplate err=%v", err)
+		if err == db.ErrRecordNotFound {
 			return nil, rpc.ErrNotFound
 		}
 		return nil, rpc.ErrInternal
@@ -753,15 +753,15 @@ func (*ContainerServer) CreateBackup(ctx context.Context, in *pb.CreateBackupReq
 		return nil, status.Errorf(codes.InvalidArgument, "参数错误：备份描述无效")
 	}
 
-	configs, err := model.GetContainerConfigs(in.NodeId, in.ContainerId)
+	configs, err := db.GetContainerConfigs(in.NodeId, in.ContainerId)
 	if err != nil {
-		log.Infof("model.GetContainerConfigs err=%v", err)
+		log.Infof("db.GetContainerConfigs err=%v", err)
 		return nil, rpc.ErrInternal
 	}
 
-	nodeInfo, err := model.QueryNodeByID(in.NodeId)
+	nodeInfo, err := db.QueryNodeByID(in.NodeId)
 	if err != nil {
-		if err == model.ErrRecordNotFound {
+		if err == db.ErrRecordNotFound {
 			return nil, rpc.ErrNotFound
 		}
 		return nil, rpc.ErrInternal
@@ -774,7 +774,7 @@ func (*ContainerServer) CreateBackup(ctx context.Context, in *pb.CreateBackupReq
 
 	now := time.Now()
 	backupName := now.Format("20060102150405") + fmt.Sprintf("%d", now.Nanosecond()/1000000)
-	backup, err := model.CreateContainerBackup(in.NodeId, configs.UUID, backupName, in.BackupDesc)
+	backup, err := db.CreateContainerBackup(in.NodeId, configs.UUID, backupName, in.BackupDesc)
 	if err != nil {
 		return nil, rpc.ErrInternal
 	}
@@ -790,11 +790,11 @@ func (*ContainerServer) CreateBackup(ctx context.Context, in *pb.CreateBackupReq
 	if err != nil {
 		// model set backup failed
 		backup.Status = 2
-		model.UpdateContainerBackup(backup)
+		db.UpdateContainerBackup(backup)
 		return nil, rpc.ErrInternal
 	}
 
-	model.UpdateContainerBackup(backup)
+	db.UpdateContainerBackup(backup)
 
 	return &pb.CreateBackupReply{}, nil
 
@@ -805,18 +805,18 @@ func (*ContainerServer) UpdateBackup(ctx context.Context, in *pb.UpdateBackupReq
 		return nil, status.Errorf(codes.InvalidArgument, "参数错误：备份描述无效")
 	}
 
-	data, err := model.QueryContainerBackupByID(in.Id)
+	data, err := db.QueryContainerBackupByID(in.Id)
 	if err != nil {
-		log.Infof("model.QueryContainerBackupByID err=%v", err)
-		if err == model.ErrRecordNotFound {
+		log.Infof("db.QueryContainerBackupByID err=%v", err)
+		if err == db.ErrRecordNotFound {
 			return nil, rpc.ErrNotFound
 		}
 		return nil, rpc.ErrInternal
 	}
 
 	data.BackupDesc = in.BackupDesc
-	if err := model.UpdateContainerBackup(data); err != nil {
-		log.Infof("model.UpdateContainerBackup err=%v", err)
+	if err := db.UpdateContainerBackup(data); err != nil {
+		log.Infof("db.UpdateContainerBackup err=%v", err)
 		return nil, rpc.ErrInternal
 	}
 
@@ -824,19 +824,19 @@ func (*ContainerServer) UpdateBackup(ctx context.Context, in *pb.UpdateBackupReq
 }
 
 func (*ContainerServer) RemoveBackup(ctx context.Context, in *pb.RemoveBackupRequest) (*pb.RemoveBackupReply, error) {
-	backup, err := model.QueryContainerBackupByID(in.Id)
+	backup, err := db.QueryContainerBackupByID(in.Id)
 	if err != nil {
-		log.Infof("model.QueryContainerBackupByID err=%v", err)
-		if err == model.ErrRecordNotFound {
+		log.Infof("db.QueryContainerBackupByID err=%v", err)
+		if err == db.ErrRecordNotFound {
 			return nil, rpc.ErrNotFound
 		}
 		return nil, rpc.ErrInternal
 	}
 
-	cc, err := model.GetContainerConfigsByUUID(backup.UUID)
+	cc, err := db.GetContainerConfigsByUUID(backup.UUID)
 	if err != nil {
-		log.Infof("model.GetContainerConfigsByUUID err=%v", err)
-		if err == model.ErrRecordNotFound {
+		log.Infof("db.GetContainerConfigsByUUID err=%v", err)
+		if err == db.ErrRecordNotFound {
 			return nil, rpc.ErrNotFound
 		}
 		return nil, rpc.ErrInternal
@@ -846,9 +846,9 @@ func (*ContainerServer) RemoveBackup(ctx context.Context, in *pb.RemoveBackupReq
 		return nil, rpc.ErrInternal
 	}
 
-	nodeInfo, err := model.QueryNodeByID(backup.NodeID)
+	nodeInfo, err := db.QueryNodeByID(backup.NodeID)
 	if err != nil {
-		if err == model.ErrRecordNotFound {
+		if err == db.ErrRecordNotFound {
 			return nil, rpc.ErrNotFound
 		}
 		return nil, rpc.ErrInternal
@@ -883,7 +883,7 @@ func (*ContainerServer) RemoveBackup(ctx context.Context, in *pb.RemoveBackupReq
 		return nil, rpc.ErrInternal
 	}
 
-	if err := model.RemoveContainerBackup(backup); err != nil {
+	if err := db.RemoveContainerBackup(backup); err != nil {
 		log.Warnf("db remove backup record err=%v", err)
 		return nil, rpc.ErrInternal
 	}
@@ -892,10 +892,10 @@ func (*ContainerServer) RemoveBackup(ctx context.Context, in *pb.RemoveBackupReq
 }
 
 func (*ContainerServer) ResumeBackup(ctx context.Context, in *pb.ResumeBackupRequest) (*pb.ResumeBackupReply, error) {
-	backup, err := model.QueryContainerBackupByID(in.BackupId)
+	backup, err := db.QueryContainerBackupByID(in.BackupId)
 	if err != nil {
-		log.Infof("model.QueryContainerBackupByID err=%v", err)
-		if err == model.ErrRecordNotFound {
+		log.Infof("db.QueryContainerBackupByID err=%v", err)
+		if err == db.ErrRecordNotFound {
 			return nil, rpc.ErrNotFound
 		}
 		return nil, rpc.ErrInternal
@@ -906,7 +906,7 @@ func (*ContainerServer) ResumeBackup(ctx context.Context, in *pb.ResumeBackupReq
 		return nil, rpc.ErrInvalidArgument
 	}
 
-	cfgs, err := model.GetContainerConfigsByUUID(backup.UUID)
+	cfgs, err := db.GetContainerConfigsByUUID(backup.UUID)
 	if err != nil {
 		log.Warnf("db get container configs uuid=%v err=%v", backup.UUID, err)
 		return nil, rpc.ErrInternal
@@ -917,9 +917,9 @@ func (*ContainerServer) ResumeBackup(ctx context.Context, in *pb.ResumeBackupReq
 		log.Infof("json unmarshal security config err=%v", err)
 	}
 
-	nodeInfo, err := model.QueryNodeByID(backup.NodeID)
+	nodeInfo, err := db.QueryNodeByID(backup.NodeID)
 	if err != nil {
-		if err == model.ErrRecordNotFound {
+		if err == db.ErrRecordNotFound {
 			return nil, rpc.ErrNotFound
 		}
 		return nil, rpc.ErrInternal
@@ -944,21 +944,21 @@ func (*ContainerServer) ResumeBackup(ctx context.Context, in *pb.ResumeBackupReq
 	}
 
 	cfgs.ContainerID = subReply.ContainerId
-	model.UpdateContainerConfigs(cfgs)
+	db.UpdateContainerConfigs(cfgs)
 
 	return subReply, nil
 }
 
 func (*ContainerServer) ListBackup(ctx context.Context, in *pb.ListBackupRequest) (*pb.ListBackupReply, error) {
-	configs, err := model.GetContainerConfigs(in.NodeId, in.ContainerId)
+	configs, err := db.GetContainerConfigs(in.NodeId, in.ContainerId)
 	if err != nil {
-		log.Infof("model.GetContainerConfigs err=%v", err)
+		log.Infof("db.GetContainerConfigs err=%v", err)
 		return nil, rpc.ErrInternal
 	}
 
-	data, err := model.QueryContainerBackupByUUID(configs.UUID)
+	data, err := db.QueryContainerBackupByUUID(configs.UUID)
 	if err != nil {
-		log.Infof("model.QueryContainerBackupByUUID err=%v", err)
+		log.Infof("db.QueryContainerBackupByUUID err=%v", err)
 		return nil, rpc.ErrInternal
 	}
 

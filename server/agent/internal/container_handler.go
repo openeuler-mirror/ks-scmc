@@ -20,7 +20,13 @@ import (
 	"github.com/shirou/gopsutil/mem"
 	log "github.com/sirupsen/logrus"
 
-	"scmc/model"
+	"scmc/model/authz"
+	"scmc/model/db"
+	"scmc/model/docker"
+	"scmc/model/iptables"
+	"scmc/model/kysec"
+	"scmc/model/opensnitch"
+	"scmc/model/registry"
 	"scmc/rpc"
 	pb "scmc/rpc/pb/container"
 )

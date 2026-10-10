@@ -16,9 +16,9 @@ import (
 	"scmc/common"
 	"scmc/model/db"
 	"scmc/rpc"
+	"scmc/rpc/middleware/auth"
 	pb "scmc/rpc/pb/container"
 	"scmc/rpc/pb/user"
-	"scmc/server"
 )
 
 type ContainerServer struct {
@@ -129,8 +129,8 @@ func (s *ContainerServer) Create(ctx context.Context, in *pb.CreateRequest) (*pb
 
 	if in.Configs.SecurityConfig != nil {
 		if !isEmptySecurityConfig(in.Configs.SecurityConfig) && common.NeedCheckAuth() && common.NeedCheckPerm() {
-			perms, _ := ctx.Value("PERMS").([]*user.Permission)
-			if !server.HasPerm(user.PERMISSION_CONTAINER_CONF_SEC, perms) {
+			perms, _ := auth.UserPermFromContext(ctx)
+			if !hasPerm(user.PERMISSION_CONTAINER_CONF_SEC, perms) {
 				return nil, rpc.ErrContainerSecurityConfigNoPerm
 			}
 		}
@@ -534,7 +534,7 @@ func (s *ContainerServer) Update(ctx context.Context, in *pb.UpdateRequest) (*pb
 
 	cli := pb.NewContainerClient(conn)
 	if common.NeedCheckAuth() && common.NeedCheckPerm() {
-		perms, _ := ctx.Value("PERMS").([]*user.Permission)
+		perms, _ := auth.UserPermFromContext(ctx)
 
 		ctx_, cancel := context.WithTimeout(context.Background(), time.Second*10)
 		defer cancel()
@@ -544,7 +544,7 @@ func (s *ContainerServer) Update(ctx context.Context, in *pb.UpdateRequest) (*pb
 			return nil, err
 		}
 
-		if containerBasicConfigDiff(inspect.Configs, in) && !server.HasPerm(user.PERMISSION_CONTAINER_CONF_BASIC, perms) {
+		if containerBasicConfigDiff(inspect.Configs, in) && !hasPerm(user.PERMISSION_CONTAINER_CONF_BASIC, perms) {
 			log.Infof("no permission to update container basic config")
 			return nil, rpc.ErrContainerBasicConfigNoPerm
 		}
@@ -557,7 +557,7 @@ func (s *ContainerServer) Update(ctx context.Context, in *pb.UpdateRequest) (*pb
 			if err := json.Unmarshal([]byte(cfgs.SecurityConfig), &secCfgs); err != nil {
 				log.Infof("unmarshal security config err=%v", err)
 			} else {
-				if containerSecurityConfigDiff(&secCfgs, in.SecurityConfig) && !server.HasPerm(user.PERMISSION_CONTAINER_CONF_SEC, perms) {
+				if containerSecurityConfigDiff(&secCfgs, in.SecurityConfig) && !hasPerm(user.PERMISSION_CONTAINER_CONF_SEC, perms) {
 					log.Infof("no permission to update container security config")
 					return nil, rpc.ErrContainerSecurityConfigNoPerm
 				}

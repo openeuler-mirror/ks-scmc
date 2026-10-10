@@ -1,98 +1,128 @@
-package server
+package auth
 
 import (
 	"context"
 	"encoding/json"
 	"strings"
 
-	"scmc/common"
-	"scmc/model/db"
-	"scmc/rpc"
-
-	pb "scmc/rpc/pb/user"
-
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
+
+	"scmc/common"
+	"scmc/model/db"
+	"scmc/rpc"
+	"scmc/rpc/middleware"
+	pb "scmc/rpc/pb/user"
 )
 
-const AuthKeySeprator = ':'
+type ContextKey string
 
-// AuthInterceptor server interceptor for authentication and authorization
-type AuthInterceptor struct {
+const (
+	keyPermission  ContextKey = "PERMS"
+	keyUserInfo    ContextKey = "USER"
+	keyUserID      ContextKey = "USER_ID"
+	keyUserSession ContextKey = "USER_SESSION"
+)
+
+func UserInfoFromContext(ctx context.Context) (*db.UserRoleInfo, bool) {
+	v, ok := ctx.Value(keyUserInfo).(*db.UserRoleInfo)
+	return v, ok
 }
 
-// NewAuthInterceptor returns a new auth interceptor
-func NewAuthInterceptor() *AuthInterceptor {
-	return &AuthInterceptor{}
+// UserSessionFromContext returns user_id, user_session from context
+func UserSessionFromContext(ctx context.Context) (string, string, bool) {
+	u, ok0 := ctx.Value(keyUserID).(string)
+	s, ok1 := ctx.Value(keyUserSession).(string)
+	return u, s, ok0 && ok1
 }
 
-// Unary returns server interceptor for unary RPC
-func (auth *AuthInterceptor) Unary() grpc.UnaryServerInterceptor {
+func UserPermFromContext(ctx context.Context) ([]*pb.Permission, bool) {
+	v, ok := ctx.Value(keyPermission).([]*pb.Permission)
+	return v, ok
+}
+
+func UnaryInterceptor() grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (reply interface{}, err error) {
-		if info.FullMethod == "/user.User/Login" || info.FullMethod == "/user.User/Signup" {
-			reply, err = handler(ctx, req)
-			return reply, err
+		if !common.NeedCheckAuth() || !rpcNeedCheckAuth(info.FullMethod) {
+			goto handle
 		} else {
-			userID, accessToken, err := getAuthInfo(ctx)
-			if err != nil && common.NeedCheckAuth() {
+			userID, sessionKey, err := getAuthInfo(ctx)
+			if err != nil {
 				return nil, err
 			}
 
-			if common.NeedCheckAuth() {
-				if err := auth.checkAuthentication(userID, accessToken); err != nil {
-					// log.Infof("AuthInterceptor error: %v", e)
-					return nil, err
-				}
-				if info.FullMethod != "/user.User/Logout" && info.FullMethod != "/user.User/UpdatePassword" && common.NeedCheckPerm() {
-					ctx, err = auth.checkAuthorization(ctx, userID, info.FullMethod)
-					if err != nil {
-						log.Infof("AuthInterceptor method=%v user=%v error=%v", info.FullMethod, userID, err)
-						return nil, err
-					}
-				}
+			if err := checkUserSession(userID, sessionKey); err != nil {
+				return nil, err
+			}
+			ctx = context.WithValue(ctx, keyUserID, userID)
+			ctx = context.WithValue(ctx, keyUserSession, sessionKey)
+
+			if !common.NeedCheckPerm() || !rpcNeedCheckPerm(info.FullMethod) {
+				goto handle
+			}
+
+			ctx, err = checkUserPermission(ctx, userID, info.FullMethod)
+			if err != nil {
+				log.Infof("AuthInterceptor method=%v user=%v error=%v", info.FullMethod, userID, err)
+				return nil, err
 			}
 		}
-
-		reply, err = handler(ctx, req)
-		return reply, err
+	handle:
+		return handler(ctx, req)
 	}
 }
 
-func (auth *AuthInterceptor) Streams() grpc.StreamServerInterceptor {
-	return func(srv interface{}, ss grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
-		if info.FullMethod == "/user.User/Login" || info.FullMethod == "/user.User/Signup" {
-			err := handler(srv, ss)
-			return err
+func StreamInterceptor() grpc.StreamServerInterceptor {
+	return func(srv interface{}, stream grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
+		if !common.NeedCheckAuth() || !rpcNeedCheckAuth(info.FullMethod) {
+			return handler(srv, stream)
 		} else {
-			userID, accessToken, err := getAuthInfo(ss.Context())
+			ctx := stream.Context()
+			userID, sessionKey, err := getAuthInfo(ctx)
 			if err != nil {
 				return err
 			}
 
-			if common.NeedCheckAuth() {
-				if err := auth.checkAuthentication(userID, accessToken); err != nil {
-					// log.Infof("AuthInterceptor error: %v", e)
-					return err
-				}
+			if err := checkUserSession(userID, sessionKey); err != nil {
+				return err
+			}
+			ctx = context.WithValue(ctx, keyUserID, userID)
+			ctx = context.WithValue(ctx, keyUserSession, sessionKey)
+
+			if !common.NeedCheckPerm() || !rpcNeedCheckPerm(info.FullMethod) {
+				return handler(srv, middleware.NewServerStreamWrapper(stream, ctx))
 			}
 
-			if common.NeedCheckPerm() {
-				if _, err = auth.checkAuthorization(context.Background(), userID, info.FullMethod); err != nil {
-					// log.Infof("AuthInterceptor error: %v", err)
-					return err
-				}
+			ctx, err = checkUserPermission(ctx, userID, info.FullMethod)
+			if err != nil {
+				log.Infof("AuthInterceptor method=%v user=%v error=%v", info.FullMethod, userID, err)
+				return err
 			}
+			return handler(srv, middleware.NewServerStreamWrapper(stream, ctx))
 		}
-
-		err := handler(srv, ss)
-		return err
 	}
 }
 
-func (auth *AuthInterceptor) checkAuthentication(userID, accessToken string) error {
+func rpcNeedCheckAuth(method string) bool {
+	switch method {
+	case "/user.User/Login", "/user.User/Signup":
+		return false
+	}
+	return true
+}
 
-	ok, err := db.CheckUserSession(userID, accessToken)
+func rpcNeedCheckPerm(method string) bool {
+	switch method {
+	case "/user.User/Logout",
+		"/user.User/UpdatePassword":
+		return false
+	}
+	return true
+}
+
+func checkUserSession(userID, sessionKey string) error {
+	ok, err := db.CheckUserSession(userID, sessionKey)
 	if err != nil {
 		log.Info("db.CheckUserSession error")
 		return rpc.ErrInternal
@@ -103,7 +133,7 @@ func (auth *AuthInterceptor) checkAuthentication(userID, accessToken string) err
 	return nil
 }
 
-func (auth *AuthInterceptor) checkAuthorization(ctx context.Context, userID, method string) (context.Context, error) {
+func checkUserPermission(ctx context.Context, userID, method string) (context.Context, error) {
 	permID := getPermID(method)
 	if permID == 0 {
 		log.Warnf("cannot recognize perm for method=%s", method)
@@ -123,34 +153,37 @@ func (auth *AuthInterceptor) checkAuthorization(ctx context.Context, userID, met
 		return nil, rpc.ErrPermissionDenied
 	}
 
-	if !HasPerm(permID, perms) {
+	if !hasPerm(permID, perms) {
 		return nil, rpc.ErrPermissionDenied
 	}
-	return context.WithValue(ctx, "PERMS", perms), nil
+
+	c := context.WithValue(ctx, keyUserInfo, userRole)
+	c = context.WithValue(c, keyPermission, perms)
+	return c, nil
 }
 
-func getAuthInfo(ctx context.Context) (userID, accessToken string, err error) {
+func getAuthInfo(ctx context.Context) (userID, sessionKey string, err error) {
 	md, ok := metadata.FromIncomingContext(ctx)
 	if !ok {
 		log.Infof("get metadata from incoming context failed")
-		return userID, accessToken, rpc.ErrUnauthenticated
+		return userID, sessionKey, rpc.ErrUnauthenticated
 	}
 
 	values := md["authorization"]
 	if len(values) == 0 {
 		log.Infof("'authorization' not exist in request metadata.")
-		return userID, accessToken, rpc.ErrUnauthenticated
+		return userID, sessionKey, rpc.ErrUnauthenticated
 	}
 
 	authorization := values[0]
-	i := strings.IndexRune(authorization, AuthKeySeprator)
+	i := strings.IndexRune(authorization, common.UserSessionySeprator)
 	if i == -1 {
 		log.Infof("invalid authorization metadata: %v", authorization)
-		return userID, accessToken, rpc.ErrUnauthenticated
+		return userID, sessionKey, rpc.ErrUnauthenticated
 	}
 
-	userID, accessToken = authorization[:i], authorization[i+1:]
-	return userID, accessToken, nil
+	userID, sessionKey = authorization[:i], authorization[i+1:]
+	return userID, sessionKey, nil
 }
 
 func getPermID(method string) pb.PERMISSION {
@@ -235,10 +268,9 @@ func getPermID(method string) pb.PERMISSION {
 	default:
 		return pb.PERMISSION_NONE
 	}
-
 }
 
-func HasPerm(target pb.PERMISSION, perms []*pb.Permission) bool {
+func hasPerm(target pb.PERMISSION, perms []*pb.Permission) bool {
 	for i := 0; i < len(perms); i++ {
 		p := perms[i]
 		if p != nil && p.Id == int32(target) && p.Allow {

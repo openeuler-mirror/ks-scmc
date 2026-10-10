@@ -8,6 +8,9 @@ import (
 	"google.golang.org/grpc/keepalive"
 
 	"scmc/common"
+	"scmc/rpc/middleware/audit"
+	"scmc/rpc/middleware/auth"
+	"scmc/rpc/middleware/debug"
 	"scmc/rpc/pb/container"
 	"scmc/rpc/pb/image"
 	"scmc/rpc/pb/logging"
@@ -15,17 +18,14 @@ import (
 	"scmc/rpc/pb/node"
 	"scmc/rpc/pb/security"
 	"scmc/rpc/pb/user"
-	"scmc/server"
 	"scmc/server/controller/internal"
 	"scmc/server/controller/tasks"
 )
 
 func Server() (*grpc.Server, error) {
 	opts := []grpc.ServerOption{
-		grpc.ChainUnaryInterceptor(server.NewLogInterceptor(true).Unary()),
-		grpc.ChainUnaryInterceptor(server.NewAuthInterceptor().Unary()),
-		// grpc.ChainStreamInterceptor(server.NewLogInterceptor().Streams()),
-		grpc.ChainStreamInterceptor(server.NewAuthInterceptor().Streams()),
+		grpc.ChainUnaryInterceptor(debug.UnaryInterceptor(), auth.UnaryInterceptor(), audit.UnaryInterceptor()),
+		grpc.ChainStreamInterceptor(debug.StreamInterceptor(), auth.StreamInterceptor()),
 		grpc.KeepaliveEnforcementPolicy(keepalive.EnforcementPolicy{
 			MinTime:             10 * time.Second, // If a client pings more than once every 10 seconds, terminate the connection
 			PermitWithoutStream: true,             // Allow pings even when there are no active streams

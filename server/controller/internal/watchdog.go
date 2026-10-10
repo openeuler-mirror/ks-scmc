@@ -7,14 +7,14 @@ import (
 
 	log "github.com/sirupsen/logrus"
 
-	"scmc/model"
+	"scmc/model/db"
 	"scmc/rpc/pb/logging"
 	pb "scmc/rpc/pb/node"
 )
 
 var nodeStatus = make(map[int64]*pb.NodeStatus)
 
-func getNodeStatus(node *model.NodeInfo) (*pb.NodeStatus, error) {
+func getNodeStatus(node *db.NodeInfo) (*pb.NodeStatus, error) {
 	conn, err := getAgentConn(node.Address)
 	if err != nil {
 		log.Warnf("Failed to connect to agent service, node=%+v", node)
@@ -38,7 +38,7 @@ func getNodeStatus(node *model.NodeInfo) (*pb.NodeStatus, error) {
 }
 
 func getAllNodeData(needStatus bool) []*pb.NodeInfo {
-	nodes, err := model.ListNodes()
+	nodes, err := db.ListNodes()
 	if err != nil {
 		log.Infof("get node list from DB err=%v", err)
 		return nil
@@ -68,11 +68,11 @@ func getAllNodeData(needStatus bool) []*pb.NodeInfo {
 	return nodeInfos
 }
 
-func writeNodeWatchLogs(n *pb.NodeInfo) []*model.WarnLog {
-	var r []*model.WarnLog
+func writeNodeWatchLogs(n *pb.NodeInfo) []*db.WarnLog {
+	var r []*db.WarnLog
 
 	if n.Status == nil {
-		r = append(r, &model.WarnLog{
+		r = append(r, &db.WarnLog{
 			NodeId:      n.Id,
 			NodeInfo:    fmt.Sprintf("%s (%s)", n.Name, n.Address),
 			EventType:   int64(logging.EVENT_TYPE_WARN_NODE_OFFLINE),
@@ -83,7 +83,7 @@ func writeNodeWatchLogs(n *pb.NodeInfo) []*model.WarnLog {
 	}
 
 	if n.Status.State != int64(pb.NodeState_Online) {
-		r = append(r, &model.WarnLog{
+		r = append(r, &db.WarnLog{
 			NodeId:      n.Id,
 			NodeInfo:    fmt.Sprintf("%s (%s)", n.Name, n.Address),
 			EventType:   int64(logging.EVENT_TYPE_WARN_NODE_ABNORMAL),
@@ -95,7 +95,7 @@ func writeNodeWatchLogs(n *pb.NodeInfo) []*model.WarnLog {
 	if n.RscLimit != nil {
 		if n.RscLimit.CpuLimit > 0 && n.Status.CpuStat != nil {
 			if n.Status.CpuStat.Used > n.RscLimit.CpuLimit {
-				r = append(r, &model.WarnLog{
+				r = append(r, &db.WarnLog{
 					NodeId:      n.Id,
 					NodeInfo:    fmt.Sprintf("%s (%s)", n.Name, n.Address),
 					EventType:   int64(logging.EVENT_TYPE_WARN_RESOURCE_USAGE),
@@ -107,7 +107,7 @@ func writeNodeWatchLogs(n *pb.NodeInfo) []*model.WarnLog {
 
 		if n.RscLimit.MemoryLimit > 0 && n.Status.MemStat != nil {
 			if float64(n.Status.MemStat.Used) > n.RscLimit.MemoryLimit {
-				r = append(r, &model.WarnLog{
+				r = append(r, &db.WarnLog{
 					NodeId:      n.Id,
 					NodeInfo:    fmt.Sprintf("%s (%s)", n.Name, n.Address),
 					EventType:   int64(logging.EVENT_TYPE_WARN_RESOURCE_USAGE),
@@ -119,7 +119,7 @@ func writeNodeWatchLogs(n *pb.NodeInfo) []*model.WarnLog {
 
 		if n.RscLimit.DiskLimit > 0 && n.Status.DiskStat != nil {
 			if float64(n.Status.DiskStat.Used) > n.RscLimit.DiskLimit {
-				r = append(r, &model.WarnLog{
+				r = append(r, &db.WarnLog{
 					NodeId:      n.Id,
 					NodeInfo:    fmt.Sprintf("%s (%s)", n.Name, n.Address),
 					EventType:   int64(logging.EVENT_TYPE_WARN_RESOURCE_USAGE),
@@ -131,7 +131,7 @@ func writeNodeWatchLogs(n *pb.NodeInfo) []*model.WarnLog {
 	}
 
 	if len(r) > 0 {
-		model.CreateWarnLog(r)
+		db.CreateWarnLog(r)
 	}
 
 	return r

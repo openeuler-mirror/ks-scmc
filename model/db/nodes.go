@@ -1,5 +1,5 @@
 // node info
-package model
+package db
 
 import (
 	log "github.com/sirupsen/logrus"
@@ -23,20 +23,20 @@ func (NodeInfo) TableName() string {
 	return "node_infos"
 }
 
-func ListNodes() ([]NodeInfo, error) {
+func ListNodes() ([]*NodeInfo, error) {
 	db, err := getConn()
 	if err != nil {
 		return nil, err
 	}
 
-	var nodes []NodeInfo
-	result := db.Where("deleted = 0").Find(&nodes)
+	var data []*NodeInfo
+	result := db.Where("deleted = 0").Find(&data)
 	if result.Error != nil {
-		log.Errorf("db query nodes: %v", result.Error)
+		log.Errorf("ListNodes err=%v", result.Error)
 		return nil, result.Error
 	}
 
-	return nodes, nil
+	return data, nil
 }
 
 func CreateNode(name, address, comment string) error {

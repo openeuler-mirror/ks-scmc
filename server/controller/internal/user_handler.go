@@ -14,6 +14,7 @@ import (
 
 	"scmc/common"
 	"scmc/model/db"
+	"scmc/model/session"
 	"scmc/rpc"
 	"scmc/rpc/middleware/auth"
 	pb "scmc/rpc/pb/user"
@@ -57,9 +58,14 @@ func (s *UserServer) Login(ctx context.Context, in *pb.LoginRequest) (*pb.LoginR
 
 	// UUID create session
 	sessionKey := uuid.New().String()
-	if err := db.CreateSession(userInfo.ID, sessionKey, addr); err != nil {
-		log.Warn("create seccion err: %v", err)
-		return &pb.LoginReply{}, nil
+	old, err := db.CreateSession(userInfo.ID, sessionKey, addr)
+	if err != nil {
+		log.Warnf("create seccion err: %v", err)
+		return nil, rpc.ErrDatabaseFail
+	}
+
+	if old != nil {
+		session.Timers.TriggerAndRemove(old.SessionKey)
 	}
 
 	return &pb.LoginReply{

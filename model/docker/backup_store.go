@@ -1,4 +1,4 @@
-package model
+package docker
 
 import (
 	"context"
@@ -137,7 +137,7 @@ type ContainerBackupJob struct {
 }
 
 func addBackupJob(j *ContainerBackupJob) {
-	cli, err := DockerClient()
+	cli, err := Client()
 	if err != nil {
 		log.Warnf("create docker cli err=%v", err)
 		j.Status = 2

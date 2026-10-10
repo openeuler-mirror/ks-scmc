@@ -10,7 +10,7 @@ import (
 	"google.golang.org/grpc"
 
 	"scmc/common"
-	"scmc/model"
+	"scmc/model/db"
 	pb "scmc/rpc/pb/container"
 	"scmc/rpc/pb/logging"
 )
@@ -53,13 +53,13 @@ func isMaster() bool {
 }
 
 func allValidImages() (map[string]int, error) {
-	dbImages, err := model.QueryImageByStatus()
+	dbImages, err := db.QueryImageByStatus()
 	if err != nil {
 		log.Warnf("query db images err=%v", err)
 		return nil, err
 	}
 
-	backups, err := model.ListContainerBackup()
+	backups, err := db.ListContainerBackup()
 	if err != nil {
 		log.Warnf("query backup images err=%v", err)
 		return nil, err
@@ -93,16 +93,16 @@ func DelBackupJob(conn *grpc.ClientConn, id int64) (*pb.DelBackupJobReply, error
 }
 
 func checkContainerBackupJob() {
-	jobs, err := model.QueryUndoneContainerBackup()
+	jobs, err := db.QueryUndoneContainerBackup()
 	if err != nil {
-		log.Warnf("model.QueryContainerBackups err=%v", err)
+		log.Warnf("db.QueryContainerBackups err=%v", err)
 		return
 	}
 
 	for _, job := range jobs {
-		nodeInfo, err := model.QueryNodeByID(job.NodeID)
+		nodeInfo, err := db.QueryNodeByID(job.NodeID)
 		if err != nil {
-			log.Warnf("model.QueryNodeByID node_id=%v err=%v", job.NodeID, err)
+			log.Warnf("db.QueryNodeByID node_id=%v err=%v", job.NodeID, err)
 			continue
 		}
 
@@ -127,8 +127,8 @@ func checkContainerBackupJob() {
 				job.Status = 2
 			}
 
-			if err := model.UpdateContainerBackup(job); err != nil {
-				log.Warnf("model.UpdateContainerBackup id=%v err=%v", job.ID, err)
+			if err := db.UpdateContainerBackup(job); err != nil {
+				log.Warnf("db.UpdateContainerBackup id=%v err=%v", job.ID, err)
 				continue
 			}
 
@@ -173,7 +173,7 @@ func StopContainer(conn *grpc.ClientConn, id string) (*pb.StopReply, error) {
 
 type IllegalContainerDetection struct{}
 
-func (IllegalContainerDetection) ScanNodeContainers(images map[string]int, n *model.NodeInfo) {
+func (IllegalContainerDetection) ScanNodeContainers(images map[string]int, n *db.NodeInfo) {
 	conn, err := getAgentConn(n.Address)
 	if err != nil {
 		log.Warnf("restart container ErrInternal")
@@ -197,7 +197,7 @@ func (IllegalContainerDetection) ScanNodeContainers(images map[string]int, n *mo
 				log.Infof("StopContainer %v err=%v", c.Info.Id, err)
 			}
 
-			warnLog := []*model.WarnLog{
+			warnLog := []*db.WarnLog{
 				{
 					NodeId:        n.ID,
 					NodeInfo:      fmt.Sprintf("%s (%s)", n.Name, n.Address),
@@ -208,7 +208,7 @@ func (IllegalContainerDetection) ScanNodeContainers(images map[string]int, n *mo
 				},
 			}
 
-			model.CreateWarnLog(warnLog)
+			db.CreateWarnLog(warnLog)
 		}
 	}
 }
@@ -220,7 +220,7 @@ func (t IllegalContainerDetection) Run() {
 		return
 	}
 
-	nodes, err := model.ListNodes()
+	nodes, err := db.ListNodes()
 	if err != nil {
 		log.Infof("get node list from DB err=%v", err)
 		return

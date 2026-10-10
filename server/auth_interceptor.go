@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	"scmc/common"
-	"scmc/model"
+	"scmc/model/db"
 	"scmc/rpc"
 
 	pb "scmc/rpc/pb/user"
@@ -92,9 +92,9 @@ func (auth *AuthInterceptor) Streams() grpc.StreamServerInterceptor {
 
 func (auth *AuthInterceptor) checkAuthentication(userID, accessToken string) error {
 
-	ok, err := model.CheckUserSession(userID, accessToken)
+	ok, err := db.CheckUserSession(userID, accessToken)
 	if err != nil {
-		log.Info("model.CheckUserSession error")
+		log.Info("db.CheckUserSession error")
 		return rpc.ErrInternal
 	} else if !ok {
 		log.Info("invalid user session")
@@ -110,7 +110,7 @@ func (auth *AuthInterceptor) checkAuthorization(ctx context.Context, userID, met
 		return nil, rpc.ErrPermissionDenied
 	}
 
-	userRole, err := model.QueryUserRole(userID)
+	userRole, err := db.QueryUserRole(userID)
 	if err != nil {
 		log.Warnf("query info of user=%v err=%v", userID, err)
 		return nil, rpc.ErrPermissionDenied

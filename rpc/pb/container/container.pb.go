@@ -265,33 +265,35 @@ func (x *InspectBackupRequest) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use UpdateBackupRequest.ProtoReflect.Descriptor instead.
-func (*UpdateBackupRequest) Descriptor() ([]byte, []int) {
+// Deprecated: Use InspectBackupRequest.ProtoReflect.Descriptor instead.
+func (*InspectBackupRequest) Descriptor() ([]byte, []int) {
 	return file_container_proto_rawDescGZIP(), []int{2}
 }
 
-func (x *UpdateBackupRequest) GetId() int64 {
+func (x *InspectBackupRequest) GetNodeId() int64 {
 	if x != nil {
-		return x.Id
+		return x.NodeId
 	}
 	return 0
 }
 
-func (x *UpdateBackupRequest) GetBackupDesc() string {
+func (x *InspectBackupRequest) GetBackupId() int64 {
 	if x != nil {
-		return x.BackupDesc
+		return x.BackupId
 	}
-	return ""
+	return 0
 }
 
-type UpdateBackupReply struct {
+type InspectBackupReply struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
+
+	Backup *ContainerBackup `protobuf:"bytes,1,opt,name=backup,proto3" json:"backup,omitempty"`
 }
 
-func (x *UpdateBackupReply) Reset() {
-	*x = UpdateBackupReply{}
+func (x *InspectBackupReply) Reset() {
+	*x = InspectBackupReply{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_container_proto_msgTypes[3]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))

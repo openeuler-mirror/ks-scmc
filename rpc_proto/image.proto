@@ -43,7 +43,7 @@ message UploadRequest {
 }
 
 message UploadReply {
-    int64 image_id = 1;  //in db
+    int64 image_id = 1;  // in db
 }
 
 message UpdateRequest {
@@ -90,11 +90,12 @@ message AgentSyncReply {}
 /***** DATA TYPES *****/
 
 message ImageInfo {
-    string name   = 1;  // repo + tag
-    string repo   = 2;
-    string tag    = 3;
-    string digest = 4;
-    int64  size   = 5;  // unit: bytes
+    string name     = 1;  // repo + tag
+    string repo     = 2;
+    string tag      = 3;
+    string digest   = 4;
+    int64  size     = 5;  // unit: bytes
+    string image_id = 6;
 }
 
 message ImageDBInfo {

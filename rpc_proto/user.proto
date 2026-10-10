@@ -44,9 +44,9 @@ message LoginRequest {
 }
 
 message LoginReply {
-    int64  user_id  = 1;
-    string auth_key = 2;
-    // TODO userinfo
+    int64    user_id   = 1;
+    string   auth_key  = 2;
+    UserRole user_role = 3;
 }
 
 message LogoutRequest {}

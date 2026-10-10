@@ -377,13 +377,13 @@ func (x *CreateNicRequest) Reset() {
 	}
 }
 
-func (x *CreateRequest) String() string {
+func (x *CreateNicRequest) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*CreateRequest) ProtoMessage() {}
+func (*CreateNicRequest) ProtoMessage() {}
 
-func (x *CreateRequest) ProtoReflect() protoreflect.Message {
+func (x *CreateNicRequest) ProtoReflect() protoreflect.Message {
 	mi := &file_network_proto_msgTypes[6]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))

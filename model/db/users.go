@@ -246,7 +246,7 @@ func CheckUserSession(userID, sessionKey string) (bool, error) {
 	return true, nil
 }
 
-func RemoveSession(userID, sessionKey string) error {
+func RemoveSession(userID interface{}, sessionKey string) error {
 	db, err := getConn()
 	if err != nil {
 		return err

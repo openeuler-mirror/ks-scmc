@@ -9,6 +9,7 @@ import (
 
 	pb "scmc/rpc/pb/container"
 	"scmc/rpc/pb/security"
+	"scmc/rpc/pb/user"
 )
 
 const (
@@ -230,4 +231,14 @@ func containerSecurityConfigDiff(s0, s1 *pb.SecurityConfig) bool {
 			s0.DisableCmdOperation != s1.DisableCmdOperation
 	}
 	return true
+}
+
+func hasPerm(target user.PERMISSION, perms []*user.Permission) bool {
+	for i := 0; i < len(perms); i++ {
+		p := perms[i]
+		if p != nil && p.Id == int32(target) && p.Allow {
+			return true
+		}
+	}
+	return false
 }

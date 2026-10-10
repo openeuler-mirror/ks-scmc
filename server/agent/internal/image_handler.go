@@ -7,7 +7,7 @@ import (
 	"github.com/docker/docker/api/types"
 	log "github.com/sirupsen/logrus"
 
-	"scmc/model"
+	"scmc/model/docker"
 	"scmc/rpc"
 	pb "scmc/rpc/pb/image"
 )
@@ -19,7 +19,7 @@ type ImageServer struct {
 func (s *ImageServer) List(ctx context.Context, in *pb.ListRequest) (*pb.ListReply, error) {
 	reply := pb.ListReply{}
 
-	cli, err := model.DockerClient()
+	cli, err := docker.Client()
 	if err != nil {
 		return nil, rpc.ErrInternal
 	}
@@ -51,7 +51,7 @@ func (s *ImageServer) List(ctx context.Context, in *pb.ListRequest) (*pb.ListRep
 }
 
 func (s *ImageServer) agentSync(toRemove, toPull []string) {
-	cli, err := model.DockerClient()
+	cli, err := docker.Client()
 	if err != nil {
 		log.Infof("agentSync get docker client err=%v", err)
 		goto stagePull

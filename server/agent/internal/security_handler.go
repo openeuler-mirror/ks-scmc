@@ -13,7 +13,10 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"scmc/common"
-	"scmc/model"
+	"scmc/model/db"
+	"scmc/model/docker"
+	"scmc/model/kysec"
+	"scmc/model/opensnitch"
 	"scmc/rpc"
 	pb "scmc/rpc/pb/security"
 )
@@ -26,7 +29,7 @@ type SecurityServer struct {
 
 func (s *SecurityServer) UpdateFileProtection(ctx context.Context, in *pb.UpdateFileProtectionRequest) (*pb.UpdateFileProtectionReply, error) {
 	reply := pb.UpdateFileProtectionReply{}
-	if err := model.UpdateFileAccess(in.ContainerId, in.IsOn, in.ToAppend, in.ToRemove); err != nil {
+	if err := kysec.UpdateFileAccess(in.ContainerId, in.IsOn, in.ToAppend, in.ToRemove); err != nil {
 		return &reply, err
 	}
 
@@ -42,14 +45,14 @@ func (s *SecurityServer) LoadSecurityConfig(ctx context.Context, in *pb.LoadSecu
 		for _, v := range in.Configs {
 			if v.FileProtections != nil {
 				log.Debugf("resume file access: [%v], [%v]", v.ContainerId, v.FileProtections)
-				if err := model.UpdateFileAccess(v.ContainerId, v.FileProtections.IsOn, v.FileProtections.FileList, []string{}); err != nil {
+				if err := kysec.UpdateFileAccess(v.ContainerId, v.FileProtections.IsOn, v.FileProtections.FileList, []string{}); err != nil {
 					log.Warnf("UpdateFileAccess %v err: %v", v.ContainerId, err)
 				}
 			}
 
 			if v.ProcProtections != nil {
 				log.Debugf("resume white list: [%v], [%v]", v.ContainerId, v.ProcProtections)
-				if err := model.UpdateWhiteList(v.ContainerId, v.ProcProtections.IsOn, v.ProcProtections.ExeList, []string{}); err != nil {
+				if err := kysec.UpdateWhiteList(v.ContainerId, v.ProcProtections.IsOn, v.ProcProtections.ExeList, []string{}); err != nil {
 					log.Warnf("UpdateFileAccess %v err: %v", v.ContainerId, err)
 				}
 			}
@@ -67,7 +70,7 @@ func (sp *SecurityServer) ListProcProtection(ctx context.Context, in *pb.ListPro
 	}
 	path := common.Config.Agent.OpensnitchRuleDir
 
-	rule, err := model.LoadOpensnitchRule(path, in.ContainerId)
+	rule, err := opensnitch.LoadRule(path, in.ContainerId)
 	if err != nil {
 		return nil, err
 	}
@@ -99,7 +102,7 @@ func (sp *SecurityServer) ListProcProtection(ctx context.Context, in *pb.ListPro
 }
 
 func calcdockerCPMD5(ctx context.Context, containerId, srcDir string) (string, error) {
-	cli, err := model.DockerClient()
+	cli, err := docker.Client()
 	if err != nil {
 		return "", rpc.ErrInternal
 	}
@@ -162,7 +165,7 @@ func (sp *SecurityServer) UpdateProcProtection(ctx context.Context, in *pb.Updat
 	case int64(pb.PROC_PROTECTION_EXEC_WHITELIST):
 		log.Debugln("update  process protection")
 		if !in.IsOn {
-			if err := model.CleanWhiteList(in.ContainerId); err != nil {
+			if err := kysec.CleanWhiteList(in.ContainerId); err != nil {
 				log.Warnf("delete %s process protection file faild,err is :%s", in.ContainerId, err)
 				return nil, err
 			}
@@ -175,7 +178,7 @@ func (sp *SecurityServer) UpdateProcProtection(ctx context.Context, in *pb.Updat
 			if err != nil {
 				return nil, err
 			}
-			if err := model.UpdateWhiteList(in.ContainerId, in.IsOn, toAppend, toRemove); err != nil {
+			if err := kysec.UpdateWhiteList(in.ContainerId, in.IsOn, toAppend, toRemove); err != nil {
 				log.Warnf("add %s network process protection file faild,err is :%s", in.ContainerId, err)
 				return nil, err
 			}
@@ -184,17 +187,17 @@ func (sp *SecurityServer) UpdateProcProtection(ctx context.Context, in *pb.Updat
 		//更新节点上规则
 		log.Debugln("update network process protection")
 		if !in.IsOn {
-			if err := model.RemoveOpensnitchRule(in.ContainerId); err != nil {
+			if err := opensnitch.RemoveRule(in.ContainerId); err != nil {
 				log.Warnf("delete %s network process protection file faild,err is :%s", in.ContainerId, err)
 				return nil, err
 			}
 		} else {
-			var inrule = &model.ProcProtection{
+			var inrule = &db.ProcProtection{
 				Type:    int32(in.ProtectionType),
 				IsOn:    true,
 				ExeList: in.ToAppend,
 			}
-			if err := model.SaveOpensnitchRule(inrule, in.ContainerId, "uuid"); err != nil {
+			if err := opensnitch.SaveRule(inrule, in.ContainerId, "uuid"); err != nil {
 				log.Warnf("add %s network process protection file faild,err is :%s", in.ContainerId, err)
 				return nil, err
 			}

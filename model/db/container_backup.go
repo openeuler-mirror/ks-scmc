@@ -1,14 +1,7 @@
-package model
+package db
 
 import (
-	"sync"
-
 	log "github.com/sirupsen/logrus"
-)
-
-var (
-	containerBackupJobs      = make(map[int64]*ContainerBackupJob, 10)
-	containerBackupJobsGuard = sync.RWMutex{}
 )
 
 type ContainerBackup struct {

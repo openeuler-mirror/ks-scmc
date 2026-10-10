@@ -16,8 +16,9 @@ service Network {
     rpc RemoveIPtables(RemoveIPtablesRequest) returns (RemoveIPtablesReply) {}
 
     // not implemented
-    rpc Create(CreateRequest) returns (CreateReply) {}
-    rpc Remove(RemoveRequest) returns (RemoveReply) {}
+    rpc CreateNic(CreateNicRequest) returns (CreateNicReply) {}
+    rpc RemoveNic(RemoveNicRequest) returns (RemoveNicReply) {}
+    rpc UpdateNic(UpdateNicRequest) returns (UpdateNicReply) {}
 }
 
 message ListRequest {
@@ -49,17 +50,36 @@ message DisconnectRequest {
 
 message DisconnectReply {}
 
-message CreateRequest {}
+message CreateNicRequest {
+    int64  node_id = 1;
+    string name    = 2;
+    string parent  = 3;  // 物理网卡
+    string subnet  = 4;  // 网段
+    string gateway = 5;  // 网关
+}
 
-message CreateReply {}
+message CreateNicReply {}
 
-message RemoveRequest {}
+message RemoveNicRequest {
+    int64  node_id = 1;
+    string name    = 2;
+}
 
-message RemoveReply {}
+message RemoveNicReply {}
+
+message UpdateNicRequest {
+    int64  node_id = 1;
+    string name    = 2;
+    string parent  = 3;  // 物理网卡
+    string subnet  = 4;  // 网段
+    string gateway = 5;  // 网关
+}
+
+message UpdateNicReply {}
 
 message ListIPtablesRequest {
-    int64  node_id      = 1;  //require
-    string container_id = 2;  //for container require
+    int64  node_id      = 1;  // require
+    string container_id = 2;  // for container require
 }
 
 message ListIPtablesReply {
@@ -67,38 +87,38 @@ message ListIPtablesReply {
 }
 
 message EnableIPtablesRequest {
-    int64  node_id      = 1;  //require
-    string container_id = 2;  //for container require
+    int64  node_id      = 1;  // require
+    string container_id = 2;  // for container require
     bool   enable       = 3;
 }
 
 message EnableIPtablesReply {}
 
 message CreateIPtablesRequest {
-    int64    node_id      = 1;  //require
-    string   container_id = 2;  //for container require
+    int64    node_id      = 1;  // require
+    string   container_id = 2;  // for container require
     string   chain        = 3;
-    RuleInfo rule         = 4;  //require
+    RuleInfo rule         = 4;  // require
 }
 
 message CreateIPtablesReply {}
 
 message ModifyIPtablesRequest {
-    int64    node_id      = 1;  //require
-    string   container_id = 2;  //for container require
+    int64    node_id      = 1;  // require
+    string   container_id = 2;  // for container require
     string   old_chain    = 3;
     string   new_chain    = 4;
-    RuleInfo old_rule     = 5;  //require
-    RuleInfo new_rule     = 6;  //require
+    RuleInfo old_rule     = 5;  // require
+    RuleInfo new_rule     = 6;  // require
 }
 
 message ModifyIPtablesReply {}
 
 message RemoveIPtablesRequest {
-    int64    node_id      = 1;  //require
-    string   container_id = 2;  //for container require
+    int64    node_id      = 1;  // require
+    string   container_id = 2;  // for container require
     string   chain        = 3;
-    RuleInfo rule         = 4;  //require
+    RuleInfo rule         = 4;  // require
 }
 
 message RemoveIPtablesReply {}

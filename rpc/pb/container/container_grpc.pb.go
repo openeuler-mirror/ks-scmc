@@ -40,10 +40,9 @@ type ContainerClient interface {
 	ResumeBackup(ctx context.Context, in *ResumeBackupRequest, opts ...grpc.CallOption) (*ResumeBackupReply, error)
 	RemoveBackup(ctx context.Context, in *RemoveBackupRequest, opts ...grpc.CallOption) (*RemoveBackupReply, error)
 	ListBackup(ctx context.Context, in *ListBackupRequest, opts ...grpc.CallOption) (*ListBackupReply, error)
-	// 容器备份内部接口
-	AddBackupJob(ctx context.Context, in *AddBackupJobRequest, opts ...grpc.CallOption) (*AddBackupJobReply, error)
-	GetBackupJob(ctx context.Context, in *GetBackupJobRequest, opts ...grpc.CallOption) (*GetBackupJobReply, error)
-	DelBackupJob(ctx context.Context, in *DelBackupJobRequest, opts ...grpc.CallOption) (*DelBackupJobReply, error)
+	ExportBackup(ctx context.Context, in *ExportBackupRequest, opts ...grpc.CallOption) (Container_ExportBackupClient, error)
+	ListBackupImage(ctx context.Context, in *ListBackupImageRequest, opts ...grpc.CallOption) (*ListBackupImageReply, error)
+	InspectBackup(ctx context.Context, in *InspectBackupRequest, opts ...grpc.CallOption) (*InspectBackupReply, error)
 	// 查询容器模板列表
 	ListTemplate(ctx context.Context, in *ListTemplateRequest, opts ...grpc.CallOption) (*ListTemplateReply, error)
 	// 创建容器模板

@@ -53,6 +53,13 @@ type ContainerClient interface {
 	InspectTemplate(ctx context.Context, in *InspectTemplateRequest, opts ...grpc.CallOption) (*InspectTemplateReply, error)
 	// 删除容器模板
 	RemoveTemplate(ctx context.Context, in *RemoveTemplateRequest, opts ...grpc.CallOption) (*RemoveTemplateReply, error)
+	// 容器多应用入口功能
+	ListAppEntry(ctx context.Context, in *ListAppEntryRequest, opts ...grpc.CallOption) (*ListAppEntryReply, error)
+	AddAppEntry(ctx context.Context, in *AddAppEntryRequest, opts ...grpc.CallOption) (*AddAppEntryReply, error)
+	UpdateAppEntry(ctx context.Context, in *UpdateAppEntryRequest, opts ...grpc.CallOption) (*UpdateAppEntryReply, error)
+	RemoveAppEntry(ctx context.Context, in *RemoveAppEntryRequest, opts ...grpc.CallOption) (*RemoveAppEntryReply, error)
+	RunAppEntry(ctx context.Context, in *RunAppEntryRequest, opts ...grpc.CallOption) (*RunAppEntryReply, error)
+	KillAppEntry(ctx context.Context, in *KillAppEntryRequest, opts ...grpc.CallOption) (*KillAppEntryReply, error)
 	// 监控历史数据查询
 	MonitorHistory(ctx context.Context, in *MonitorHistoryRequest, opts ...grpc.CallOption) (*MonitorHistoryReply, error)
 }

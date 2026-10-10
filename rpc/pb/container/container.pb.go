@@ -111,40 +111,66 @@ func (x *ExportBackupRequest) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use CreateBackupRequest.ProtoReflect.Descriptor instead.
-func (*CreateBackupRequest) Descriptor() ([]byte, []int) {
+// Deprecated: Use ExportBackupRequest.ProtoReflect.Descriptor instead.
+func (*ExportBackupRequest) Descriptor() ([]byte, []int) {
 	return file_container_proto_rawDescGZIP(), []int{0}
 }
 
-func (x *CreateBackupRequest) GetNodeId() int64 {
+func (x *ExportBackupRequest) GetNodeId() int64 {
 	if x != nil {
 		return x.NodeId
 	}
 	return 0
 }
 
-func (x *CreateBackupRequest) GetContainerId() string {
+func (x *ExportBackupRequest) GetBackupId() int64 {
 	if x != nil {
-		return x.ContainerId
+		return x.BackupId
+	}
+	return 0
+}
+
+func (x *ExportBackupRequest) GetIsDownload() bool {
+	if x != nil {
+		return x.IsDownload
+	}
+	return false
+}
+
+func (x *ExportBackupRequest) GetImgName() string {
+	if x != nil {
+		return x.ImgName
 	}
 	return ""
 }
 
-func (x *CreateBackupRequest) GetBackupDesc() string {
+func (x *ExportBackupRequest) GetImgVersion() string {
 	if x != nil {
-		return x.BackupDesc
+		return x.ImgVersion
 	}
 	return ""
 }
 
-type CreateBackupReply struct {
+func (x *ExportBackupRequest) GetDescription() string {
+	if x != nil {
+		return x.Description
+	}
+	return ""
+}
+
+type ExportBackupReply struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
+
+	Data       []byte `protobuf:"bytes,1,opt,name=data,proto3" json:"data,omitempty"`
+	ImgSize    int64  `protobuf:"varint,2,opt,name=img_size,json=imgSize,proto3" json:"img_size,omitempty"`
+	ImgName    string `protobuf:"bytes,3,opt,name=img_name,json=imgName,proto3" json:"img_name,omitempty"`
+	ImgVersion string `protobuf:"bytes,4,opt,name=img_version,json=imgVersion,proto3" json:"img_version,omitempty"`
 }
 
-func (x *CreateBackupReply) Reset() {
-	*x = CreateBackupReply{}
+func (x *ExportBackupReply) Reset() {
+	*x = ExportBackupReply{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_container_proto_msgTypes[1]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))

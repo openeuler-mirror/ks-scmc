@@ -12,8 +12,6 @@ service Security {
     // 文件保护
     rpc ListFileProtection(ListFileProtectionRequest) returns (ListFileProtectionReply) {}
     rpc UpdateFileProtection(UpdateFileProtectionRequest) returns (UpdateFileProtectionReply) {}
-
-    rpc LoadSecurityConfig(LoadSecurityConfigRequset) returns (LoadSecurityConfigReply) {}
 }
 
 enum PROC_PROTECTION {

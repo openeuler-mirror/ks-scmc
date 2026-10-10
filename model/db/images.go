@@ -1,5 +1,5 @@
 // images info
-package model
+package db
 
 import (
 	log "github.com/sirupsen/logrus"
@@ -173,27 +173,4 @@ func QueryImageByIDs(ids []int64) ([]*ImageInfo, error) {
 	}
 
 	return data, nil
-}
-
-func GetRepositoriesImages() map[string][]string {
-	hub, err := newRegistryClient()
-	if err != nil {
-		log.Warnf("connect to registry [%v][%v][%v], err=%v", registryUrl(), registryUsername(), registryPassword(), err)
-		return nil
-	}
-	repositories, err := hub.Repositories()
-	if err != nil {
-		log.Warnf("get registry err=%v", err)
-		return nil
-	}
-	repositoriesimagemap := make(map[string][]string)
-	for _, repository := range repositories {
-		tags, err := hub.Tags(repository)
-		if err != nil {
-			log.Warnf("tag %v ", err)
-			return nil
-		}
-		repositoriesimagemap[repository] = tags
-	}
-	return repositoriesimagemap
 }

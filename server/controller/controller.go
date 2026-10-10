@@ -8,7 +8,7 @@ import (
 	"google.golang.org/grpc/keepalive"
 
 	"scmc/common"
-	"scmc/model"
+	"scmc/model/registry"
 	"scmc/rpc/pb/container"
 	"scmc/rpc/pb/image"
 	"scmc/rpc/pb/logging"
@@ -58,7 +58,7 @@ func Server() (*grpc.Server, error) {
 
 	go internal.NodeStatusMonitor()
 	go internal.RuntimeLogWriter()
-	go model.PushImgae()
+	go registry.PushImgae()
 	go internal.ResumeContainerConfigs()
 	go internal.CheckContainerBackupJob()
 	go internal.DetectIllegalContainer()

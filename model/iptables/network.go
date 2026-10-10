@@ -1,19 +1,19 @@
 // network info
-package model
+package iptables
 
 import (
 	"bufio"
 	"encoding/json"
 	"errors"
 	"fmt"
+	log "github.com/sirupsen/logrus"
 	"io/ioutil"
 	"net"
 	"os"
 	"os/exec"
+	"scmc/model/db"
 	"strconv"
 	"strings"
-
-	log "github.com/sirupsen/logrus"
 
 	"scmc/common"
 )
@@ -45,26 +45,26 @@ const (
 	OperateNode      = 2
 )
 
-type IPtablesEnableInfo map[string]bool
+type EnableInfo map[string]bool
 
-func iptablesPath() string {
+func path() string {
 	return common.Config.Network.IPtablesPath
 }
 
-func nodeIPtablesFile() string {
+func nodeFile() string {
 	return common.Config.Network.IPtablesPath + "/node.rule"
 }
 
-func nodeIPtablesInitFile() string {
+func nodeInitFile() string {
 	return common.Config.Network.IPtablesPath + "/node-default.rule"
 }
 
-func iptablesJSONFile() string {
+func jsonFile() string {
 	return common.Config.Network.IPtablesJsonFile
 }
 
-func readJSON() (IPtablesEnableInfo, error) {
-	JsonFile := iptablesJSONFile()
+func readJSON() (EnableInfo, error) {
+	JsonFile := jsonFile()
 	log.Debugf("read file [%v]", JsonFile)
 	file, err := os.Open(JsonFile)
 	if err != nil {
@@ -88,7 +88,7 @@ func readJSON() (IPtablesEnableInfo, error) {
 	}
 	log.Debugf("read file %v size: %v", JsonFile, n)
 
-	info := make(IPtablesEnableInfo)
+	info := make(EnableInfo)
 	err = json.Unmarshal(buffer, &info)
 	if err != nil {
 		log.Errorf("Unmarshal failed: %v", err)
@@ -98,8 +98,8 @@ func readJSON() (IPtablesEnableInfo, error) {
 	return info, nil
 }
 
-func writeJSON(info IPtablesEnableInfo) error {
-	JsonFile := iptablesJSONFile()
+func writeJSON(info EnableInfo) error {
+	JsonFile := jsonFile()
 	log.Debugf("write to file [%v]", JsonFile)
 	data, err := json.MarshalIndent(info, "", "\t")
 	if err != nil {
@@ -125,7 +125,7 @@ func writeJSON(info IPtablesEnableInfo) error {
 func updateJSON(who string, enbale bool) error {
 	info, _ := readJSON()
 	if info == nil {
-		info = make(IPtablesEnableInfo)
+		info = make(EnableInfo)
 	}
 
 	info[who] = enbale
@@ -156,7 +156,7 @@ func getEnableStatus(who string) bool {
 }
 
 func ContainerIPtablesFile(containerId string) (string, string) {
-	fileInfoList, err := ioutil.ReadDir(iptablesPath())
+	fileInfoList, err := ioutil.ReadDir(path())
 	if err != nil {
 		log.Warnf("readdir err: %v", err)
 		return "", ""
@@ -168,7 +168,7 @@ func ContainerIPtablesFile(containerId string) (string, string) {
 		if len(array) == 2 {
 			if array[0] == containerId || array[1] == containerId {
 				log.Debugf("fileName:%v, containerId:%v", fileName, containerId)
-				return iptablesPath() + "/" + fileName, fileName
+				return path() + "/" + fileName, fileName
 			}
 		}
 	}
@@ -414,7 +414,7 @@ func AddRule(who int, containerId string, pid int, chain string, info RuleInfo) 
 	}
 
 	fullRule := fmt.Sprintf("-A %s %s", chain, rule)
-	fileName := nodeIPtablesFile()
+	fileName := nodeFile()
 	if who == OperateContainer {
 		fileName, _ = ContainerIPtablesFile(containerId)
 	}
@@ -456,7 +456,7 @@ func DelRule(who int, containerId string, pid int, chain string, info RuleInfo) 
 	}
 
 	fullRule := fmt.Sprintf("-A %s %s", chain, rule)
-	fileName := nodeIPtablesFile()
+	fileName := nodeFile()
 	if who == OperateContainer {
 		fileName, _ = ContainerIPtablesFile(containerId)
 	}
@@ -491,7 +491,7 @@ func ModifyRule(who int, containerId string, pid int, oldchain string, oldRule R
 		return os.ErrInvalid
 	}
 
-	fileName := nodeIPtablesFile()
+	fileName := nodeFile()
 	if who == OperateContainer {
 		fileName, _ = ContainerIPtablesFile(containerId)
 	}
@@ -517,7 +517,7 @@ func ModifyRule(who int, containerId string, pid int, oldchain string, oldRule R
 }
 
 func ContainerRemveIPtables(file string) {
-	fileName := iptablesPath() + "/" + file
+	fileName := path() + "/" + file
 	err := os.Remove(fileName)
 	log.Infof("remove filename(%v): %v", fileName, err)
 	dealJSON(file)
@@ -525,7 +525,7 @@ func ContainerRemveIPtables(file string) {
 
 func ContainerWhitelistInitialization(containerIdName string, pid int) error {
 	enable := getEnableStatus(containerIdName)
-	fileName := iptablesPath() + "/" + containerIdName
+	fileName := path() + "/" + containerIdName
 	var chainCmd string
 	if enable {
 		chainCmd = fmt.Sprintf("echo '*filter\n:INPUT DROP [0:0]\n:FORWARD ACCEPT [0:0]\n:OUTPUT ACCEPT [0:0]\n%s\nCOMMIT' > %s", inputRule, fileName)
@@ -556,7 +556,7 @@ func ContainerWhitelistInitialization(containerIdName string, pid int) error {
 	return nil
 }
 
-func DisableContainerIPtables(containerIdName string, pid int) error {
+func DisableContainer(containerIdName string, pid int) error {
 	cmd := fmt.Sprintf("nsenter -t %d -n iptables -F; nsenter -t %d -n iptables -P INPUT ACCEPT", pid, pid)
 	if _, err := callShell(cmd); err != nil {
 		return err
@@ -565,8 +565,8 @@ func DisableContainerIPtables(containerIdName string, pid int) error {
 	return updateJSON(containerIdName, false)
 }
 
-func EnableContainerIPtables(containerIdName string, pid int) error {
-	fileName := iptablesPath() + "/" + containerIdName
+func EnableContainer(containerIdName string, pid int) error {
+	fileName := path() + "/" + containerIdName
 	cmd := fmt.Sprintf("ls -l %s > /dev/null 2>&1", fileName)
 	_, err := callShell(cmd)
 	if err != nil {
@@ -582,8 +582,8 @@ func EnableContainerIPtables(containerIdName string, pid int) error {
 	return updateJSON(containerIdName, true)
 }
 
-func NodeWhitelistInitialization(linkifs string) error {
-	initFile := nodeIPtablesInitFile()
+func NodeWhitelistInit(linkifs string) error {
+	initFile := nodeInitFile()
 	cmd := fmt.Sprintf("ls -l %s > /dev/null 2>&1 || iptables-save > %s", initFile, initFile)
 	if _, err := callShell(cmd); err != nil {
 		return err
@@ -592,7 +592,7 @@ func NodeWhitelistInitialization(linkifs string) error {
 	enable := getEnableStatus("Node")
 	if enable {
 		rejectRule := fmt.Sprintf("-A OUTPUT -o %s -j REJECT", linkifs)
-		fileName := nodeIPtablesFile()
+		fileName := nodeFile()
 		cmd = fmt.Sprintf("ls -l %s > /dev/null 2>&1", fileName)
 		_, err := callShell(cmd)
 		if err != nil {
@@ -615,8 +615,8 @@ func NodeWhitelistInitialization(linkifs string) error {
 	return nil
 }
 
-func DisableNodeIPtables() error {
-	initFile := nodeIPtablesInitFile()
+func DisableNode() error {
+	initFile := nodeInitFile()
 	cmd := fmt.Sprintf("ls -l %s > /dev/null 2>&1 && iptables-restore %s", initFile, initFile)
 	if _, err := callShell(cmd); err != nil {
 		return err
@@ -625,9 +625,9 @@ func DisableNodeIPtables() error {
 	return updateJSON("Node", false)
 }
 
-func EnableNodeIPtables(linkifs string) error {
+func EnableNode(linkifs string) error {
 	rejectRule := fmt.Sprintf("-A OUTPUT -o %s -j REJECT", linkifs)
-	fileName := nodeIPtablesFile()
+	fileName := nodeFile()
 	cmd := fmt.Sprintf("ls -l %s > /dev/null 2>&1", fileName)
 	_, err := callShell(cmd)
 	if err != nil {
@@ -644,7 +644,7 @@ func EnableNodeIPtables(linkifs string) error {
 	return updateJSON("Node", true)
 }
 
-func ruleToCmd(filePath, fileName string, isOn bool, rules []NetworkRule) string {
+func ruleToCmd(filePath, fileName string, isOn bool, rules []db.NetworkRule) string {
 	var chainCmd string
 	if isOn {
 		chainCmd = fmt.Sprintf("echo '*filter\n:INPUT DROP [0:0]\n:FORWARD ACCEPT [0:0]\n:OUTPUT ACCEPT [0:0]\n")
@@ -702,8 +702,8 @@ func ruleToCmd(filePath, fileName string, isOn bool, rules []NetworkRule) string
 	return cmd
 }
 
-func UpdateContainerIPtablesFile(fileName string, isOn bool, rules []NetworkRule, pid int) error {
-	filePath := iptablesPath() + "/" + fileName
+func UpdateContainerIPtablesFile(fileName string, isOn bool, rules []db.NetworkRule, pid int) error {
+	filePath := path() + "/" + fileName
 	cmd := ruleToCmd(filePath, fileName, isOn, rules)
 	if pid != 0 {
 		cmd = fmt.Sprintf("%s; nsenter -t %d -n iptables-restore %s", cmd, pid, filePath)

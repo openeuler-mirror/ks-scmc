@@ -18,7 +18,8 @@ import (
 	"google.golang.org/grpc/status"
 
 	"scmc/common"
-	"scmc/model"
+	"scmc/model/db"
+	"scmc/model/registry"
 	"scmc/rpc"
 	pb "scmc/rpc/pb/image"
 )
@@ -39,7 +40,7 @@ type ImageServer struct {
 }
 
 func (s *ImageServer) List(ctx context.Context, in *pb.ListRequest) (*pb.ListReply, error) {
-	images, err := model.ListImages()
+	images, err := db.ListImages()
 	if err != nil {
 		log.Warnf("Failed to get images list: %v", err)
 		return nil, rpc.ErrInternal
@@ -47,7 +48,7 @@ func (s *ImageServer) List(ctx context.Context, in *pb.ListRequest) (*pb.ListRep
 
 	reply := pb.ListReply{}
 	for _, image := range images {
-		if image.ApprovalStatus != model.ApprovalPass {
+		if image.ApprovalStatus != db.ApprovalPass {
 			continue
 		}
 		reply.Images = append(reply.Images, &pb.ImageInfo{
@@ -63,7 +64,7 @@ func (s *ImageServer) List(ctx context.Context, in *pb.ListRequest) (*pb.ListRep
 
 func (s *ImageServer) ListDB(ctx context.Context, in *pb.ListDBRequest) (*pb.ListDBReply, error) {
 	reply := pb.ListDBReply{}
-	images, err := model.ListImages()
+	images, err := db.ListImages()
 	if err != nil {
 		log.Warnf("Failed to get images list: %v", err)
 		return nil, rpc.ErrInternal
@@ -157,33 +158,33 @@ func signVerify(sigFile, tarFile string) int32 {
 	keyRingReader, err := os.Open(imageSigner())
 	if err != nil {
 		log.Warnf("open file=%v err=%v", imageSigner(), err)
-		return model.VerifyAbnormal
+		return db.VerifyAbnormal
 	}
 	keyring, err := openpgp.ReadKeyRing(keyRingReader)
 	if err != nil {
 		log.Warnf("read key ring err=%v", err.Error())
-		return model.VerifyAbnormal
+		return db.VerifyAbnormal
 	}
 
 	sig, err := os.Open(sigFile)
 	if err != nil {
 		log.Warnf("open file=%v err=%v", sigFile, err)
-		return model.VerifyAbnormal
+		return db.VerifyAbnormal
 	}
 
 	tar, err := os.Open(tarFile)
 	if err != nil {
 		log.Warnf("open file=%v err=%v", tarFile, err)
-		return model.VerifyAbnormal
+		return db.VerifyAbnormal
 	}
 
 	_, err = openpgp.CheckDetachedSignature(keyring, tar, sig)
 	if err != nil {
 		log.Infof("check signature tar=%v sig=%v err=%v", tarFile, sigFile, err)
-		return model.VerifyFail
+		return db.VerifyFail
 	}
 
-	return model.VerifyPass
+	return db.VerifyPass
 }
 
 func (s *ImageServer) Upload(stream pb.Image_UploadServer) error {
@@ -288,7 +289,7 @@ func (s *ImageServer) Upload(stream pb.Image_UploadServer) error {
 
 	log.Printf("imaegId: [%v]", imaegId)
 
-	imageInfo := model.ImageInfo{
+	imageInfo := db.ImageInfo{
 		Name:         req.Info.Name,
 		Version:      req.Info.Version,
 		Description:  req.Info.Description,
@@ -301,7 +302,7 @@ func (s *ImageServer) Upload(stream pb.Image_UploadServer) error {
 		VerifyStatus: verifyStatus,
 	}
 
-	imageId, err := model.CreateImages(imageInfo)
+	imageId, err := db.CreateImages(imageInfo)
 	if err != nil {
 		return rpc.ErrInternal
 	}
@@ -338,7 +339,7 @@ func (s *ImageServer) Update(stream pb.Image_UpdateServer) error {
 		return status.Errorf(codes.InvalidArgument, "镜像描述参数错误")
 	}
 
-	img, err := model.QueryImageByID(req.ImageId)
+	img, err := db.QueryImageByID(req.ImageId)
 	if err != nil {
 		return err
 	}
@@ -450,7 +451,7 @@ func (s *ImageServer) Update(stream pb.Image_UpdateServer) error {
 
 	img.Description = req.Info.Description
 
-	err = model.UpdateImage(img)
+	err = db.UpdateImage(img)
 	if err != nil {
 		return rpc.ErrInternal
 	}
@@ -467,16 +468,16 @@ func (s *ImageServer) Update(stream pb.Image_UpdateServer) error {
 }
 
 func (s *ImageServer) Download(in *pb.DownloadRequest, stream pb.Image_DownloadServer) error {
-	imageInfo, err := model.QueryImageByID(in.ImageId)
+	imageInfo, err := db.QueryImageByID(in.ImageId)
 	if err != nil {
-		if err == model.ErrRecordNotFound {
+		if err == db.ErrRecordNotFound {
 			return rpc.ErrNotFound
 		}
 		return rpc.ErrInternal
 	}
 
 	if err = getHash(imageInfo.FilePath, imageInfo.CheckSum); err != nil {
-		// tmpErr := model.RemoveImage([]int64{in.ImageId})
+		// tmpErr := db.RemoveImage([]int64{in.ImageId})
 		// log.Warnf("image file %v hash %v err and remove, remove result:%v", imageInfo.FilePath, imageInfo.CheckSum, tmpErr)
 		return status.Errorf(codes.Internal, "镜像文件被破坏")
 	}
@@ -530,7 +531,7 @@ func (s *ImageServer) Download(in *pb.DownloadRequest, stream pb.Image_DownloadS
 }
 
 func (s *ImageServer) noticeAgentSync(toRemove, toPull []string) {
-	nodes, err := model.ListNodes()
+	nodes, err := db.ListNodes()
 	if err != nil {
 		log.Warnf("noticeAgentSync list nodes err=%v", err)
 		return
@@ -565,28 +566,28 @@ func (s *ImageServer) noticeAgentSync(toRemove, toPull []string) {
 }
 
 func (s *ImageServer) Approve(ctx context.Context, in *pb.ApproveRequest) (*pb.ApproveReply, error) {
-	i, err := model.QueryImageByID(in.ImageId)
+	i, err := db.QueryImageByID(in.ImageId)
 	if err != nil {
-		if err == model.ErrRecordNotFound {
+		if err == db.ErrRecordNotFound {
 			return nil, status.Errorf(codes.NotFound, "镜像不存在")
 		}
 		return nil, rpc.ErrDatabaseFail
 	}
 
 	if in.Approve {
-		if i.VerifyStatus != model.VerifyPass {
+		if i.VerifyStatus != db.VerifyPass {
 			return nil, status.Errorf(codes.FailedPrecondition, "镜像校验未通过，无法审批通过")
 		}
-		i.ApprovalStatus = model.ApprovalPass
+		i.ApprovalStatus = db.ApprovalPass
 	} else {
-		if in.RejectReason == "" && i.VerifyStatus == model.VerifyPass {
+		if in.RejectReason == "" && i.VerifyStatus == db.VerifyPass {
 			return nil, status.Errorf(codes.InvalidArgument, "参数错误：拒绝原因不能为空")
 		}
-		i.ApprovalStatus = model.ApprovalReject
+		i.ApprovalStatus = db.ApprovalReject
 	}
 	i.RejectReason = in.RejectReason
 
-	if err := model.UpdateImage(i); err != nil {
+	if err := db.UpdateImage(i); err != nil {
 		log.Infof("Approve image=%+v err=%v", i, err)
 		return nil, rpc.ErrDatabaseFail
 	}
@@ -594,7 +595,7 @@ func (s *ImageServer) Approve(ctx context.Context, in *pb.ApproveRequest) (*pb.A
 	// 审批通过后 推送registry 通知agent同步
 	if in.Approve {
 		go func() {
-			model.PushImage(i)
+			registry.PushImage(i)
 			s.noticeAgentSync(nil, []string{i.Name + ":" + i.Version})
 		}()
 	}
@@ -603,13 +604,13 @@ func (s *ImageServer) Approve(ctx context.Context, in *pb.ApproveRequest) (*pb.A
 }
 
 func (s *ImageServer) Remove(ctx context.Context, in *pb.RemoveRequest) (*pb.RemoveReply, error) {
-	images, err := model.QueryImageByIDs(in.ImageIds)
+	images, err := db.QueryImageByIDs(in.ImageIds)
 	if err != nil {
 		log.Infof("DB query image info err=%v", err)
 		return nil, rpc.ErrDatabaseFail
 	}
 
-	if err := model.RemoveImages(in.ImageIds); err != nil {
+	if err := db.RemoveImages(in.ImageIds); err != nil {
 		return nil, rpc.ErrDatabaseFail
 	}
 
@@ -618,7 +619,7 @@ func (s *ImageServer) Remove(ctx context.Context, in *pb.RemoveRequest) (*pb.Rem
 		var toRemove []string
 		for _, i := range images {
 			v := i.Name + ":" + i.Version
-			if err := model.RemoveRegistryImage(v); err != nil {
+			if err := registry.RemoveRegistryImage(v); err != nil {
 				log.Infof("registry remove image name=%v version=%v, err=%v", i.Name, i.Version, err)
 			}
 		}
@@ -647,7 +648,7 @@ func SyncNodeImages() {
 		return
 	}
 
-	nodes, err := model.ListNodes()
+	nodes, err := db.ListNodes()
 	if err != nil {
 		log.Warnf("Failed to list node images: %v", err)
 		return

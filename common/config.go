@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/url"
 	"os"
+	"time"
 
 	"github.com/spf13/viper"
 )
@@ -23,19 +24,24 @@ func (m *AgentConfig) Addr() string {
 }
 
 type ControllerConfig struct {
-	Host        string `mapstructure:"host"`
-	Port        uint   `mapstructure:"port"`
-	VirtualIf   string `mapstructure:"virtual-if"`
-	VirtualIP   string `mapstructure:"virtual-ip"`
-	ImageDir    string `mapstructure:"image-dir"`
-	ImageSigner string `mapstructure:"image-signer"`
-	CheckAuth   bool   `mapstructure:"check-auth"`
-	CheckPerm   bool   `mapstructure:"check-perm"`
+	Host           string `mapstructure:"host"`
+	Port           uint   `mapstructure:"port"`
+	VirtualIf      string `mapstructure:"virtual-if"`
+	VirtualIP      string `mapstructure:"virtual-ip"`
+	ImageDir       string `mapstructure:"image-dir"`
+	ImageSigner    string `mapstructure:"image-signer"`
+	CheckAuth      bool   `mapstructure:"check-auth"`
+	CheckPerm      bool   `mapstructure:"check-perm"`
+	SessionTimeout uint   `mapstructure:"session-timeout"`
 	// cert
 }
 
 func (m *ControllerConfig) Addr() string {
 	return fmt.Sprintf("%s:%d", m.Host, m.Port)
+}
+
+func (m *ControllerConfig) SessionLiveDuration() time.Duration {
+	return time.Second * time.Duration(m.SessionTimeout)
 }
 
 type MySQLConfig struct {
@@ -122,6 +128,7 @@ func setDefault() {
 	viper.SetDefault("controller.image-signer", "/var/lib/ks-scmc/images/public-key.txt")
 	viper.SetDefault("controller.check-auth", true)
 	viper.SetDefault("controller.check-perm", true)
+	viper.SetDefault("controller.session-timeout", 30*60)
 
 	viper.SetDefault("mysql.addr", "127.0.0.1:3306")
 	viper.SetDefault("mysql.user", "root")

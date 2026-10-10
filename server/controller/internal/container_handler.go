@@ -14,7 +14,7 @@ import (
 	"google.golang.org/grpc/status"
 
 	"scmc/common"
-	"scmc/model"
+	"scmc/model/db"
 	"scmc/rpc"
 	pb "scmc/rpc/pb/container"
 	"scmc/rpc/pb/user"

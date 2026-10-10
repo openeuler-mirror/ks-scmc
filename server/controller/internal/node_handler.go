@@ -9,7 +9,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	"scmc/model"
+	"scmc/model/db"
 	"scmc/rpc"
 	pb "scmc/rpc/pb/node"
 )
@@ -21,7 +21,7 @@ type NodeServer struct {
 func (s *NodeServer) List(ctx context.Context, in *pb.ListRequest) (*pb.ListReply, error) {
 	reply := pb.ListReply{}
 
-	nodes, err := model.ListNodes()
+	nodes, err := db.ListNodes()
 	if err != nil {
 		return nil, rpc.ErrInternal
 	}
@@ -77,10 +77,10 @@ func (s *NodeServer) Create(ctx context.Context, in *pb.CreateRequest) (*pb.Crea
 
 	// connect agent address, check is alive
 
-	nodeInfo, err := model.QueryNodeByAddr(in.Address)
-	if err == model.ErrRecordNotFound {
-		if e := model.CreateNode(in.Name, in.Address, in.Comment); e != nil {
-			if e == model.ErrDuplicateKey {
+	nodeInfo, err := db.QueryNodeByAddr(in.Address)
+	if err == db.ErrRecordNotFound {
+		if e := db.CreateNode(in.Name, in.Address, in.Comment); e != nil {
+			if e == db.ErrDuplicateKey {
 				return nil, rpc.ErrAlreadyExists
 			}
 			return nil, rpc.ErrInternal
@@ -97,7 +97,7 @@ func (s *NodeServer) Create(ctx context.Context, in *pb.CreateRequest) (*pb.Crea
 		nodeInfo.Name = in.Name
 		nodeInfo.Comment = in.Comment
 		nodeInfo.Deleted = false
-		if e := model.UpdateNode(nodeInfo); e != nil {
+		if e := db.UpdateNode(nodeInfo); e != nil {
 			log.Warnf("update node err=%v", err)
 			return nil, rpc.ErrInternal
 		}
@@ -107,7 +107,7 @@ func (s *NodeServer) Create(ctx context.Context, in *pb.CreateRequest) (*pb.Crea
 }
 
 func (s *NodeServer) Remove(ctx context.Context, in *pb.RemoveRequest) (*pb.RemoveReply, error) {
-	if err := model.RemoveNode(in.Ids); err != nil {
+	if err := db.RemoveNode(in.Ids); err != nil {
 		return nil, rpc.ErrInternal
 	}
 	return &pb.RemoveReply{}, nil
@@ -116,12 +116,12 @@ func (s *NodeServer) Remove(ctx context.Context, in *pb.RemoveRequest) (*pb.Remo
 func (s *NodeServer) Status(ctx context.Context, in *pb.StatusRequest) (*pb.StatusReply, error) {
 	reply := pb.StatusReply{}
 
-	nodes, err := model.ListNodes()
+	nodes, err := db.ListNodes()
 	if err != nil {
 		return nil, rpc.ErrInternal
 	}
 
-	var nodeToQuery []*model.NodeInfo
+	var nodeToQuery []*db.NodeInfo
 	for _, nodeID := range in.NodeIds {
 		for i, node := range nodes {
 			if node.ID == nodeID {
@@ -171,9 +171,9 @@ func (s *NodeServer) Update(ctx context.Context, in *pb.UpdateRequest) (*pb.Upda
 		return nil, status.Errorf(codes.InvalidArgument, "节点备注长度限制0-200")
 	}
 
-	nodeInfo, err := model.QueryNodeByID(in.NodeId)
+	nodeInfo, err := db.QueryNodeByID(in.NodeId)
 	if err != nil {
-		if err == model.ErrRecordNotFound {
+		if err == db.ErrRecordNotFound {
 			return nil, rpc.ErrNotFound
 		}
 		return nil, rpc.ErrInternal
@@ -194,7 +194,7 @@ func (s *NodeServer) Update(ctx context.Context, in *pb.UpdateRequest) (*pb.Upda
 		nodeInfo.DiskLimit = in.RscLimit.DiskLimit
 	}
 
-	if err := model.UpdateNode(nodeInfo); err != nil {
+	if err := db.UpdateNode(nodeInfo); err != nil {
 		log.Infof("UpdateNode %+v err=%v", nodeInfo, err)
 		return nil, rpc.ErrInternal
 	}

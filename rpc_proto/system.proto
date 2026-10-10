@@ -9,6 +9,9 @@ service System {
     rpc Ping(PingRequest) returns (PingReply) {}
     // 客户端订阅通知消息
     rpc Subscribe(SubscribeRequest) returns (stream SubscribeReply) {}
+    rpc Dashboard(DashboardRequest) returns (DashboardReply) {}
+    rpc SetSecuritySwitch(SetSecuritySwitchRequest) returns (SetSecuritySwitchReply) {}
+    rpc GetSecuritySwitch(GetSecuritySwitchRequest) returns (GetSecuritySwitchReply) {}
 }
 
 message PingRequest {}
@@ -25,4 +28,54 @@ enum SubscribeMessage {
 message SubscribeReply {
     int64  msg_type    = 1;
     string msg_content = 2;
+}
+
+message SetSecuritySwitchRequest {
+    bool is_on = 1;
+}
+
+message SetSecuritySwitchReply {
+    bool is_on = 1;
+}
+
+message GetSecuritySwitchRequest {
+}
+
+message GetSecuritySwitchReply {
+    bool is_on = 1;
+}
+
+message DashboardRequest {}
+
+message DashboardReply {
+    NodeStats      node      = 1;
+    ContainerStats container = 2;
+    ImageStats     image     = 3;
+    AuditStats     audit     = 4;
+    LogStats       log       = 5;
+}
+
+message NodeStats {
+    int64 total_count   = 1;  // 节点总数
+    int64 online_count  = 2;  // 在线节点数
+    int64 offline_count = 3;  // 离线节点数
+}
+message ContainerStats {
+    int64 total_count    = 1;  // 容器总数
+    int64 online_count   = 2;  // 在线容器数
+    int64 offline_count  = 3;  // 离线容器数
+    int64 template_count = 4;  // 容器模板数
+}
+
+message ImageStats {
+    int64 total_count = 1;  // 镜像个数
+    int64 total_size  = 2;  // 镜像总大小 单位字节
+}
+
+message AuditStats {
+    int64 image_to_approve_count = 1;  // 待审批镜像数
+}
+
+message LogStats {
+    int64 unread_warn_count = 1;  // 未读告警日志数
 }

@@ -1,4 +1,4 @@
-package model
+package authz
 
 import (
 	"context"

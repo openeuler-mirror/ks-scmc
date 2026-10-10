@@ -178,13 +178,13 @@ func (x *ExportBackupReply) Reset() {
 	}
 }
 
-func (x *CreateBackupReply) String() string {
+func (x *ExportBackupReply) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*CreateBackupReply) ProtoMessage() {}
+func (*ExportBackupReply) ProtoMessage() {}
 
-func (x *CreateBackupReply) ProtoReflect() protoreflect.Message {
+func (x *ExportBackupReply) ProtoReflect() protoreflect.Message {
 	mi := &file_container_proto_msgTypes[1]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))

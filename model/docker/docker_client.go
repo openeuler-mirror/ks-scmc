@@ -1,4 +1,4 @@
-package model
+package docker
 
 import (
 	"context"
@@ -9,25 +9,25 @@ import (
 )
 
 var (
-	dockerCli      *client.Client
-	dockerCliGuard sync.Mutex
+	cli      *client.Client
+	cliGuard sync.Mutex
 )
 
-func DockerClient() (*client.Client, error) {
-	dockerCliGuard.Lock()
-	defer dockerCliGuard.Unlock()
+func Client() (*client.Client, error) {
+	cliGuard.Lock()
+	defer cliGuard.Unlock()
 
-	if dockerCli != nil {
-		_, err := dockerCli.Ping(context.Background())
+	if cli != nil {
+		_, err := cli.Ping(context.Background())
 		if err != nil {
 			log.Warnf("ping container daemon: %v", err)
 		} else {
-			return dockerCli, nil
+			return cli, nil
 		}
 	}
 
 	var err error
-	dockerCli, err = client.NewClientWithOpts(
+	cli, err = client.NewClientWithOpts(
 		client.FromEnv,
 		client.WithAPIVersionNegotiation(),
 		client.WithHTTPHeaders(map[string]string{"Authz-User": "KS-SCMC-SERVICE"}),
@@ -37,5 +37,9 @@ func DockerClient() (*client.Client, error) {
 		return nil, err
 	}
 
-	return dockerCli, nil
+	return cli, nil
+}
+
+func IsErrNotFound(err error) bool {
+	return client.IsErrNotFound(err)
 }

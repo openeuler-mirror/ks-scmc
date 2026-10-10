@@ -196,22 +196,50 @@ func (x *ExportBackupReply) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use CreateBackupReply.ProtoReflect.Descriptor instead.
-func (*CreateBackupReply) Descriptor() ([]byte, []int) {
+// Deprecated: Use ExportBackupReply.ProtoReflect.Descriptor instead.
+func (*ExportBackupReply) Descriptor() ([]byte, []int) {
 	return file_container_proto_rawDescGZIP(), []int{1}
 }
 
-type UpdateBackupRequest struct {
+func (x *ExportBackupReply) GetData() []byte {
+	if x != nil {
+		return x.Data
+	}
+	return nil
+}
+
+func (x *ExportBackupReply) GetImgSize() int64 {
+	if x != nil {
+		return x.ImgSize
+	}
+	return 0
+}
+
+func (x *ExportBackupReply) GetImgName() string {
+	if x != nil {
+		return x.ImgName
+	}
+	return ""
+}
+
+func (x *ExportBackupReply) GetImgVersion() string {
+	if x != nil {
+		return x.ImgVersion
+	}
+	return ""
+}
+
+type InspectBackupRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Id         int64  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
-	BackupDesc string `protobuf:"bytes,2,opt,name=backup_desc,json=backupDesc,proto3" json:"backup_desc,omitempty"`
+	NodeId   int64 `protobuf:"varint,1,opt,name=node_id,json=nodeId,proto3" json:"node_id,omitempty"`
+	BackupId int64 `protobuf:"varint,2,opt,name=backup_id,json=backupId,proto3" json:"backup_id,omitempty"`
 }
 
-func (x *UpdateBackupRequest) Reset() {
-	*x = UpdateBackupRequest{}
+func (x *InspectBackupRequest) Reset() {
+	*x = InspectBackupRequest{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_container_proto_msgTypes[2]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))

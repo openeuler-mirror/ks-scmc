@@ -6,16 +6,18 @@ import (
 	"fmt"
 	"net"
 	"os"
-	"scmc/common"
-	"scmc/model"
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/events"
 	log "github.com/sirupsen/logrus"
+
+	"scmc/common"
+	"scmc/model/docker"
+	"scmc/model/iptables"
 )
 
 func checkIfs(ifs string) bool {
-	cli, err := model.DockerClient()
+	cli, err := docker.Client()
 	if err != nil {
 		return false
 	}
@@ -66,7 +68,7 @@ func uintToIPv4(ipaddr uint32) net.IP {
 }
 
 func checkConflict(containerId, ifs string, ipAddr *string, masklen int) bool {
-	cli, err := model.DockerClient()
+	cli, err := docker.Client()
 	if err != nil {
 		return false
 	}
@@ -170,7 +172,7 @@ func checkNetworkInfo(containerId, ifs string, ipAddr *string, masklen int) bool
 }
 
 func ContainerWhiteCongig() error {
-	cli, err := model.DockerClient()
+	cli, err := docker.Client()
 	if err != nil {
 		return err
 	}
@@ -196,7 +198,7 @@ func ContainerWhiteCongig() error {
 					}
 					log.Infof("%v-%v: pid(%v)", e.ID, name, info.State.Pid)
 					fileName := e.ID + "-" + name
-					model.ContainerWhitelistInitialization(fileName, info.State.Pid)
+					iptables.ContainerWhitelistInitialization(fileName, info.State.Pid)
 				}
 			}
 			/*
@@ -230,7 +232,7 @@ func ContainerWhiteCongig() error {
 
 func getLinkIfs() []string {
 	var linkIfs []string
-	cli, err := model.DockerClient()
+	cli, err := docker.Client()
 	if err != nil {
 		return linkIfs
 	}
@@ -291,7 +293,7 @@ func NodeWhitelistConfig() error {
 
 	linkifs := getLinkIfs()
 	for _, ifs := range linkifs {
-		model.NodeWhitelistInitialization(ifs)
+		iptables.NodeWhitelistInit(ifs)
 	}
 
 	return nil

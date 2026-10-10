@@ -12,7 +12,7 @@ import (
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/peer"
 
-	"scmc/model"
+	"scmc/model/db"
 	"scmc/rpc"
 	pb "scmc/rpc/pb/user"
 	"scmc/server"
@@ -56,9 +56,9 @@ func (s *UserServer) Login(ctx context.Context, in *pb.LoginRequest) (*pb.LoginR
 	}
 
 	// database operations
-	userInfo, err := model.QueryUser(ctx, in.Username)
+	userInfo, err := db.QueryUser(ctx, in.Username)
 	if err != nil {
-		if err == model.ErrRecordNotFound {
+		if err == db.ErrRecordNotFound {
 			return nil, rpc.ErrNotFound
 		}
 		return nil, rpc.ErrInternal
@@ -79,7 +79,7 @@ func (s *UserServer) Login(ctx context.Context, in *pb.LoginRequest) (*pb.LoginR
 
 	// UUID create session
 	sessionKey := uuid.New().String()
-	if err := model.CreateSession(userInfo.ID, sessionKey, addr); err != nil {
+	if err := db.CreateSession(userInfo.ID, sessionKey, addr); err != nil {
 		log.Warn("create seccion err: %v", err)
 		return &pb.LoginReply{}, nil
 	}
@@ -96,11 +96,11 @@ func (s *UserServer) Logout(ctx context.Context, in *pb.LogoutRequest) (*pb.Logo
 		return nil, rpc.ErrInternal
 	}
 
-	err := model.RemoveSession(userID, accessToken)
-	if err != nil && err != model.ErrRecordNotFound {
+	err := db.RemoveSession(userID, accessToken)
+	if err != nil && err != db.ErrRecordNotFound {
 		log.Infof("database error=%v", err)
 		return nil, rpc.ErrInternal
-	} else if err == model.ErrRecordNotFound {
+	} else if err == db.ErrRecordNotFound {
 		return nil, rpc.ErrNotFound
 	}
 
@@ -121,19 +121,19 @@ func (s *UserServer) Signup(ctx context.Context, in *pb.SignupRequest) (*pb.Sign
 	}
 
 	// database operations
-	userInfo, err := model.QueryUser(ctx, in.Username)
-	if err != nil && err != model.ErrRecordNotFound {
+	userInfo, err := db.QueryUser(ctx, in.Username)
+	if err != nil && err != db.ErrRecordNotFound {
 		return nil, rpc.ErrInternal
 	} else if userInfo != nil {
 		return nil, rpc.ErrAlreadyExists
 	}
 
-	var newUserInfo *model.UserInfo = &model.UserInfo{
+	var newUserInfo *db.UserInfo = &db.UserInfo{
 		Username:   in.Username,
 		RealName:   in.Username,
 		PasswordEn: string(rawBytes),
 	}
-	if err := model.CreateUser(ctx, newUserInfo); err != nil {
+	if err := db.CreateUser(ctx, newUserInfo); err != nil {
 		return nil, rpc.ErrInternal
 	}
 
@@ -153,9 +153,9 @@ func (s *UserServer) UpdatePassword(ctx context.Context, in *pb.UpdatePasswordRe
 		return nil, rpc.ErrInvalidArgument
 	}
 
-	userInfo, err := model.QueryUserByID(userID)
+	userInfo, err := db.QueryUserByID(userID)
 	if err != nil {
-		if err == model.ErrRecordNotFound {
+		if err == db.ErrRecordNotFound {
 			return nil, rpc.ErrNotFound
 		}
 		return nil, rpc.ErrInternal
@@ -183,7 +183,7 @@ func (s *UserServer) UpdatePassword(ctx context.Context, in *pb.UpdatePasswordRe
 		return nil, rpc.ErrInternal
 	}
 
-	if err := model.RemoveSession(userID, accessToken); err != nil {
+	if err := db.RemoveSession(userID, accessToken); err != nil {
 		log.Info("UpdatePassword user_id=%d, RemoveSession err=%v", userID, err)
 	}
 
@@ -192,19 +192,19 @@ func (s *UserServer) UpdatePassword(ctx context.Context, in *pb.UpdatePasswordRe
 
 // 用户列表
 func (s *UserServer) ListUser(ctx context.Context, in *pb.ListUserRequest) (*pb.ListUserReply, error) {
-	users, err := model.ListUser()
+	users, err := db.ListUser()
 	if err != nil {
 		log.Errorf("ListUser err=%v", err)
 		return nil, rpc.ErrInternal
 	}
 
-	roles, err := model.ListRole()
+	roles, err := db.ListRole()
 	if err != nil {
 		log.Errorf("ListRole err=%v", err)
 		return nil, rpc.ErrInternal
 	}
 
-	rolesMap := make(map[int64]*model.UserRole, len(roles))
+	rolesMap := make(map[int64]*db.UserRole, len(roles))
 	for i := 0; i < len(roles); i++ {
 		r := roles[i]
 		rolesMap[r.ID] = r
@@ -242,10 +242,10 @@ func (s *UserServer) CreateUser(ctx context.Context, in *pb.CreateUserRequest) (
 	} else if len(in.UserInfo.LoginName) < 4 || len(in.UserInfo.Password) < 8 || in.UserInfo.RoleId <= 0 {
 		return nil, rpc.ErrInvalidArgument
 	}
-	roleInfo, err := model.QueryRoleById(ctx, in.UserInfo.RoleId)
+	roleInfo, err := db.QueryRoleById(ctx, in.UserInfo.RoleId)
 	if err != nil {
 		log.Warnf("QueryRoleById: %v", err)
-		if err == model.ErrRecordNotFound {
+		if err == db.ErrRecordNotFound {
 			return nil, rpc.ErrInvalidArgument
 		}
 		return nil, rpc.ErrInternal
@@ -257,7 +257,7 @@ func (s *UserServer) CreateUser(ctx context.Context, in *pb.CreateUserRequest) (
 		return nil, rpc.ErrInternal
 	}
 
-	userInfo := &model.UserInfo{
+	userInfo := &db.UserInfo{
 		Username:   in.UserInfo.LoginName,
 		RealName:   in.UserInfo.RealName,
 		PasswordEn: string(rawBytes),
@@ -265,10 +265,10 @@ func (s *UserServer) CreateUser(ctx context.Context, in *pb.CreateUserRequest) (
 		IsEditable: in.UserInfo.IsEditable,
 		RoleID:     in.UserInfo.RoleId,
 	}
-	err = model.CreateUser(ctx, userInfo)
+	err = db.CreateUser(ctx, userInfo)
 	if err != nil {
 		log.Warnf("createUser: %v", err)
-		if err == model.ErrDuplicateKey {
+		if err == db.ErrDuplicateKey {
 			return nil, rpc.ErrAlreadyExists
 		}
 		return nil, rpc.ErrInternal
@@ -311,9 +311,9 @@ func (s *UserServer) UpdateUser(ctx context.Context, in *pb.UpdateUserRequest) (
 		return nil, rpc.ErrInvalidArgument
 	}
 
-	userInfo, err := model.QueryUserByID(in.UserInfo.Id)
+	userInfo, err := db.QueryUserByID(in.UserInfo.Id)
 	if err != nil {
-		if err == model.ErrRecordNotFound {
+		if err == db.ErrRecordNotFound {
 			return nil, rpc.ErrNotFound
 		}
 		return nil, rpc.ErrInternal
@@ -333,11 +333,11 @@ func (s *UserServer) UpdateUser(ctx context.Context, in *pb.UpdateUserRequest) (
 		}
 		userInfo.PasswordEn = string(rawBytes)
 	}
-	var roleInfo *model.UserRole
+	var roleInfo *db.UserRole
 	if in.UserInfo.RoleId > 0 {
-		if roleInfo, err = model.QueryRoleById(ctx, in.UserInfo.RoleId); err != nil {
+		if roleInfo, err = db.QueryRoleById(ctx, in.UserInfo.RoleId); err != nil {
 			log.Warnf("QueryRoleById: %v", err)
-			if err == model.ErrRecordNotFound {
+			if err == db.ErrRecordNotFound {
 				return nil, rpc.ErrNotFound
 			}
 			return nil, rpc.ErrInternal
@@ -345,9 +345,9 @@ func (s *UserServer) UpdateUser(ctx context.Context, in *pb.UpdateUserRequest) (
 		userInfo.RoleID = in.UserInfo.RoleId
 	}
 
-	if err = model.UpdateUser(ctx, userInfo); err != nil {
+	if err = db.UpdateUser(ctx, userInfo); err != nil {
 		log.Warnf("updateUser: %v", err)
-		if err == model.ErrRecordNotFound {
+		if err == db.ErrRecordNotFound {
 			return nil, rpc.ErrNotFound
 		}
 		return nil, rpc.ErrInternal
@@ -395,7 +395,7 @@ func (s *UserServer) RemoveUser(ctx context.Context, in *pb.RemoveUserRequest) (
 		}
 	}
 
-	users, err := model.QueryUsers(in.UserIds)
+	users, err := db.QueryUsers(in.UserIds)
 	if err != nil {
 		log.Infof("QueryUsers err=%v", err)
 		return nil, rpc.ErrInternal
@@ -408,7 +408,7 @@ func (s *UserServer) RemoveUser(ctx context.Context, in *pb.RemoveUserRequest) (
 		}
 	}
 
-	err = model.RemoveUsers(users)
+	err = db.RemoveUsers(users)
 	if err != nil {
 		log.Infof("RemoveUser user_ids=%v db err=%v", in.UserIds, err)
 		return nil, rpc.ErrInternal
@@ -419,7 +419,7 @@ func (s *UserServer) RemoveUser(ctx context.Context, in *pb.RemoveUserRequest) (
 
 // 用户角色列表
 func (s *UserServer) ListRole(ctx context.Context, in *pb.ListRoleRequest) (*pb.ListRoleReply, error) {
-	roles, err := model.ListRole()
+	roles, err := db.ListRole()
 
 	if err != nil {
 		log.Errorf("ListUser err=%v", err)
@@ -459,15 +459,15 @@ func (s *UserServer) CreateRole(ctx context.Context, in *pb.CreateRoleRequest) (
 		return nil, rpc.ErrInternal
 	}
 
-	role := &model.UserRole{
+	role := &db.UserRole{
 		Name:       in.RoleInfo.Name,
 		IsEditable: in.RoleInfo.IsEditable,
 		PermsJSON:  string(permsJSON),
 	}
 
-	if err = model.CreateRole(ctx, role); err != nil {
+	if err = db.CreateRole(ctx, role); err != nil {
 		log.Warnf("createUser: %v", err)
-		if err == model.ErrDuplicateKey {
+		if err == db.ErrDuplicateKey {
 			return nil, rpc.ErrAlreadyExists
 		}
 		return nil, rpc.ErrInternal
@@ -498,11 +498,11 @@ func (s *UserServer) UpdateRole(ctx context.Context, in *pb.UpdateRoleRequest) (
 		return nil, rpc.ErrInvalidArgument
 	}
 
-	role, err := model.QueryRoleById(ctx, in.RoleInfo.Id)
-	if err != nil && err != model.ErrRecordNotFound {
+	role, err := db.QueryRoleById(ctx, in.RoleInfo.Id)
+	if err != nil && err != db.ErrRecordNotFound {
 		log.Warnf("db query role: %v", err)
 		return nil, rpc.ErrInternal
-	} else if err == model.ErrRecordNotFound {
+	} else if err == db.ErrRecordNotFound {
 		return nil, rpc.ErrNotFound
 	}
 
@@ -515,7 +515,7 @@ func (s *UserServer) UpdateRole(ctx context.Context, in *pb.UpdateRoleRequest) (
 	role.Name = in.RoleInfo.Name
 	role.PermsJSON = string(permsJSON)
 
-	if err = model.UpdateRole(ctx, role); err != nil {
+	if err = db.UpdateRole(ctx, role); err != nil {
 		log.Warnf("role UpdateRole err: %v", err)
 		return nil, err
 	}
@@ -543,7 +543,7 @@ func (s *UserServer) RemoveRole(ctx context.Context, in *pb.RemoveRoleRequest) (
 		return nil, rpc.ErrInvalidArgument
 	}
 
-	err := model.RemoveRole(ctx, in.RoleId)
+	err := db.RemoveRole(ctx, in.RoleId)
 	if err != nil {
 		log.Warnf("db remove role: %v", err)
 		return nil, err

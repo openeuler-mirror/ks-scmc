@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"strings"
+	"time"
 
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
@@ -11,6 +12,7 @@ import (
 
 	"scmc/common"
 	"scmc/model/db"
+	"scmc/model/session"
 	"scmc/rpc"
 	"scmc/rpc/middleware"
 	pb "scmc/rpc/pb/user"
@@ -106,7 +108,7 @@ func StreamInterceptor() grpc.StreamServerInterceptor {
 
 func rpcNeedCheckAuth(method string) bool {
 	switch method {
-	case "/user.User/Login", "/user.User/Signup":
+	case "/user.User/Login", "/user.User/Signup", "/sys.System/Ping":
 		return false
 	}
 	return true
@@ -115,21 +117,25 @@ func rpcNeedCheckAuth(method string) bool {
 func rpcNeedCheckPerm(method string) bool {
 	switch method {
 	case "/user.User/Logout",
-		"/user.User/UpdatePassword":
+		"/user.User/UpdatePassword",
+		"/sys.System/Subscribe":
 		return false
 	}
 	return true
 }
 
 func checkUserSession(userID, sessionKey string) error {
-	ok, err := db.CheckUserSession(userID, sessionKey)
+	now := time.Now()
+	s, err := db.CheckUserSession(userID, sessionKey)
 	if err != nil {
 		log.Info("db.CheckUserSession error")
 		return rpc.ErrInternal
-	} else if !ok {
+	} else if s == nil || s.ExpiredAt <= now.Unix() {
 		log.Info("invalid user session")
 		return rpc.ErrUnauthenticated
 	}
+
+	session.Timers.Reset(sessionKey, s.ExpiredAt)
 	return nil
 }
 

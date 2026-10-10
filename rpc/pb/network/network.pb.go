@@ -468,19 +468,22 @@ func (x *CreateNicReply) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use CreateReply.ProtoReflect.Descriptor instead.
-func (*CreateReply) Descriptor() ([]byte, []int) {
+// Deprecated: Use CreateNicReply.ProtoReflect.Descriptor instead.
+func (*CreateNicReply) Descriptor() ([]byte, []int) {
 	return file_network_proto_rawDescGZIP(), []int{7}
 }
 
-type RemoveRequest struct {
+type RemoveNicRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
+
+	NodeId int64  `protobuf:"varint,1,opt,name=node_id,json=nodeId,proto3" json:"node_id,omitempty"`
+	Name   string `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
 }
 
-func (x *RemoveRequest) Reset() {
-	*x = RemoveRequest{}
+func (x *RemoveNicRequest) Reset() {
+	*x = RemoveNicRequest{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_network_proto_msgTypes[8]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))

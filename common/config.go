@@ -7,6 +7,8 @@ import (
 	"time"
 
 	"github.com/spf13/viper"
+
+	"scmc/common/aes"
 )
 
 type AgentConfig struct {
@@ -52,13 +54,18 @@ type MySQLConfig struct {
 	Debug    bool   `mapstructure:"debug"`
 }
 
-func (m *MySQLConfig) DSN() string {
+func (m *MySQLConfig) DSN() (string, error) {
+	passwordDe, err := aes.Decrypt(m.Password)
+	if err != nil {
+		return "", err
+	}
+
 	q := url.Values{
 		"charset": []string{"utf8mb4"},
 		"timeout": []string{"10s"},
 	}
 	// return fmt.Sprintf("%s:%s@tcp(%s)/%s?charset=utf8mb4&timeout=10s", m.User, m.Password, m.Addr, m.DB)
-	return fmt.Sprintf("%s:%s@tcp(%s)/%s?%s", m.User, m.Password, m.Addr, m.DB, q.Encode())
+	return fmt.Sprintf("%s:%s@tcp(%s)/%s?%s", m.User, passwordDe, m.Addr, m.DB, q.Encode()), nil
 }
 
 type LogConfig struct {

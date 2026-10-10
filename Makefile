@@ -1,7 +1,7 @@
 PROJECT = ks-scmc
 VERSION = 1.0.2
 TAR_FILE = $(PROJECT)-$(VERSION).tar.gz
-BINARY  = ks-scmc-server ks-scmc-authz ks-scmc-user
+BINARY  = ks-scmc-server ks-scmc-authz ks-scmc-user ks-scmc-encrypt
 RPC     = rpc/pb
 DESTDIR :=
 PREFIX  := /usr

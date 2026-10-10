@@ -8,7 +8,7 @@ import (
 
 	log "github.com/sirupsen/logrus"
 
-	"scmc/model"
+	"scmc/model/db"
 	"scmc/rpc"
 	pb "scmc/rpc/pb/security"
 )
@@ -19,14 +19,14 @@ type SecurityServer struct {
 
 func (s *SecurityServer) ListFileProtection(ctx context.Context, in *pb.ListFileProtectionRequest) (*pb.ListFileProtectionReply, error) {
 	reply := pb.ListFileProtectionReply{}
-	data, err := model.GetContainerConfigs(in.NodeId, in.ContainerId)
+	data, err := db.GetContainerConfigs(in.NodeId, in.ContainerId)
 	if err != nil {
 		log.Warnf("get container config err: %v", err)
 		return &reply, err
 	}
 
 	if data != nil && data.SecurityConfig != "" {
-		var info model.SecurityConfigs
+		var info db.SecurityConfigs
 		err = json.Unmarshal([]byte(data.SecurityConfig), &info)
 		if err != nil {
 			log.Errorf("Unmarshal failed: %v", err)
@@ -41,20 +41,20 @@ func (s *SecurityServer) ListFileProtection(ctx context.Context, in *pb.ListFile
 }
 
 func (s *SecurityServer) UpdateFileProtection(ctx context.Context, in *pb.UpdateFileProtectionRequest) (*pb.UpdateFileProtectionReply, error) {
-	containerConfigs, err := model.GetContainerConfigs(in.NodeId, in.ContainerId)
+	containerConfigs, err := db.GetContainerConfigs(in.NodeId, in.ContainerId)
 	if err != nil {
 		if in.ContainerId != "localhost" {
 			return nil, err
 		} else {
 			if containerConfigs == nil {
-				containerConfigs = &model.ContainerConfigs{
+				containerConfigs = &db.ContainerConfigs{
 					NodeID:      in.NodeId,
 					ContainerID: in.ContainerId,
 				}
 			}
 		}
 	}
-	var info model.SecurityConfigs
+	var info db.SecurityConfigs
 	if containerConfigs.SecurityConfig != "" {
 		err = json.Unmarshal([]byte(containerConfigs.SecurityConfig), &info)
 		if err != nil {
@@ -84,14 +84,14 @@ func (s *SecurityServer) UpdateFileProtection(ctx context.Context, in *pb.Update
 
 	data, err := json.Marshal(info)
 	containerConfigs.SecurityConfig = string(data)
-	if err := model.UpdateContainerConfigs(containerConfigs); err != nil {
+	if err := db.UpdateContainerConfigs(containerConfigs); err != nil {
 		log.Infof("UpdateFileProtection: UpdateContainerConfigs nodeId=%s container_id=%s err=%v", in.NodeId, in.ContainerId, err)
 		// still return OK
 	}
 
-	nodeInfo, err := model.QueryNodeByID(in.NodeId)
+	nodeInfo, err := db.QueryNodeByID(in.NodeId)
 	if err != nil {
-		if err == model.ErrRecordNotFound {
+		if err == db.ErrRecordNotFound {
 			return nil, rpc.ErrNotFound
 		}
 		return nil, rpc.ErrInternal
@@ -115,14 +115,14 @@ func (s *SecurityServer) UpdateFileProtection(ctx context.Context, in *pb.Update
 }
 
 func dealDbData() (map[int64]pb.LoadSecurityConfigRequset, error) {
-	datas, err := model.ListContainerConfigs()
+	datas, err := db.ListContainerConfigs()
 	if err != nil {
 		return nil, err
 	}
 
 	mapDatas := make(map[int64]pb.LoadSecurityConfigRequset)
 	for _, data := range datas {
-		var info model.SecurityConfigs
+		var info db.SecurityConfigs
 		if data.SecurityConfig != "" {
 			err = json.Unmarshal([]byte(data.SecurityConfig), &info)
 			if err != nil {
@@ -140,7 +140,7 @@ func dealDbData() (map[int64]pb.LoadSecurityConfigRequset, error) {
 		)
 
 		if info.ProcProtection != nil {
-			if !reflect.DeepEqual(info.ProcProtection, model.ProcProtection{}) {
+			if !reflect.DeepEqual(info.ProcProtection, db.ProcProtection{}) {
 				proc = &pb.ProcProtection{
 					ProtectionType: int64(info.ProcProtection.Type),
 					IsOn:           info.ProcProtection.IsOn,
@@ -150,7 +150,7 @@ func dealDbData() (map[int64]pb.LoadSecurityConfigRequset, error) {
 		}
 
 		if info.FileProtection != nil {
-			if !reflect.DeepEqual(info.FileProtection, model.FileProtection{}) {
+			if !reflect.DeepEqual(info.FileProtection, db.FileProtection{}) {
 				file = &pb.FileProtection{
 					IsOn:     info.FileProtection.IsOn,
 					FileList: info.FileProtection.FileList,
@@ -186,7 +186,7 @@ func resumeContainerConfigs() {
 
 	for k, v := range datas {
 		// log.Debugf("datas: [%v][%v]", k, v.Configs)
-		nodeInfo, err := model.QueryNodeByID(k)
+		nodeInfo, err := db.QueryNodeByID(k)
 		if err != nil {
 			return
 		}
@@ -217,12 +217,12 @@ func (sp *SecurityServer) ListProcProtection(ctx context.Context, in *pb.ListPro
 		return nil, rpc.ErrInvalidArgument
 	}
 
-	cc, err := model.GetContainerConfigs(in.NodeId, in.ContainerId)
+	cc, err := db.GetContainerConfigs(in.NodeId, in.ContainerId)
 	if err != nil {
 		log.Warn(err)
 		return nil, rpc.ErrInternal
 	}
-	var sc model.SecurityConfigs
+	var sc db.SecurityConfigs
 	if cc.SecurityConfig == "" {
 		return &pb.ListProcProtectionReply{
 			IsOn:    false,
@@ -263,12 +263,12 @@ func (sp *SecurityServer) UpdateProcProtection(ctx context.Context, in *pb.Updat
 		return nil, rpc.ErrInvalidArgument
 	}
 
-	cc, err := model.GetContainerConfigs(in.NodeId, in.ContainerId)
+	cc, err := db.GetContainerConfigs(in.NodeId, in.ContainerId)
 	if err != nil {
 		log.Warn(err)
 		return nil, rpc.ErrInternal
 	}
-	var sc model.SecurityConfigs
+	var sc db.SecurityConfigs
 	if cc.SecurityConfig != "" {
 		if err = json.Unmarshal([]byte(cc.SecurityConfig), &sc); err != nil {
 			log.Warn(err)
@@ -279,7 +279,7 @@ func (sp *SecurityServer) UpdateProcProtection(ctx context.Context, in *pb.Updat
 	switch in.ProtectionType {
 	case int64(pb.PROC_PROTECTION_EXEC_WHITELIST):
 		if sc.ProcProtection == nil {
-			sc.ProcProtection = new(model.ProcProtection)
+			sc.ProcProtection = new(db.ProcProtection)
 		}
 		sc.ProcProtection.IsOn = in.GetIsOn()
 		exeList := sc.ProcProtection.ExeList
@@ -294,7 +294,7 @@ func (sp *SecurityServer) UpdateProcProtection(ctx context.Context, in *pb.Updat
 
 	case int64(pb.PROC_PROTECTION_NET_WHITELIST):
 		if sc.NprocProtection == nil {
-			sc.NprocProtection = new(model.ProcProtection)
+			sc.NprocProtection = new(db.ProcProtection)
 		}
 		sc.NprocProtection.IsOn = in.GetIsOn()
 		sc.NprocProtection.ExeList = union(in.GetToAppend(), sc.NprocProtection.ExeList)
@@ -319,9 +319,9 @@ func (sp *SecurityServer) UpdateProcProtection(ctx context.Context, in *pb.Updat
 		cc.SecurityConfig = securityConfig
 		//更新节点上规则
 		log.Debug("update node security policy")
-		nodeInfo, err := model.QueryNodeByID(in.NodeId)
+		nodeInfo, err := db.QueryNodeByID(in.NodeId)
 		if err != nil {
-			if err == model.ErrRecordNotFound {
+			if err == db.ErrRecordNotFound {
 				return nil, rpc.ErrNotFound
 			}
 			return nil, rpc.ErrInternal
@@ -343,7 +343,7 @@ func (sp *SecurityServer) UpdateProcProtection(ctx context.Context, in *pb.Updat
 
 		//更新数据库数据
 		log.Debug("update db security policy")
-		err = model.UpdateContainerConfigs(cc)
+		err = db.UpdateContainerConfigs(cc)
 		if err != nil {
 			log.Warnf("update %s  network process protection security policy err: %s", in.ContainerId, err)
 			return nil, rpc.ErrInternal

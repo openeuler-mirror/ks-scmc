@@ -450,13 +450,13 @@ func (x *CreateNicReply) Reset() {
 	}
 }
 
-func (x *CreateReply) String() string {
+func (x *CreateNicReply) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*CreateReply) ProtoMessage() {}
+func (*CreateNicReply) ProtoMessage() {}
 
-func (x *CreateReply) ProtoReflect() protoreflect.Message {
+func (x *CreateNicReply) ProtoReflect() protoreflect.Message {
 	mi := &file_network_proto_msgTypes[7]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))

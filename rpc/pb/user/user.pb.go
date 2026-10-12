@@ -329,6 +329,13 @@ func (x *LoginReply) GetAuthKey() string {
 	return ""
 }
 
+func (x *LoginReply) GetUserRole() *UserRole {
+	if x != nil {
+		return x.UserRole
+	}
+	return nil
+}
+
 type LogoutRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache

@@ -76,6 +76,33 @@ func (x *systemSubscribeClient) Recv() (*SubscribeReply, error) {
 	return m, nil
 }
 
+func (c *systemClient) Dashboard(ctx context.Context, in *DashboardRequest, opts ...grpc.CallOption) (*DashboardReply, error) {
+	out := new(DashboardReply)
+	err := c.cc.Invoke(ctx, "/sys.System/Dashboard", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *systemClient) SetSecuritySwitch(ctx context.Context, in *SetSecuritySwitchRequest, opts ...grpc.CallOption) (*SetSecuritySwitchReply, error) {
+	out := new(SetSecuritySwitchReply)
+	err := c.cc.Invoke(ctx, "/sys.System/SetSecuritySwitch", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *systemClient) GetSecuritySwitch(ctx context.Context, in *GetSecuritySwitchRequest, opts ...grpc.CallOption) (*GetSecuritySwitchReply, error) {
+	out := new(GetSecuritySwitchReply)
+	err := c.cc.Invoke(ctx, "/sys.System/GetSecuritySwitch", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // SystemServer is the server API for System service.
 // All implementations must embed UnimplementedSystemServer
 // for forward compatibility

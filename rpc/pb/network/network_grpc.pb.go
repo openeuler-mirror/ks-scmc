@@ -152,8 +152,9 @@ type NetworkServer interface {
 	ModifyIPtables(context.Context, *ModifyIPtablesRequest) (*ModifyIPtablesReply, error)
 	RemoveIPtables(context.Context, *RemoveIPtablesRequest) (*RemoveIPtablesReply, error)
 	// not implemented
-	Create(context.Context, *CreateRequest) (*CreateReply, error)
-	Remove(context.Context, *RemoveRequest) (*RemoveReply, error)
+	CreateNic(context.Context, *CreateNicRequest) (*CreateNicReply, error)
+	RemoveNic(context.Context, *RemoveNicRequest) (*RemoveNicReply, error)
+	UpdateNic(context.Context, *UpdateNicRequest) (*UpdateNicReply, error)
 	mustEmbedUnimplementedNetworkServer()
 }
 

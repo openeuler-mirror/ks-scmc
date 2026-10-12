@@ -267,7 +267,7 @@ type UploadReply struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	ImageId int64 `protobuf:"varint,1,opt,name=image_id,json=imageId,proto3" json:"image_id,omitempty"` //in db
+	ImageId int64 `protobuf:"varint,1,opt,name=image_id,json=imageId,proto3" json:"image_id,omitempty"` // in db
 }
 
 func (x *UploadReply) Reset() {

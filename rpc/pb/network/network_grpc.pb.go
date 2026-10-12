@@ -186,11 +186,14 @@ func (UnimplementedNetworkServer) ModifyIPtables(context.Context, *ModifyIPtable
 func (UnimplementedNetworkServer) RemoveIPtables(context.Context, *RemoveIPtablesRequest) (*RemoveIPtablesReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RemoveIPtables not implemented")
 }
-func (UnimplementedNetworkServer) Create(context.Context, *CreateRequest) (*CreateReply, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method Create not implemented")
+func (UnimplementedNetworkServer) CreateNic(context.Context, *CreateNicRequest) (*CreateNicReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateNic not implemented")
 }
-func (UnimplementedNetworkServer) Remove(context.Context, *RemoveRequest) (*RemoveReply, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method Remove not implemented")
+func (UnimplementedNetworkServer) RemoveNic(context.Context, *RemoveNicRequest) (*RemoveNicReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RemoveNic not implemented")
+}
+func (UnimplementedNetworkServer) UpdateNic(context.Context, *UpdateNicRequest) (*UpdateNicReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateNic not implemented")
 }
 func (UnimplementedNetworkServer) mustEmbedUnimplementedNetworkServer() {}
 
@@ -349,38 +352,56 @@ func _Network_RemoveIPtables_Handler(srv interface{}, ctx context.Context, dec f
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Network_Create_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(CreateRequest)
+func _Network_CreateNic_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateNicRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(NetworkServer).Create(ctx, in)
+		return srv.(NetworkServer).CreateNic(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/network.Network/Create",
+		FullMethod: "/network.Network/CreateNic",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(NetworkServer).Create(ctx, req.(*CreateRequest))
+		return srv.(NetworkServer).CreateNic(ctx, req.(*CreateNicRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Network_Remove_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(RemoveRequest)
+func _Network_RemoveNic_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RemoveNicRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(NetworkServer).Remove(ctx, in)
+		return srv.(NetworkServer).RemoveNic(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/network.Network/Remove",
+		FullMethod: "/network.Network/RemoveNic",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(NetworkServer).Remove(ctx, req.(*RemoveRequest))
+		return srv.(NetworkServer).RemoveNic(ctx, req.(*RemoveNicRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Network_UpdateNic_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateNicRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(NetworkServer).UpdateNic(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/network.Network/UpdateNic",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(NetworkServer).UpdateNic(ctx, req.(*UpdateNicRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -425,12 +446,16 @@ var Network_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Network_RemoveIPtables_Handler,
 		},
 		{
-			MethodName: "Create",
-			Handler:    _Network_Create_Handler,
+			MethodName: "CreateNic",
+			Handler:    _Network_CreateNic_Handler,
 		},
 		{
-			MethodName: "Remove",
-			Handler:    _Network_Remove_Handler,
+			MethodName: "RemoveNic",
+			Handler:    _Network_RemoveNic_Handler,
+		},
+		{
+			MethodName: "UpdateNic",
+			Handler:    _Network_UpdateNic_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

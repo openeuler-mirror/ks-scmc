@@ -70,15 +70,6 @@ func (c *securityClient) UpdateFileProtection(ctx context.Context, in *UpdateFil
 	return out, nil
 }
 
-func (c *securityClient) LoadSecurityConfig(ctx context.Context, in *LoadSecurityConfigRequset, opts ...grpc.CallOption) (*LoadSecurityConfigReply, error) {
-	out := new(LoadSecurityConfigReply)
-	err := c.cc.Invoke(ctx, "/security.Security/LoadSecurityConfig", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 // SecurityServer is the server API for Security service.
 // All implementations must embed UnimplementedSecurityServer
 // for forward compatibility

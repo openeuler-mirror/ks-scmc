@@ -924,24 +924,46 @@ func file_system_proto_rawDescGZIP() []byte {
 }
 
 var file_system_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_system_proto_msgTypes = make([]protoimpl.MessageInfo, 4)
+var file_system_proto_msgTypes = make([]protoimpl.MessageInfo, 15)
 var file_system_proto_goTypes = []interface{}{
-	(SubscribeMessage)(0),    // 0: sys.SubscribeMessage
-	(*PingRequest)(nil),      // 1: sys.PingRequest
-	(*PingReply)(nil),        // 2: sys.PingReply
-	(*SubscribeRequest)(nil), // 3: sys.SubscribeRequest
-	(*SubscribeReply)(nil),   // 4: sys.SubscribeReply
+	(SubscribeMessage)(0),            // 0: sys.SubscribeMessage
+	(*PingRequest)(nil),              // 1: sys.PingRequest
+	(*PingReply)(nil),                // 2: sys.PingReply
+	(*SubscribeRequest)(nil),         // 3: sys.SubscribeRequest
+	(*SubscribeReply)(nil),           // 4: sys.SubscribeReply
+	(*SetSecuritySwitchRequest)(nil), // 5: sys.SetSecuritySwitchRequest
+	(*SetSecuritySwitchReply)(nil),   // 6: sys.SetSecuritySwitchReply
+	(*GetSecuritySwitchRequest)(nil), // 7: sys.GetSecuritySwitchRequest
+	(*GetSecuritySwitchReply)(nil),   // 8: sys.GetSecuritySwitchReply
+	(*DashboardRequest)(nil),         // 9: sys.DashboardRequest
+	(*DashboardReply)(nil),           // 10: sys.DashboardReply
+	(*NodeStats)(nil),                // 11: sys.NodeStats
+	(*ContainerStats)(nil),           // 12: sys.ContainerStats
+	(*ImageStats)(nil),               // 13: sys.ImageStats
+	(*AuditStats)(nil),               // 14: sys.AuditStats
+	(*LogStats)(nil),                 // 15: sys.LogStats
 }
 var file_system_proto_depIdxs = []int32{
-	1, // 0: sys.System.Ping:input_type -> sys.PingRequest
-	3, // 1: sys.System.Subscribe:input_type -> sys.SubscribeRequest
-	2, // 2: sys.System.Ping:output_type -> sys.PingReply
-	4, // 3: sys.System.Subscribe:output_type -> sys.SubscribeReply
-	2, // [2:4] is the sub-list for method output_type
-	0, // [0:2] is the sub-list for method input_type
-	0, // [0:0] is the sub-list for extension type_name
-	0, // [0:0] is the sub-list for extension extendee
-	0, // [0:0] is the sub-list for field type_name
+	11, // 0: sys.DashboardReply.node:type_name -> sys.NodeStats
+	12, // 1: sys.DashboardReply.container:type_name -> sys.ContainerStats
+	13, // 2: sys.DashboardReply.image:type_name -> sys.ImageStats
+	14, // 3: sys.DashboardReply.audit:type_name -> sys.AuditStats
+	15, // 4: sys.DashboardReply.log:type_name -> sys.LogStats
+	1,  // 5: sys.System.Ping:input_type -> sys.PingRequest
+	3,  // 6: sys.System.Subscribe:input_type -> sys.SubscribeRequest
+	9,  // 7: sys.System.Dashboard:input_type -> sys.DashboardRequest
+	5,  // 8: sys.System.SetSecuritySwitch:input_type -> sys.SetSecuritySwitchRequest
+	7,  // 9: sys.System.GetSecuritySwitch:input_type -> sys.GetSecuritySwitchRequest
+	2,  // 10: sys.System.Ping:output_type -> sys.PingReply
+	4,  // 11: sys.System.Subscribe:output_type -> sys.SubscribeReply
+	10, // 12: sys.System.Dashboard:output_type -> sys.DashboardReply
+	6,  // 13: sys.System.SetSecuritySwitch:output_type -> sys.SetSecuritySwitchReply
+	8,  // 14: sys.System.GetSecuritySwitch:output_type -> sys.GetSecuritySwitchReply
+	10, // [10:15] is the sub-list for method output_type
+	5,  // [5:10] is the sub-list for method input_type
+	5,  // [5:5] is the sub-list for extension type_name
+	5,  // [5:5] is the sub-list for extension extendee
+	0,  // [0:5] is the sub-list for field type_name
 }
 
 func init() { file_system_proto_init() }
@@ -998,6 +1020,138 @@ func file_system_proto_init() {
 				return nil
 			}
 		}
+		file_system_proto_msgTypes[4].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*SetSecuritySwitchRequest); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_system_proto_msgTypes[5].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*SetSecuritySwitchReply); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_system_proto_msgTypes[6].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*GetSecuritySwitchRequest); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_system_proto_msgTypes[7].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*GetSecuritySwitchReply); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_system_proto_msgTypes[8].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*DashboardRequest); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_system_proto_msgTypes[9].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*DashboardReply); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_system_proto_msgTypes[10].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*NodeStats); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_system_proto_msgTypes[11].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*ContainerStats); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_system_proto_msgTypes[12].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*ImageStats); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_system_proto_msgTypes[13].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*AuditStats); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_system_proto_msgTypes[14].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*LogStats); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
@@ -1005,7 +1159,7 @@ func file_system_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_system_proto_rawDesc,
 			NumEnums:      1,
-			NumMessages:   4,
+			NumMessages:   15,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

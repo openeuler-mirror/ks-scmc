@@ -813,11 +813,12 @@ type ImageInfo struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Name   string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"` // repo + tag
-	Repo   string `protobuf:"bytes,2,opt,name=repo,proto3" json:"repo,omitempty"`
-	Tag    string `protobuf:"bytes,3,opt,name=tag,proto3" json:"tag,omitempty"`
-	Digest string `protobuf:"bytes,4,opt,name=digest,proto3" json:"digest,omitempty"`
-	Size   int64  `protobuf:"varint,5,opt,name=size,proto3" json:"size,omitempty"` // unit: bytes
+	Name    string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"` // repo + tag
+	Repo    string `protobuf:"bytes,2,opt,name=repo,proto3" json:"repo,omitempty"`
+	Tag     string `protobuf:"bytes,3,opt,name=tag,proto3" json:"tag,omitempty"`
+	Digest  string `protobuf:"bytes,4,opt,name=digest,proto3" json:"digest,omitempty"`
+	Size    int64  `protobuf:"varint,5,opt,name=size,proto3" json:"size,omitempty"` // unit: bytes
+	ImageId string `protobuf:"bytes,6,opt,name=image_id,json=imageId,proto3" json:"image_id,omitempty"`
 }
 
 func (x *ImageInfo) Reset() {

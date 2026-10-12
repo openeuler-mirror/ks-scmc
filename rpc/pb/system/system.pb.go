@@ -235,6 +235,585 @@ func (x *SubscribeReply) GetMsgContent() string {
 	return ""
 }
 
+type SetSecuritySwitchRequest struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	IsOn bool `protobuf:"varint,1,opt,name=is_on,json=isOn,proto3" json:"is_on,omitempty"`
+}
+
+func (x *SetSecuritySwitchRequest) Reset() {
+	*x = SetSecuritySwitchRequest{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_system_proto_msgTypes[4]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *SetSecuritySwitchRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SetSecuritySwitchRequest) ProtoMessage() {}
+
+func (x *SetSecuritySwitchRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_system_proto_msgTypes[4]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SetSecuritySwitchRequest.ProtoReflect.Descriptor instead.
+func (*SetSecuritySwitchRequest) Descriptor() ([]byte, []int) {
+	return file_system_proto_rawDescGZIP(), []int{4}
+}
+
+func (x *SetSecuritySwitchRequest) GetIsOn() bool {
+	if x != nil {
+		return x.IsOn
+	}
+	return false
+}
+
+type SetSecuritySwitchReply struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	IsOn bool `protobuf:"varint,1,opt,name=is_on,json=isOn,proto3" json:"is_on,omitempty"`
+}
+
+func (x *SetSecuritySwitchReply) Reset() {
+	*x = SetSecuritySwitchReply{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_system_proto_msgTypes[5]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *SetSecuritySwitchReply) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SetSecuritySwitchReply) ProtoMessage() {}
+
+func (x *SetSecuritySwitchReply) ProtoReflect() protoreflect.Message {
+	mi := &file_system_proto_msgTypes[5]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SetSecuritySwitchReply.ProtoReflect.Descriptor instead.
+func (*SetSecuritySwitchReply) Descriptor() ([]byte, []int) {
+	return file_system_proto_rawDescGZIP(), []int{5}
+}
+
+func (x *SetSecuritySwitchReply) GetIsOn() bool {
+	if x != nil {
+		return x.IsOn
+	}
+	return false
+}
+
+type GetSecuritySwitchRequest struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+}
+
+func (x *GetSecuritySwitchRequest) Reset() {
+	*x = GetSecuritySwitchRequest{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_system_proto_msgTypes[6]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *GetSecuritySwitchRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetSecuritySwitchRequest) ProtoMessage() {}
+
+func (x *GetSecuritySwitchRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_system_proto_msgTypes[6]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetSecuritySwitchRequest.ProtoReflect.Descriptor instead.
+func (*GetSecuritySwitchRequest) Descriptor() ([]byte, []int) {
+	return file_system_proto_rawDescGZIP(), []int{6}
+}
+
+type GetSecuritySwitchReply struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	IsOn bool `protobuf:"varint,1,opt,name=is_on,json=isOn,proto3" json:"is_on,omitempty"`
+}
+
+func (x *GetSecuritySwitchReply) Reset() {
+	*x = GetSecuritySwitchReply{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_system_proto_msgTypes[7]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *GetSecuritySwitchReply) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetSecuritySwitchReply) ProtoMessage() {}
+
+func (x *GetSecuritySwitchReply) ProtoReflect() protoreflect.Message {
+	mi := &file_system_proto_msgTypes[7]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetSecuritySwitchReply.ProtoReflect.Descriptor instead.
+func (*GetSecuritySwitchReply) Descriptor() ([]byte, []int) {
+	return file_system_proto_rawDescGZIP(), []int{7}
+}
+
+func (x *GetSecuritySwitchReply) GetIsOn() bool {
+	if x != nil {
+		return x.IsOn
+	}
+	return false
+}
+
+type DashboardRequest struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+}
+
+func (x *DashboardRequest) Reset() {
+	*x = DashboardRequest{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_system_proto_msgTypes[8]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *DashboardRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DashboardRequest) ProtoMessage() {}
+
+func (x *DashboardRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_system_proto_msgTypes[8]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DashboardRequest.ProtoReflect.Descriptor instead.
+func (*DashboardRequest) Descriptor() ([]byte, []int) {
+	return file_system_proto_rawDescGZIP(), []int{8}
+}
+
+type DashboardReply struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Node      *NodeStats      `protobuf:"bytes,1,opt,name=node,proto3" json:"node,omitempty"`
+	Container *ContainerStats `protobuf:"bytes,2,opt,name=container,proto3" json:"container,omitempty"`
+	Image     *ImageStats     `protobuf:"bytes,3,opt,name=image,proto3" json:"image,omitempty"`
+	Audit     *AuditStats     `protobuf:"bytes,4,opt,name=audit,proto3" json:"audit,omitempty"`
+	Log       *LogStats       `protobuf:"bytes,5,opt,name=log,proto3" json:"log,omitempty"`
+}
+
+func (x *DashboardReply) Reset() {
+	*x = DashboardReply{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_system_proto_msgTypes[9]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *DashboardReply) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DashboardReply) ProtoMessage() {}
+
+func (x *DashboardReply) ProtoReflect() protoreflect.Message {
+	mi := &file_system_proto_msgTypes[9]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DashboardReply.ProtoReflect.Descriptor instead.
+func (*DashboardReply) Descriptor() ([]byte, []int) {
+	return file_system_proto_rawDescGZIP(), []int{9}
+}
+
+func (x *DashboardReply) GetNode() *NodeStats {
+	if x != nil {
+		return x.Node
+	}
+	return nil
+}
+
+func (x *DashboardReply) GetContainer() *ContainerStats {
+	if x != nil {
+		return x.Container
+	}
+	return nil
+}
+
+func (x *DashboardReply) GetImage() *ImageStats {
+	if x != nil {
+		return x.Image
+	}
+	return nil
+}
+
+func (x *DashboardReply) GetAudit() *AuditStats {
+	if x != nil {
+		return x.Audit
+	}
+	return nil
+}
+
+func (x *DashboardReply) GetLog() *LogStats {
+	if x != nil {
+		return x.Log
+	}
+	return nil
+}
+
+type NodeStats struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	TotalCount   int64 `protobuf:"varint,1,opt,name=total_count,json=totalCount,proto3" json:"total_count,omitempty"`       // 节点总数
+	OnlineCount  int64 `protobuf:"varint,2,opt,name=online_count,json=onlineCount,proto3" json:"online_count,omitempty"`    // 在线节点数
+	OfflineCount int64 `protobuf:"varint,3,opt,name=offline_count,json=offlineCount,proto3" json:"offline_count,omitempty"` // 离线节点数
+}
+
+func (x *NodeStats) Reset() {
+	*x = NodeStats{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_system_proto_msgTypes[10]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *NodeStats) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*NodeStats) ProtoMessage() {}
+
+func (x *NodeStats) ProtoReflect() protoreflect.Message {
+	mi := &file_system_proto_msgTypes[10]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use NodeStats.ProtoReflect.Descriptor instead.
+func (*NodeStats) Descriptor() ([]byte, []int) {
+	return file_system_proto_rawDescGZIP(), []int{10}
+}
+
+func (x *NodeStats) GetTotalCount() int64 {
+	if x != nil {
+		return x.TotalCount
+	}
+	return 0
+}
+
+func (x *NodeStats) GetOnlineCount() int64 {
+	if x != nil {
+		return x.OnlineCount
+	}
+	return 0
+}
+
+func (x *NodeStats) GetOfflineCount() int64 {
+	if x != nil {
+		return x.OfflineCount
+	}
+	return 0
+}
+
+type ContainerStats struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	TotalCount    int64 `protobuf:"varint,1,opt,name=total_count,json=totalCount,proto3" json:"total_count,omitempty"`          // 容器总数
+	OnlineCount   int64 `protobuf:"varint,2,opt,name=online_count,json=onlineCount,proto3" json:"online_count,omitempty"`       // 在线容器数
+	OfflineCount  int64 `protobuf:"varint,3,opt,name=offline_count,json=offlineCount,proto3" json:"offline_count,omitempty"`    // 离线容器数
+	TemplateCount int64 `protobuf:"varint,4,opt,name=template_count,json=templateCount,proto3" json:"template_count,omitempty"` // 容器模板数
+}
+
+func (x *ContainerStats) Reset() {
+	*x = ContainerStats{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_system_proto_msgTypes[11]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *ContainerStats) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ContainerStats) ProtoMessage() {}
+
+func (x *ContainerStats) ProtoReflect() protoreflect.Message {
+	mi := &file_system_proto_msgTypes[11]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ContainerStats.ProtoReflect.Descriptor instead.
+func (*ContainerStats) Descriptor() ([]byte, []int) {
+	return file_system_proto_rawDescGZIP(), []int{11}
+}
+
+func (x *ContainerStats) GetTotalCount() int64 {
+	if x != nil {
+		return x.TotalCount
+	}
+	return 0
+}
+
+func (x *ContainerStats) GetOnlineCount() int64 {
+	if x != nil {
+		return x.OnlineCount
+	}
+	return 0
+}
+
+func (x *ContainerStats) GetOfflineCount() int64 {
+	if x != nil {
+		return x.OfflineCount
+	}
+	return 0
+}
+
+func (x *ContainerStats) GetTemplateCount() int64 {
+	if x != nil {
+		return x.TemplateCount
+	}
+	return 0
+}
+
+type ImageStats struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	TotalCount int64 `protobuf:"varint,1,opt,name=total_count,json=totalCount,proto3" json:"total_count,omitempty"` // 镜像个数
+	TotalSize  int64 `protobuf:"varint,2,opt,name=total_size,json=totalSize,proto3" json:"total_size,omitempty"`    // 镜像总大小 单位字节
+}
+
+func (x *ImageStats) Reset() {
+	*x = ImageStats{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_system_proto_msgTypes[12]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *ImageStats) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ImageStats) ProtoMessage() {}
+
+func (x *ImageStats) ProtoReflect() protoreflect.Message {
+	mi := &file_system_proto_msgTypes[12]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ImageStats.ProtoReflect.Descriptor instead.
+func (*ImageStats) Descriptor() ([]byte, []int) {
+	return file_system_proto_rawDescGZIP(), []int{12}
+}
+
+func (x *ImageStats) GetTotalCount() int64 {
+	if x != nil {
+		return x.TotalCount
+	}
+	return 0
+}
+
+func (x *ImageStats) GetTotalSize() int64 {
+	if x != nil {
+		return x.TotalSize
+	}
+	return 0
+}
+
+type AuditStats struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	ImageToApproveCount int64 `protobuf:"varint,1,opt,name=image_to_approve_count,json=imageToApproveCount,proto3" json:"image_to_approve_count,omitempty"` // 待审批镜像数
+}
+
+func (x *AuditStats) Reset() {
+	*x = AuditStats{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_system_proto_msgTypes[13]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *AuditStats) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*AuditStats) ProtoMessage() {}
+
+func (x *AuditStats) ProtoReflect() protoreflect.Message {
+	mi := &file_system_proto_msgTypes[13]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use AuditStats.ProtoReflect.Descriptor instead.
+func (*AuditStats) Descriptor() ([]byte, []int) {
+	return file_system_proto_rawDescGZIP(), []int{13}
+}
+
+func (x *AuditStats) GetImageToApproveCount() int64 {
+	if x != nil {
+		return x.ImageToApproveCount
+	}
+	return 0
+}
+
+type LogStats struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	UnreadWarnCount int64 `protobuf:"varint,1,opt,name=unread_warn_count,json=unreadWarnCount,proto3" json:"unread_warn_count,omitempty"` // 未读告警日志数
+}
+
+func (x *LogStats) Reset() {
+	*x = LogStats{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_system_proto_msgTypes[14]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *LogStats) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*LogStats) ProtoMessage() {}
+
+func (x *LogStats) ProtoReflect() protoreflect.Message {
+	mi := &file_system_proto_msgTypes[14]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use LogStats.ProtoReflect.Descriptor instead.
+func (*LogStats) Descriptor() ([]byte, []int) {
+	return file_system_proto_rawDescGZIP(), []int{14}
+}
+
+func (x *LogStats) GetUnreadWarnCount() int64 {
+	if x != nil {
+		return x.UnreadWarnCount
+	}
+	return 0
+}
+
 var File_system_proto protoreflect.FileDescriptor
 
 var file_system_proto_rawDesc = []byte{

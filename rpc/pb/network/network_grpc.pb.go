@@ -27,8 +27,9 @@ type NetworkClient interface {
 	ModifyIPtables(ctx context.Context, in *ModifyIPtablesRequest, opts ...grpc.CallOption) (*ModifyIPtablesReply, error)
 	RemoveIPtables(ctx context.Context, in *RemoveIPtablesRequest, opts ...grpc.CallOption) (*RemoveIPtablesReply, error)
 	// not implemented
-	Create(ctx context.Context, in *CreateRequest, opts ...grpc.CallOption) (*CreateReply, error)
-	Remove(ctx context.Context, in *RemoveRequest, opts ...grpc.CallOption) (*RemoveReply, error)
+	CreateNic(ctx context.Context, in *CreateNicRequest, opts ...grpc.CallOption) (*CreateNicReply, error)
+	RemoveNic(ctx context.Context, in *RemoveNicRequest, opts ...grpc.CallOption) (*RemoveNicReply, error)
+	UpdateNic(ctx context.Context, in *UpdateNicRequest, opts ...grpc.CallOption) (*UpdateNicReply, error)
 }
 
 type networkClient struct {

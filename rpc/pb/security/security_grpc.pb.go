@@ -80,7 +80,6 @@ type SecurityServer interface {
 	// 文件保护
 	ListFileProtection(context.Context, *ListFileProtectionRequest) (*ListFileProtectionReply, error)
 	UpdateFileProtection(context.Context, *UpdateFileProtectionRequest) (*UpdateFileProtectionReply, error)
-	LoadSecurityConfig(context.Context, *LoadSecurityConfigRequset) (*LoadSecurityConfigReply, error)
 	mustEmbedUnimplementedSecurityServer()
 }
 
@@ -99,9 +98,6 @@ func (UnimplementedSecurityServer) ListFileProtection(context.Context, *ListFile
 }
 func (UnimplementedSecurityServer) UpdateFileProtection(context.Context, *UpdateFileProtectionRequest) (*UpdateFileProtectionReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateFileProtection not implemented")
-}
-func (UnimplementedSecurityServer) LoadSecurityConfig(context.Context, *LoadSecurityConfigRequset) (*LoadSecurityConfigReply, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method LoadSecurityConfig not implemented")
 }
 func (UnimplementedSecurityServer) mustEmbedUnimplementedSecurityServer() {}
 
@@ -188,24 +184,6 @@ func _Security_UpdateFileProtection_Handler(srv interface{}, ctx context.Context
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Security_LoadSecurityConfig_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(LoadSecurityConfigRequset)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(SecurityServer).LoadSecurityConfig(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/security.Security/LoadSecurityConfig",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(SecurityServer).LoadSecurityConfig(ctx, req.(*LoadSecurityConfigRequset))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 // Security_ServiceDesc is the grpc.ServiceDesc for Security service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -228,10 +206,6 @@ var Security_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "UpdateFileProtection",
 			Handler:    _Security_UpdateFileProtection_Handler,
-		},
-		{
-			MethodName: "LoadSecurityConfig",
-			Handler:    _Security_LoadSecurityConfig_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

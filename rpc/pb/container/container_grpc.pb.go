@@ -373,10 +373,9 @@ type ContainerServer interface {
 	ResumeBackup(context.Context, *ResumeBackupRequest) (*ResumeBackupReply, error)
 	RemoveBackup(context.Context, *RemoveBackupRequest) (*RemoveBackupReply, error)
 	ListBackup(context.Context, *ListBackupRequest) (*ListBackupReply, error)
-	// 容器备份内部接口
-	AddBackupJob(context.Context, *AddBackupJobRequest) (*AddBackupJobReply, error)
-	GetBackupJob(context.Context, *GetBackupJobRequest) (*GetBackupJobReply, error)
-	DelBackupJob(context.Context, *DelBackupJobRequest) (*DelBackupJobReply, error)
+	ExportBackup(*ExportBackupRequest, Container_ExportBackupServer) error
+	ListBackupImage(context.Context, *ListBackupImageRequest) (*ListBackupImageReply, error)
+	InspectBackup(context.Context, *InspectBackupRequest) (*InspectBackupReply, error)
 	// 查询容器模板列表
 	ListTemplate(context.Context, *ListTemplateRequest) (*ListTemplateReply, error)
 	// 创建容器模板
@@ -387,6 +386,13 @@ type ContainerServer interface {
 	InspectTemplate(context.Context, *InspectTemplateRequest) (*InspectTemplateReply, error)
 	// 删除容器模板
 	RemoveTemplate(context.Context, *RemoveTemplateRequest) (*RemoveTemplateReply, error)
+	// 容器多应用入口功能
+	ListAppEntry(context.Context, *ListAppEntryRequest) (*ListAppEntryReply, error)
+	AddAppEntry(context.Context, *AddAppEntryRequest) (*AddAppEntryReply, error)
+	UpdateAppEntry(context.Context, *UpdateAppEntryRequest) (*UpdateAppEntryReply, error)
+	RemoveAppEntry(context.Context, *RemoveAppEntryRequest) (*RemoveAppEntryReply, error)
+	RunAppEntry(context.Context, *RunAppEntryRequest) (*RunAppEntryReply, error)
+	KillAppEntry(context.Context, *KillAppEntryRequest) (*KillAppEntryReply, error)
 	// 监控历史数据查询
 	MonitorHistory(context.Context, *MonitorHistoryRequest) (*MonitorHistoryReply, error)
 	mustEmbedUnimplementedContainerServer()
@@ -435,14 +441,14 @@ func (UnimplementedContainerServer) RemoveBackup(context.Context, *RemoveBackupR
 func (UnimplementedContainerServer) ListBackup(context.Context, *ListBackupRequest) (*ListBackupReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListBackup not implemented")
 }
-func (UnimplementedContainerServer) AddBackupJob(context.Context, *AddBackupJobRequest) (*AddBackupJobReply, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method AddBackupJob not implemented")
+func (UnimplementedContainerServer) ExportBackup(*ExportBackupRequest, Container_ExportBackupServer) error {
+	return status.Errorf(codes.Unimplemented, "method ExportBackup not implemented")
 }
-func (UnimplementedContainerServer) GetBackupJob(context.Context, *GetBackupJobRequest) (*GetBackupJobReply, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetBackupJob not implemented")
+func (UnimplementedContainerServer) ListBackupImage(context.Context, *ListBackupImageRequest) (*ListBackupImageReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListBackupImage not implemented")
 }
-func (UnimplementedContainerServer) DelBackupJob(context.Context, *DelBackupJobRequest) (*DelBackupJobReply, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method DelBackupJob not implemented")
+func (UnimplementedContainerServer) InspectBackup(context.Context, *InspectBackupRequest) (*InspectBackupReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method InspectBackup not implemented")
 }
 func (UnimplementedContainerServer) ListTemplate(context.Context, *ListTemplateRequest) (*ListTemplateReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListTemplate not implemented")
@@ -458,6 +464,24 @@ func (UnimplementedContainerServer) InspectTemplate(context.Context, *InspectTem
 }
 func (UnimplementedContainerServer) RemoveTemplate(context.Context, *RemoveTemplateRequest) (*RemoveTemplateReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RemoveTemplate not implemented")
+}
+func (UnimplementedContainerServer) ListAppEntry(context.Context, *ListAppEntryRequest) (*ListAppEntryReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListAppEntry not implemented")
+}
+func (UnimplementedContainerServer) AddAppEntry(context.Context, *AddAppEntryRequest) (*AddAppEntryReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AddAppEntry not implemented")
+}
+func (UnimplementedContainerServer) UpdateAppEntry(context.Context, *UpdateAppEntryRequest) (*UpdateAppEntryReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateAppEntry not implemented")
+}
+func (UnimplementedContainerServer) RemoveAppEntry(context.Context, *RemoveAppEntryRequest) (*RemoveAppEntryReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RemoveAppEntry not implemented")
+}
+func (UnimplementedContainerServer) RunAppEntry(context.Context, *RunAppEntryRequest) (*RunAppEntryReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RunAppEntry not implemented")
+}
+func (UnimplementedContainerServer) KillAppEntry(context.Context, *KillAppEntryRequest) (*KillAppEntryReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method KillAppEntry not implemented")
 }
 func (UnimplementedContainerServer) MonitorHistory(context.Context, *MonitorHistoryRequest) (*MonitorHistoryReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method MonitorHistory not implemented")
@@ -709,56 +733,59 @@ func _Container_ListBackup_Handler(srv interface{}, ctx context.Context, dec fun
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Container_AddBackupJob_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(AddBackupJobRequest)
+func _Container_ExportBackup_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(ExportBackupRequest)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(ContainerServer).ExportBackup(m, &containerExportBackupServer{stream})
+}
+
+type Container_ExportBackupServer interface {
+	Send(*ExportBackupReply) error
+	grpc.ServerStream
+}
+
+type containerExportBackupServer struct {
+	grpc.ServerStream
+}
+
+func (x *containerExportBackupServer) Send(m *ExportBackupReply) error {
+	return x.ServerStream.SendMsg(m)
+}
+
+func _Container_ListBackupImage_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListBackupImageRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(ContainerServer).AddBackupJob(ctx, in)
+		return srv.(ContainerServer).ListBackupImage(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/container.Container/AddBackupJob",
+		FullMethod: "/container.Container/ListBackupImage",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ContainerServer).AddBackupJob(ctx, req.(*AddBackupJobRequest))
+		return srv.(ContainerServer).ListBackupImage(ctx, req.(*ListBackupImageRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Container_GetBackupJob_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetBackupJobRequest)
+func _Container_InspectBackup_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(InspectBackupRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(ContainerServer).GetBackupJob(ctx, in)
+		return srv.(ContainerServer).InspectBackup(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/container.Container/GetBackupJob",
+		FullMethod: "/container.Container/InspectBackup",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ContainerServer).GetBackupJob(ctx, req.(*GetBackupJobRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Container_DelBackupJob_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(DelBackupJobRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(ContainerServer).DelBackupJob(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/container.Container/DelBackupJob",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ContainerServer).DelBackupJob(ctx, req.(*DelBackupJobRequest))
+		return srv.(ContainerServer).InspectBackup(ctx, req.(*InspectBackupRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -853,6 +880,114 @@ func _Container_RemoveTemplate_Handler(srv interface{}, ctx context.Context, dec
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Container_ListAppEntry_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListAppEntryRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ContainerServer).ListAppEntry(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/container.Container/ListAppEntry",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ContainerServer).ListAppEntry(ctx, req.(*ListAppEntryRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Container_AddAppEntry_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AddAppEntryRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ContainerServer).AddAppEntry(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/container.Container/AddAppEntry",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ContainerServer).AddAppEntry(ctx, req.(*AddAppEntryRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Container_UpdateAppEntry_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateAppEntryRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ContainerServer).UpdateAppEntry(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/container.Container/UpdateAppEntry",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ContainerServer).UpdateAppEntry(ctx, req.(*UpdateAppEntryRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Container_RemoveAppEntry_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RemoveAppEntryRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ContainerServer).RemoveAppEntry(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/container.Container/RemoveAppEntry",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ContainerServer).RemoveAppEntry(ctx, req.(*RemoveAppEntryRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Container_RunAppEntry_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RunAppEntryRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ContainerServer).RunAppEntry(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/container.Container/RunAppEntry",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ContainerServer).RunAppEntry(ctx, req.(*RunAppEntryRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Container_KillAppEntry_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(KillAppEntryRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ContainerServer).KillAppEntry(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/container.Container/KillAppEntry",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ContainerServer).KillAppEntry(ctx, req.(*KillAppEntryRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _Container_MonitorHistory_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(MonitorHistoryRequest)
 	if err := dec(in); err != nil {
@@ -931,16 +1066,12 @@ var Container_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Container_ListBackup_Handler,
 		},
 		{
-			MethodName: "AddBackupJob",
-			Handler:    _Container_AddBackupJob_Handler,
+			MethodName: "ListBackupImage",
+			Handler:    _Container_ListBackupImage_Handler,
 		},
 		{
-			MethodName: "GetBackupJob",
-			Handler:    _Container_GetBackupJob_Handler,
-		},
-		{
-			MethodName: "DelBackupJob",
-			Handler:    _Container_DelBackupJob_Handler,
+			MethodName: "InspectBackup",
+			Handler:    _Container_InspectBackup_Handler,
 		},
 		{
 			MethodName: "ListTemplate",
@@ -963,10 +1094,40 @@ var Container_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Container_RemoveTemplate_Handler,
 		},
 		{
+			MethodName: "ListAppEntry",
+			Handler:    _Container_ListAppEntry_Handler,
+		},
+		{
+			MethodName: "AddAppEntry",
+			Handler:    _Container_AddAppEntry_Handler,
+		},
+		{
+			MethodName: "UpdateAppEntry",
+			Handler:    _Container_UpdateAppEntry_Handler,
+		},
+		{
+			MethodName: "RemoveAppEntry",
+			Handler:    _Container_RemoveAppEntry_Handler,
+		},
+		{
+			MethodName: "RunAppEntry",
+			Handler:    _Container_RunAppEntry_Handler,
+		},
+		{
+			MethodName: "KillAppEntry",
+			Handler:    _Container_KillAppEntry_Handler,
+		},
+		{
 			MethodName: "MonitorHistory",
 			Handler:    _Container_MonitorHistory_Handler,
 		},
 	},
-	Streams:  []grpc.StreamDesc{},
+	Streams: []grpc.StreamDesc{
+		{
+			StreamName:    "ExportBackup",
+			Handler:       _Container_ExportBackup_Handler,
+			ServerStreams: true,
+		},
+	},
 	Metadata: "container.proto",
 }

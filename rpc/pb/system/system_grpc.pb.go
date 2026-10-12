@@ -111,6 +111,9 @@ type SystemServer interface {
 	Ping(context.Context, *PingRequest) (*PingReply, error)
 	// 客户端订阅通知消息
 	Subscribe(*SubscribeRequest, System_SubscribeServer) error
+	Dashboard(context.Context, *DashboardRequest) (*DashboardReply, error)
+	SetSecuritySwitch(context.Context, *SetSecuritySwitchRequest) (*SetSecuritySwitchReply, error)
+	GetSecuritySwitch(context.Context, *GetSecuritySwitchRequest) (*GetSecuritySwitchReply, error)
 	mustEmbedUnimplementedSystemServer()
 }
 
@@ -123,6 +126,15 @@ func (UnimplementedSystemServer) Ping(context.Context, *PingRequest) (*PingReply
 }
 func (UnimplementedSystemServer) Subscribe(*SubscribeRequest, System_SubscribeServer) error {
 	return status.Errorf(codes.Unimplemented, "method Subscribe not implemented")
+}
+func (UnimplementedSystemServer) Dashboard(context.Context, *DashboardRequest) (*DashboardReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Dashboard not implemented")
+}
+func (UnimplementedSystemServer) SetSecuritySwitch(context.Context, *SetSecuritySwitchRequest) (*SetSecuritySwitchReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SetSecuritySwitch not implemented")
+}
+func (UnimplementedSystemServer) GetSecuritySwitch(context.Context, *GetSecuritySwitchRequest) (*GetSecuritySwitchReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetSecuritySwitch not implemented")
 }
 func (UnimplementedSystemServer) mustEmbedUnimplementedSystemServer() {}
 
@@ -176,6 +188,60 @@ func (x *systemSubscribeServer) Send(m *SubscribeReply) error {
 	return x.ServerStream.SendMsg(m)
 }
 
+func _System_Dashboard_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DashboardRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SystemServer).Dashboard(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/sys.System/Dashboard",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SystemServer).Dashboard(ctx, req.(*DashboardRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _System_SetSecuritySwitch_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SetSecuritySwitchRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SystemServer).SetSecuritySwitch(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/sys.System/SetSecuritySwitch",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SystemServer).SetSecuritySwitch(ctx, req.(*SetSecuritySwitchRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _System_GetSecuritySwitch_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetSecuritySwitchRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SystemServer).GetSecuritySwitch(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/sys.System/GetSecuritySwitch",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SystemServer).GetSecuritySwitch(ctx, req.(*GetSecuritySwitchRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // System_ServiceDesc is the grpc.ServiceDesc for System service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -186,6 +252,18 @@ var System_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Ping",
 			Handler:    _System_Ping_Handler,
+		},
+		{
+			MethodName: "Dashboard",
+			Handler:    _System_Dashboard_Handler,
+		},
+		{
+			MethodName: "SetSecuritySwitch",
+			Handler:    _System_SetSecuritySwitch_Handler,
+		},
+		{
+			MethodName: "GetSecuritySwitch",
+			Handler:    _System_GetSecuritySwitch_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{

@@ -1094,14 +1094,12 @@ var file_security_proto_depIdxs = []int32{
 	3,  // 5: security.Security.UpdateProcProtection:input_type -> security.UpdateProcProtectionRequest
 	5,  // 6: security.Security.ListFileProtection:input_type -> security.ListFileProtectionRequest
 	7,  // 7: security.Security.UpdateFileProtection:input_type -> security.UpdateFileProtectionRequest
-	9,  // 8: security.Security.LoadSecurityConfig:input_type -> security.LoadSecurityConfigRequset
-	2,  // 9: security.Security.ListProcProtection:output_type -> security.ListProcProtectionReply
-	4,  // 10: security.Security.UpdateProcProtection:output_type -> security.UpdateProcProtectionReply
-	6,  // 11: security.Security.ListFileProtection:output_type -> security.ListFileProtectionReply
-	8,  // 12: security.Security.UpdateFileProtection:output_type -> security.UpdateFileProtectionReply
-	10, // 13: security.Security.LoadSecurityConfig:output_type -> security.LoadSecurityConfigReply
-	9,  // [9:14] is the sub-list for method output_type
-	4,  // [4:9] is the sub-list for method input_type
+	2,  // 8: security.Security.ListProcProtection:output_type -> security.ListProcProtectionReply
+	4,  // 9: security.Security.UpdateProcProtection:output_type -> security.UpdateProcProtectionReply
+	6,  // 10: security.Security.ListFileProtection:output_type -> security.ListFileProtectionReply
+	8,  // 11: security.Security.UpdateFileProtection:output_type -> security.UpdateFileProtectionReply
+	8,  // [8:12] is the sub-list for method output_type
+	4,  // [4:8] is the sub-list for method input_type
 	4,  // [4:4] is the sub-list for extension type_name
 	4,  // [4:4] is the sub-list for extension extendee
 	0,  // [0:4] is the sub-list for field type_name

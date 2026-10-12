@@ -22,6 +22,9 @@ type SystemClient interface {
 	Ping(ctx context.Context, in *PingRequest, opts ...grpc.CallOption) (*PingReply, error)
 	// 客户端订阅通知消息
 	Subscribe(ctx context.Context, in *SubscribeRequest, opts ...grpc.CallOption) (System_SubscribeClient, error)
+	Dashboard(ctx context.Context, in *DashboardRequest, opts ...grpc.CallOption) (*DashboardReply, error)
+	SetSecuritySwitch(ctx context.Context, in *SetSecuritySwitchRequest, opts ...grpc.CallOption) (*SetSecuritySwitchReply, error)
+	GetSecuritySwitch(ctx context.Context, in *GetSecuritySwitchRequest, opts ...grpc.CallOption) (*GetSecuritySwitchReply, error)
 }
 
 type systemClient struct {

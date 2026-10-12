@@ -1,6 +1,7 @@
 ks-scmc-server
 ks-scmc-authz
 ks-scmc-user
+ks-scmc-encrypt
 
 .vscode/***
 

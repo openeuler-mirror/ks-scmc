@@ -5,15 +5,16 @@
 %global debug_package %{nil}
 
 Summary:        KylinSec security container magic cube
-License:        MulanPSL-2.0
+License:        No License
 Group:          Tools/Container/Docker
 
 Name:           ks-scmc
-Version:        1.0.2
-Release:        4
+Version:        1.0.4
+Release:        2
 URL:            http://gitlab.kylinos.com.cn/os/%{name}
 Source0:        %{name}-%{version}.tar.gz
 
+Summary:       KylinSec security container magic cube server package
 BuildRequires: pkgconfig(systemd) git golang make coreutils protobuf-compiler systemd
 Requires: docker-ce coreutils bash socat systemd lsyncd rsync xinetd keepalived
 
@@ -51,6 +52,7 @@ rm -rf %{_datadir}/ks-scmc
 %{_bindir}/%{name}-server
 %{_bindir}/%{name}-authz
 %{_bindir}/%{name}-user
+%{_bindir}/%{name}-encrypt
 %{_unitdir}/%{name}-agent.service
 %{_unitdir}/%{name}-controller.service
 %{_unitdir}/%{name}-authz.service
@@ -76,8 +78,42 @@ rm -rf %{_datadir}/ks-scmc
 %{_sysconfdir}/%{name}/init_users.sh
 
 %changelog
-* Thu Jul 30 2026 yubin <yubin@kylinos.com.cn> - 1.0.2-4
-- Update License to MulanPSL-2.0 (#CZXT44-169760)
+* Sat Aug 20 2022 Haotian Chen <chenhaotian@kylinos.com.cn> - 1.0.4-2.ky3
+- KYOS-F: Fix container backup occasionally failure. (#57408)
+
+* Thu Jul 7 2022 Haotian Chen <chenhaotian@kylinos.com.cn> - 1.0.4-1.ky3
+- KYOS-F: Store backup job in filesystem (#57408)
+- KYOS-F: rpc ListRuntime support fuzzing matching (#57412)
+- KYOS-F: rpc ContainerList fix nil pointer reference (#58474)
+- KYOS-F: Check image file before downloading (#59395)
+- KYOS-F: User default timeout set to 30min.
+
+* Thu Jul 7 2022 Haotian Chen <chenhaotian@kylinos.com.cn> - 1.0.3-1.ky3
+- KYOS-F: Move content of backend/ to top dir (#57217)
+- KYOS-F: Fix createNode error handling, optimize cpu count getter (#56642 #57410)
+- KYOS-F: Fix prevent docker-registry connection leak (#57436)
+- KYOS-F: Fix ImageUpload and ImageRemove error (#57359 #56808)
+- KYOS-F: Fix container list cpu/memory usage (#57413)
+
+* Mon Jun 27 2022 Haotian Chen <chenhaotian@kylinos.com.cn> - 1.0.2-3.ky3
+- KYOS-F: Fix string args checking (#56642 #56792)
+- KYOS-F: Fix warn log format, allow only one cron task (#55827)
+- KYOS-F: Fix error handling when removing container backup (#56714)
+- KYOS-F: Optimize image management (#56592 #56808)
+- KYOS-F: Optimize deploy scripts (#56690)
+- KYOS-F: Optmize method of calculate CPU usage (#56698)
+
+* Tue Jun 14 2022 Haotian Chen <chenhaotian@kylinos.com.cn> - 1.0.2-2.ky3
+- KYOS-F: Fix manipulate opensnitch rules errors (#56692)
+- KYOS-F: update password no permission error (#56693)
+
+* Tue Jun 7 2022 Haotian Chen <chenhaotian@kylinos.com.cn> - 1.0.2-1.ky3
+- KYOS-F: Fix cannot login with user secadm (#55825)
+- KYOS-F: Fix container list display wrong start time, disk usage (#55882 #56020)
+- KYOS-F: Fix container cannot set memory limit (#55824)
+- KYOS-F: Fix remove container failed returns no error (#56029)
+- KYOS-F: Container basic/security setting need different permission (#55988)
+- KYOS-F: Fix resume container backup error because of ip conflict (#55887)
 
 * Sat May 21 2022 Haotian Chen <chenhaotian@kylinos.com.cn> - 1.0.1-1.ky3
 - KYOS-F: security settings (file protection, process whitelist). (#54582 #54770)

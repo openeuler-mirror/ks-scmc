@@ -112,18 +112,27 @@ func (c *networkClient) RemoveIPtables(ctx context.Context, in *RemoveIPtablesRe
 	return out, nil
 }
 
-func (c *networkClient) Create(ctx context.Context, in *CreateRequest, opts ...grpc.CallOption) (*CreateReply, error) {
-	out := new(CreateReply)
-	err := c.cc.Invoke(ctx, "/network.Network/Create", in, out, opts...)
+func (c *networkClient) CreateNic(ctx context.Context, in *CreateNicRequest, opts ...grpc.CallOption) (*CreateNicReply, error) {
+	out := new(CreateNicReply)
+	err := c.cc.Invoke(ctx, "/network.Network/CreateNic", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *networkClient) Remove(ctx context.Context, in *RemoveRequest, opts ...grpc.CallOption) (*RemoveReply, error) {
-	out := new(RemoveReply)
-	err := c.cc.Invoke(ctx, "/network.Network/Remove", in, out, opts...)
+func (c *networkClient) RemoveNic(ctx context.Context, in *RemoveNicRequest, opts ...grpc.CallOption) (*RemoveNicReply, error) {
+	out := new(RemoveNicReply)
+	err := c.cc.Invoke(ctx, "/network.Network/RemoveNic", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *networkClient) UpdateNic(ctx context.Context, in *UpdateNicRequest, opts ...grpc.CallOption) (*UpdateNicReply, error) {
+	out := new(UpdateNicReply)
+	err := c.cc.Invoke(ctx, "/network.Network/UpdateNic", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}

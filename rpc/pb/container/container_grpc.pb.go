@@ -284,6 +284,60 @@ func (c *containerClient) RemoveTemplate(ctx context.Context, in *RemoveTemplate
 	return out, nil
 }
 
+func (c *containerClient) ListAppEntry(ctx context.Context, in *ListAppEntryRequest, opts ...grpc.CallOption) (*ListAppEntryReply, error) {
+	out := new(ListAppEntryReply)
+	err := c.cc.Invoke(ctx, "/container.Container/ListAppEntry", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *containerClient) AddAppEntry(ctx context.Context, in *AddAppEntryRequest, opts ...grpc.CallOption) (*AddAppEntryReply, error) {
+	out := new(AddAppEntryReply)
+	err := c.cc.Invoke(ctx, "/container.Container/AddAppEntry", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *containerClient) UpdateAppEntry(ctx context.Context, in *UpdateAppEntryRequest, opts ...grpc.CallOption) (*UpdateAppEntryReply, error) {
+	out := new(UpdateAppEntryReply)
+	err := c.cc.Invoke(ctx, "/container.Container/UpdateAppEntry", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *containerClient) RemoveAppEntry(ctx context.Context, in *RemoveAppEntryRequest, opts ...grpc.CallOption) (*RemoveAppEntryReply, error) {
+	out := new(RemoveAppEntryReply)
+	err := c.cc.Invoke(ctx, "/container.Container/RemoveAppEntry", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *containerClient) RunAppEntry(ctx context.Context, in *RunAppEntryRequest, opts ...grpc.CallOption) (*RunAppEntryReply, error) {
+	out := new(RunAppEntryReply)
+	err := c.cc.Invoke(ctx, "/container.Container/RunAppEntry", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *containerClient) KillAppEntry(ctx context.Context, in *KillAppEntryRequest, opts ...grpc.CallOption) (*KillAppEntryReply, error) {
+	out := new(KillAppEntryReply)
+	err := c.cc.Invoke(ctx, "/container.Container/KillAppEntry", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *containerClient) MonitorHistory(ctx context.Context, in *MonitorHistoryRequest, opts ...grpc.CallOption) (*MonitorHistoryReply, error) {
 	out := new(MonitorHistoryReply)
 	err := c.cc.Invoke(ctx, "/container.Container/MonitorHistory", in, out, opts...)

@@ -24,7 +24,6 @@ type SecurityClient interface {
 	// 文件保护
 	ListFileProtection(ctx context.Context, in *ListFileProtectionRequest, opts ...grpc.CallOption) (*ListFileProtectionReply, error)
 	UpdateFileProtection(ctx context.Context, in *UpdateFileProtectionRequest, opts ...grpc.CallOption) (*UpdateFileProtectionReply, error)
-	LoadSecurityConfig(ctx context.Context, in *LoadSecurityConfigRequset, opts ...grpc.CallOption) (*LoadSecurityConfigReply, error)
 }
 
 type securityClient struct {

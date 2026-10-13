@@ -7,6 +7,7 @@ import (
 	"regexp"
 	"strings"
 	"sync"
+	"syscall"
 	"time"
 
 	"github.com/docker/docker/api/types"
@@ -492,9 +493,9 @@ func (s *ContainerServer) parallelProcessing(operate string, contaienrIds []stri
 		go func(containerId string) {
 			defer wg.Done()
 			var err error
-			if "ContainerStop" == operate {
+			if operate == "ContainerStop" {
 				err = cli.ContainerStop(context.Background(), containerId, &timeout)
-			} else if "ContainerRestart" == operate {
+			} else if operate == "ContainerRestart" {
 				err = cli.ContainerRestart(context.Background(), containerId, &timeout)
 			} else {
 				log.Warnf("%v: id=%v ", operate, containerId)
@@ -1277,7 +1278,7 @@ func addBackupJob(b *litedb.ContainerBackup) {
 func (*ContainerServer) ExportBackup(in *pb.ExportBackupRequest, stream pb.Container_ExportBackupServer) error {
 	b, err := litedb.QueryContainerBackupByID(in.BackupId)
 	if err != nil {
-		log.Infof("QueryContainerBackupByID err=%v", err)
+		log.Warnf("QueryContainerBackupByID err=%v", err)
 		return rpc.ErrInternal
 
 	}
@@ -1325,7 +1326,7 @@ func (*ContainerServer) ExportBackup(in *pb.ExportBackupRequest, stream pb.Conta
 			ImgVersion: in.ImgVersion,
 		}
 		if err := stream.Send(&chunk); err != nil {
-			log.Infof("ExportBackup send stream err=%v", err)
+			log.Warnf("ExportBackup send stream err=%v", err)
 			return rpc.ErrInternal
 		}
 	}
@@ -1335,7 +1336,7 @@ func (*ContainerServer) ExportBackup(in *pb.ExportBackupRequest, stream pb.Conta
 func (*ContainerServer) InspectBackup(ctx context.Context, in *pb.InspectBackupRequest) (*pb.InspectBackupReply, error) {
 	b, err := litedb.QueryContainerBackupByID(in.BackupId)
 	if err != nil {
-		log.Infof("GetContainerConfigs err=%v", err)
+		log.Warnf("GetContainerConfigs err=%v", err)
 		return nil, rpc.ErrInternal
 
 	}
@@ -1353,4 +1354,193 @@ func (*ContainerServer) InspectBackup(ctx context.Context, in *pb.InspectBackupR
 	}
 
 	return &reply, nil
+}
+
+func (*ContainerServer) AddAppEntry(ctx context.Context, in *pb.AddAppEntryRequest) (*pb.AddAppEntryReply, error) {
+	if in.App == nil {
+		return nil, rpc.ErrInvalidArgument
+	}
+
+	if err := litedb.AddAppEntry(&litedb.AppEntry{
+		ContainerID: in.App.ContainerId,
+		Name:        in.App.Name,
+		ExePath:     in.App.ExePath,
+		IsGUI:       in.App.IsGui,
+	}); err != nil {
+		log.Warnf("AddAppEntry err=%v", err)
+		return nil, rpc.ErrDatabaseFail
+	}
+
+	return &pb.AddAppEntryReply{}, nil
+}
+
+func (*ContainerServer) RemoveAppEntry(ctx context.Context, in *pb.RemoveAppEntryRequest) (*pb.RemoveAppEntryReply, error) {
+	if len(in.AppIds) == 0 {
+		return nil, rpc.ErrInvalidArgument
+	}
+
+	for _, appId := range in.AppIds {
+		e, err := litedb.GetAppEntryByID(appId)
+		if err != nil {
+			log.Warnf("litedb.GetAppEntryByID err=%v", err)
+			return nil, rpc.ErrDatabaseFail
+		}
+
+		if appIsRunning(ctx, e.IDResponse) {
+			return nil, status.Errorf(codes.Internal, "%v正在运行,无法删除", e.Name)
+		}
+	}
+
+	if err := litedb.RemoveAppEntry(in.AppIds); err != nil {
+		log.Warnf("litedb.RemoveAppEntry err=%v", err)
+		return nil, rpc.ErrDatabaseFail
+	}
+
+	return &pb.RemoveAppEntryReply{}, nil
+}
+
+func (*ContainerServer) UpdateAppEntry(ctx context.Context, in *pb.UpdateAppEntryRequest) (*pb.UpdateAppEntryReply, error) {
+	if in.App == nil {
+		return nil, rpc.ErrInvalidArgument
+	}
+
+	e, err := litedb.GetAppEntryByID(in.App.Id)
+	if err != nil {
+		log.Warnf("litedb.GetAppEntryByID err=%v", err)
+		return nil, rpc.ErrDatabaseFail
+	}
+
+	if appIsRunning(ctx, e.IDResponse) {
+		return nil, status.Error(codes.Internal, "应用正在运行")
+	}
+
+	e.ExePath = in.App.ExePath
+	e.Name = in.App.Name
+	e.IsGUI = in.App.IsGui
+	if err := litedb.UpdateAppEntry(e); err != nil {
+		log.Warnf("litedb.UpdateAppEntry err=%v", err)
+		return nil, rpc.ErrDatabaseFail
+	}
+
+	return &pb.UpdateAppEntryReply{}, nil
+}
+
+func (*ContainerServer) ListAppEntry(ctx context.Context, in *pb.ListAppEntryRequest) (*pb.ListAppEntryReply, error) {
+	if in.ContainerId == "" {
+		return nil, rpc.ErrInvalidArgument
+	}
+
+	entries, err := litedb.ListAppEntry(in.ContainerId)
+	if err != nil {
+		log.Warnf("litedb.ListAppEntry err=%v", err)
+		return nil, rpc.ErrDatabaseFail
+	}
+
+	var reply pb.ListAppEntryReply
+	for _, e := range entries {
+		reply.Apps = append(reply.Apps, &pb.AppEntry{
+			Id:          e.ID,
+			ContainerId: e.ContainerID,
+			Name:        e.Name,
+			ExePath:     e.ExePath,
+			IsGui:       e.IsGUI,
+			IsRunning:   appIsRunning(ctx, e.IDResponse),
+		})
+	}
+
+	return &reply, nil
+}
+
+func (*ContainerServer) RunAppEntry(ctx context.Context, in *pb.RunAppEntryRequest) (*pb.RunAppEntryReply, error) {
+	app, err := litedb.GetAppEntryByID(in.AppId)
+	if err != nil {
+		log.Warnf("litedb.GetAppEntryByID err=%v", err)
+		return nil, rpc.ErrDatabaseFail
+	}
+
+	if app.IsGUI {
+		return nil, status.Error(codes.InvalidArgument, "无法运行GUI应用")
+	}
+
+	cli, err := docker.Client()
+	if err != nil {
+		log.Warnf("docker.Client err:%s", err)
+		return nil, rpc.ErrInternal
+	}
+
+	if !containerIsRunningWithCli(ctx, cli, app.ContainerID) {
+		return nil, status.Error(codes.InvalidArgument, "容器未运行")
+	}
+
+	if appIsRunningWithCli(ctx, cli, app.IDResponse) {
+		return nil, status.Error(codes.Internal, "应用正在运行")
+	}
+
+	idRes, err := cli.ContainerExecCreate(ctx, app.ContainerID, types.ExecConfig{
+		Cmd: strings.Split(app.ExePath, " "),
+	})
+	if err != nil {
+		log.Warnf("ContainerExecCreate err=%v", err)
+		return nil, rpc.ErrInternal
+	}
+	if idRes.ID == "" {
+		log.Warnln("ContainerExecCreate exec ID empty")
+		return nil, rpc.ErrInternal
+	}
+
+	if err := cli.ContainerExecStart(ctx, idRes.ID, types.ExecStartCheck{
+		Detach: true,
+		Tty:    false,
+	}); err != nil {
+		log.Warnf("ContainerExecStart err=%v", err)
+		return nil, rpc.ErrInternal
+	}
+
+	app.IDResponse = idRes.ID
+	if err := litedb.UpdateAppEntry(app); err != nil {
+		log.Warnf("litedb.UpdateAppEntry err=%v", err)
+		return nil, rpc.ErrDatabaseFail
+	}
+
+	return &pb.RunAppEntryReply{}, nil
+}
+
+func (*ContainerServer) KillAppEntry(ctx context.Context, in *pb.KillAppEntryRequest) (*pb.KillAppEntryReply, error) {
+	app, err := litedb.GetAppEntryByID(in.AppId)
+	if err != nil {
+		log.Warnf("litedb.GetAppEntryByID err=%v", err)
+		return nil, rpc.ErrDatabaseFail
+	}
+
+	if app.IsGUI {
+		return nil, status.Error(codes.InvalidArgument, "无法停止GUI应用")
+	}
+
+	cli, err := docker.Client()
+	if err != nil {
+		log.Warnf("docker.Client err:%s", err)
+		return nil, rpc.ErrInternal
+	}
+
+	if !containerIsRunningWithCli(ctx, cli, app.ContainerID) {
+		return nil, status.Error(codes.InvalidArgument, "容器未运行")
+	}
+
+	execIns, err := cli.ContainerExecInspect(ctx, app.IDResponse)
+	if err != nil {
+		log.Warnf("cli.ContainerExecInspect err:%s", err)
+		return nil, rpc.ErrInternal
+	}
+
+	if !execIns.Running {
+		return nil, status.Error(codes.Internal, "应用未运行")
+	}
+
+	err = syscall.Kill(execIns.Pid, syscall.SIGKILL)
+	if err != nil {
+		log.Warnf("cli.ContainerExecInspect err:%s", err)
+		return nil, status.Error(codes.Internal, "停止应用失败")
+	}
+
+	return &pb.KillAppEntryReply{}, nil
 }

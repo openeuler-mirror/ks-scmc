@@ -4,6 +4,8 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"io"
+	"strings"
 	"sync"
 	"time"
 
@@ -16,6 +18,23 @@ import (
 	pb "scmc/rpc/pb/container"
 	"scmc/server/args"
 )
+
+type ExportBackupStream struct {
+	ss pb.Container_ExportBackupClient
+}
+
+func (s ExportBackupStream) Read() ([]byte, error) {
+	r, err := s.ss.Recv()
+	if err != nil {
+		return nil, err
+	}
+
+	return r.Data, nil
+}
+
+func (s ExportBackupStream) Context() context.Context {
+	return s.ss.Context()
+}
 
 type ContainerServer struct {
 	pb.UnimplementedContainerServer
@@ -752,4 +771,129 @@ func (*ContainerServer) ListBackup(ctx context.Context, in *pb.ListBackupRequest
 	}
 
 	return subReply, nil
+}
+
+func (*ContainerServer) exportBackupImageToClient(r pb.Container_ExportBackupClient, w pb.Container_ExportBackupServer) error {
+	for {
+		if m, err := r.Recv(); err != nil {
+			if err == io.EOF {
+				return nil // read internal stream finished
+			}
+			log.Infof("ExportBackup read from internal stream err=%v", err)
+			return rpc.ErrInternal
+		} else {
+			w.Send(m)
+		}
+	}
+}
+
+func (*ContainerServer) exportBackupImageToRegistry(img *db.ImageInfo, stream pb.Container_ExportBackupClient) error {
+	f, err := NewImageFile(img.Name, img.Version, img.FileSize)
+	if err != nil {
+		log.Errorf("NewImageFile err=%v", err)
+		return rpc.ErrInternal
+	}
+
+	if err := f.ReadStream(ExportBackupStream{stream}); err != nil {
+		log.Errorf("Write stream data to image file err=%v", err)
+		f.Destroy()
+		return status.Error(codes.InvalidArgument, "读写镜像数据失败")
+	}
+
+	img.FilePath = f.Path()
+	img.CheckSum = f.SHA256()
+	img.FileSize = f.Size()
+	img.ImageId = f.DockerID()
+
+	if _, err := db.CreateImage(img); err != nil {
+		log.Infof("db.CreateImages image=%+v err=%v", img, err)
+		f.Destroy()
+		return rpc.ErrDatabaseFail
+	}
+
+	is := ImageServer{}
+	is.noticeNewImage(img)
+
+	f.Close()
+	return nil
+}
+
+func (s *ContainerServer) ExportBackup(in *pb.ExportBackupRequest, stream pb.Container_ExportBackupServer) error {
+	if in.NodeId == 0 || in.BackupId == 0 {
+		return rpc.ErrInvalidArgument
+	}
+
+	nodeInfo, err := db.QueryNodeByID(in.NodeId)
+	if err != nil {
+		log.Infof("QueryNodeByID err=%v", err)
+		if err == db.ErrRecordNotFound {
+			return rpc.ErrNotFound
+		}
+		return rpc.ErrInternal
+	}
+
+	conn, err := getAgentConn(nodeInfo.Address)
+	if err != nil {
+		log.Infof("getAgentConn err=%v", err)
+		return rpc.ErrInternal
+	}
+
+	var img *db.ImageInfo
+	if !in.IsDownload {
+		if !args.IsValidImageVersion(in.ImgVersion) {
+			return rpc.ErrInvalidArgument
+		}
+
+		approve := db.ApprovalWait
+		ss, err := db.GetSecuritySwitch()
+		if err != nil {
+			return rpc.ErrInternal
+		}
+		if !ss {
+			approve = db.ApprovalPass
+		}
+
+		b, err := pb.NewContainerClient(conn).InspectBackup(stream.Context(), &pb.InspectBackupRequest{BackupId: in.BackupId})
+		if err != nil {
+			log.Infof("InspectBackup err=%v", err)
+			return err
+		}
+
+		if b.Backup == nil {
+			return rpc.ErrInternal
+		}
+		imageName := strings.Split(b.Backup.ImageRef, ":")[0]
+
+		// 检查相同版本的镜像是否已存在
+		i, err := db.QueryImageByNameVersion(imageName, in.ImgVersion)
+		if err != nil {
+			log.Infof("QueryImageByNameVersion err=%v", err)
+			return rpc.ErrDatabaseFail
+		} else if i != nil {
+			return status.Errorf(codes.InvalidArgument, "镜像版本已存在")
+		}
+
+		img = &db.ImageInfo{
+			Name:           imageName,
+			Version:        in.ImgVersion,
+			Description:    in.Description,
+			VerifyStatus:   db.VerifyPass,
+			ApprovalStatus: int32(approve),
+			FileSize:       imageMaxSize(),
+		}
+	}
+
+	c, err := pb.NewContainerClient(conn).ExportBackup(stream.Context(), in)
+	if err != nil {
+		log.Infof("rpc ExportBackupJob err=%v", err)
+		return err
+	}
+
+	// 客户端直接下载
+	if in.IsDownload {
+		return s.exportBackupImageToClient(c, stream)
+	}
+
+	// 上传镜像管理
+	return s.exportBackupImageToRegistry(img, c)
 }

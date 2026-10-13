@@ -23,14 +23,13 @@ type ImageInfo struct {
 	Version        string
 	Description    string
 	FileSize       int64
-	FileType       string
 	CheckSum       string
 	ImageId        string
 	FilePath       string
-	SignPath       string
 	RejectReason   string
 	ApprovalStatus int32
 	VerifyStatus   int32
+	Signature      []byte
 	CreatedAt      int64 `gorm:"autoCreateTime"`
 	UpdatedAt      int64 `gorm:"autoUpdateTime"`
 }

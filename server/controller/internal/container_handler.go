@@ -539,30 +539,26 @@ func (s *ContainerServer) CreateTemplate(ctx context.Context, in *pb.CreateTempl
 		return nil, status.Errorf(codes.InvalidArgument, "模板描述参数错误")
 	}
 
-	reply := pb.CreateTemplateReply{}
-	data := in.Data
-	id := data.Id
-	if id < 0 {
-		reply.Id = -1
-		return &reply, status.Errorf(codes.InvalidArgument, "id error")
-	}
-
-	confbyte, err := json.Marshal(data.Conf)
+	id, err := db.CreateTemplate(ctx, &db.ContainerTemplates{
+		Name:       in.Data.Conf.Name,
+		ConfigJSON: in.Data.Conf,
+		NodeId:     in.Data.NodeId,
+	})
 	if err != nil {
-		return nil, err
+		if err == db.ErrDuplicateKey {
+			return nil, rpc.ErrAlreadyExists
+		}
+		log.Warnf("db.CreateTemplate err=%v", err)
+		return nil, rpc.ErrDatabaseFail
 	}
 
-	id, err = db.CreateTemplate(ctx, id, data.Conf.Name, confbyte, data.NodeId)
-	if err != nil {
-		log.Println(err)
-	}
-	reply.Id = id
-
-	return &reply, nil
+	return &pb.CreateTemplateReply{
+		Id: id,
+	}, nil
 }
 
 func (s *ContainerServer) UpdateTemplate(ctx context.Context, in *pb.UpdateTemplateRequest) (*pb.UpdateTemplateReply, error) {
-	if in.Data == nil || in.Data.Conf == nil || in.Data.NodeId <= 0 {
+	if in.Data == nil || in.Data.Conf == nil || in.Data.NodeId <= 0 || in.Data.Id <= 0 {
 		return nil, rpc.ErrInvalidArgument
 	} else if !args.IsValidContainerName(in.Data.Conf.Name) {
 		return nil, status.Errorf(codes.InvalidArgument, "模板名参数错误")
@@ -570,27 +566,27 @@ func (s *ContainerServer) UpdateTemplate(ctx context.Context, in *pb.UpdateTempl
 		return nil, status.Errorf(codes.InvalidArgument, "模板描述参数错误")
 	}
 
-	reply := pb.UpdateTemplateReply{}
-	data := in.Data
-	id := data.Id
-	if id < 1 {
-		return &reply, errors.New("id error")
+	data, err := db.FindTemplate(in.Data.Id)
+	if err != nil {
+		if err == db.ErrRecordNotFound {
+			return nil, rpc.ErrNotFound
+		}
+		return nil, rpc.ErrDatabaseFail
 	}
 
-	confbyte, err := json.Marshal(data.Conf)
-	if err != nil {
-		return nil, err
-	}
-	err = db.UpdateTemplate(ctx, id, data.Conf.Name, confbyte, data.NodeId)
-	if err != nil {
-		log.Println(err)
+	data.Name = in.Data.Conf.Name
+	data.ConfigJSON = in.Data.Conf
+	data.NodeId = in.Data.NodeId
+	if err := db.UpdateTemplate(ctx, data); err != nil {
+		log.Infof("db.UpdateTemplate err=%v", err)
+		return nil, rpc.ErrInternal
 	}
 
-	return &reply, nil
+	return &pb.UpdateTemplateReply{}, nil
 }
 
 func (s *ContainerServer) RemoveTemplate(ctx context.Context, in *pb.RemoveTemplateRequest) (*pb.RemoveTemplateReply, error) {
-	reply := pb.RemoveTemplateReply{}
+	var reply pb.RemoveTemplateReply
 	if ids := in.GetIds(); ids != nil {
 		err := db.RemoveTemplate(ctx, in.Ids)
 		if err != nil {
@@ -611,28 +607,20 @@ func (*ContainerServer) InspectTemplate(ctx context.Context, in *pb.InspectTempl
 
 	data, err := db.FindTemplate(in.Id)
 	if err != nil {
-		log.Infof("db.FindTemplate err=%v", err)
 		if err == db.ErrRecordNotFound {
 			return nil, rpc.ErrNotFound
 		}
-		return nil, rpc.ErrInternal
+		log.Infof("db.FindTemplate err=%v", err)
+		return nil, rpc.ErrDatabaseFail
 	}
 
-	var c pb.ContainerConfigs
-	if err := json.Unmarshal([]byte(data.ConfigJSON), &c); err != nil {
-		log.Warnf("parse json string '%s' err=%v", data.ConfigJSON, err)
-		return nil, rpc.ErrInternal
-	}
-
-	reply := pb.InspectTemplateReply{
+	return &pb.InspectTemplateReply{
 		Data: &pb.ContainerTemplate{
 			Id:     data.Id,
-			Conf:   &c,
+			Conf:   data.ConfigJSON,
 			NodeId: data.NodeId,
 		},
-	}
-
-	return &reply, nil
+	}, nil
 }
 
 func (*ContainerServer) CreateBackup(ctx context.Context, in *pb.CreateBackupRequest) (*pb.CreateBackupReply, error) {

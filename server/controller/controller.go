@@ -16,7 +16,6 @@ import (
 	"scmc/rpc/pb/logging"
 	"scmc/rpc/pb/network"
 	"scmc/rpc/pb/node"
-	"scmc/rpc/pb/security"
 	"scmc/rpc/pb/system"
 	"scmc/rpc/pb/user"
 	"scmc/server/controller/internal"
@@ -55,7 +54,6 @@ func Server() (*grpc.Server, error) {
 	node.RegisterNodeServer(s, &internal.NodeServer{})
 	user.RegisterUserServer(s, &internal.UserServer{})
 	logging.RegisterLoggingServer(s, &internal.LoggingServer{})
-	security.RegisterSecurityServer(s, &internal.SecurityServer{})
 	system.RegisterSystemServer(s, &internal.SystemServer{})
 
 	go internal.RuntimeLogWriter()

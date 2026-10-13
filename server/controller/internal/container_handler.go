@@ -506,26 +506,28 @@ func (s *ContainerServer) MonitorHistory(ctx context.Context, in *pb.MonitorHist
 }
 
 func (s *ContainerServer) ListTemplate(ctx context.Context, in *pb.ListTemplateRequest) (*pb.ListTemplateReply, error) {
-	reply := &pb.ListTemplateReply{}
-
-	pageinfo, templates, err := db.ListTemplate(ctx, in.PerPage, in.NextPage)
+	page, data, err := db.ListTemplate(ctx, in.PerPage, in.NextPage)
 	if err != nil {
-		return nil, err
-	}
-	reply.CurPage = pageinfo.CurPage
-	reply.PerPage = pageinfo.PerPage
-	reply.TotalPages = pageinfo.TotalPages
-	reply.TotalRows = pageinfo.TotalRows
-
-	for _, template := range templates {
-		// log.Println(template.Id, template.Name, template.Config_json)
-		var containerConfig *pb.ContainerConfigs
-		json.Unmarshal([]byte(template.ConfigJSON), &containerConfig)
-		templatestruct := pb.ContainerTemplate{Id: template.Id, Conf: containerConfig, NodeId: template.NodeId}
-		reply.Data = append(reply.Data, &templatestruct)
+		log.Infof("db.ListTemplate err=%v", err)
+		return nil, rpc.ErrDatabaseFail
 	}
 
-	return reply, nil
+	reply := pb.ListTemplateReply{
+		CurPage:    page.CurPage,
+		PerPage:    page.PerPage,
+		TotalPages: page.TotalPages,
+		TotalRows:  page.TotalRows,
+	}
+
+	for _, t := range data {
+		reply.Data = append(reply.Data, &pb.ContainerTemplate{
+			Id:     t.Id,
+			Conf:   t.ConfigJSON,
+			NodeId: t.NodeId,
+		})
+	}
+
+	return &reply, nil
 }
 
 func (s *ContainerServer) CreateTemplate(ctx context.Context, in *pb.CreateTemplateRequest) (*pb.CreateTemplateReply, error) {

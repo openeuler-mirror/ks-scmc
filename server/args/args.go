@@ -1,4 +1,4 @@
-package internal
+package args
 
 import (
 	"net"
@@ -12,7 +12,7 @@ const (
 	imageVersionPattern  = `^[a-zA-Z0-9][a-zA-Z0-9_.-]*$`
 )
 
-func isValidNodeAddr(s string) bool {
+func IsValidNodeAddr(s string) bool {
 	c := utf8.RuneCountInString(s)
 	if c < 1 || c > 200 {
 		return false
@@ -23,17 +23,17 @@ func isValidNodeAddr(s string) bool {
 	return ip != nil || isDomain
 }
 
-func isValidNodeName(s string) bool {
+func IsValidNodeName(s string) bool {
 	c := utf8.RuneCountInString(s)
 	return c >= 1 && c <= 50
 }
 
-func isValidNodeComment(s string) bool {
+func IsValidNodeComment(s string) bool {
 	c := utf8.RuneCountInString(s)
 	return c <= 200
 }
 
-func isValidContainerName(s string) bool {
+func IsValidContainerName(s string) bool {
 	c := utf8.RuneCountInString(s)
 	if c < 1 || c > 50 {
 		return false
@@ -42,12 +42,12 @@ func isValidContainerName(s string) bool {
 	return regexp.MustCompile(containerNamePattern).MatchString(s)
 }
 
-func isValidContainerDesc(s string) bool {
+func IsValidContainerDesc(s string) bool {
 	c := utf8.RuneCountInString(s)
 	return c <= 200
 }
 
-func isValidImageName(s string) bool {
+func IsValidImageName(s string) bool {
 	c := utf8.RuneCountInString(s)
 	if c < 1 || c > 50 {
 		return false
@@ -56,7 +56,7 @@ func isValidImageName(s string) bool {
 	return regexp.MustCompile(imageNamePattern).MatchString(s)
 }
 
-func isValidImageVersion(s string) bool {
+func IsValidImageVersion(s string) bool {
 	c := utf8.RuneCountInString(s)
 	if c < 1 || c > 20 {
 		return false
@@ -65,11 +65,11 @@ func isValidImageVersion(s string) bool {
 	return regexp.MustCompile(imageVersionPattern).MatchString(s)
 }
 
-func isValidImageDesc(s string) bool {
+func IsValidImageDesc(s string) bool {
 	c := utf8.RuneCountInString(s)
 	return c <= 200
 }
 
-func isValidBackupDesc(s string) bool {
+func IsValidBackupDesc(s string) bool {
 	return utf8.RuneCountInString(s) <= 200
 }

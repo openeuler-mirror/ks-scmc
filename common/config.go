@@ -67,6 +67,10 @@ func (m *MySQLConfig) DSN() (string, error) {
 	return fmt.Sprintf("%s:%s@tcp(%s)/%s?%s", m.User, passwordDe, m.Addr, m.DB, q.Encode()), nil
 }
 
+type SQLiteConfig struct {
+	Path string `mapstructure:"path"`
+}
+
 type LogConfig struct {
 	Basedir string `mapstructure:"basedir"`
 	Level   string `mapstructure:"level"`
@@ -107,6 +111,7 @@ var Config struct {
 	Agent      AgentConfig      `mapstructure:"agent"`
 	Controller ControllerConfig `mapstructure:"controller"`
 	MySQL      MySQLConfig      `mapstructure:"mysql"`
+	SQLite     SQLiteConfig     `mapstructure:"sqlite"`
 	CAdvisor   ServiceConfig    `mapstructure:"cadvisor"`
 	InfluxDB   ServiceConfig    `mapstructure:"influxdb"`
 	Network    NetworkConfig    `mapstructure:"network"`
@@ -140,6 +145,8 @@ func setDefault() {
 	viper.SetDefault("mysql.password", "12345678")
 	viper.SetDefault("mysql.db", "ks-scmc")
 	viper.SetDefault("mysql.debug", false)
+
+	viper.SetDefault("sqlite.path", "/var/lib/ks-scmc/data.db")
 
 	viper.SetDefault("cadvisor.addr", "127.0.0.1:8080")
 

@@ -2,20 +2,22 @@ package db
 
 import (
 	"context"
-
+	"errors"
 	"math"
 
 	log "github.com/sirupsen/logrus"
 	"gorm.io/gorm"
+
+	pb "scmc/rpc/pb/container"
 )
 
 type ContainerTemplates struct {
 	Id         int64 `gorm:"primaryKey"`
 	Name       string
-	ConfigJSON string
 	NodeId     int64
-	CreatedAt  int64 `gorm:"autoCreateTime"`
-	UpdatedAt  int64 `gorm:"autoUpdateTime"`
+	ConfigJSON *pb.ContainerConfigs `gorm:"serializer:json"`
+	CreatedAt  int64                `gorm:"autoCreateTime"`
+	UpdatedAt  int64                `gorm:"autoUpdateTime"`
 }
 
 type PageInfo struct {
@@ -80,38 +82,13 @@ func (p *PageInfo) Getoffset() int64 {
 }
 
 func ListTemplate(ctx context.Context, perPage int64, nextPage int64) (*PageInfo, []ContainerTemplates, error) {
-	log.Debugln("ListTemplate")
 	db, err := getConn()
 	if err != nil {
 		return nil, nil, err
 	}
 
 	pageinfo := NewPageInfo(ctx, db, perPage, nextPage)
-	// pageinfo := new(PageInfo)
 
-	// perPage = pageinfo.GetPerPage(perPage)
-
-	// var totalRows int64
-
-	// var containerTemplates []ContainerTemplates
-	// db.WithContext(ctx).Model(&containerTemplates).Count(&totalRows)
-	// pageinfo.TotalRows = totalRows
-	// totalRows := pageinfo.GetTotalRows(ctx, db)
-
-	// totalPages := int64(math.Ceil(float64(totalRows) / float64(perPage)))
-	// pageinfo.TotalPages = totalPages
-	// totalPages := pageinfo.GetTotalPages(totalRows, perPage)
-
-	// if nextPage == 0 {
-	// 	nextPage = 1
-	// }
-	// if nextPage > totalPages {
-	// 	nextPage = totalPages
-	// }
-	// pageinfo.CurPage = nextPage
-	// nextPage = pageinfo.GetCurPage(nextPage, totalPages)
-
-	// offsetnum := (nextPage - 1) * perPage
 	offsetnum := pageinfo.Getoffset()
 	var containerTemplates []ContainerTemplates
 	if result := db.WithContext(ctx).Offset(int(offsetnum)).Limit(int(pageinfo.PerPage)).Find(&containerTemplates); result.Error != nil {
@@ -122,43 +99,36 @@ func ListTemplate(ctx context.Context, perPage int64, nextPage int64) (*PageInfo
 	return pageinfo, containerTemplates, nil
 }
 
-func CreateTemplate(ctx context.Context, id int64, name string, configbyte []byte, nodeId int64) (int64, error) {
-	log.Debugln("CreateTemplate")
+func CreateTemplate(ctx context.Context, data *ContainerTemplates) (int64, error) {
+	if data == nil || data.Name == "" {
+		return -1, errors.New("invalid argument")
+	}
+
 	db, err := getConn()
 	if err != nil {
 		log.Debugln(err)
 		return -1, err
 	}
 
-	templateInfo := ContainerTemplates{
-		Id:         id,
-		Name:       name,
-		ConfigJSON: string(configbyte),
-		NodeId:     nodeId,
-	}
-	if result := db.WithContext(ctx).Create(&templateInfo); result.Error != nil {
+	if result := db.WithContext(ctx).Create(data); result.Error != nil {
 		log.Errorf("db create template %v", result.Error)
 		return -1, translateError(result.Error)
 	}
 
-	return templateInfo.Id, nil
+	return data.Id, nil
 }
 
-func UpdateTemplate(ctx context.Context, id int64, name string, configbyte []byte, nodeId int64) error {
+func UpdateTemplate(ctx context.Context, data *ContainerTemplates) error {
+	if data == nil || data.Name == "" {
+		return errors.New("invalid argument")
+	}
+
 	db, err := getConn()
 	if err != nil {
 		return err
 	}
 
-	// templateInfo := ContainerTemplates{}
-
-	if result := db.WithContext(ctx).Model(&ContainerTemplates{}).Where("id=?", id).Updates(
-		map[string]interface{}{
-			"name":        name,
-			"config_json": string(configbyte),
-			"node_id":     nodeId,
-		},
-	); result.Error != nil {
+	if result := db.Save(data); result.Error != nil {
 		log.Errorf("db update template %v", result.Error)
 		return translateError(result.Error)
 	}

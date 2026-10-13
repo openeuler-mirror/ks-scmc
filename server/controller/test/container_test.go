@@ -463,3 +463,100 @@ func TestContainerResumeBackup(t *testing.T) {
 		}
 	})
 }
+
+func TestAddAppEntry(t *testing.T) {
+	testRunner(func(ctx context.Context, conn *grpc.ClientConn) {
+		cli := pb.NewContainerClient(conn)
+
+		request := pb.AddAppEntryRequest{
+			NodeId: 1,
+			App: &pb.AppEntry{
+				Name:        "demo",
+				ContainerId: "test",
+				ExePath:     "sleep 4455",
+			},
+		}
+		reply, err := cli.AddAppEntry(ctx, &request)
+
+		if err != nil {
+			t.Errorf("AddAppEntry: %v", err)
+		} else {
+			t.Logf("AddAppEntry reply: %+v", reply)
+		}
+	})
+}
+
+func TestRemoveAppEntry(t *testing.T) {
+	testRunner(func(ctx context.Context, conn *grpc.ClientConn) {
+		cli := pb.NewContainerClient(conn)
+
+		request := pb.RemoveAppEntryRequest{
+			NodeId: 1,
+			AppIds: []int64{1},
+		}
+		reply, err := cli.RemoveAppEntry(ctx, &request)
+
+		if err != nil {
+			t.Errorf("RemoveAppEntry: %v", err)
+		} else {
+			t.Logf("RemoveAppEntry reply: %+v", reply)
+		}
+	})
+}
+
+func TestUpdateAppEntry(t *testing.T) {
+	testRunner(func(ctx context.Context, conn *grpc.ClientConn) {
+		cli := pb.NewContainerClient(conn)
+
+		request := pb.UpdateAppEntryRequest{
+			NodeId: 1,
+			App: &pb.AppEntry{
+				Id:      1,
+				Name:    "demo-1",
+				ExePath: "sleep 4455",
+			},
+		}
+		reply, err := cli.UpdateAppEntry(ctx, &request)
+
+		if err != nil {
+			t.Errorf("UpdateAppEntry: %v", err)
+		} else {
+			t.Logf("UpdateAppEntry reply: %+v", reply)
+		}
+	})
+}
+
+func TestListAppEntry(t *testing.T) {
+	testRunner(func(ctx context.Context, conn *grpc.ClientConn) {
+		cli := pb.NewContainerClient(conn)
+
+		request := pb.ListAppEntryRequest{
+			ContainerId: "test",
+		}
+		reply, err := cli.ListAppEntry(ctx, &request)
+
+		if err != nil {
+			t.Errorf("ListAppEntry: %v", err)
+		} else {
+			t.Logf("ListAppEntry reply: %+v", reply)
+		}
+	})
+}
+
+func TestRunAppEntry(t *testing.T) {
+	testRunner(func(ctx context.Context, conn *grpc.ClientConn) {
+		cli := pb.NewContainerClient(conn)
+
+		request := pb.RunAppEntryRequest{
+			NodeId: 1,
+			AppId:  1,
+		}
+		reply, err := cli.RunAppEntry(ctx, &request)
+
+		if err != nil {
+			t.Errorf("RunAppEntry: %v", err)
+		} else {
+			t.Logf("RunAppEntry reply: %+v", reply)
+		}
+	})
+}

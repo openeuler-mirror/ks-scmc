@@ -2,7 +2,6 @@ package db
 
 import (
 	"errors"
-	"strings"
 
 	"github.com/go-sql-driver/mysql"
 	"gorm.io/gorm"

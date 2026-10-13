@@ -44,77 +44,124 @@ func parseSubnet(s string) (string, int, error) {
 	return ip.String(), int(n), nil
 }
 
+func isVirtualNic(name string) (bool, error) {
+	_, err := os.Stat(filepath.Join(VirtualNicBase, name))
+	if err != nil {
+		if os.IsNotExist(err) {
+			return false, nil
+		}
+		log.Warnf("os.Stat(%v/%v) err=%v", VirtualNicBase, name, err)
+		return false, err
+	}
+	return true, nil
+}
+
 func (s *NetworkServer) List(ctx context.Context, in *pb.ListRequest) (*pb.ListReply, error) {
-	reply := pb.ListReply{}
+	var reply pb.ListReply
 
 	cli, err := docker.Client()
 	if err != nil {
 		return nil, rpc.ErrInternal
 	}
 
-	list, err := cli.NetworkList(context.Background(), types.NetworkListOptions{})
+	ns, err := cli.NetworkList(context.Background(), types.NetworkListOptions{})
 	if err != nil {
 		log.Warnf("NetworkList: %v", err)
 		return nil, transDockerError(err)
 	}
 
-	for _, i := range list {
+	for _, n := range ns {
 		//不显示默认网卡
-		if i.Name == "bridge" || i.Name == "host" || i.Name == "none" {
+		if n.Name == "bridge" || n.Name == "host" || n.Name == "none" {
 			continue
 		}
-		if len(i.IPAM.Config) != 1 {
-			log.Warnf("bridge network[%s] unexpect config %v", i.Name, i.IPAM.Config)
+		if len(n.IPAM.Config) != 1 {
+			log.Warnf("bridge network[%s] unexpect config %v", n.Name, n.IPAM.Config)
 			continue
 		}
 
-		conf := i.IPAM.Config[0]
+		conf := n.IPAM.Config[0]
 		addr, masklen, err := parseSubnet(conf.Subnet)
 		if err != nil {
-			log.Warnf("bridge network[%s] parse subnet=%v return err=%v", i.Name, conf.Subnet, err)
+			log.Warnf("bridge network[%s] parse subnet=%v return err=%v", n.Name, conf.Subnet, err)
 		}
 
-		inspect, err := cli.NetworkInspect(context.Background(), i.Name, types.NetworkInspectOptions{})
+		detail, err := cli.NetworkInspect(context.Background(), n.Name, types.NetworkInspectOptions{})
 		if err != nil {
 			log.Warnf("NetworkInspect: %v", err)
 		}
 
 		var linkIfs string
-		if inspect.Options != nil {
-			linkIfs = inspect.Options["parent"]
+		if detail.Options != nil {
+			linkIfs = detail.Options["parent"]
 		}
 
-		var containers []*pb.ContainerNetwork
-		for containerId, cntrInfo := range inspect.Containers {
-			caddr, cmasklen, _ := parseSubnet(cntrInfo.IPv4Address)
-			containerInfo := pb.ContainerNetwork{
-				ContainerId: containerId,
-				IpAddress:   caddr,
-				IpMaskLen:   int32(cmasklen),
-				MacAddress:  cntrInfo.MacAddress,
+		/*
+			var containers []*pb.ContainerNetwork
+			for cid, c := range detail.Containers {
+				caddr, cmasklen, _ := parseSubnet(c.IPv4Address)
+				containers = append(containers, &pb.ContainerNetwork{
+					ContainerId: cid,
+					IpAddress:   caddr,
+					IpMaskLen:   int32(cmasklen),
+					MacAddress:  c.MacAddress,
+				})
 			}
-			containers = append(containers, &containerInfo)
-		}
+		*/
 
-		netInfo := pb.NetworkInterface{
-			Name:       i.Name,
-			BindReal:   linkIfs,
-			IpAddress:  addr,
-			IpMaskLen:  int32(masklen),
-			Gateway:    conf.Gateway,
-			IsUp:       true,
-			Containers: containers,
-		}
-
-		reply.VirtualIfs = append(reply.VirtualIfs, &netInfo)
+		reply.VirtualIfs = append(reply.VirtualIfs, &pb.NetworkInterface{
+			Name:      n.Name,
+			BindReal:  linkIfs,
+			IpAddress: addr,
+			IpMaskLen: int32(masklen),
+			Gateway:   conf.Gateway,
+			IsUp:      true,
+			// Containers: containers,
+		})
 	}
 
+	ifs, err := net.Interfaces()
+	if err != nil {
+		log.Warnf("net.Interface err=%v", err)
+		return nil, rpc.ErrInternal
+	}
+
+	for _, i := range ifs {
+		log.Printf("%+v", i)
+		virtual, err := isVirtualNic(i.Name)
+		if virtual || err != nil {
+			continue
+		}
+
+		realIf := &pb.NetworkInterface{
+			Name: i.Name,
+			IsUp: true,
+		}
+
+		addrs, err := i.Addrs()
+		if err != nil {
+			log.Warnf("retrieve addrs from interface %v err=%v", i, err)
+		}
+
+		for _, a := range addrs {
+			ip, ipNet, err := net.ParseCIDR(a.String())
+			if err != nil {
+				log.Warnf("net.ParseCIDR(%s) err=%v", a.String(), err)
+				continue
+			}
+
+			if ipv4 := ip.To4(); ipv4 != nil {
+				ones, _ := ipNet.Mask.Size()
+				realIf.IpAddress = ipv4.String()
+				realIf.IpMaskLen = int32(ones)
+			}
+		}
+		reply.RealIfs = append(reply.RealIfs, realIf)
+	}
 	return &reply, nil
 }
 
 func (s *NetworkServer) Connect(ctx context.Context, in *pb.ConnectRequest) (*pb.ConnectReply, error) {
-	reply := pb.ConnectReply{}
-
 	if in.Interface == "" || in.ContainerId == "" || in.IpAddress == "" {
 		return nil, rpc.ErrInvalidArgument
 	}
@@ -142,12 +189,10 @@ func (s *NetworkServer) Connect(ctx context.Context, in *pb.ConnectRequest) (*pb
 		return nil, transDockerError(err)
 	}
 
-	return &reply, err
+	return &pb.ConnectReply{}, err
 }
 
 func (s *NetworkServer) Disconnect(ctx context.Context, in *pb.DisconnectRequest) (*pb.DisconnectReply, error) {
-	reply := pb.DisconnectReply{}
-
 	if in.Interface == "" || in.ContainerId == "" {
 		return nil, rpc.ErrInvalidArgument
 	}
@@ -162,12 +207,10 @@ func (s *NetworkServer) Disconnect(ctx context.Context, in *pb.DisconnectRequest
 		return nil, transDockerError(err)
 	}
 
-	return &reply, err
+	return &pb.DisconnectReply{}, err
 }
 
 func (s *NetworkServer) ListIPtables(ctx context.Context, in *pb.ListIPtablesRequest) (*pb.ListIPtablesReply, error) {
-	reply := pb.ListIPtablesReply{}
-
 	who := iptables.OperateNode
 	pid := 0
 	if in.ContainerId != "" {
@@ -190,11 +233,13 @@ func (s *NetworkServer) ListIPtables(ctx context.Context, in *pb.ListIPtablesReq
 		return nil, rpc.ErrInternal
 	}
 
+	var reply pb.ListIPtablesReply
+
 	for _, chains := range list {
 		var chainRule pb.ChianRule
 		chainRule.Chain = chains.Chain
 		for _, rule := range chains.Rules {
-			info := &pb.RuleInfo{
+			chainRule.Rule = append(chainRule.Rule, &pb.RuleInfo{
 				Source:       rule.Source,
 				Destination:  rule.Destination,
 				Protocol:     rule.Protocol,
@@ -203,20 +248,16 @@ func (s *NetworkServer) ListIPtables(ctx context.Context, in *pb.ListIPtablesReq
 				InInterface:  rule.InInterface,
 				OutInterface: rule.OutInterface,
 				Policy:       rule.Policy,
-			}
-
-			chainRule.Rule = append(chainRule.Rule, info)
+			})
 		}
 
 		reply.ChainRules = append(reply.ChainRules, &chainRule)
 	}
-	return &reply, nil
 
+	return &reply, nil
 }
 
 func (s *NetworkServer) EnableIPtables(ctx context.Context, in *pb.EnableIPtablesRequest) (*pb.EnableIPtablesReply, error) {
-	reply := pb.EnableIPtablesReply{}
-
 	if in.ContainerId != "" {
 		cli, err := docker.Client()
 		if err != nil {
@@ -251,12 +292,11 @@ func (s *NetworkServer) EnableIPtables(ctx context.Context, in *pb.EnableIPtable
 		}
 	}
 
-	return &reply, nil
+	return &pb.EnableIPtablesReply{}, nil
 
 }
 
 func (s *NetworkServer) CreateIPtables(ctx context.Context, in *pb.CreateIPtablesRequest) (*pb.CreateIPtablesReply, error) {
-	reply := pb.CreateIPtablesReply{}
 	if in.Rule == nil {
 		return nil, rpc.ErrInvalidArgument
 	}
@@ -304,15 +344,10 @@ func (s *NetworkServer) CreateIPtables(ctx context.Context, in *pb.CreateIPtable
 		return nil, rpc.ErrInternal
 	}
 
-	return &reply, nil
+	return &pb.CreateIPtablesReply{}, nil
 }
 
 func (s *NetworkServer) ModifyIPtables(ctx context.Context, in *pb.ModifyIPtablesRequest) (*pb.ModifyIPtablesReply, error) {
-	reply := pb.ModifyIPtablesReply{}
-	if in.OldRule == nil || in.NewRule == nil {
-		return nil, rpc.ErrInvalidArgument
-	}
-
 	who := iptables.OperateNode
 	pid := 0
 	oldChain := defaultNodeChain
@@ -376,11 +411,10 @@ func (s *NetworkServer) ModifyIPtables(ctx context.Context, in *pb.ModifyIPtable
 		return nil, rpc.ErrInternal
 	}
 
-	return &reply, nil
+	return &pb.ModifyIPtablesReply{}, nil
 }
 
 func (s *NetworkServer) RemoveIPtables(ctx context.Context, in *pb.RemoveIPtablesRequest) (*pb.RemoveIPtablesReply, error) {
-	reply := pb.RemoveIPtablesReply{}
 	if in.Rule == nil {
 		return nil, rpc.ErrInvalidArgument
 	}
@@ -427,5 +461,158 @@ func (s *NetworkServer) RemoveIPtables(ctx context.Context, in *pb.RemoveIPtable
 		return nil, rpc.ErrInternal
 	}
 
-	return &reply, nil
+	return &pb.RemoveIPtablesReply{}, nil
+}
+
+func (s *NetworkServer) createNetwork(name, subnet, gateway, parent string) error {
+	driver := "bridge"
+	if parent != "" {
+		driver = "macvlan"
+	}
+
+	cli, err := docker.Client()
+	if err != nil {
+		return rpc.ErrInternal
+	}
+
+	data := types.NetworkCreate{
+		Driver: driver,
+		IPAM: &network.IPAM{
+			Config: []network.IPAMConfig{
+				{
+					Subnet:  subnet,
+					Gateway: gateway,
+				},
+			},
+		},
+		Options: map[string]string{
+			"parent":                         parent,
+			"com.docker.network.bridge.name": "scmc-" + name,
+		},
+	}
+
+	_, err = cli.NetworkCreate(context.Background(), name, data)
+	if err != nil {
+		log.Warnf("NetworkCreate name=%v err=%v", name, err)
+		return err
+	}
+	return nil
+}
+
+func (s *NetworkServer) removeNetwork(name string) error {
+	cli, err := docker.Client()
+	if err != nil {
+		return rpc.ErrInternal
+	}
+
+	err = cli.NetworkRemove(context.Background(), name)
+	if err != nil {
+		if client.IsErrNotFound(err) {
+			return rpc.ErrNotFound
+		}
+		log.Warnf("NetworkRemove name=%v err=%v", name, err)
+		return err
+	}
+	return nil
+}
+
+func (s *NetworkServer) checkRemoveNetwork(name string) error {
+	if name == "" {
+		return rpc.ErrInvalidArgument
+	}
+
+	cli, err := docker.Client()
+	if err != nil {
+		return rpc.ErrInternal
+	}
+
+	_, err = cli.NetworkInspect(context.Background(), name, types.NetworkInspectOptions{})
+	if err != nil {
+		log.Warnf("NetworkInspect err=%v", err)
+		if client.IsErrNotFound(err) {
+			return rpc.ErrNotFound
+		}
+		return rpc.ErrInternal
+	}
+
+	return nil
+}
+
+func (s *NetworkServer) checkCreateNetwork(name, subnet, gateway, parent string) error {
+	if name == "" {
+		return rpc.ErrInvalidArgument
+	}
+
+	_, _, err := net.ParseCIDR(subnet)
+	if err != nil {
+		return status.Errorf(codes.InvalidArgument, "网段参数错误")
+	}
+
+	// ip := net.ParseIP(gateway)
+	// if ip == nil || r.Contains(ip) {
+	// 	return status.Errorf(codes.InvalidArgument, "网关参数错误")
+	// }
+
+	if parent != "" {
+		_, err = net.InterfaceByName(parent)
+		if err != nil {
+			log.Warnf("InterfaceByName(%v) err=%v", parent, err)
+			return rpc.ErrInternal
+		}
+
+		isVirtual, err := isVirtualNic(parent)
+		if err != nil {
+			return rpc.ErrInternal
+		}
+		if isVirtual {
+			log.Infof("cannot use virtual nic %v", parent)
+			return rpc.ErrInvalidArgument
+		}
+	}
+
+	return nil
+}
+
+func (s *NetworkServer) CreateNic(ctx context.Context, in *pb.CreateNicRequest) (*pb.CreateNicReply, error) {
+	if err := s.checkCreateNetwork(in.Name, in.Subnet, in.Gateway, in.Parent); err != nil {
+		return nil, err
+	}
+
+	if err := s.createNetwork(in.Name, in.Subnet, in.Gateway, in.Parent); err != nil {
+		return nil, err
+	}
+
+	return &pb.CreateNicReply{}, nil
+}
+
+func (s *NetworkServer) RemoveNic(ctx context.Context, in *pb.RemoveNicRequest) (*pb.RemoveNicReply, error) {
+	if err := s.checkRemoveNetwork(in.Name); err != nil {
+		return nil, err
+	}
+
+	if err := s.removeNetwork(in.Name); err != nil {
+		return nil, err
+	}
+
+	return &pb.RemoveNicReply{}, nil
+}
+
+func (s *NetworkServer) UpdateNic(ctx context.Context, in *pb.UpdateNicRequest) (*pb.UpdateNicReply, error) {
+	if err := s.checkRemoveNetwork(in.Name); err != nil {
+		return nil, err
+	}
+
+	if err := s.checkCreateNetwork(in.Name, in.Subnet, in.Gateway, in.Parent); err != nil {
+		return nil, err
+	}
+
+	if err := s.removeNetwork(in.Name); err != nil {
+		return nil, err
+	}
+
+	if err := s.createNetwork(in.Name, in.Subnet, in.Gateway, in.Parent); err != nil {
+		return nil, err
+	}
+
+	return &pb.UpdateNicReply{}, nil
 }

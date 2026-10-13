@@ -24,6 +24,8 @@ const defaultContainerChain = "INPUT"
 const defaultNodeChain = "OUTPUT"
 const defaultPolicy = "ACCEPT"
 
+const VirtualNicBase = "/sys/devices/virtual/net"
+
 type NetworkServer struct {
 	pb.UnimplementedNetworkServer
 }

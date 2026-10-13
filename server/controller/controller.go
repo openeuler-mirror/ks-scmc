@@ -61,8 +61,6 @@ func Server() (*grpc.Server, error) {
 	tasks.AddTask(
 		&tasks.SyncImages{},
 		&tasks.IllegalContainer{},
-		&tasks.ContainerBackup{},
-		&tasks.ContainerConfig{},
 		&tasks.PushImage{},
 		&tasks.NodeStatus{},
 	)

@@ -33,7 +33,6 @@ type ControllerConfig struct {
 	ImageDir       string `mapstructure:"image-dir"`
 	ImageSigner    string `mapstructure:"image-signer"`
 	CheckAuth      bool   `mapstructure:"check-auth"`
-	CheckPerm      bool   `mapstructure:"check-perm"`
 	SessionTimeout uint   `mapstructure:"session-timeout"`
 	// cert
 }
@@ -134,7 +133,6 @@ func setDefault() {
 	viper.SetDefault("controller.image-dir", "/var/lib/ks-scmc/images")
 	viper.SetDefault("controller.image-signer", "/var/lib/ks-scmc/images/public-key.txt")
 	viper.SetDefault("controller.check-auth", true)
-	viper.SetDefault("controller.check-perm", true)
 	viper.SetDefault("controller.session-timeout", 30*60)
 
 	viper.SetDefault("mysql.addr", "127.0.0.1:3306")
@@ -180,8 +178,4 @@ func LoadConfig(path string) error {
 
 func NeedCheckAuth() bool {
 	return Config.Controller.CheckAuth
-}
-
-func NeedCheckPerm() bool {
-	return Config.Controller.CheckPerm
 }

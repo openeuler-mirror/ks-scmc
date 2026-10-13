@@ -1,42 +1,182 @@
 package internal
 
 import (
-	"archive/tar"
 	"bufio"
 	"context"
-	"crypto/sha256"
-	"encoding/hex"
-	"fmt"
 	"io"
 	"os"
-	"strings"
 	"time"
 
 	log "github.com/sirupsen/logrus"
-	"golang.org/x/crypto/openpgp"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	"scmc/common"
 	"scmc/model/db"
 	"scmc/model/registry"
 	"scmc/rpc"
 	pb "scmc/rpc/pb/image"
+	"scmc/server/args"
 )
 
-const maxImageSize int64 = 1 << 30
-const manifestFile = "manifest.json"
-
-func imageDir() string {
-	return common.Config.Controller.ImageDir
+type ImageUploadStream struct {
+	ss pb.Image_UploadServer
 }
 
-func imageSigner() string {
-	return common.Config.Controller.ImageSigner
+func (s ImageUploadStream) Read() ([]byte, error) {
+	r, err := s.ss.Recv()
+	if err != nil {
+		return nil, err
+	}
+
+	return r.ChunkData, nil
+}
+
+func (s ImageUploadStream) Context() context.Context {
+	return s.ss.Context()
+}
+
+type ImageUpdateStream struct {
+	ss pb.Image_UpdateServer
+}
+
+func (s ImageUpdateStream) Read() ([]byte, error) {
+	r, err := s.ss.Recv()
+	if err != nil {
+		return nil, err
+	}
+
+	return r.ChunkData, nil
+}
+
+func (s ImageUpdateStream) Context() context.Context {
+	return s.ss.Context()
 }
 
 type ImageServer struct {
 	pb.UnimplementedImageServer
+}
+
+func (s *ImageServer) noticeAgentSync(toRemove, toPull []string) {
+	nodes, err := db.ListNodes()
+	if err != nil {
+		log.Errorf("db.ListNodes err=%v", err)
+		return
+	}
+
+	// 遍历各节点通过ImagePull拉取镜像
+	for _, n := range nodes {
+		conn, err := getAgentConn(n.Address)
+		if err != nil {
+			log.Warnf("Failed to connect to agent service, node=%+v", n)
+			continue
+		}
+
+		req := pb.AgentSyncRequest{
+			ToRemove: toRemove,
+			ToPull:   toPull,
+		}
+
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+		defer cancel()
+		if _, err = pb.NewImageClient(conn).AgentSync(ctx, &req); err != nil {
+			log.Warnf("AgentSync req=%+v node=%+v err=%v", &req, n, err)
+		} else {
+			log.Debugf("AgentSync req=%+v node=%+v OK", &req, n)
+		}
+	}
+}
+
+func (s *ImageServer) noticeNewImage(i *db.ImageInfo) {
+	if i.VerifyStatus == db.VerifyPass && i.ApprovalStatus == db.ApprovalPass {
+		go func() {
+			registry.PushImage(i)
+			s.noticeAgentSync(nil, []string{i.Name + ":" + i.Version})
+		}()
+	}
+}
+
+func (s *ImageServer) uploadCheckMetadata(md *pb.UploadInfo) error {
+	if md == nil {
+		return rpc.ErrInvalidArgument
+	} else if md.Size == 0 {
+		return rpc.ErrInvalidArgument
+	} else if md.Size > imageMaxSize() {
+		return status.Errorf(codes.InvalidArgument, "镜像大小超过上限")
+	} else if !args.IsValidImageName(md.Name) {
+		return status.Errorf(codes.InvalidArgument, "镜像名参数错误")
+	} else if !args.IsValidImageVersion(md.Version) {
+		return status.Errorf(codes.InvalidArgument, "镜像版本参数错误")
+	} else if !args.IsValidImageDesc(md.Description) {
+		return status.Errorf(codes.InvalidArgument, "镜像描述参数错误")
+	}
+	return nil
+}
+
+func (s *ImageServer) updateCheckMetadata(md *pb.UploadInfo) error {
+	if md == nil {
+		return rpc.ErrInvalidArgument
+	} else if !args.IsValidImageDesc(md.Description) {
+		return status.Errorf(codes.InvalidArgument, "镜像描述参数错误")
+	}
+
+	if md.Size > 0 && md.Size > imageMaxSize() {
+		return status.Errorf(codes.InvalidArgument, "镜像大小超过上限")
+	}
+
+	return nil
+}
+
+func (s *ImageServer) receiveImageFile(securitySwitch bool, img *db.ImageInfo, sig *pb.SignInfo, stream ImageFileStream) (*ImageFile, error) {
+	if securitySwitch { // 开启安全开关开启时，需要文件签名
+		if sig == nil || len(sig.ChunkData) == 0 {
+			return nil, status.Error(codes.InvalidArgument, "缺少镜像签名")
+		} else if len(sig.ChunkData) > 8192 {
+			return nil, status.Error(codes.InvalidArgument, "镜像签名数据过大")
+		}
+	}
+
+	f, err := NewImageFile(img.Name, img.Version, img.FileSize)
+	if err != nil {
+		log.Errorf("NewImageFile err=%v", err)
+		return nil, rpc.ErrInternal
+	}
+
+	if err := f.ReadStream(stream); err != nil {
+		f.Destroy()
+		log.Errorf("Write stream data to image file err=%v", err)
+		return nil, status.Error(codes.InvalidArgument, "读写镜像数据失败")
+	}
+
+	// verify sha256 checksum
+	sum := f.SHA256()
+	if sum != img.CheckSum {
+		f.Destroy()
+		log.Warnf("File sha256sum=%v expected=%v, not match", sum, img.CheckSum)
+		return nil, status.Error(codes.InvalidArgument, "CHECKSUM匹配失败")
+	}
+
+	// verify signature if neccessary
+	if securitySwitch {
+		ok, err := f.VerifySignature(sig.ChunkData)
+		if err != nil {
+			img.VerifyStatus = db.VerifyAbnormal
+		} else if !ok {
+			img.VerifyStatus = db.VerifyFail
+		} else {
+			img.VerifyStatus = db.VerifyPass
+		}
+		img.ApprovalStatus = db.ApprovalWait
+		img.Signature = sig.ChunkData
+	} else {
+		img.VerifyStatus = db.VerifyPass
+		img.ApprovalStatus = db.ApprovalPass
+	}
+
+	img.FilePath = f.Path()
+	img.ImageId = f.DockerID()
+
+	f.Close()
+	return f, nil
 }
 
 func (s *ImageServer) List(ctx context.Context, in *pb.ListRequest) (*pb.ListReply, error) {
@@ -46,16 +186,16 @@ func (s *ImageServer) List(ctx context.Context, in *pb.ListRequest) (*pb.ListRep
 		return nil, rpc.ErrInternal
 	}
 
-	reply := pb.ListReply{}
-	for _, image := range images {
-		if image.ApprovalStatus != db.ApprovalPass {
+	var reply pb.ListReply
+	for _, i := range images {
+		if i.ApprovalStatus != db.ApprovalPass {
 			continue
 		}
 		reply.Images = append(reply.Images, &pb.ImageInfo{
-			Name: image.Name + ":" + image.Version,
-			Repo: image.Name,
-			Tag:  image.Version,
-			Size: image.FileSize,
+			Name: i.Name + ":" + i.Version,
+			Repo: i.Name,
+			Tag:  i.Version,
+			Size: i.FileSize,
 		})
 	}
 
@@ -63,466 +203,184 @@ func (s *ImageServer) List(ctx context.Context, in *pb.ListRequest) (*pb.ListRep
 }
 
 func (s *ImageServer) ListDB(ctx context.Context, in *pb.ListDBRequest) (*pb.ListDBReply, error) {
-	reply := pb.ListDBReply{}
 	images, err := db.ListImages()
 	if err != nil {
 		log.Warnf("Failed to get images list: %v", err)
 		return nil, rpc.ErrInternal
 	}
 
-	for _, image := range images {
+	var reply pb.ListDBReply
+	for _, i := range images {
 		reply.Images = append(reply.Images, &pb.ImageDBInfo{
-			Id:             image.ID,
-			Name:           image.Name,
-			Version:        image.Version,
-			Description:    image.Description,
-			VerifyStatus:   image.VerifyStatus,
-			ApprovalStatus: image.ApprovalStatus,
-			Size:           image.FileSize,
-			UpdateAt:       image.UpdatedAt,
+			Id:             i.ID,
+			Name:           i.Name,
+			Version:        i.Version,
+			Description:    i.Description,
+			VerifyStatus:   i.VerifyStatus,
+			ApprovalStatus: i.ApprovalStatus,
+			Size:           i.FileSize,
+			UpdateAt:       i.UpdatedAt,
 		})
 	}
 
 	return &reply, nil
 }
 
-func contextError(ctx context.Context) error {
-	switch ctx.Err() {
-	case context.Canceled:
-		log.Errorf("request is canceled")
-		return rpc.ErrCanceled
-	case context.DeadlineExceeded:
-		log.Errorf("deadline is exceeded")
-		return rpc.ErrDeadlineExceeded
-	default:
-		return nil
-	}
-}
-
-func getHash(filename, sendHashStr string) error {
-	file, err := os.Open(filename)
-	if err != nil {
-		log.Errorf("open file %v err: %v", filename, err)
-		return err
-	}
-	defer file.Close()
-
-	hash256 := sha256.New()
-	_, err = io.Copy(hash256, file)
-	if err != nil {
-		log.Errorf("io copy error: %v", err)
-		return err
-	}
-
-	hashStr := hex.EncodeToString(hash256.Sum(nil))
-	if hashStr != sendHashStr {
-		log.Errorf("file hash not match: [%v] != [%v]", hashStr, sendHashStr)
-		return rpc.ErrInternal
-	}
-
-	return nil
-}
-
-func getImageID(imageFile string) string {
-	file, err := os.Open(imageFile)
-	if err != nil {
-		log.Printf("open image file %v err: %v", imageFile, err)
-		return ""
-	}
-	defer file.Close()
-
-	reader := tar.NewReader(file)
-	for header, err := reader.Next(); err != io.EOF; header, err = reader.Next() {
-		if err != nil {
-			log.Printf("reader next err: %v", err)
-			return ""
-		}
-
-		fileName := header.FileInfo().Name()
-		if fileName == manifestFile {
-			continue
-		}
-
-		index := strings.Index(fileName, ".json")
-		if index == -1 {
-			continue
-		}
-
-		return fileName[0:index]
-	}
-
-	return ""
-}
-
-func signVerify(sigFile, tarFile string) int32 {
-	keyRingReader, err := os.Open(imageSigner())
-	if err != nil {
-		log.Warnf("open file=%v err=%v", imageSigner(), err)
-		return db.VerifyAbnormal
-	}
-	keyring, err := openpgp.ReadKeyRing(keyRingReader)
-	if err != nil {
-		log.Warnf("read key ring err=%v", err.Error())
-		return db.VerifyAbnormal
-	}
-
-	sig, err := os.Open(sigFile)
-	if err != nil {
-		log.Warnf("open file=%v err=%v", sigFile, err)
-		return db.VerifyAbnormal
-	}
-
-	tar, err := os.Open(tarFile)
-	if err != nil {
-		log.Warnf("open file=%v err=%v", tarFile, err)
-		return db.VerifyAbnormal
-	}
-
-	_, err = openpgp.CheckDetachedSignature(keyring, tar, sig)
-	if err != nil {
-		log.Infof("check signature tar=%v sig=%v err=%v", tarFile, sigFile, err)
-		return db.VerifyFail
-	}
-
-	return db.VerifyPass
-}
-
 func (s *ImageServer) Upload(stream pb.Image_UploadServer) error {
+	// 镜像大小 版本 描述 签名(如果有)等信息在第一个数据包
 	req, err := stream.Recv()
 	if err != nil {
-		log.Errorf("cannot receive image info %v", err)
-		return rpc.ErrUnknown
+		log.Errorf("Receive image metadata, err=%v", err)
+		return status.Error(codes.InvalidArgument, "读取参数失败")
 	}
 
-	if req.Info == nil || req.Sign == nil {
-		return rpc.ErrInvalidArgument
-	} else if !isValidImageName(req.Info.Name) {
-		return status.Errorf(codes.InvalidArgument, "镜像名参数错误")
-	} else if !isValidImageVersion(req.Info.Version) {
-		return status.Errorf(codes.InvalidArgument, "镜像版本参数错误")
-	} else if !isValidImageDesc(req.Info.Description) {
-		return status.Errorf(codes.InvalidArgument, "镜像描述参数错误")
+	if err := s.uploadCheckMetadata(req.Info); err != nil {
+		return err
 	}
 
-	fileName := fmt.Sprintf("%s/%s_%s%s", imageDir(), req.Info.Name, req.Info.Version, req.Info.Type)
-	signFileName := fmt.Sprintf("%s/%s_%s.sign", imageDir(), req.Info.Name, req.Info.Version)
-	{
-		signfile, err := os.Create(signFileName)
-		if err != nil {
-			log.Errorf("cannot create file %v: %v", signFileName, err)
-			return rpc.ErrInternal
-		}
-		defer signfile.Close()
-
-		req, err := stream.Recv()
-		if err != nil {
-			log.Errorf("recv sign err: %v", err)
-			return err
-		}
-
-		size := len(req.ChunkData)
-		if req.Sign.Size != int64(size) {
-			log.Errorf("recv sign size err, send[%v] recv:[%v]", req.Sign.Size, size)
-			return rpc.ErrInternal
-		}
-
-		_, err = signfile.Write(req.ChunkData)
-		if err != nil {
-			log.Errorf("cannot write chunk data to file: %v", err)
-			return rpc.ErrInternal
-		}
-	}
-
-	file, err := os.Create(fileName)
+	i, err := db.QueryImageByNameVersion(req.Info.Name, req.Info.Version)
 	if err != nil {
-		log.Errorf("cannot create file %v: %v", fileName, err)
-		return rpc.ErrInternal
-	}
-	defer file.Close()
-
-	var imageSize int64
-	for {
-		if err := contextError(stream.Context()); err != nil {
-			return err
-		}
-
-		req, err := stream.Recv()
-		if err == io.EOF {
-			log.Infof("no more data")
-			break
-		}
-		if err != nil {
-			log.Errorf("cannot receive chunk data: %v", err)
-			return rpc.ErrUnknown
-		}
-
-		size := len(req.ChunkData)
-
-		imageSize += int64(size)
-		if imageSize > maxImageSize || imageSize > req.Info.Size {
-			log.Errorf("image is too large: [%v] > [%v] || [%v]", imageSize, maxImageSize, req.Info.Size)
-			return rpc.ErrInvalidArgument
-		}
-		// write slowly
-		time.Sleep(time.Millisecond)
-		_, err = file.Write(req.ChunkData)
-		if err != nil {
-			log.Errorf("cannot write chunk data to file: %v", err)
-			return rpc.ErrInternal
-		}
-	}
-	/*
-		if err = getHash(fileName, req.Info.Checksum); err != nil {
-			tmpErr := os.Remove(fileName)
-			log.Warnf("hash err and remove image file %v: %v", fileName, tmpErr)
-			return err
-		}
-	*/
-
-	verifyStatus := signVerify(signFileName, fileName)
-
-	imaegId := getImageID(fileName)
-	if imaegId == "" {
-		log.Warnf("the image id of image file %v is wrong ", fileName)
-		return rpc.ErrInvalidArgument
+		log.Errorf("Check duplicate image, err=%v", err)
+		return rpc.ErrDatabaseFail
+	} else if i != nil {
+		return status.Error(codes.InvalidArgument, "镜像版本已存在")
 	}
 
-	log.Printf("imaegId: [%v]", imaegId)
-
-	imageInfo := db.ImageInfo{
-		Name:         req.Info.Name,
-		Version:      req.Info.Version,
-		Description:  req.Info.Description,
-		FileSize:     req.Info.Size,
-		FileType:     req.Info.Type,
-		CheckSum:     req.Info.Checksum,
-		ImageId:      imaegId,
-		FilePath:     fileName,
-		SignPath:     signFileName,
-		VerifyStatus: verifyStatus,
-	}
-
-	imageId, err := db.CreateImages(imageInfo)
+	ss, err := db.GetSecuritySwitch()
 	if err != nil {
+		log.Errorf("db.GetSecuritySwitch err=%v", err)
 		return rpc.ErrInternal
 	}
 
-	res := &pb.UploadReply{
-		ImageId: imageId,
+	img := db.ImageInfo{
+		Name:        req.Info.Name,
+		Version:     req.Info.Version,
+		Description: req.Info.Description,
+		FileSize:    req.Info.Size,
+		CheckSum:    req.Info.Checksum,
 	}
 
-	err = stream.SendAndClose(res)
+	f, err := s.receiveImageFile(ss, &img, req.Sign, ImageUploadStream{stream})
 	if err != nil {
-		log.Errorf("cannot send response: %v", err)
-		return rpc.ErrUnknown
+		return err
 	}
 
-	log.Debugf("Upload image %v ok", imageId)
+	id, err := db.CreateImage(&img)
+	if err != nil {
+		log.Errorf("db.CreateImage data=%+v err=%v", img, err)
+		f.Destroy()
+		return rpc.ErrInternal
+	}
 
+	s.noticeNewImage(&img)
+	stream.SendAndClose(&pb.UploadReply{ImageId: id})
 	return nil
 }
 
+// 更新镜像文件 文件签名信息 描述信息
 func (s *ImageServer) Update(stream pb.Image_UpdateServer) error {
 	req, err := stream.Recv()
 	if err != nil {
-		log.Errorf("cannot receive image info %v", err)
-		return rpc.ErrUnknown
+		log.Errorf("Receive image metadata, err=%v", err)
+		return status.Error(codes.InvalidArgument, "读取参数失败")
 	}
 
-	if req.Info == nil || (req.Info.Size != 0 && req.Sign == nil) || (req.Info.Size == 0 && req.Sign != nil) {
-		return rpc.ErrInvalidArgument
-	} else if !isValidImageName(req.Info.Name) {
-		return status.Errorf(codes.InvalidArgument, "镜像名参数错误")
-	} else if !isValidImageVersion(req.Info.Version) {
-		return status.Errorf(codes.InvalidArgument, "镜像版本参数错误")
-	} else if !isValidImageDesc(req.Info.Description) {
-		return status.Errorf(codes.InvalidArgument, "镜像描述参数错误")
+	if err := s.updateCheckMetadata(req.Info); err != nil {
+		return err
 	}
 
 	img, err := db.QueryImageByID(req.ImageId)
 	if err != nil {
-		return err
-	}
-
-	var fileName, signFileName string
-	if req.Sign != nil && req.Sign.Size != 0 {
-		signFileName = fmt.Sprintf("%s/%s_%s.sign", imageDir(), req.Info.Name, req.Info.Version)
-		signfile, err := os.Create(signFileName)
-		if err != nil {
-			log.Errorf("cannot create file %v: %v", signFileName, err)
-			return rpc.ErrInternal
-		}
-		defer signfile.Close()
-
-		req, err := stream.Recv()
-		if err != nil {
-			log.Errorf("recv sign err: %v", err)
-			return err
-		}
-
-		chunk := req.ChunkData
-		size := len(chunk)
-		if req.Sign.Size != int64(size) {
-			log.Errorf("recv sign size err, send[%v] recv:[%v]", req.Sign.Size, size)
-			return rpc.ErrInternal
-		}
-
-		_, err = signfile.Write(chunk)
-		if err != nil {
-			log.Errorf("cannot write chunk data to file: %v", err)
-			return rpc.ErrInternal
-		}
-	}
-	if req.Info.Size != 0 {
-		fileName = fmt.Sprintf("%s/%s_%s%s", imageDir(), req.Info.Name, req.Info.Version, req.Info.Type)
-		file, err := os.Create(fileName)
-		if err != nil {
-			log.Errorf("cannot create file: %v", fileName)
-			return rpc.ErrInternal
-		}
-		defer file.Close()
-
-		var imageSize int64
-		for {
-			err := contextError(stream.Context())
-			if err != nil {
-				return err
-			}
-
-			req, err := stream.Recv()
-			if err == io.EOF {
-				log.Infof("no more data")
-				break
-			}
-			if err != nil {
-				log.Errorf("cannot receive chunk data: %v", err)
-				return rpc.ErrUnknown
-			}
-
-			size := len(req.ChunkData)
-			imageSize += int64(size)
-			if imageSize > maxImageSize || imageSize > req.Info.Size {
-				log.Errorf("image is too large: [%v] > [%v] || [%v]", imageSize, maxImageSize, req.Info.Size)
-				return rpc.ErrInvalidArgument
-			}
-			// write slowly
-			time.Sleep(time.Millisecond)
-			_, err = file.Write(req.ChunkData)
-			if err != nil {
-				log.Errorf("cannot write chunk data to file: %v", err)
-				return rpc.ErrInternal
-			}
-		}
-	}
-	/*
-		if err = getHash(fileName, req.Info.Checksum); err != nil {
-			tmpErr := os.Remove(fileName)
-			log.Warnf("hash err and remove image file %v: %v", fileName, tmpErr)
-			return err
-		}
-	*/
-
-	if fileName != "" && signFileName != "" {
-		verifyStatus := signVerify(signFileName, fileName)
-		imaegId := getImageID(fileName)
-		if imaegId == "" {
-			log.Warnf("the image id of image file %v is wrong ", fileName)
-			return rpc.ErrInvalidArgument
-		}
-
-		log.Printf("imaegId: [%v]", imaegId)
-		if img.FilePath != fileName {
-			err = os.Remove(img.FilePath)
-			log.Debugf("db update and remove old image file %v: %v", img.FilePath, err)
-		}
-
-		if img.SignPath != signFileName {
-			err = os.Remove(img.SignPath)
-			log.Debugf("db update and remove old image sign %v: %v", img.SignPath, err)
-		}
-
-		img.FileSize = req.Info.Size
-		img.CheckSum = req.Info.Checksum
-		img.ImageId = imaegId
-		img.FilePath = fileName
-		img.SignPath = signFileName
-		img.VerifyStatus = verifyStatus
+		log.Errorf("Query image id=%v err=%v", req.ImageId, err)
+		return rpc.ErrDatabaseFail
+	} else if img == nil {
+		return status.Error(codes.InvalidArgument, "镜像不存在")
 	}
 
 	img.Description = req.Info.Description
+	if req.Info.Size <= 0 {
+		if err = db.UpdateImage(img); err != nil {
+			log.Errorf("db.UpdateImage data=%+v err=%v", img, err)
+			return rpc.ErrDatabaseFail
+		}
+		stream.SendAndClose(&pb.UpdateReply{})
+		return nil
+	}
 
-	err = db.UpdateImage(img)
+	// update image file
+	ss, err := db.GetSecuritySwitch()
 	if err != nil {
+		log.Errorf("Get security switch status, err=%v", err)
 		return rpc.ErrInternal
 	}
-
-	reply := pb.UpdateReply{}
-	err = stream.SendAndClose(&reply)
-	if err != nil {
-		log.Errorf("cannot send response: %v", err)
-		return rpc.ErrUnknown
+	if ss && img.ApprovalStatus == db.ApprovalPass {
+		return status.Error(codes.InvalidArgument, "镜像已审批，禁止更新镜像文件")
 	}
 
-	log.Debugf("Update image %v ok", req.ImageId)
+	oldFile := img.FilePath
+	img.FileSize = req.Info.Size
+	img.CheckSum = req.Info.Checksum
+
+	f, err := s.receiveImageFile(ss, img, req.Sign, ImageUpdateStream{stream})
+	if err != nil {
+		return err
+	}
+
+	if err := db.UpdateImage(img); err != nil {
+		log.Errorf("db.UpdateImage data=%+v err=%v", img, err)
+		f.Destroy()
+		return rpc.ErrDatabaseFail
+	}
+
+	os.Remove(oldFile) // remove old image file
+	s.noticeNewImage(img)
+	stream.SendAndClose(&pb.UpdateReply{})
 	return nil
 }
 
 func (s *ImageServer) Download(in *pb.DownloadRequest, stream pb.Image_DownloadServer) error {
-	imageInfo, err := db.QueryImageByID(in.ImageId)
-	if err != nil {
-		if err == db.ErrRecordNotFound {
-			return rpc.ErrNotFound
-		}
-		return rpc.ErrInternal
-	}
-
-	if err = getHash(imageInfo.FilePath, imageInfo.CheckSum); err != nil {
-		// tmpErr := db.RemoveImage([]int64{in.ImageId})
-		// log.Warnf("image file %v hash %v err and remove, remove result:%v", imageInfo.FilePath, imageInfo.CheckSum, tmpErr)
-		return status.Errorf(codes.Internal, "镜像文件被破坏")
-	}
-
-	file, err := os.Open(imageInfo.FilePath)
+	img, err := db.QueryImageByID(in.ImageId)
 	if err != nil {
 		return rpc.ErrInternal
+	} else if img == nil {
+		return rpc.ErrNotFound
 	}
-	defer file.Close()
 
-	reply := &pb.DownloadReply{
+	f, err := os.Open(img.FilePath)
+	if err != nil {
+		log.Errorf("Open file=%v err=%v", img.FilePath, err)
+		return rpc.ErrInternal
+	}
+	defer f.Close()
+
+	reply := pb.DownloadReply{
 		Info: &pb.UploadInfo{
-			Name:     imageInfo.Name,
-			Version:  imageInfo.Version,
-			Type:     imageInfo.FileType,
-			Checksum: imageInfo.CheckSum,
-			Size:     imageInfo.FileSize,
+			Name:     img.Name,
+			Version:  img.Version,
+			Checksum: img.CheckSum,
+			Size:     img.FileSize,
 		},
 	}
-	err = stream.Send(reply)
-	if err != nil {
-		log.Errorf("send image info fail: %v", err)
+
+	if err := stream.Send(&reply); err != nil {
+		log.Errorf("Send image metadata, err=%v", err)
 		return rpc.ErrInternal
 	}
 
-	reader := bufio.NewReader(file)
-	buffer := make([]byte, 1024*1024)
+	r := bufio.NewReader(f)
+	buf := make([]byte, 64*1024)
 	for {
-		n, err := reader.Read(buffer)
-
-		if err == io.EOF {
-			log.Infof("no more data")
-			break
-		}
+		n, err := r.Read(buf)
 		if err != nil {
-			log.Errorf("read image file fail: %v", err)
+			if err == io.EOF {
+				break
+			}
+			log.Infof("Read image file=%+v err=%v", f, err)
 			return rpc.ErrInternal
 		}
 
-		reply := &pb.DownloadReply{
-			ChunkData: buffer[:n],
-		}
-
-		if err = stream.Send(reply); err != nil {
-			log.Errorf("Send image file fail: %v", err)
+		if err = stream.Send(&pb.DownloadReply{ChunkData: buf[:n]}); err != nil {
+			log.Infof("Send image file chunk err=%v", err)
 			return rpc.ErrInternal
 		}
 	}

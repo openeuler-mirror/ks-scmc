@@ -2,7 +2,6 @@ package internal
 
 import (
 	"context"
-	"time"
 
 	log "github.com/sirupsen/logrus"
 

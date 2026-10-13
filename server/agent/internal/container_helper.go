@@ -1,14 +1,17 @@
 package internal
 
 import (
+	"context"
 	"os"
 	"path/filepath"
 
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/mount"
+	"github.com/docker/docker/client"
 	log "github.com/sirupsen/logrus"
 
 	"scmc/common"
+	"scmc/model/docker"
 )
 
 const (
@@ -62,4 +65,52 @@ func containerGraphicSetup(containerName string, config *container.Config, hostC
 func removeContainerGraphicSetup(containerName string) error {
 	hostPath := filepath.Join(common.Config.Agent.ContainerExtraDataBasedir, containerName)
 	return os.RemoveAll(hostPath)
+}
+
+func appIsRunning(ctx context.Context, idResponse string) bool {
+	cli, err := docker.Client()
+	if err != nil {
+		log.Infof("docker.Client err:%s", err)
+		return false
+	}
+
+	return appIsRunningWithCli(ctx, cli, idResponse)
+}
+
+func appIsRunningWithCli(ctx context.Context, cli *client.Client, idResponse string) bool {
+	if idResponse == "" {
+		return false
+	}
+
+	execins, err := cli.ContainerExecInspect(ctx, idResponse)
+	if err != nil {
+		log.Infof("cli.ContainerExecInspect err:%s", err)
+		return false
+	}
+
+	return execins.Running
+}
+
+func containerIsRunning(ctx context.Context, cli *client.Client, containerID string) bool {
+	ins, err := cli.ContainerInspect(ctx, containerID)
+	if err != nil {
+		log.Infof("cli.ContainerInspect err:%s", err)
+		return false
+	}
+
+	if ins.State == nil {
+		return false
+	}
+
+	return ins.State.Running
+}
+
+func containerIsRunningWithCli(ctx context.Context, cli *client.Client, containerID string) bool {
+	cli, err := docker.Client()
+	if err != nil {
+		log.Infof("docker.Client err:%s", err)
+		return false
+	}
+
+	return containerIsRunning(ctx, cli, containerID)
 }

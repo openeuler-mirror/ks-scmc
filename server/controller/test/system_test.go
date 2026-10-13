@@ -26,3 +26,33 @@ func TestSub(t *testing.T) {
 		}
 	})
 }
+
+func TestGetSecuritySwitch(t *testing.T) {
+	testRunner(func(ctx context.Context, conn *grpc.ClientConn) {
+		cli := pb.NewSystemClient(conn)
+		request := pb.GetSecuritySwitchRequest{}
+
+		reply, err := cli.GetSecuritySwitch(ctx, &request)
+		if err != nil {
+			t.Errorf("List: %v", err)
+		}
+
+		t.Logf("reply: %+v", reply)
+	})
+}
+
+func TestSetSecuritySwitch(t *testing.T) {
+	testRunner(func(ctx context.Context, conn *grpc.ClientConn) {
+		cli := pb.NewSystemClient(conn)
+		request := pb.SetSecuritySwitchRequest{
+			IsOn: true,
+		}
+
+		reply, err := cli.SetSecuritySwitch(ctx, &request)
+		if err != nil {
+			t.Errorf("List: %v", err)
+		}
+
+		t.Logf("reply: %+v", reply)
+	})
+}

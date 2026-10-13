@@ -1,12 +1,9 @@
-package db
+package litedb
 
-import (
-	log "github.com/sirupsen/logrus"
-)
+import log "github.com/sirupsen/logrus"
 
 type ContainerBackup struct {
-	ID          int64 `gorm:"primaryKey"`
-	NodeID      int64
+	ID          int64 `gorm:"primaryKey;not null"`
 	UUID        string
 	ContainerID string
 	BackupName  string
@@ -19,14 +16,13 @@ type ContainerBackup struct {
 	UpdatedAt   int64 `gorm:"autoUpdateTime"`
 }
 
-func CreateContainerBackup(nodeID int64, uuid string, backupName, backupDesc string) (*ContainerBackup, error) {
+func CreateContainerBackup(uuid string, backupName, backupDesc string) (*ContainerBackup, error) {
 	db, err := getConn()
 	if err != nil {
 		return nil, err
 	}
 
 	data := ContainerBackup{
-		NodeID:     nodeID,
 		UUID:       uuid,
 		BackupName: backupName,
 		BackupDesc: backupDesc,
@@ -34,13 +30,13 @@ func CreateContainerBackup(nodeID int64, uuid string, backupName, backupDesc str
 
 	if err := db.Create(&data).Error; err != nil {
 		log.Errorf("db create container backup %v", err)
-		return nil, translateError(err)
+		return nil, err
 	}
 
 	return &data, nil
 }
 
-func UpdateContainerBackup(data *ContainerBackup) error {
+func UpdateContainerBackup(data interface{}) error {
 	db, err := getConn()
 	if err != nil {
 		return err
@@ -48,13 +44,13 @@ func UpdateContainerBackup(data *ContainerBackup) error {
 
 	if err := db.Save(data).Error; err != nil {
 		log.Errorf("db update container backup %v", err)
-		return translateError(err)
+		return err
 	}
 
 	return nil
 }
 
-func RemoveContainerBackup(data *ContainerBackup) error {
+func RemoveContainerBackup(data interface{}) error {
 	db, err := getConn()
 	if err != nil {
 		return err
@@ -62,7 +58,7 @@ func RemoveContainerBackup(data *ContainerBackup) error {
 
 	if err := db.Delete(data).Error; err != nil {
 		log.Errorf("db remove container backup %v", err)
-		return translateError(err)
+		return err
 	}
 
 	return nil
@@ -92,7 +88,7 @@ func QueryContainerBackupByID(id int64) (*ContainerBackup, error) {
 	var data ContainerBackup
 	if err := db.First(&data, "id = ?", id).Error; err != nil {
 		log.Warnf("QueryContainerBackupByID err=%v", err)
-		return nil, translateError(err)
+		return nil, err
 	}
 
 	return &data, nil
@@ -107,22 +103,22 @@ func QueryContainerBackupByUUID(uuid string) ([]*ContainerBackup, error) {
 	var data []*ContainerBackup
 	if err := db.Find(&data, "uuid = ?", uuid).Error; err != nil {
 		log.Warnf("QueryContainerBackupByUUID err=%v", err)
-		return nil, translateError(err)
+		return nil, err
 	}
 
 	return data, nil
 }
 
-func QueryUndoneContainerBackup() ([]*ContainerBackup, error) {
+func QueryContainerBackupByContainer(containerIDs []string) ([]*ContainerBackup, error) {
 	db, err := getConn()
 	if err != nil {
 		return nil, err
 	}
 
 	var data []*ContainerBackup
-	if err := db.Find(&data, "status = 0").Error; err != nil {
-		log.Warnf("QueryUndoneContainerBackup err=%v", err)
-		return nil, translateError(err)
+	if err := db.Find(&data, "container_id IN ?", containerIDs).Error; err != nil {
+		log.Warnf("QueryContainerBackupByContainer err=%v", err)
+		return nil, err
 	}
 
 	return data, nil

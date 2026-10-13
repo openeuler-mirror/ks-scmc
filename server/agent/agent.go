@@ -3,9 +3,12 @@ package agent
 import (
 	"time"
 
+	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/keepalive"
 
+	"scmc/model/kysec"
+	"scmc/model/litedb"
 	"scmc/rpc/middleware/debug"
 	"scmc/rpc/pb/container"
 	"scmc/rpc/pb/image"
@@ -13,6 +16,32 @@ import (
 	"scmc/rpc/pb/node"
 	"scmc/server/agent/internal"
 )
+
+func resumeContainerConfigs() {
+	cfgs, err := litedb.ContainerConfigList()
+	if err != nil {
+		log.Warnf("ContainerConfigList err=%v", err)
+		return
+	}
+
+	for _, c := range cfgs {
+		if c.SecurityConfig == nil {
+			continue
+		}
+		if c.SecurityConfig.FileProtection != nil {
+			fp := c.SecurityConfig.FileProtection
+			if err := kysec.UpdateFileAccess(c.ContainerID, fp.IsOn, fp.FileList, nil); err != nil {
+				log.Warnf("UpdateFileAccess container=%v err=%v", c.ContainerID, err)
+			}
+		}
+		if c.SecurityConfig.ProcProtection != nil {
+			pp := c.SecurityConfig.ProcProtection
+			if err := kysec.UpdateWhiteList(c.ContainerID, pp.IsOn, pp.ExeList, nil); err != nil {
+				log.Warnf("UpdateWhiteList container=%v err=%v", c.ContainerID, err)
+			}
+		}
+	}
+}
 
 func Server() (*grpc.Server, error) {
 	opts := []grpc.ServerOption{
@@ -36,6 +65,8 @@ func Server() (*grpc.Server, error) {
 	image.RegisterImageServer(s, &internal.ImageServer{})
 	network.RegisterNetworkServer(s, &internal.NetworkServer{})
 	node.RegisterNodeServer(s, &internal.NodeServer{})
+
+	resumeContainerConfigs()
 
 	go internal.NodeWhitelistConfig()
 	go internal.ContainerWhiteCongig()

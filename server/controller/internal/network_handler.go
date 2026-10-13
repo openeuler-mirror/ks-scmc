@@ -73,30 +73,20 @@ func (s *NetworkServer) Connect(ctx context.Context, in *pb.ConnectRequest) (*pb
 		return nil, rpc.ErrInvalidArgument
 	}
 
-	nodeInfo, err := db.QueryNodeByID(in.NodeId)
+	n, err := db.QueryNodeByID(in.NodeId)
 	if err != nil {
 		if err == db.ErrRecordNotFound {
 			return nil, rpc.ErrNotFound
 		}
-		return nil, rpc.ErrInternal
+		return nil, rpc.ErrDatabaseFail
 	}
 
-	conn, err := getAgentConn(nodeInfo.Address)
+	conn, err := getAgentConn(n.Address)
 	if err != nil {
 		return nil, rpc.ErrInternal
 	}
 
-	cli := pb.NewNetworkClient(conn)
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
-	defer cancel()
-
-	reply, err := cli.Connect(ctx, in)
-	if err != nil {
-		log.Warnf("network connect ID=%v address=%v: %v", nodeInfo.ID, nodeInfo.Address, err)
-		return nil, rpc.ErrInternal
-	}
-
-	return reply, nil
+	return pb.NewNetworkClient(conn).Connect(ctx, in)
 }
 
 func (s *NetworkServer) Disconnect(ctx context.Context, in *pb.DisconnectRequest) (*pb.DisconnectReply, error) {
@@ -104,30 +94,20 @@ func (s *NetworkServer) Disconnect(ctx context.Context, in *pb.DisconnectRequest
 		return nil, rpc.ErrInvalidArgument
 	}
 
-	nodeInfo, err := db.QueryNodeByID(in.NodeId)
+	n, err := db.QueryNodeByID(in.NodeId)
 	if err != nil {
 		if err == db.ErrRecordNotFound {
 			return nil, rpc.ErrNotFound
 		}
-		return nil, rpc.ErrInternal
+		return nil, rpc.ErrDatabaseFail
 	}
 
-	conn, err := getAgentConn(nodeInfo.Address)
+	conn, err := getAgentConn(n.Address)
 	if err != nil {
 		return nil, rpc.ErrInternal
 	}
 
-	cli := pb.NewNetworkClient(conn)
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
-	defer cancel()
-
-	reply, err := cli.Disconnect(ctx, in)
-	if err != nil {
-		log.Warnf("network disconnect ID=%v address=%v: %v", nodeInfo.ID, nodeInfo.Address, err)
-		return nil, rpc.ErrInternal
-	}
-
-	return reply, nil
+	return pb.NewNetworkClient(conn).Disconnect(ctx, in)
 }
 
 func (s *NetworkServer) ListIPtables(ctx context.Context, in *pb.ListIPtablesRequest) (*pb.ListIPtablesReply, error) {
@@ -135,30 +115,20 @@ func (s *NetworkServer) ListIPtables(ctx context.Context, in *pb.ListIPtablesReq
 		return nil, rpc.ErrInvalidArgument
 	}
 
-	nodeInfo, err := db.QueryNodeByID(in.NodeId)
+	n, err := db.QueryNodeByID(in.NodeId)
 	if err != nil {
 		if err == db.ErrRecordNotFound {
 			return nil, rpc.ErrNotFound
 		}
-		return nil, rpc.ErrInternal
+		return nil, rpc.ErrDatabaseFail
 	}
 
-	conn, err := getAgentConn(nodeInfo.Address)
+	conn, err := getAgentConn(n.Address)
 	if err != nil {
 		return nil, rpc.ErrInternal
 	}
 
-	cli := pb.NewNetworkClient(conn)
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
-	defer cancel()
-
-	reply, err := cli.ListIPtables(ctx, in)
-	if err != nil {
-		log.Warnf("ListIPtables ID=%v address=%v: %v", nodeInfo.ID, nodeInfo.Address, err)
-		return nil, rpc.ErrInternal
-	}
-
-	return reply, nil
+	return pb.NewNetworkClient(conn).ListIPtables(ctx, in)
 }
 
 func (s *NetworkServer) EnableIPtables(ctx context.Context, in *pb.EnableIPtablesRequest) (*pb.EnableIPtablesReply, error) {
@@ -166,30 +136,20 @@ func (s *NetworkServer) EnableIPtables(ctx context.Context, in *pb.EnableIPtable
 		return nil, rpc.ErrInvalidArgument
 	}
 
-	nodeInfo, err := db.QueryNodeByID(in.NodeId)
+	n, err := db.QueryNodeByID(in.NodeId)
 	if err != nil {
 		if err == db.ErrRecordNotFound {
 			return nil, rpc.ErrNotFound
 		}
-		return nil, rpc.ErrInternal
+		return nil, rpc.ErrDatabaseFail
 	}
 
-	conn, err := getAgentConn(nodeInfo.Address)
+	conn, err := getAgentConn(n.Address)
 	if err != nil {
 		return nil, rpc.ErrInternal
 	}
 
-	cli := pb.NewNetworkClient(conn)
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
-	defer cancel()
-
-	reply, err := cli.EnableIPtables(ctx, in)
-	if err != nil {
-		log.Warnf("EnableIPtables ID=%v address=%v: %v", nodeInfo.ID, nodeInfo.Address, err)
-		return nil, rpc.ErrInternal
-	}
-
-	return reply, nil
+	return pb.NewNetworkClient(conn).EnableIPtables(ctx, in)
 }
 
 func (s *NetworkServer) CreateIPtables(ctx context.Context, in *pb.CreateIPtablesRequest) (*pb.CreateIPtablesReply, error) {
@@ -197,30 +157,20 @@ func (s *NetworkServer) CreateIPtables(ctx context.Context, in *pb.CreateIPtable
 		return nil, rpc.ErrInvalidArgument
 	}
 
-	nodeInfo, err := db.QueryNodeByID(in.NodeId)
+	n, err := db.QueryNodeByID(in.NodeId)
 	if err != nil {
 		if err == db.ErrRecordNotFound {
 			return nil, rpc.ErrNotFound
 		}
-		return nil, rpc.ErrInternal
+		return nil, rpc.ErrDatabaseFail
 	}
 
-	conn, err := getAgentConn(nodeInfo.Address)
+	conn, err := getAgentConn(n.Address)
 	if err != nil {
 		return nil, rpc.ErrInternal
 	}
 
-	cli := pb.NewNetworkClient(conn)
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
-	defer cancel()
-
-	reply, err := cli.CreateIPtables(ctx, in)
-	if err != nil {
-		log.Warnf("CreateIPtables ID=%v address=%v: %v", nodeInfo.ID, nodeInfo.Address, err)
-		return nil, rpc.ErrInternal
-	}
-
-	return reply, nil
+	return pb.NewNetworkClient(conn).CreateIPtables(ctx, in)
 }
 
 func (s *NetworkServer) ModifyIPtables(ctx context.Context, in *pb.ModifyIPtablesRequest) (*pb.ModifyIPtablesReply, error) {
@@ -228,30 +178,20 @@ func (s *NetworkServer) ModifyIPtables(ctx context.Context, in *pb.ModifyIPtable
 		return nil, rpc.ErrInvalidArgument
 	}
 
-	nodeInfo, err := db.QueryNodeByID(in.NodeId)
+	n, err := db.QueryNodeByID(in.NodeId)
 	if err != nil {
 		if err == db.ErrRecordNotFound {
 			return nil, rpc.ErrNotFound
 		}
-		return nil, rpc.ErrInternal
+		return nil, rpc.ErrDatabaseFail
 	}
 
-	conn, err := getAgentConn(nodeInfo.Address)
+	conn, err := getAgentConn(n.Address)
 	if err != nil {
 		return nil, rpc.ErrInternal
 	}
 
-	cli := pb.NewNetworkClient(conn)
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
-	defer cancel()
-
-	reply, err := cli.ModifyIPtables(ctx, in)
-	if err != nil {
-		log.Warnf("ModifyIPtables ID=%v address=%v: %v", nodeInfo.ID, nodeInfo.Address, err)
-		return nil, rpc.ErrInternal
-	}
-
-	return reply, nil
+	return pb.NewNetworkClient(conn).ModifyIPtables(ctx, in)
 }
 
 func (s *NetworkServer) RemoveIPtables(ctx context.Context, in *pb.RemoveIPtablesRequest) (*pb.RemoveIPtablesReply, error) {
@@ -259,28 +199,90 @@ func (s *NetworkServer) RemoveIPtables(ctx context.Context, in *pb.RemoveIPtable
 		return nil, rpc.ErrInvalidArgument
 	}
 
-	nodeInfo, err := db.QueryNodeByID(in.NodeId)
+	n, err := db.QueryNodeByID(in.NodeId)
 	if err != nil {
 		if err == db.ErrRecordNotFound {
 			return nil, rpc.ErrNotFound
 		}
-		return nil, rpc.ErrInternal
+		return nil, rpc.ErrDatabaseFail
 	}
 
-	conn, err := getAgentConn(nodeInfo.Address)
+	conn, err := getAgentConn(n.Address)
 	if err != nil {
 		return nil, rpc.ErrInternal
 	}
 
-	cli := pb.NewNetworkClient(conn)
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
-	defer cancel()
+	return pb.NewNetworkClient(conn).RemoveIPtables(ctx, in)
+}
 
-	reply, err := cli.RemoveIPtables(ctx, in)
+func (*NetworkServer) CreateNic(ctx context.Context, in *pb.CreateNicRequest) (*pb.CreateNicReply, error) {
+	if in.Name == "" || in.NodeId == 0 {
+		return nil, rpc.ErrInvalidArgument
+	}
+
+	n, err := db.QueryNodeByID(in.NodeId)
 	if err != nil {
-		log.Warnf("RemoveIPtables ID=%v address=%v: %v", nodeInfo.ID, nodeInfo.Address, err)
+		if err == db.ErrRecordNotFound {
+			log.Warnf("node id=%v not found.", in.NodeId)
+			return nil, rpc.ErrNotFound
+		}
+		log.Warnf("QueryNode id=%v err=%v", in.NodeId, err)
+		return nil, rpc.ErrDatabaseFail
+	}
+
+	conn, err := getAgentConn(n.Address)
+	if err != nil {
+		log.Warnf("Failed to connect to agent service, node=%+v", n)
 		return nil, rpc.ErrInternal
 	}
 
-	return reply, nil
+	return pb.NewNetworkClient(conn).CreateNic(ctx, in)
+}
+
+func (*NetworkServer) RemoveNic(ctx context.Context, in *pb.RemoveNicRequest) (*pb.RemoveNicReply, error) {
+	if in.Name == "" || in.NodeId == 0 {
+		return nil, rpc.ErrInvalidArgument
+	}
+
+	n, err := db.QueryNodeByID(in.NodeId)
+	if err != nil {
+		if err == db.ErrRecordNotFound {
+			log.Warnf("node id=%v not found.", in.NodeId)
+			return nil, rpc.ErrNotFound
+		}
+		log.Warnf("QueryNode id=%v err=%v", in.NodeId, err)
+		return nil, rpc.ErrDatabaseFail
+	}
+
+	conn, err := getAgentConn(n.Address)
+	if err != nil {
+		log.Warnf("Failed to connect to agent service, node=%+v", n)
+		return nil, rpc.ErrInternal
+	}
+
+	return pb.NewNetworkClient(conn).RemoveNic(ctx, in)
+}
+
+func (*NetworkServer) UpdateNic(ctx context.Context, in *pb.UpdateNicRequest) (*pb.UpdateNicReply, error) {
+	if in.Name == "" || in.NodeId == 0 {
+		return nil, rpc.ErrInvalidArgument
+	}
+
+	n, err := db.QueryNodeByID(in.NodeId)
+	if err != nil {
+		if err == db.ErrRecordNotFound {
+			log.Warnf("node id=%v not found.", in.NodeId)
+			return nil, rpc.ErrNotFound
+		}
+		log.Warnf("QueryNode id=%v err=%v", in.NodeId, err)
+		return nil, rpc.ErrDatabaseFail
+	}
+
+	conn, err := getAgentConn(n.Address)
+	if err != nil {
+		log.Warnf("Failed to connect to agent service, node=%+v", n)
+		return nil, rpc.ErrInternal
+	}
+
+	return pb.NewNetworkClient(conn).UpdateNic(ctx, in)
 }

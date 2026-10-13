@@ -2,8 +2,8 @@ package internal
 
 import (
 	"context"
-	"errors"
 	"fmt"
+	"io"
 	"regexp"
 	"strings"
 	"sync"

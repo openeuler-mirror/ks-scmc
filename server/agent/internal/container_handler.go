@@ -14,21 +14,23 @@ import (
 	"github.com/docker/docker/api/types/mount"
 	"github.com/docker/docker/api/types/network"
 	"github.com/docker/docker/client"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
-
+	"github.com/google/uuid"
 	"github.com/shirou/gopsutil/mem"
 	log "github.com/sirupsen/logrus"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 
 	"scmc/model/authz"
 	"scmc/model/db"
 	"scmc/model/docker"
 	"scmc/model/iptables"
 	"scmc/model/kysec"
+	"scmc/model/litedb"
 	"scmc/model/opensnitch"
 	"scmc/model/registry"
 	"scmc/rpc"
 	pb "scmc/rpc/pb/container"
+	"scmc/server/args"
 )
 
 const defaultCPUShares = 1024
@@ -64,47 +66,28 @@ func dockerResourceConfig(in *pb.ResourceLimit) container.Resources {
 	return r
 }
 
-func ensureLocalImage(cli *client.Client, image string) error {
-	list, err := cli.ImageList(context.Background(), types.ImageListOptions{})
+func ensureImage(imageRef string) error {
+	exist, err := docker.IsImageExist(imageRef)
 	if err != nil {
-		log.Warnf("ImageList: %v", err)
+		log.Infof("docker.IsImageExist err=%v", err)
+		return rpc.ErrInternal
+	}
+	if exist {
 		return nil
 	}
-	log.Debugf("image: %v", image)
-	for _, i := range list {
-		log.Debugf("i.ID: %v", i.ID)
-		if i.ID == image {
-			return nil
-		}
-		for _, s := range i.RepoTags {
-			log.Debugf("repotag: %v", s)
-			if s == image {
-				return nil
-			}
-		}
-	}
 
-	return errors.New("image is not in local")
-}
-
-func ensureImage(cli *client.Client, image string) error {
-	err := ensureLocalImage(cli, image)
+	exist, err = registry.IsImageExist(imageRef)
 	if err != nil {
-		log.Warnf("IsLocalImageExist err: %v", err)
-	}
-
-	imageExists, err := registry.IsImageExist(image)
-	if err != nil {
-		log.Debugf("IsImageExist err: %v", err)
+		log.Infof("registry.IsImageExist err=%v", err)
 		return err
 	}
-
-	if !imageExists {
-		return errors.New("image is not in registry")
+	if !exist {
+		log.Infof("image[%v] not exist in registry", imageRef)
+		return rpc.ErrInternal
 	}
 
-	if err = docker.PullImage(image); err != nil {
-		log.Errorf("pull image[%v] err: %v", image, err)
+	if err = docker.PullImage(imageRef); err != nil {
+		log.Infof("pull image[%v] err: %v", imageRef, err)
 		return err
 	}
 	return nil
@@ -249,7 +232,7 @@ func (s *ContainerServer) setSecurityConfig(id, uuid, name string, pid int, from
 	}
 
 	if sec.NprocProtection != nil {
-		var inRule = &db.ProcProtection{
+		var inRule = &litedb.ProcProtection{
 			IsOn:    sec.NprocProtection.IsOn,
 			ExeList: sec.NprocProtection.ExeList,
 		}
@@ -283,9 +266,9 @@ func (s *ContainerServer) setSecurityConfig(id, uuid, name string, pid int, from
 	}
 
 	if sec.NetworkRule != nil {
-		var rules []db.NetworkRule
+		var rules []*litedb.NetworkRule
 		for _, v := range sec.NetworkRule.Rules {
-			rules = append(rules, db.NetworkRule{
+			rules = append(rules, &litedb.NetworkRule{
 				Protocols: v.Protocols,
 				Addr:      v.Addr,
 				Port:      v.Port,
@@ -314,7 +297,7 @@ func (s *ContainerServer) create(configs *pb.ContainerConfigs) (string, error) {
 		return "", rpc.ErrInternal
 	}
 
-	if err := ensureLocalImage(cli, configs.Image); err != nil {
+	if err := ensureImage(configs.Image); err != nil {
 		if _, ok := status.FromError(err); ok {
 			return "", err
 		}
@@ -431,7 +414,31 @@ func (s *ContainerServer) create(configs *pb.ContainerConfigs) (string, error) {
 }
 
 func (s *ContainerServer) Create(ctx context.Context, in *pb.CreateRequest) (*pb.CreateReply, error) {
+	if in.Configs == nil {
+		return nil, rpc.ErrInvalidArgument
+	}
+
+	uuid := uuid.New().String()
+	cfgs := litedb.ContainerConfig{
+		UUID:           uuid,
+		ContainerName:  in.Configs.Name,
+		SecurityConfig: in.Configs.SecurityConfig,
+	}
+
+	if err := litedb.CreateContainerConfig(&cfgs); err != nil {
+		return nil, rpc.ErrInternal
+	}
+
+	in.Configs.Uuid = uuid
 	id, err := s.create(in.Configs)
+
+	if err != nil {
+		litedb.RemoveContainerConfigByID(cfgs.ID)
+	} else {
+		cfgs.ContainerID = id
+		litedb.UpdateContainerConfig(&cfgs)
+	}
+
 	return &pb.CreateReply{ContainerId: id}, err
 }
 
@@ -581,10 +588,21 @@ func (s *ContainerServer) Restart(ctx context.Context, in *pb.RestartRequest) (*
 }
 
 func (s *ContainerServer) Update(ctx context.Context, in *pb.UpdateRequest) (*pb.UpdateReply, error) {
-	reply := pb.UpdateReply{}
+	var reply pb.UpdateReply
 
 	if in.ContainerId == "" || (in.ResourceLimit == nil && in.RestartPolicy == nil && in.Networks == nil && in.SecurityConfig == nil) {
 		return nil, rpc.ErrInvalidArgument
+	}
+
+	cfgs, err := litedb.GetContainerConfig(in.ContainerId)
+	if err != nil {
+		log.Infof("GetContainerConfig err=%v", err)
+		return nil, rpc.ErrDatabaseFail
+	}
+	cfgs.SecurityConfig = in.SecurityConfig
+	if err := litedb.UpdateContainerConfig(cfgs); err != nil {
+		log.Infof("UpdateContainerConfig err=%v", err)
+		return nil, rpc.ErrDatabaseFail
 	}
 
 	if in.Networks != nil {
@@ -643,7 +661,7 @@ func (s *ContainerServer) Update(ctx context.Context, in *pb.UpdateRequest) (*pb
 			for _, v := range in.Networks {
 				m[v.Interface] = struct{}{}
 			}
-			for k, _ := range info.NetworkSettings.Networks {
+			for k := range info.NetworkSettings.Networks {
 				if _, ok := m[k]; !ok {
 					if err = cli.NetworkDisconnect(context.Background(), k, in.ContainerId, true); err != nil {
 						log.Warnf("NetworkDisconnect: %v", err)
@@ -772,7 +790,7 @@ func (s *ContainerServer) Remove(ctx context.Context, in *pb.RemoveRequest) (*pb
 		return nil, rpc.ErrInternal
 	}
 
-	reply := pb.RemoveReply{}
+	var reply pb.RemoveReply
 	for _, id := range in.Ids[0].ContainerIds {
 		err := s.remove(cli, id, false)
 		if err != nil {
@@ -787,10 +805,35 @@ func (s *ContainerServer) Remove(ctx context.Context, in *pb.RemoveRequest) (*pb
 			reply.FailIds = append(reply.FailIds, id)
 			continue
 		}
+		litedb.RemoveContainerConfig([]string{id})
+
 		reply.OkIds = append(reply.OkIds, id)
 	}
 
+	// TODO remove container configs
+	// TODO remove container backups
+	litedb.RemoveContainerConfig(reply.OkIds)
+	go s.removeContainerBackups(reply.OkIds)
+
 	return &reply, nil
+}
+
+func (s *ContainerServer) removeContainerBackups(ids []string) error {
+	backups, err := litedb.QueryContainerBackupByContainer(ids)
+	if err != nil {
+		log.Warnf("QueryContainerBackupByContainer err=%v", err)
+		return err
+	}
+
+	var images []string
+	for _, b := range backups {
+		images = append(images, b.ImageRef)
+	}
+
+	docker.RemoveImage(false, images...)
+	litedb.RemoveContainerBackup(backups)
+
+	return nil
 }
 
 func (s *ContainerServer) inspect(id string, backup bool) (*pb.ContainerConfigs, error) {
@@ -902,10 +945,18 @@ func (s *ContainerServer) inspect(id string, backup bool) (*pb.ContainerConfigs,
 }
 
 func (s *ContainerServer) Inspect(ctx context.Context, in *pb.InspectRequest) (*pb.InspectReply, error) {
+	data, err := litedb.GetContainerConfig(in.ContainerId)
+	if err != nil {
+		log.Infof("db get container configs id=%v err=%v", in.ContainerId, err)
+		return nil, rpc.ErrDatabaseFail
+	}
+
 	configs, err := s.inspect(in.ContainerId, false)
 	if err != nil {
 		return nil, err
 	}
+	configs.SecurityConfig = data.SecurityConfig
+
 	return &pb.InspectReply{Configs: configs}, nil
 }
 
@@ -964,23 +1015,132 @@ func (s *ContainerServer) MonitorHistory(ctx context.Context, in *pb.MonitorHist
 	return r, nil
 }
 
+func (*ContainerServer) CreateBackup(ctx context.Context, in *pb.CreateBackupRequest) (*pb.CreateBackupReply, error) {
+	if in.ContainerId == "" {
+		return nil, rpc.ErrInvalidArgument
+	}
+	if in.BackupName == "" {
+		now := time.Now()
+		in.BackupName = now.Format("20060102150405") + fmt.Sprintf("%d", now.Nanosecond()/1000000)
+	}
+
+	if !args.IsValidBackupDesc(in.BackupDesc) {
+		return nil, status.Errorf(codes.InvalidArgument, "参数错误：备份描述无效")
+	} else if !args.IsValidImageVersion(in.BackupName) {
+		return nil, status.Errorf(codes.InvalidArgument, "参数错误：备份版本名无效")
+	}
+
+	cfgs, err := litedb.GetContainerConfig(in.ContainerId)
+	if err != nil {
+		log.Infof("GetContainerConfigs err=%v", err)
+		return nil, rpc.ErrInternal
+	}
+
+	b, err := litedb.CreateContainerBackup(cfgs.UUID, in.BackupName, in.BackupDesc)
+	if err != nil {
+		return nil, rpc.ErrInternal
+	}
+
+	b.ContainerID = in.ContainerId
+	go addBackupJob(b)
+
+	return &pb.CreateBackupReply{}, nil
+}
+
+func (*ContainerServer) UpdateBackup(ctx context.Context, in *pb.UpdateBackupRequest) (*pb.UpdateBackupReply, error) {
+	// if !isValidBackupDesc(in.BackupDesc) {
+	// 	return nil, status.Errorf(codes.InvalidArgument, "参数错误：备份描述无效")
+	// }
+
+	b, err := litedb.QueryContainerBackupByID(in.Id)
+	if err != nil {
+		log.Infof("db.QueryContainerBackupByID err=%v", err)
+		if err == db.ErrRecordNotFound {
+			return nil, rpc.ErrNotFound
+		}
+		return nil, rpc.ErrInternal
+	}
+
+	b.BackupDesc = in.BackupDesc
+	if err := litedb.UpdateContainerBackup(b); err != nil {
+		log.Infof("db.UpdateContainerBackup err=%v", err)
+		return nil, rpc.ErrInternal
+	}
+
+	return &pb.UpdateBackupReply{}, nil
+}
+
 func (*ContainerServer) RemoveBackup(ctx context.Context, in *pb.RemoveBackupRequest) (*pb.RemoveBackupReply, error) {
+	b, err := litedb.QueryContainerBackupByID(in.Id)
+	if err != nil {
+		log.Infof("db.QueryContainerBackupByID err=%v", err)
+		if err == db.ErrRecordNotFound {
+			return nil, rpc.ErrNotFound
+		}
+		return nil, rpc.ErrInternal
+	}
+
+	cfgs, err := litedb.GetContainerConfigByUUID(b.UUID)
+	if err != nil {
+		log.Infof("db.GetContainerConfigsByUUID err=%v", err)
+		if err == db.ErrRecordNotFound {
+			return nil, rpc.ErrNotFound
+		}
+		return nil, rpc.ErrInternal
+	}
+
 	cli, err := docker.Client()
 	if err != nil {
 		return nil, rpc.ErrInternal
 	}
 
-	if len(in.ImageRef) > 0 {
-		if _, err := cli.ImageRemove(context.Background(), in.ImageRef, types.ImageRemoveOptions{}); err != nil {
-			log.Warnf("remove image=%v err=%v", in.ImageRef, err)
-			return nil, rpc.ErrInternal
-		}
+	ci, err := cli.ContainerInspect(context.Background(), cfgs.ContainerID)
+	if err != nil {
+		log.Infof("ContainerInspect err=%v", err)
+		return nil, rpc.ErrInternal
 	}
+
+	if ci.Image == b.ImageRef {
+		return nil, rpc.ErrRemoveContainerBackupWhenRunning
+	}
+
+	if err := litedb.RemoveContainerBackup(b); err != nil {
+		log.Warnf("db remove backup record err=%v", err)
+		return nil, rpc.ErrInternal
+	}
+
+	docker.RemoveImage(false, b.ImageRef)
 
 	return &pb.RemoveBackupReply{}, nil
 }
 
 func (s *ContainerServer) ResumeBackup(ctx context.Context, in *pb.ResumeBackupRequest) (*pb.ResumeBackupReply, error) {
+	b, err := litedb.QueryContainerBackupByID(in.BackupId)
+	if err != nil {
+		log.Infof("db.QueryContainerBackupByID err=%v", err)
+		if err == db.ErrRecordNotFound {
+			return nil, rpc.ErrNotFound
+		}
+		return nil, rpc.ErrInternal
+	}
+
+	if b.Status != int8(pb.BACKUP_STATUS_SUCCEED) && b.ContainerID != in.ContainerId {
+		log.Infof("invalid backup=%+v target container=%v", b, in.ContainerId)
+		return nil, rpc.ErrInvalidArgument
+	}
+
+	backups, err := litedb.QueryContainerBackupByUUID(b.UUID)
+	if err != nil {
+		log.Infof("QueryContainerBackupByUUID uuid=%v err=%v", b.UUID, err)
+		return nil, rpc.ErrInternal
+	}
+
+	cfgs, err := litedb.GetContainerConfigByUUID(b.UUID)
+	if err != nil {
+		log.Warnf("db get container configs uuid=%v err=%v", b.UUID, err)
+		return nil, rpc.ErrInternal
+	}
+
 	cli, err := docker.Client()
 	if err != nil {
 		return nil, rpc.ErrInternal
@@ -1000,58 +1160,197 @@ func (s *ContainerServer) ResumeBackup(ctx context.Context, in *pb.ResumeBackupR
 	}
 
 	// create new contaienr
-	configs.Image = in.ImageRef
-	configs.SecurityConfig = in.SecurityConfig
+	configs.Image = b.ImageRef
+	configs.SecurityConfig = cfgs.SecurityConfig
 	id, err := s.create(configs)
 	if err != nil {
 		log.Warnf("create container err=%v", err)
 		return nil, rpc.ErrInternal
 	}
 
+	cfgs.ContainerID = id
+	litedb.UpdateContainerConfig(cfgs)
+
+	for _, b := range backups {
+		b.ContainerID = id
+	}
+	if err := litedb.UpdateContainerBackup(backups); err != nil {
+		log.Infof("db.UpdateContainerBackup err=%v", err)
+		return nil, rpc.ErrInternal
+	}
+
 	return &pb.ResumeBackupReply{ContainerId: id}, nil
 }
 
-func (s *ContainerServer) AddBackupJob(ctx context.Context, in *pb.AddBackupJobRequest) (*pb.AddBackupJobReply, error) {
-	if in.Id <= 0 || in.ContainerId == "" || in.BackupName == "" {
-		return nil, rpc.ErrInvalidArgument
-	}
+func (*ContainerServer) ListBackup(ctx context.Context, in *pb.ListBackupRequest) (*pb.ListBackupReply, error) {
+	cfgs, err := litedb.GetContainerConfig(in.ContainerId)
+	if err != nil {
+		log.Infof("GetContainerConfigs err=%v", err)
+		return nil, rpc.ErrInternal
 
-	if err := docker.AddContainerBackupJob(in.Id, in.ContainerId, in.BackupName); err != nil {
-		log.Infof("registry.AddContainerBackupJob err=%v", err)
+	}
+	data, err := litedb.QueryContainerBackupByUUID(cfgs.UUID)
+	if err != nil {
+		log.Infof("db.QueryContainerBackupByUUID err=%v", err)
 		return nil, rpc.ErrInternal
 	}
 
-	return &pb.AddBackupJobReply{}, nil
-}
-
-func (s *ContainerServer) GetBackupJob(ctx context.Context, in *pb.GetBackupJobRequest) (*pb.GetBackupJobReply, error) {
-	if in.Id <= 0 {
-		return nil, rpc.ErrInvalidArgument
+	var reply pb.ListBackupReply
+	for _, b := range data {
+		reply.Data = append(reply.Data, &pb.ContainerBackup{
+			Id:         b.ID,
+			Uuid:       b.UUID,
+			BackupName: b.BackupName,
+			BackupDesc: b.BackupDesc,
+			ImageRef:   b.ImageRef,
+			ImageSize:  b.ImageSize,
+			Status:     int64(b.Status),
+			CreatedAt:  b.CreatedAt,
+		})
 	}
 
-	job, err := docker.GetContainerBackupJob(in.Id)
-	if job == nil {
-		log.Infof("GetContainerBackupJob err=%v", err)
+	return &reply, nil
+}
+
+func (*ContainerServer) ListBackupImage(ctx context.Context, in *pb.ListBackupImageRequest) (*pb.ListBackupImageReply, error) {
+	backups, err := litedb.ListContainerBackup()
+	if err != nil {
+		return nil, rpc.ErrDatabaseFail
+	}
+
+	var r pb.ListBackupImageReply
+	for _, b := range backups {
+		r.Images = append(r.Images, b.ImageRef)
+	}
+
+	return &r, nil
+}
+
+func addBackupJob(b *litedb.ContainerBackup) {
+	cli, err := docker.Client()
+	if err != nil {
+		log.Warnf("create docker cli err=%v", err)
+		b.Status = 2
+		return
+	}
+
+	info, err := cli.ContainerInspect(context.Background(), b.ContainerID)
+	if err != nil {
+		log.Warnf("inspect container=%v err=%v", b.ContainerID, err)
+		b.Status = 2
+		return
+	}
+
+	if info.Config == nil {
+		log.Warnf("inspect container=%v .Config=nil", b.ContainerID)
+		b.Status = 2
+		return
+	}
+
+	b.ImageRef = strings.Split(info.Config.Image, ":")[0] + ":" + b.BackupName
+	newImage, err := cli.ContainerCommit(context.Background(), b.ContainerID, types.ContainerCommitOptions{
+		Reference: b.ImageRef,
+		Pause:     true,
+	})
+	if err != nil {
+		log.Warnf("commit container=%v err=%v", b.ContainerID, err)
+		b.Status = 2
+		return
+	}
+
+	imageInfo, _, err := cli.ImageInspectWithRaw(context.Background(), newImage.ID)
+	if err != nil {
+		log.Warnf("inspect image=%v err=%v", newImage.ID, err)
+		b.Status = 2
+	} else {
+		log.Debugf("backup id=%v finished", b.ID)
+		b.ImageID = strings.TrimPrefix(newImage.ID, "sha256:")
+		b.ImageSize = imageInfo.Size
+		b.Status = 1
+	}
+
+	if err := litedb.UpdateContainerBackup(b); err != nil {
+		log.Errorf("db.UpdateContainerBackup err=%v", err)
+	}
+}
+
+func (*ContainerServer) ExportBackup(in *pb.ExportBackupRequest, stream pb.Container_ExportBackupServer) error {
+	b, err := litedb.QueryContainerBackupByID(in.BackupId)
+	if err != nil {
+		log.Infof("QueryContainerBackupByID err=%v", err)
+		return rpc.ErrInternal
+
+	}
+
+	if b.Status != int8(pb.BACKUP_STATUS_SUCCEED) {
+		return status.Error(codes.Internal, "备份失败，无法导出")
+	}
+
+	cli, err := docker.Client()
+	if err != nil {
+		return rpc.ErrInternal
+	}
+
+	img, _, err := cli.ImageInspectWithRaw(context.Background(), b.ImageRef)
+	if err != nil {
+		if docker.IsErrNotFound(err) {
+			return rpc.ErrNotFound
+		}
+		log.Warnf("ImageInspectWithRaw err=%v", err)
+		return rpc.ErrInternal
+	}
+
+	r, err := cli.ImageSave(context.Background(), []string{b.ImageRef})
+	if err != nil {
+		log.Warnf("ImageSave err=%v", err)
+		return rpc.ErrInternal
+	}
+
+	buf := make([]byte, 16*1024)
+	defer r.Close()
+	for {
+		n, err := r.Read(buf)
+		if err != nil {
+			if err == io.EOF {
+				break
+			}
+			log.Warnf("read image content err=%v", err)
+			return rpc.ErrInternal
+		}
+
+		chunk := pb.ExportBackupReply{
+			Data:       buf[:n],
+			ImgSize:    img.Size,
+			ImgName:    strings.Split(b.ImageRef, ":")[0],
+			ImgVersion: in.ImgVersion,
+		}
+		if err := stream.Send(&chunk); err != nil {
+			log.Infof("ExportBackup send stream err=%v", err)
+			return rpc.ErrInternal
+		}
+	}
+	return nil
+}
+
+func (*ContainerServer) InspectBackup(ctx context.Context, in *pb.InspectBackupRequest) (*pb.InspectBackupReply, error) {
+	b, err := litedb.QueryContainerBackupByID(in.BackupId)
+	if err != nil {
+		log.Infof("GetContainerConfigs err=%v", err)
 		return nil, rpc.ErrInternal
+
 	}
 
-	return &pb.GetBackupJobReply{
-		Id:          job.ID,
-		ContainerId: job.ContainerID,
-		BackupName:  job.BackupName,
-		ImageRef:    job.ImageRef,
-		ImageId:     job.ImageID,
-		ImageSize:   job.ImageSize,
-		Status:      job.Status,
-		UpdatedAt:   job.UpdatedAt,
-	}, nil
-}
-
-func (s *ContainerServer) DelBackupJob(ctx context.Context, in *pb.DelBackupJobRequest) (*pb.DelBackupJobReply, error) {
-	if in.Id <= 0 {
-		return nil, rpc.ErrInvalidArgument
+	var reply pb.InspectBackupReply
+	reply.Backup = &pb.ContainerBackup{
+		Id:         b.ID,
+		Uuid:       b.UUID,
+		BackupName: b.BackupName,
+		BackupDesc: b.BackupDesc,
+		ImageRef:   b.ImageRef,
+		ImageSize:  b.ImageSize,
+		Status:     int64(b.Status),
+		CreatedAt:  b.CreatedAt,
 	}
 
-	docker.DelContainerBackupJob(in.Id)
-	return &pb.DelBackupJobReply{}, nil
+	return &reply, nil
 }

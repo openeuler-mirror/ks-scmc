@@ -15,59 +15,54 @@ type NetworkServer struct {
 }
 
 func (s *NetworkServer) List(ctx context.Context, in *pb.ListRequest) (*pb.ListReply, error) {
-	reply := pb.ListReply{}
-	var nodeToQuery []*db.NodeInfo
+	var nodes []*db.NodeInfo
 	if in.NodeId == -1 {
-		nodes, err := db.ListNodes()
-		if err != nil {
-			log.Warnf("query nodes: %v", err)
-			return nil, rpc.ErrInternal
-		}
-		for i, _ := range nodes {
-			nodeToQuery = append(nodeToQuery, &nodes[i])
+		var err error
+		if nodes, err = db.ListNodes(); err != nil {
+			log.Warnf("db.ListNodes err=%v", err)
+			return nil, rpc.ErrDatabaseFail
 		}
 	} else {
-		nodeInfo, err := db.QueryNodeByID(in.NodeId)
+		n, err := db.QueryNodeByID(in.NodeId)
 		if err != nil {
 			if err == db.ErrRecordNotFound {
 				return nil, rpc.ErrNotFound
 			}
-			return nil, rpc.ErrInternal
+			log.Warnf("db.QueryNodeByID err=%v", err)
+			return nil, rpc.ErrDatabaseFail
 		}
-		nodeToQuery = append(nodeToQuery, nodeInfo)
+		nodes = append(nodes, n)
 	}
 
-	for _, node := range nodeToQuery {
-		conn, err := getAgentConn(node.Address)
+	var reply pb.ListReply
+	for _, n := range nodes {
+		conn, err := getAgentConn(n.Address)
 		if err != nil {
-			if len(nodeToQuery) == 1 {
+			if len(nodes) == 1 {
 				return nil, rpc.ErrInternal
 			}
 			continue
 		}
 
-		cli := pb.NewNetworkClient(conn)
-		ctx_, cancel := context.WithTimeout(context.Background(), time.Second*10)
-		defer cancel()
-		subReply, err := cli.List(ctx_, in)
+		r, err := pb.NewNetworkClient(conn).List(ctx, in)
 		if err != nil {
-			log.Warnf("get network list ID=%v address=%v: %v", node.ID, node.Address, err)
-			if len(nodeToQuery) == 1 {
+			log.Warnf("network.List node=%+v err=%v", n, err)
+			if len(nodes) == 1 {
 				return nil, rpc.ErrInternal
 			}
 			continue
 		}
 
-		for _, v := range subReply.VirtualIfs {
-			v.NodeId = node.ID
+		for _, v := range r.VirtualIfs {
+			v.NodeId = n.ID
 		}
 
-		for _, v := range subReply.RealIfs {
-			v.NodeId = node.ID
+		for _, v := range r.RealIfs {
+			v.NodeId = n.ID
 		}
 
-		reply.RealIfs = append(reply.RealIfs, subReply.RealIfs...)
-		reply.VirtualIfs = append(reply.VirtualIfs, subReply.VirtualIfs...)
+		reply.RealIfs = append(reply.RealIfs, r.RealIfs...)
+		reply.VirtualIfs = append(reply.VirtualIfs, r.VirtualIfs...)
 	}
 
 	return &reply, nil

@@ -46,9 +46,7 @@ func UserPermFromContext(ctx context.Context) ([]*pb.Permission, bool) {
 
 func UnaryInterceptor() grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (reply interface{}, err error) {
-		if !common.NeedCheckAuth() || !rpcNeedCheckAuth(info.FullMethod) {
-			goto handle
-		} else {
+		if common.NeedCheckAuth() && rpcNeedCheckAuth(info.FullMethod) {
 			userID, sessionKey, err := getAuthInfo(ctx)
 			if err != nil {
 				return nil, err
@@ -60,26 +58,22 @@ func UnaryInterceptor() grpc.UnaryServerInterceptor {
 			ctx = context.WithValue(ctx, keyUserID, userID)
 			ctx = context.WithValue(ctx, keyUserSession, sessionKey)
 
-			if !common.NeedCheckPerm() || !rpcNeedCheckPerm(info.FullMethod) {
-				goto handle
+			if isCheckPerm(info.FullMethod) {
+				ctx, err = checkUserPermission(ctx, userID, info.FullMethod)
+				if err != nil {
+					log.Infof("AuthInterceptor method=%v user=%v error=%v", info.FullMethod, userID, err)
+					return nil, err
+				}
 			}
 
-			ctx, err = checkUserPermission(ctx, userID, info.FullMethod)
-			if err != nil {
-				log.Infof("AuthInterceptor method=%v user=%v error=%v", info.FullMethod, userID, err)
-				return nil, err
-			}
 		}
-	handle:
 		return handler(ctx, req)
 	}
 }
 
 func StreamInterceptor() grpc.StreamServerInterceptor {
 	return func(srv interface{}, stream grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
-		if !common.NeedCheckAuth() || !rpcNeedCheckAuth(info.FullMethod) {
-			return handler(srv, stream)
-		} else {
+		if common.NeedCheckAuth() && rpcNeedCheckAuth(info.FullMethod) {
 			ctx := stream.Context()
 			userID, sessionKey, err := getAuthInfo(ctx)
 			if err != nil {
@@ -92,18 +86,34 @@ func StreamInterceptor() grpc.StreamServerInterceptor {
 			ctx = context.WithValue(ctx, keyUserID, userID)
 			ctx = context.WithValue(ctx, keyUserSession, sessionKey)
 
-			if !common.NeedCheckPerm() || !rpcNeedCheckPerm(info.FullMethod) {
-				return handler(srv, middleware.NewServerStreamWrapper(stream, ctx))
-			}
-
-			ctx, err = checkUserPermission(ctx, userID, info.FullMethod)
-			if err != nil {
-				log.Infof("AuthInterceptor method=%v user=%v error=%v", info.FullMethod, userID, err)
-				return err
+			if isCheckPerm(info.FullMethod) {
+				ctx, err = checkUserPermission(ctx, userID, info.FullMethod)
+				if err != nil {
+					log.Infof("AuthInterceptor method=%v user=%v error=%v", info.FullMethod, userID, err)
+					return err
+				}
 			}
 			return handler(srv, middleware.NewServerStreamWrapper(stream, ctx))
 		}
+		return handler(srv, stream)
 	}
+}
+
+// isCheckPerm return whether to check interface permissions
+func isCheckPerm(method string) bool {
+	if method == "/sys.System/SetSecuritySwitch" || (needCheckPerm() && rpcNeedCheckPerm(method)) {
+		return true
+	}
+	return false
+}
+
+func needCheckPerm() bool {
+	isOn, err := db.GetSecuritySwitch()
+	if err != nil {
+		log.Infof("get SecuritySwitch err: %v", err)
+		return true
+	}
+	return isOn
 }
 
 func rpcNeedCheckAuth(method string) bool {
@@ -118,7 +128,8 @@ func rpcNeedCheckPerm(method string) bool {
 	switch method {
 	case "/user.User/Logout",
 		"/user.User/UpdatePassword",
-		"/sys.System/Subscribe":
+		"/sys.System/Subscribe",
+		"/sys.System/GetSecuritySwitch":
 		return false
 	}
 	return true
@@ -271,6 +282,8 @@ func getPermID(method string) pb.PERMISSION {
 	case "/logging.Logging/ListWarn",
 		"/logging.Logging/ReadWarn":
 		return pb.PERMISSION_AUTID_WARN_READ
+	case "/sys.System/SetSecuritySwitch":
+		return pb.PERMISSION_CONTAINER_CONF_SEC
 	default:
 		return pb.PERMISSION_NONE
 	}

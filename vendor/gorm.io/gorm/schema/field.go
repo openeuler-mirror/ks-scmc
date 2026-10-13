@@ -1,6 +1,7 @@
 package schema
 
 import (
+	"context"
 	"database/sql"
 	"database/sql/driver"
 	"fmt"

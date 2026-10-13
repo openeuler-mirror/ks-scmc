@@ -6,20 +6,21 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	log "github.com/sirupsen/logrus"
 	"io/ioutil"
 	"net"
 	"os"
 	"os/exec"
-	"scmc/model/db"
 	"strconv"
 	"strings"
 
+	log "github.com/sirupsen/logrus"
+
 	"scmc/common"
+	"scmc/model/litedb"
 )
 
-//node: iptables -A OUTPUT -d 172.21.1.5 -j ACCEPT
-//container: iptables -A INPUT -s 192.168.122.10 -p all -j ACCEPT
+// node: iptables -A OUTPUT -d 172.21.1.5 -j ACCEPT
+// container: iptables -A INPUT -s 192.168.122.10 -p all -j ACCEPT
 type RuleInfo struct {
 	Source       string //源ip -s
 	Destination  string //目标ip -d
@@ -644,7 +645,7 @@ func EnableNode(linkifs string) error {
 	return updateJSON("Node", true)
 }
 
-func ruleToCmd(filePath, fileName string, isOn bool, rules []db.NetworkRule) string {
+func ruleToCmd(filePath, fileName string, isOn bool, rules []*litedb.NetworkRule) string {
 	var chainCmd string
 	if isOn {
 		chainCmd = fmt.Sprintf("echo '*filter\n:INPUT DROP [0:0]\n:FORWARD ACCEPT [0:0]\n:OUTPUT ACCEPT [0:0]\n")
@@ -702,7 +703,7 @@ func ruleToCmd(filePath, fileName string, isOn bool, rules []db.NetworkRule) str
 	return cmd
 }
 
-func UpdateContainerIPtablesFile(fileName string, isOn bool, rules []db.NetworkRule, pid int) error {
+func UpdateContainerIPtablesFile(fileName string, isOn bool, rules []*litedb.NetworkRule, pid int) error {
 	filePath := path() + "/" + fileName
 	cmd := ruleToCmd(filePath, fileName, isOn, rules)
 	if pid != 0 {

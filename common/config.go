@@ -32,6 +32,7 @@ type ControllerConfig struct {
 	VirtualIP      string `mapstructure:"virtual-ip"`
 	ImageDir       string `mapstructure:"image-dir"`
 	ImageSigner    string `mapstructure:"image-signer"`
+	ImageMaxSize   uint64 `mapstructure:"image-max-size"`
 	CheckAuth      bool   `mapstructure:"check-auth"`
 	SessionTimeout uint   `mapstructure:"session-timeout"`
 	// cert
@@ -137,6 +138,7 @@ func setDefault() {
 	viper.SetDefault("controller.port", 10050)
 	viper.SetDefault("controller.image-dir", "/var/lib/ks-scmc/images")
 	viper.SetDefault("controller.image-signer", "/var/lib/ks-scmc/images/public-key.txt")
+	viper.SetDefault("controller.image-max-size", 5*(1<<30))
 	viper.SetDefault("controller.check-auth", true)
 	viper.SetDefault("controller.session-timeout", 30*60)
 

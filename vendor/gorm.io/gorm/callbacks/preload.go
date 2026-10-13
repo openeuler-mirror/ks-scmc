@@ -10,10 +10,9 @@ import (
 	"gorm.io/gorm/utils"
 )
 
-func preload(db *gorm.DB, rel *schema.Relationship, conds []interface{}, preloads map[string][]interface{}) {
+func preload(tx *gorm.DB, rel *schema.Relationship, conds []interface{}, preloads map[string][]interface{}) error {
 	var (
-		reflectValue     = db.Statement.ReflectValue
-		tx               = db.Session(&gorm.Session{NewDB: true}).Model(nil).Session(&gorm.Session{SkipHooks: db.Statement.SkipHooks})
+		reflectValue     = tx.Statement.ReflectValue
 		relForeignKeys   []string
 		relForeignFields []*schema.Field
 		foreignFields    []*schema.Field

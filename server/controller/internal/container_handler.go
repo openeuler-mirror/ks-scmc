@@ -14,6 +14,7 @@ import (
 	"scmc/model/db"
 	"scmc/rpc"
 	pb "scmc/rpc/pb/container"
+	"scmc/server/args"
 )
 
 type ContainerServer struct {
@@ -97,9 +98,9 @@ func (s *ContainerServer) List(ctx context.Context, in *pb.ListRequest) (*pb.Lis
 func (s *ContainerServer) Create(ctx context.Context, in *pb.CreateRequest) (*pb.CreateReply, error) {
 	if in.Configs == nil || in.NodeId <= 0 {
 		return nil, rpc.ErrInvalidArgument
-	} else if !isValidContainerName(in.Configs.Name) {
+	} else if !args.IsValidContainerName(in.Configs.Name) {
 		return nil, status.Errorf(codes.InvalidArgument, "容器名参数错误")
-	} else if !isValidContainerDesc(in.Configs.Desc) {
+	} else if !args.IsValidContainerDesc(in.Configs.Desc) {
 		return nil, status.Errorf(codes.InvalidArgument, "容器描述参数错误")
 	}
 
@@ -116,43 +117,15 @@ func (s *ContainerServer) Create(ctx context.Context, in *pb.CreateRequest) (*pb
 		return nil, rpc.ErrInternal
 	}
 
-	cfgs := db.ContainerConfigs{
-		NodeID:        nodeInfo.ID,
-		UUID:          uuid.New().String(),
-		ContainerName: in.Configs.Name,
-	}
-
-	if in.Configs.SecurityConfig != nil {
-		if data, err := json.Marshal(in.Configs.SecurityConfig); err != nil {
-			log.Warnf("Marshal SecurityConfig err: %v", err)
-			return nil, rpc.ErrInternal
-		} else {
-			cfgs.SecurityConfig = string(data)
-		}
-	}
-
-	if err := db.CreateContainerConfigs(&cfgs); err != nil {
-		log.Infof("Create: CreateContainerConfigs err=%v", err)
-		return nil, rpc.ErrInternal
-	}
-
-	in.Configs.Uuid = cfgs.UUID
-
 	cli := pb.NewContainerClient(conn)
 	ctx_, cancel := context.WithTimeout(context.Background(), time.Second*10)
 	defer cancel()
 	agentReply, err := cli.Create(ctx_, in)
 	if err != nil && agentReply == nil {
 		log.Warnf("Create container: %v", err)
-		db.RemoveContainerConfigsByID(cfgs.ID)
 		return nil, err
 	}
 
-	cfgs.ContainerID = agentReply.ContainerId
-	if err := db.UpdateContainerConfigs(&cfgs); err != nil {
-		log.Infof("Create: UpdateContainerConfigs data=%+v err=%v", cfgs, err)
-		// still return OK
-	}
 	return agentReply, nil
 }
 
@@ -391,27 +364,6 @@ func (s *ContainerServer) Remove(ctx context.Context, in *pb.RemoveRequest) (*pb
 			continue
 		}
 
-		configs, err := db.GetContainerConfigsList(nodeId, containerIds)
-		if err != nil {
-			log.Warnf("db.GetContainerConfigsList err=%v", err)
-			continue
-		}
-
-		var imageIds []string
-		var uuids []string
-		for _, v := range configs {
-			backup, err := db.QueryContainerBackupByUUID(v.UUID)
-			if err != nil {
-				log.Warnf("db.QueryContainerBackupByID err=%v", err)
-				continue
-			}
-
-			uuids = append(uuids, v.UUID)
-			for _, v := range backup {
-				imageIds = append(imageIds, v.ImageID)
-			}
-		}
-
 		cli := pb.NewContainerClient(conn)
 		ctx_, cancel := context.WithTimeout(context.Background(), time.Second*10)
 		defer cancel()
@@ -419,8 +371,7 @@ func (s *ContainerServer) Remove(ctx context.Context, in *pb.RemoveRequest) (*pb
 		request := pb.RemoveRequest{
 			Ids: []*pb.ContainerIdList{
 				{
-					ContainerIds:   containerIds,
-					BackupImageIds: imageIds,
+					ContainerIds: containerIds,
 				},
 			},
 		}
@@ -428,7 +379,6 @@ func (s *ContainerServer) Remove(ctx context.Context, in *pb.RemoveRequest) (*pb
 		subReply, err := cli.Remove(ctx_, &request)
 		if err != nil {
 			log.Warnf("remove container ErrInternal: %v", err)
-			// TODO remove container configs and backups
 			continue
 		}
 
@@ -437,14 +387,6 @@ func (s *ContainerServer) Remove(ctx context.Context, in *pb.RemoveRequest) (*pb
 		}
 		reply.FailInfos = append(reply.FailInfos, subReply.FailInfos...)
 		reply.OkIds = append(reply.OkIds, subReply.OkIds...)
-
-		if err = db.RemoveContainerConfigs(c.NodeId, containerIds); err != nil {
-			log.Warnf("remove container configs err: %v", err)
-		}
-
-		if err = db.RemoveContainerBackupByUUID(uuids); err != nil {
-			log.Warnf("remove container backup err: %v", err)
-		}
 	}
 
 	// 操作对象只有一个出错时确保返回错误码
@@ -486,19 +428,6 @@ func (s *ContainerServer) Inspect(ctx context.Context, in *pb.InspectRequest) (*
 		return nil, err
 	}
 
-	data, err := db.GetContainerConfigs(in.NodeId, in.ContainerId)
-	if err != nil {
-		log.Infof("db get container configs id=%v err=%v", in.ContainerId, err)
-	} else {
-		var secCfgs pb.SecurityConfig
-		if err := json.Unmarshal([]byte(data.SecurityConfig), &secCfgs); err != nil {
-			log.Infof("unmarshal security config err=%v", err)
-		} else {
-			if agentReply.Configs != nil {
-				agentReply.Configs.SecurityConfig = &secCfgs
-			}
-		}
-	}
 	return agentReply, nil
 }
 
@@ -527,19 +456,6 @@ func (s *ContainerServer) Update(ctx context.Context, in *pb.UpdateRequest) (*pb
 	if err != nil {
 		log.Warnf("Update container: %v", err)
 		return nil, err
-	}
-
-	if in.SecurityConfig != nil {
-		if data, err := json.Marshal(in.SecurityConfig); err != nil {
-			log.Warnf("Marshal SecurityConfig err: %v", err)
-		} else {
-			if containerConfigs, err := db.GetContainerConfigs(in.NodeId, in.ContainerId); err == nil {
-				containerConfigs.SecurityConfig = string(data)
-				if err := db.UpdateContainerConfigs(containerConfigs); err != nil {
-					log.Infof("Update: UpdateContainerConfigs node_id=%v container_id=%s err=%v", in.NodeId, in.ContainerId, err)
-				}
-			}
-		}
 	}
 
 	return agentReply, nil
@@ -597,9 +513,9 @@ func (s *ContainerServer) ListTemplate(ctx context.Context, in *pb.ListTemplateR
 func (s *ContainerServer) CreateTemplate(ctx context.Context, in *pb.CreateTemplateRequest) (*pb.CreateTemplateReply, error) {
 	if in.Data == nil || in.Data.Conf == nil || in.Data.NodeId <= 0 {
 		return nil, rpc.ErrInvalidArgument
-	} else if !isValidContainerName(in.Data.Conf.Name) {
+	} else if !args.IsValidContainerName(in.Data.Conf.Name) {
 		return nil, status.Errorf(codes.InvalidArgument, "模板名参数错误")
-	} else if !isValidContainerDesc(in.Data.Conf.Desc) {
+	} else if !args.IsValidContainerDesc(in.Data.Conf.Desc) {
 		return nil, status.Errorf(codes.InvalidArgument, "模板描述参数错误")
 	}
 
@@ -628,9 +544,9 @@ func (s *ContainerServer) CreateTemplate(ctx context.Context, in *pb.CreateTempl
 func (s *ContainerServer) UpdateTemplate(ctx context.Context, in *pb.UpdateTemplateRequest) (*pb.UpdateTemplateReply, error) {
 	if in.Data == nil || in.Data.Conf == nil || in.Data.NodeId <= 0 {
 		return nil, rpc.ErrInvalidArgument
-	} else if !isValidContainerName(in.Data.Conf.Name) {
+	} else if !args.IsValidContainerName(in.Data.Conf.Name) {
 		return nil, status.Errorf(codes.InvalidArgument, "模板名参数错误")
-	} else if !isValidContainerDesc(in.Data.Conf.Desc) {
+	} else if !args.IsValidContainerDesc(in.Data.Conf.Desc) {
 		return nil, status.Errorf(codes.InvalidArgument, "模板描述参数错误")
 	}
 
@@ -705,14 +621,34 @@ func (*ContainerServer) CreateBackup(ctx context.Context, in *pb.CreateBackupReq
 		return nil, rpc.ErrInvalidArgument
 	}
 
-	if !isValidBackupDesc(in.BackupDesc) {
-		return nil, status.Errorf(codes.InvalidArgument, "参数错误：备份描述无效")
+	nodeInfo, err := db.QueryNodeByID(in.NodeId)
+	if err != nil {
+		if err == db.ErrRecordNotFound {
+			return nil, rpc.ErrNotFound
+		}
+		return nil, rpc.ErrInternal
 	}
 
-	configs, err := db.GetContainerConfigs(in.NodeId, in.ContainerId)
+	conn, err := getAgentConn(nodeInfo.Address)
 	if err != nil {
-		log.Infof("db.GetContainerConfigs err=%v", err)
 		return nil, rpc.ErrInternal
+	}
+
+	cli := pb.NewContainerClient(conn)
+	ctx_, cancel := context.WithTimeout(context.Background(), time.Second*10)
+	defer cancel()
+	subReply, err := cli.CreateBackup(ctx_, in)
+	if err != nil {
+		log.Infof("agent CreateBackup err=%v", err)
+		return nil, rpc.ErrInternal
+	}
+
+	return subReply, nil
+}
+
+func (*ContainerServer) UpdateBackup(ctx context.Context, in *pb.UpdateBackupRequest) (*pb.UpdateBackupReply, error) {
+	if !args.IsValidBackupDesc(in.BackupDesc) {
+		return nil, status.Errorf(codes.InvalidArgument, "参数错误：备份描述无效")
 	}
 
 	nodeInfo, err := db.QueryNodeByID(in.NodeId)
@@ -728,81 +664,20 @@ func (*ContainerServer) CreateBackup(ctx context.Context, in *pb.CreateBackupReq
 		return nil, rpc.ErrInternal
 	}
 
-	now := time.Now()
-	backupName := now.Format("20060102150405") + fmt.Sprintf("%d", now.Nanosecond()/1000000)
-	backup, err := db.CreateContainerBackup(in.NodeId, configs.UUID, backupName, in.BackupDesc)
-	if err != nil {
-		return nil, rpc.ErrInternal
-	}
-
 	cli := pb.NewContainerClient(conn)
 	ctx_, cancel := context.WithTimeout(context.Background(), time.Second*10)
 	defer cancel()
-	_, err = cli.AddBackupJob(ctx_, &pb.AddBackupJobRequest{
-		Id:          backup.ID,
-		ContainerId: in.ContainerId,
-		BackupName:  backupName,
-	})
+	subReply, err := cli.UpdateBackup(ctx_, in)
 	if err != nil {
-		// model set backup failed
-		backup.Status = 2
-		db.UpdateContainerBackup(backup)
+		log.Infof("agent UpdateBackup err=%v", err)
 		return nil, rpc.ErrInternal
 	}
 
-	db.UpdateContainerBackup(backup)
-
-	return &pb.CreateBackupReply{}, nil
-
-}
-
-func (*ContainerServer) UpdateBackup(ctx context.Context, in *pb.UpdateBackupRequest) (*pb.UpdateBackupReply, error) {
-	if !isValidBackupDesc(in.BackupDesc) {
-		return nil, status.Errorf(codes.InvalidArgument, "参数错误：备份描述无效")
-	}
-
-	data, err := db.QueryContainerBackupByID(in.Id)
-	if err != nil {
-		log.Infof("db.QueryContainerBackupByID err=%v", err)
-		if err == db.ErrRecordNotFound {
-			return nil, rpc.ErrNotFound
-		}
-		return nil, rpc.ErrInternal
-	}
-
-	data.BackupDesc = in.BackupDesc
-	if err := db.UpdateContainerBackup(data); err != nil {
-		log.Infof("db.UpdateContainerBackup err=%v", err)
-		return nil, rpc.ErrInternal
-	}
-
-	return &pb.UpdateBackupReply{}, nil
+	return subReply, nil
 }
 
 func (*ContainerServer) RemoveBackup(ctx context.Context, in *pb.RemoveBackupRequest) (*pb.RemoveBackupReply, error) {
-	backup, err := db.QueryContainerBackupByID(in.Id)
-	if err != nil {
-		log.Infof("db.QueryContainerBackupByID err=%v", err)
-		if err == db.ErrRecordNotFound {
-			return nil, rpc.ErrNotFound
-		}
-		return nil, rpc.ErrInternal
-	}
-
-	cc, err := db.GetContainerConfigsByUUID(backup.UUID)
-	if err != nil {
-		log.Infof("db.GetContainerConfigsByUUID err=%v", err)
-		if err == db.ErrRecordNotFound {
-			return nil, rpc.ErrNotFound
-		}
-		return nil, rpc.ErrInternal
-	}
-
-	if cc.NodeID != backup.NodeID {
-		return nil, rpc.ErrInternal
-	}
-
-	nodeInfo, err := db.QueryNodeByID(backup.NodeID)
+	nodeInfo, err := db.QueryNodeByID(in.NodeId)
 	if err != nil {
 		if err == db.ErrRecordNotFound {
 			return nil, rpc.ErrNotFound
@@ -818,62 +693,17 @@ func (*ContainerServer) RemoveBackup(ctx context.Context, in *pb.RemoveBackupReq
 	cli := pb.NewContainerClient(conn)
 	ctx_, cancel := context.WithTimeout(context.Background(), time.Second*10)
 	defer cancel()
-
-	ci, err := cli.Inspect(ctx_, &pb.InspectRequest{
-		NodeId:      backup.ID,
-		ContainerId: cc.ContainerID,
-	})
+	subReply, err := cli.RemoveBackup(ctx_, in)
 	if err != nil {
+		log.Infof("agent RemoveBackup err=%v", err)
 		return nil, rpc.ErrInternal
 	}
 
-	if ci.Configs.GetImage() == backup.ImageRef {
-		return nil, rpc.ErrRemoveContainerBackupWhenRunning
-	}
-
-	if _, err := cli.RemoveBackup(ctx_, &pb.RemoveBackupRequest{
-		Id:       in.Id,
-		ImageRef: backup.ImageRef,
-	}); err != nil {
-		log.Warnf("agent RemoveBackup image=%v err=%v", backup.ImageRef, err)
-		return nil, rpc.ErrInternal
-	}
-
-	if err := db.RemoveContainerBackup(backup); err != nil {
-		log.Warnf("db remove backup record err=%v", err)
-		return nil, rpc.ErrInternal
-	}
-
-	return &pb.RemoveBackupReply{}, nil
+	return subReply, nil
 }
 
 func (*ContainerServer) ResumeBackup(ctx context.Context, in *pb.ResumeBackupRequest) (*pb.ResumeBackupReply, error) {
-	backup, err := db.QueryContainerBackupByID(in.BackupId)
-	if err != nil {
-		log.Infof("db.QueryContainerBackupByID err=%v", err)
-		if err == db.ErrRecordNotFound {
-			return nil, rpc.ErrNotFound
-		}
-		return nil, rpc.ErrInternal
-	}
-
-	if backup.Status != int8(pb.BACKUP_STATUS_SUCCEED) {
-		log.Infof("backup invalid status %+v", backup)
-		return nil, rpc.ErrInvalidArgument
-	}
-
-	cfgs, err := db.GetContainerConfigsByUUID(backup.UUID)
-	if err != nil {
-		log.Warnf("db get container configs uuid=%v err=%v", backup.UUID, err)
-		return nil, rpc.ErrInternal
-	}
-
-	var secCfg pb.SecurityConfig
-	if err := json.Unmarshal([]byte(cfgs.SecurityConfig), &secCfg); err != nil {
-		log.Infof("json unmarshal security config err=%v", err)
-	}
-
-	nodeInfo, err := db.QueryNodeByID(backup.NodeID)
+	nodeInfo, err := db.QueryNodeByID(in.NodeId)
 	if err != nil {
 		if err == db.ErrRecordNotFound {
 			return nil, rpc.ErrNotFound
@@ -889,48 +719,37 @@ func (*ContainerServer) ResumeBackup(ctx context.Context, in *pb.ResumeBackupReq
 	cli := pb.NewContainerClient(conn)
 	ctx_, cancel := context.WithTimeout(context.Background(), time.Second*10)
 	defer cancel()
-	subReply, err := cli.ResumeBackup(ctx_, &pb.ResumeBackupRequest{
-		ContainerId:    in.ContainerId,
-		ImageRef:       backup.ImageRef,
-		SecurityConfig: &secCfg,
-	})
+	subReply, err := cli.ResumeBackup(ctx_, in)
 	if err != nil {
-		log.Warnf("agent ResumeBackup failed err=%v", err)
-		return nil, err
+		log.Infof("agent ResumeBackup err=%v", err)
+		return nil, rpc.ErrInternal
 	}
-
-	cfgs.ContainerID = subReply.ContainerId
-	db.UpdateContainerConfigs(cfgs)
 
 	return subReply, nil
 }
 
 func (*ContainerServer) ListBackup(ctx context.Context, in *pb.ListBackupRequest) (*pb.ListBackupReply, error) {
-	configs, err := db.GetContainerConfigs(in.NodeId, in.ContainerId)
+	nodeInfo, err := db.QueryNodeByID(in.NodeId)
 	if err != nil {
-		log.Infof("db.GetContainerConfigs err=%v", err)
+		if err == db.ErrRecordNotFound {
+			return nil, rpc.ErrNotFound
+		}
 		return nil, rpc.ErrInternal
 	}
 
-	data, err := db.QueryContainerBackupByUUID(configs.UUID)
+	conn, err := getAgentConn(nodeInfo.Address)
 	if err != nil {
-		log.Infof("db.QueryContainerBackupByUUID err=%v", err)
 		return nil, rpc.ErrInternal
 	}
 
-	var reply pb.ListBackupReply
-	for _, b := range data {
-		reply.Data = append(reply.Data, &pb.ContainerBackup{
-			Id:         b.ID,
-			Uuid:       b.UUID,
-			BackupName: b.BackupName,
-			BackupDesc: b.BackupDesc,
-			ImageRef:   b.ImageRef,
-			ImageSize:  b.ImageSize,
-			Status:     int64(b.Status),
-			CreatedAt:  b.CreatedAt,
-		})
+	cli := pb.NewContainerClient(conn)
+	ctx_, cancel := context.WithTimeout(context.Background(), time.Second*10)
+	defer cancel()
+	subReply, err := cli.ListBackup(ctx_, in)
+	if err != nil {
+		log.Infof("agent ListBackup err=%v", err)
+		return nil, rpc.ErrInternal
 	}
 
-	return &reply, nil
+	return subReply, nil
 }

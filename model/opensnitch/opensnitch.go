@@ -6,11 +6,12 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
-	"scmc/common"
-	"scmc/model/db"
 	"strings"
 
 	log "github.com/sirupsen/logrus"
+
+	"scmc/common"
+	"scmc/model/litedb"
 )
 
 type Rule struct {
@@ -83,7 +84,7 @@ func LoadRule(path string, containerID string) (*Rule, error) {
 }
 
 // SaveRule 将网络进程白名单规则写入文件
-func SaveRule(p *db.ProcProtection, containerID, uuid string) error {
+func SaveRule(p *litedb.ProcProtection, containerID, uuid string) error {
 	if uuid == "" {
 		return fmt.Errorf("opensnitch rule cannot has empty uuid") // 保存空uuid导致所有连接都异常
 	}

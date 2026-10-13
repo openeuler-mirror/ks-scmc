@@ -388,41 +388,6 @@ func (s *ImageServer) Download(in *pb.DownloadRequest, stream pb.Image_DownloadS
 	return nil
 }
 
-func (s *ImageServer) noticeAgentSync(toRemove, toPull []string) {
-	nodes, err := db.ListNodes()
-	if err != nil {
-		log.Warnf("noticeAgentSync list nodes err=%v", err)
-		return
-	}
-
-	// 遍历各节点通过ImagePull拉取镜像
-	for _, n := range nodes {
-		conn, err := getAgentConn(n.Address)
-		if err != nil {
-			log.Warnf("Failed to connect to agent service, node=%+v", n)
-			continue
-		}
-
-		req := pb.AgentSyncRequest{
-			ToRemove: toRemove,
-			ToPull:   toPull,
-		}
-
-		cli := pb.NewImageClient(conn)
-		for i := 0; i < 3; i++ {
-			ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
-			defer cancel()
-			if _, err = cli.AgentSync(ctx, &req); err != nil {
-				log.Infof("sync image %+v on node address=%v err=%v", &req, n.Address, err)
-				continue
-			}
-
-			log.Debugf("sync image %+v on node address=%v", &req, n.Address)
-			break
-		}
-	}
-}
-
 func (s *ImageServer) Approve(ctx context.Context, in *pb.ApproveRequest) (*pb.ApproveReply, error) {
 	i, err := db.QueryImageByID(in.ImageId)
 	if err != nil {
@@ -450,14 +415,7 @@ func (s *ImageServer) Approve(ctx context.Context, in *pb.ApproveRequest) (*pb.A
 		return nil, rpc.ErrDatabaseFail
 	}
 
-	// 审批通过后 推送registry 通知agent同步
-	if in.Approve {
-		go func() {
-			registry.PushImage(i)
-			s.noticeAgentSync(nil, []string{i.Name + ":" + i.Version})
-		}()
-	}
-
+	s.noticeNewImage(i)
 	return &pb.ApproveReply{}, nil
 }
 
@@ -468,8 +426,16 @@ func (s *ImageServer) Remove(ctx context.Context, in *pb.RemoveRequest) (*pb.Rem
 		return nil, rpc.ErrDatabaseFail
 	}
 
-	if err := db.RemoveImages(in.ImageIds); err != nil {
+	imgs, err := db.RemoveImages(in.ImageIds)
+	if err != nil {
 		return nil, rpc.ErrDatabaseFail
+	}
+
+	for _, i := range imgs {
+		if len(i.FilePath) > 0 {
+			err := os.Remove(i.FilePath)
+			log.Infof("Remove image file path=%v err=%v", i.FilePath, err)
+		}
 	}
 
 	go func() {
@@ -486,4 +452,3 @@ func (s *ImageServer) Remove(ctx context.Context, in *pb.RemoveRequest) (*pb.Rem
 
 	return &pb.RemoveReply{}, nil
 }
-

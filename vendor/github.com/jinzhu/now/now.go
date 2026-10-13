@@ -108,6 +108,7 @@ func (now *Now) EndOfYear() time.Time {
 }
 
 // Monday monday
+/*
 func (now *Now) Monday() time.Time {
 	t := now.BeginningOfDay()
 	weekday := int(t.Weekday())

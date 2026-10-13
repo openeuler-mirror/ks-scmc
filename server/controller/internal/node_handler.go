@@ -5,13 +5,14 @@ import (
 	"time"
 	"unicode/utf8"
 
-	log "github.com/sirupsen/logrus"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
-
 	"scmc/model/db"
 	"scmc/rpc"
 	pb "scmc/rpc/pb/node"
+	"scmc/server/args"
+
+	log "github.com/sirupsen/logrus"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 type NodeServer struct {
@@ -46,11 +47,11 @@ func (s *NodeServer) List(ctx context.Context, in *pb.ListRequest) (*pb.ListRepl
 }
 
 func (s *NodeServer) Create(ctx context.Context, in *pb.CreateRequest) (*pb.CreateReply, error) {
-	if !isValidNodeAddr(in.Address) {
+	if !args.IsValidNodeAddr(in.Address) {
 		return nil, status.Errorf(codes.InvalidArgument, "节点地址参数错误")
-	} else if !isValidNodeName(in.Name) {
+	} else if !args.IsValidNodeName(in.Name) {
 		return nil, status.Errorf(codes.InvalidArgument, "节点名称参数错误")
-	} else if !isValidNodeComment(in.Comment) {
+	} else if !args.IsValidNodeComment(in.Comment) {
 		return nil, status.Errorf(codes.InvalidArgument, "节点备注参数错误")
 	}
 

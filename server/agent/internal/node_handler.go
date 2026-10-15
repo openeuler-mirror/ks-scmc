@@ -15,6 +15,8 @@ import (
 	pb "scmc/rpc/pb/node"
 )
 
+const gigaBytes = 1 << 30
+
 type NodeServer struct {
 	pb.UnimplementedNodeServer
 }
@@ -99,18 +101,24 @@ func (s *NodeServer) Update(ctx context.Context, in *pb.UpdateRequest) (*pb.Upda
 		}
 	}
 
-	cpuNUM := float64(numCPU())
-	if cpuNUM < in.RscLimit.CpuLimit {
-		return nil, status.Errorf(codes.InvalidArgument, "CPU参数超过上限%.0f", cpuNUM)
+	cpuNum := float64(numCPU())
+	if cpuNum < in.RscLimit.CpuLimit {
+		return nil, status.Errorf(codes.InvalidArgument, "CPU参数超过上限%.0f", cpuNum)
 	}
 
 	if diskUsage, err := disk.Usage("/"); err != nil {
 		log.Warnf("disk.Usage err=%v", err)
 		return nil, rpc.ErrInternal
 	} else {
-		diskTotal := float64(diskUsage.Total / megaBytes)
+		label := "GB"
+		diskTotal := float64(diskUsage.Total / gigaBytes)
+		if diskUsage.Total < gigaBytes {
+			label = "MB"
+			diskTotal = float64(diskUsage.Total / megaBytes)
+		}
+
 		if diskTotal < in.RscLimit.DiskLimit {
-			return nil, status.Errorf(codes.InvalidArgument, "磁盘参数超过上限%.0f", diskTotal)
+			return nil, status.Errorf(codes.InvalidArgument, "磁盘参数超过上限%.0f%s", diskTotal, label)
 		}
 	}
 

@@ -27,6 +27,7 @@ require (
 	github.com/stretchr/testify v1.7.0
 	github.com/theupdateframework/notary v0.7.0 // indirect
 	github.com/tklauser/go-sysconf v0.3.10 // indirect
+	github.com/vishvananda/netlink v1.1.1-0.20201029203352-d40f9887b852
 	github.com/yusufpapurcu/wmi v1.2.2 // indirect
 	golang.org/x/crypto v0.0.0-20210322153248-0c34fe9e7dc2
 	golang.org/x/net v0.0.0-20211015210444-4f30a5c0130f // indirect

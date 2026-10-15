@@ -228,6 +228,7 @@ func getPermID(method string) pb.PERMISSION {
 		"/container.Container/CreateBackup",
 		"/container.Container/UpdateBackup",
 		"/container.Container/ResumeBackup",
+		"/container.Container/ExportBackup",
 		"/container.Container/RemoveBackup",
 		"/container.Container/AddBackupJob",
 		"/container.Container/DelBackupJob",

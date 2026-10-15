@@ -1026,9 +1026,9 @@ func (*ContainerServer) CreateBackup(ctx context.Context, in *pb.CreateBackupReq
 		in.BackupName = now.Format("20060102150405") + fmt.Sprintf("%d", now.Nanosecond()/1000000)
 	}
 
-	if !args.IsValidBackupDesc(in.BackupDesc) {
+	if !args.BackupDesc.Check(in.BackupDesc) {
 		return nil, status.Errorf(codes.InvalidArgument, "参数错误：备份描述无效")
-	} else if !args.IsValidImageVersion(in.BackupName) {
+	} else if !args.ImageVersion.Check(in.BackupName) {
 		return nil, status.Errorf(codes.InvalidArgument, "参数错误：备份版本名无效")
 	}
 
@@ -1050,7 +1050,7 @@ func (*ContainerServer) CreateBackup(ctx context.Context, in *pb.CreateBackupReq
 }
 
 func (*ContainerServer) UpdateBackup(ctx context.Context, in *pb.UpdateBackupRequest) (*pb.UpdateBackupReply, error) {
-	if !args.IsValidBackupDesc(in.BackupDesc) {
+	if !args.BackupDesc.Check(in.BackupDesc) {
 		return nil, status.Errorf(codes.InvalidArgument, "参数错误：备份描述无效")
 	}
 

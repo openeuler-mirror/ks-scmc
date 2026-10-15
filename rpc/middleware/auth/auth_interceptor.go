@@ -2,7 +2,6 @@ package auth
 
 import (
 	"context"
-	"encoding/json"
 	"strings"
 	"time"
 
@@ -129,7 +128,8 @@ func rpcNeedCheckPerm(method string) bool {
 	case "/user.User/Logout",
 		"/user.User/UpdatePassword",
 		"/sys.System/Subscribe",
-		"/sys.System/GetSecuritySwitch":
+		"/sys.System/GetSecuritySwitch",
+		"/sys.System/Dashboard":
 		return false
 	}
 	return true
@@ -163,19 +163,12 @@ func checkUserPermission(ctx context.Context, userID, method string) (context.Co
 		return nil, rpc.ErrPermissionDenied
 	}
 
-	var perms []*pb.Permission
-	err = json.Unmarshal([]byte(userRole.PermsJSON), &perms)
-	if err != nil {
-		log.Warnf("unmarshal permission json err=%v", err)
-		return nil, rpc.ErrPermissionDenied
-	}
-
-	if !hasPerm(permID, perms) {
+	if !HasPerm(permID, userRole.PermsJSON) {
 		return nil, rpc.ErrPermissionDenied
 	}
 
 	c := context.WithValue(ctx, keyUserInfo, userRole)
-	c = context.WithValue(c, keyPermission, perms)
+	c = context.WithValue(c, keyPermission, userRole.PermsJSON)
 	return c, nil
 }
 
@@ -289,10 +282,10 @@ func getPermID(method string) pb.PERMISSION {
 	}
 }
 
-func hasPerm(target pb.PERMISSION, perms []*pb.Permission) bool {
+func HasPerm(target pb.PERMISSION, perms []*db.Perm) bool {
 	for i := 0; i < len(perms); i++ {
 		p := perms[i]
-		if p != nil && p.Id == int32(target) && p.Allow {
+		if p != nil && p.ID == int32(target) && p.Allow {
 			return true
 		}
 	}

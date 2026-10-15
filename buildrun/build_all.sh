@@ -2,9 +2,12 @@
 
 set -e
 
-g_software_name=ks-scmc
 g_basedir=$(cd $(dirname $0); pwd -P)
 cd $g_basedir
+
+g_software_name=ks-scmc
+support_archs=(x86_64 aarch64)
+ALLOWED_OS_VERSION="3.3-6C"
 
 function process_install_shell()
 {
@@ -52,11 +55,6 @@ fi
 cd \$RPM_PATH
 
 deppgs=\$(ls | grep -v '^$g_software_name')
-cat /etc/.kyinfo | grep 3.3-6D > /dev/null
-if [[ \$? -eq 0 ]];then
-    deppgs=\$(ls | grep -v '^$g_software_name' | grep -v '^python3')
-fi
-
 kspkgs=\$(ls | grep -E "^$g_software_name")
 if [[ ! \$deppgs == "" ]];then
     sudo yum localinstall \$deppgs -y --nogpgcheck --disablerepo=*
@@ -98,9 +96,6 @@ EOF
 
 }
 
-support_archs=(x86_64 aarch64)
-#support_archs=(x86_64)
-
 ls $g_basedir/ks-run | grep ^$g_software_name | while read proj; do
     ls $g_basedir/ks-run/$proj | while read osver; do
 
@@ -110,7 +105,7 @@ ls $g_basedir/ks-run | grep ^$g_software_name | while read proj; do
 
         for arch in ${support_archs[*]};do
             if [ -e $g_basedir/ks-run/$proj/$osver/$arch ];then
-                cmd="sh ./generate-run.sh $proj $osver $arch"
+                cmd="sh ./generate-run.sh $proj $osver $arch $ALLOWED_OS_VERSION"
                 echo $cmd
                 $cmd
             fi

@@ -1,7 +1,13 @@
 #/bin/bash
 set -e
+
+if [[ $# < 1 ]]; then
+    echo "Usage: $0 [DB_PASSWORD]"
+    exit 1
+fi
+
 WORKDIR="/tmp/"
-DB_PASSWD="123456"
+DB_PASSWD=${1:-'12345678'}
 CONN_STR="/usr/bin/mysql -uroot -p${DB_PASSWD}"
 MYSQLCONF=$PWD/mysql5-server.cnf
 

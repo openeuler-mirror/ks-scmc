@@ -99,8 +99,6 @@ type ContainerServer struct {
 }
 
 func (s *ContainerServer) List(ctx context.Context, in *pb.ListRequest) (*pb.ListReply, error) {
-	reply := pb.ListReply{}
-
 	cli, err := docker.Client()
 	if err != nil {
 		return nil, rpc.ErrInternal

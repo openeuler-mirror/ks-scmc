@@ -94,9 +94,9 @@ func (s *ContainerServer) List(ctx context.Context, in *pb.ListRequest) (*pb.Lis
 func (s *ContainerServer) Create(ctx context.Context, in *pb.CreateRequest) (*pb.CreateReply, error) {
 	if in.Configs == nil || in.NodeId <= 0 {
 		return nil, rpc.ErrInvalidArgument
-	} else if !args.IsValidContainerName(in.Configs.Name) {
+	} else if !args.ContainerName.Check(in.Configs.Name) {
 		return nil, status.Errorf(codes.InvalidArgument, "容器名参数错误")
-	} else if !args.IsValidContainerDesc(in.Configs.Desc) {
+	} else if !args.ContainerDesc.Check(in.Configs.Desc) {
 		return nil, status.Errorf(codes.InvalidArgument, "容器描述参数错误")
 	}
 
@@ -467,9 +467,9 @@ func (s *ContainerServer) ListTemplate(ctx context.Context, in *pb.ListTemplateR
 func (s *ContainerServer) CreateTemplate(ctx context.Context, in *pb.CreateTemplateRequest) (*pb.CreateTemplateReply, error) {
 	if in.Data == nil || in.Data.Conf == nil || in.Data.NodeId <= 0 {
 		return nil, rpc.ErrInvalidArgument
-	} else if !args.IsValidContainerName(in.Data.Conf.Name) {
+	} else if !args.ContainerName.Check(in.Data.Conf.Name) {
 		return nil, status.Errorf(codes.InvalidArgument, "模板名参数错误")
-	} else if !args.IsValidContainerDesc(in.Data.Conf.Desc) {
+	} else if !args.ContainerDesc.Check(in.Data.Conf.Desc) {
 		return nil, status.Errorf(codes.InvalidArgument, "模板描述参数错误")
 	}
 
@@ -494,9 +494,9 @@ func (s *ContainerServer) CreateTemplate(ctx context.Context, in *pb.CreateTempl
 func (s *ContainerServer) UpdateTemplate(ctx context.Context, in *pb.UpdateTemplateRequest) (*pb.UpdateTemplateReply, error) {
 	if in.Data == nil || in.Data.Conf == nil || in.Data.NodeId <= 0 || in.Data.Id <= 0 {
 		return nil, rpc.ErrInvalidArgument
-	} else if !args.IsValidContainerName(in.Data.Conf.Name) {
+	} else if !args.ContainerName.Check(in.Data.Conf.Name) {
 		return nil, status.Errorf(codes.InvalidArgument, "模板名参数错误")
-	} else if !args.IsValidContainerDesc(in.Data.Conf.Desc) {
+	} else if !args.ContainerDesc.Check(in.Data.Conf.Desc) {
 		return nil, status.Errorf(codes.InvalidArgument, "模板描述参数错误")
 	}
 
@@ -714,7 +714,7 @@ func (s *ContainerServer) ExportBackup(in *pb.ExportBackupRequest, stream pb.Con
 
 	var img *db.ImageInfo
 	if !in.IsDownload {
-		if !args.IsValidImageVersion(in.ImgVersion) {
+		if !args.ImageVersion.Check(in.ImgVersion) {
 			return rpc.ErrInvalidArgument
 		}
 

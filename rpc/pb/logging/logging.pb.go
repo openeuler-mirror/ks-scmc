@@ -713,6 +713,91 @@ func (*ReadWarnReply) Descriptor() ([]byte, []int) {
 	return file_logging_proto_rawDescGZIP(), []int{6}
 }
 
+type SubscribeWarnRequest struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+}
+
+func (x *SubscribeWarnRequest) Reset() {
+	*x = SubscribeWarnRequest{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_logging_proto_msgTypes[7]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *SubscribeWarnRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SubscribeWarnRequest) ProtoMessage() {}
+
+func (x *SubscribeWarnRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_logging_proto_msgTypes[7]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SubscribeWarnRequest.ProtoReflect.Descriptor instead.
+func (*SubscribeWarnRequest) Descriptor() ([]byte, []int) {
+	return file_logging_proto_rawDescGZIP(), []int{7}
+}
+
+type SubscribeWarnReply struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Logs []*WarnLog `protobuf:"bytes,1,rep,name=logs,proto3" json:"logs,omitempty"`
+}
+
+func (x *SubscribeWarnReply) Reset() {
+	*x = SubscribeWarnReply{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_logging_proto_msgTypes[8]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *SubscribeWarnReply) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SubscribeWarnReply) ProtoMessage() {}
+
+func (x *SubscribeWarnReply) ProtoReflect() protoreflect.Message {
+	mi := &file_logging_proto_msgTypes[8]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SubscribeWarnReply.ProtoReflect.Descriptor instead.
+func (*SubscribeWarnReply) Descriptor() ([]byte, []int) {
+	return file_logging_proto_rawDescGZIP(), []int{8}
+}
+
+func (x *SubscribeWarnReply) GetLogs() []*WarnLog {
+	if x != nil {
+		return x.Logs
+	}
+	return nil
+}
+
 type RuntimeLog struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache

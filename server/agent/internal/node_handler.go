@@ -117,7 +117,7 @@ func (s *NodeServer) Update(ctx context.Context, in *pb.UpdateRequest) (*pb.Upda
 			diskTotal = float64(diskUsage.Total / megaBytes)
 		}
 
-		if diskTotal < in.RscLimit.DiskLimit {
+		if float64(diskUsage.Total/megaBytes) < in.RscLimit.DiskLimit {
 			return nil, status.Errorf(codes.InvalidArgument, "磁盘参数超过上限%.0f%s", diskTotal, label)
 		}
 	}

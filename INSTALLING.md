@@ -35,75 +35,27 @@
 
 ### 2. 安装依赖
 
-解压安装包文件 ks-scmc.zip，进入解压后目录，目录结构如下：
-```
-.
-├── agent
-│   ├── cadvisor-0.33.1-5.20190708git2ccad4b.fc32.x86_64.rpm
-│   ├── containerd.io-1.4.3-3.1.kb1.ky3.x86_64.rpm
-│   ├── container-selinux-2.138.0-1.kb1.ky3.noarch.rpm
-│   ├── docker-ce-20.10.7-3.kb3.ky3.x86_64.rpm
-│   ├── docker-ce-cli-20.10.7-3.kb2.ky3.x86_64.rpm
-│   ├── docker-ce-rootless-extras-20.10.7-3.kb2.ky3.x86_64.rpm
-│   ├── docker-scan-plugin-0.8.0-3.kb2.ky3.x86_64.rpm
-│   ├── fuse3-3.9.2-4.kb1.ky3.x86_64.rpm
-│   ├── fuse-overlayfs-0.7.2-5.kb2.ky3.x86_64.rpm
-│   ├── influxdb-1.8.10.x86_64.rpm
-│   ├── kernel-4.19.90-2106.3.0.0095.test.kb5.ky3.x86_64.rpm
-│   ├── kernel-devel-4.19.90-2106.3.0.0095.test.kb5.ky3.x86_64.rpm
-│   ├── libnetfilter_queue-1.0.5-1.kb1.ky3.x86_64.rpm
-│   ├── opensnitch-1.5.0-1.x86_64.rpm
-│   └── slirp4netns-0.4.2-3.git21fdece.kb2.ky3.x86_64.rpm
-├── common
-│   ├── keepalived-2.0.20-18.kb1.ky3.x86_64.rpm
-│   ├── keepalived-help-2.0.20-18.kb1.ky3.noarch.rpm
-│   ├── lsyncd-2.2.3-2.kb1.ky3.x86_64.rpm
-│   ├── socat-1.7.3.2-8.kb1.ky3.x86_64.rpm
-│   └── xinetd-2.3.15-31.kb1.ky3.x86_64.rpm
-├── controller
-│   ├── mariadb-common-10.3.9-9.kb1.ky3.x86_64.rpm
-│   ├── mecab-0.996-2.kb1.ky3.x86_64.rpm
-│   ├── mysql5-5.7.21-3.kb1.ky3.x86_64.rpm
-│   ├── mysql5-common-5.7.21-3.kb1.ky3.x86_64.rpm
-│   ├── mysql5-errmsg-5.7.21-3.kb1.ky3.x86_64.rpm
-│   └── mysql5-server-5.7.21-3.kb1.ky3.x86_64.rpm
-├── install_agent.sh
-├── install_controller.sh
-├── install_registry.sh
-├── ks-scmc-1.0.2-1.ky3.x86_64.rpm
-└── registry
-    └── docker-registry-2.8.1-2.x86_64.rpm
-```
+使用run包方式安装，首先通过命令`chmod +x ks-scmc-<VERSION>.run` 添加可执行权限。
 
-#### 2.1 镜像服务
+再运行run包 `./ks-scmc-<VERSION>.run`，当出现以下提示信息时输入2或3将安装后台服务以及依赖
+
+```txt
+*****************************************
+KS SCMC type
+1     ks-scmc-gui
+2     ks-scmc
+3     ks-scmc-gui && ks-scmc
+Please enter the KS SCMC type to install:
 
 ```
-rpm -ivh --nodeps registry/*.rpm
-```
 
-#### 2.2 controller服务
-
-```
-rpm -ivh --nodeps common/*.rpm
-rpm -ivh --nodeps controller/*.rpm
-rpm -ivh --nodeps ./ks-scmc*.rpm
-```
-
-#### 2.3 agent服务
-
-```
-rpm -ivh --nodeps common/*.rpm
-rpm -ivh --nodeps agent/*.rpm
-rpm -ivh --nodeps ./ks-scmc*.rpm
-```
-
-更新了内核，需要重启一次
+后台包括了内核更新，安装完成后需要重启一次保证生效。
 
 ### 3 配置镜像服务
 
 运行 docker-registry 服务，默认端口5000
 
-```
+```bash
 systemctl enable --now docker-registry.service docker-registry-gc.timer
 ```
 

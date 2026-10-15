@@ -60,11 +60,8 @@ func (s *NodeServer) Create(ctx context.Context, in *pb.CreateRequest) (*pb.Crea
 		return nil, rpc.ErrInternal
 	}
 
-	cli := pb.NewNodeClient(conn)
-	ctx_, cancel := context.WithTimeout(context.Background(), time.Second*10)
-	defer cancel()
-
-	_, err = cli.Status(ctx_, &pb.StatusRequest{})
+	// connect agent address, check is alive
+	_, err = pb.NewNodeClient(conn).Status(ctx, &pb.StatusRequest{})
 	if err != nil {
 		log.Warnf("check agent service err=%v", err)
 		if st, ok := status.FromError(err); ok {

@@ -116,6 +116,7 @@ func (s *ContainerServer) List(ctx context.Context, in *pb.ListRequest) (*pb.Lis
 		return nil, rpc.ErrInternal
 	}
 
+	var reply pb.ListReply
 	for _, c := range containers {
 		info := pb.ContainerInfo{
 			Id:      c.ID,
@@ -442,8 +443,6 @@ func (s *ContainerServer) Create(ctx context.Context, in *pb.CreateRequest) (*pb
 }
 
 func (s *ContainerServer) Start(ctx context.Context, in *pb.StartRequest) (*pb.StartReply, error) {
-	reply := pb.StartReply{}
-
 	if (len(in.Ids)) <= 0 || len(in.Ids[0].ContainerIds) <= 0 {
 		return nil, rpc.ErrInvalidArgument
 	}
@@ -453,7 +452,11 @@ func (s *ContainerServer) Start(ctx context.Context, in *pb.StartRequest) (*pb.S
 		return nil, rpc.ErrInternal
 	}
 
-	opts := types.ContainerStartOptions{}
+	var (
+		reply pb.StartReply
+		opts  types.ContainerStartOptions
+	)
+
 	for _, id := range in.Ids[0].ContainerIds {
 		if err := cli.ContainerStart(context.Background(), id, opts); err != nil {
 			log.Warnf("ContainerStart: id=%v %v", id, err)
@@ -480,67 +483,67 @@ func (s *ContainerServer) parallelProcessing(operate string, contaienrIds []stri
 		return nil, nil, rpc.ErrInternal
 	}
 
-	timeout := time.Second
-	var wg sync.WaitGroup
-	var lock sync.Mutex
-	var okIds []string
-	var failInfos []*pb.ContainerFailInfo
+	var (
+		timeout   = time.Second
+		wg        sync.WaitGroup
+		lock      sync.Mutex
+		okIDs     []string
+		failInfos []*pb.ContainerFailInfo
+	)
 
 	for _, id := range contaienrIds {
 		wg.Add(1)
-		go func(containerId string) {
+		go func(containerID string) {
 			defer wg.Done()
 			var err error
 			if operate == "ContainerStop" {
-				err = cli.ContainerStop(context.Background(), containerId, &timeout)
+				err = cli.ContainerStop(context.Background(), containerID, &timeout)
 			} else if operate == "ContainerRestart" {
-				err = cli.ContainerRestart(context.Background(), containerId, &timeout)
+				err = cli.ContainerRestart(context.Background(), containerID, &timeout)
 			} else {
-				log.Warnf("%v: id=%v ", operate, containerId)
+				log.Warnf("%v: id=%v ", operate, containerID)
 				return
 			}
 
 			if err != nil {
-				log.Warnf("%v: id=%v %v", operate, containerId, err)
+				log.Warnf("%v: id=%v %v", operate, containerID, err)
 				var faileReason string
 				if s, _ := status.FromError(err); s != nil {
 					faileReason = s.Message()
 				}
 				lock.Lock()
 				failInfos = append(failInfos, &pb.ContainerFailInfo{
-					ContainerId: containerId,
+					ContainerId: containerID,
 					FailReason:  faileReason,
 				})
 				lock.Unlock()
 				return
 			}
-			okIds = append(okIds, containerId)
+			okIDs = append(okIDs, containerID)
 		}(id)
 	}
 
 	wg.Wait()
-	return okIds, failInfos, nil
+	return okIDs, failInfos, nil
 }
 
 func (s *ContainerServer) Stop(ctx context.Context, in *pb.StopRequest) (*pb.StopReply, error) {
-	reply := pb.StopReply{}
 	if (len(in.Ids)) <= 0 || len(in.Ids[0].ContainerIds) <= 0 {
 		return nil, rpc.ErrInvalidArgument
 	}
 
-	okIds, failInfos, err := s.parallelProcessing("ContainerStop", in.Ids[0].ContainerIds)
+	okIDs, failInfos, err := s.parallelProcessing("ContainerStop", in.Ids[0].ContainerIds)
 	if err != nil {
 		return nil, err
 	}
 
-	reply.OkIds = append(reply.OkIds, okIds...)
-	reply.FailInfos = append(reply.FailInfos, failInfos...)
-
-	return &reply, nil
+	return &pb.StopReply{
+		OkIds:     okIDs,
+		FailInfos: failInfos,
+	}, nil
 }
 
 func (s *ContainerServer) Kill(ctx context.Context, in *pb.KillRequest) (*pb.KillReply, error) {
-	reply := pb.KillReply{}
 	if (len(in.Ids)) <= 0 || len(in.Ids[0].ContainerIds) <= 0 {
 		return nil, rpc.ErrInvalidArgument
 	}
@@ -550,6 +553,7 @@ func (s *ContainerServer) Kill(ctx context.Context, in *pb.KillRequest) (*pb.Kil
 		return nil, rpc.ErrInternal
 	}
 
+	var reply pb.KillReply
 	for _, id := range in.Ids[0].ContainerIds {
 		if err := cli.ContainerKill(context.Background(), id, ""); err != nil { // TODO signal
 			log.Warnf("ContainerKill: id=%v %v", id, err)
@@ -570,20 +574,19 @@ func (s *ContainerServer) Kill(ctx context.Context, in *pb.KillRequest) (*pb.Kil
 }
 
 func (s *ContainerServer) Restart(ctx context.Context, in *pb.RestartRequest) (*pb.RestartReply, error) {
-	reply := pb.RestartReply{}
 	if (len(in.Ids)) <= 0 || len(in.Ids[0].ContainerIds) <= 0 {
 		return nil, rpc.ErrInvalidArgument
 	}
 
-	okIds, failInfos, err := s.parallelProcessing("ContainerRestart", in.Ids[0].ContainerIds)
+	okIDs, failInfos, err := s.parallelProcessing("ContainerRestart", in.Ids[0].ContainerIds)
 	if err != nil {
 		return nil, err
 	}
 
-	reply.OkIds = append(reply.OkIds, okIds...)
-	reply.FailInfos = append(reply.FailInfos, failInfos...)
-
-	return &reply, nil
+	return &pb.RestartReply{
+		OkIds:     okIDs,
+		FailInfos: failInfos,
+	}, nil
 }
 
 func (s *ContainerServer) Update(ctx context.Context, in *pb.UpdateRequest) (*pb.UpdateReply, error) {
@@ -1047,9 +1050,9 @@ func (*ContainerServer) CreateBackup(ctx context.Context, in *pb.CreateBackupReq
 }
 
 func (*ContainerServer) UpdateBackup(ctx context.Context, in *pb.UpdateBackupRequest) (*pb.UpdateBackupReply, error) {
-	// if !isValidBackupDesc(in.BackupDesc) {
-	// 	return nil, status.Errorf(codes.InvalidArgument, "参数错误：备份描述无效")
-	// }
+	if !args.IsValidBackupDesc(in.BackupDesc) {
+		return nil, status.Errorf(codes.InvalidArgument, "参数错误：备份描述无效")
+	}
 
 	b, err := litedb.QueryContainerBackupByID(in.Id)
 	if err != nil {

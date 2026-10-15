@@ -601,11 +601,6 @@ func (s *ContainerServer) Update(ctx context.Context, in *pb.UpdateRequest) (*pb
 		log.Infof("GetContainerConfig err=%v", err)
 		return nil, rpc.ErrDatabaseFail
 	}
-	cfgs.SecurityConfig = in.SecurityConfig
-	if err := litedb.UpdateContainerConfig(cfgs); err != nil {
-		log.Infof("UpdateContainerConfig err=%v", err)
-		return nil, rpc.ErrDatabaseFail
-	}
 
 	if in.Networks != nil {
 		for _, v := range in.Networks {
@@ -727,6 +722,12 @@ func (s *ContainerServer) Update(ctx context.Context, in *pb.UpdateRequest) (*pb
 	if err := s.setSecurityConfig(in.ContainerId, inspectConfigs.Uuid, inspectConfigs.Name, pid, true, in.SecurityConfig); err != nil {
 		log.Warnf("Update setSecurityConfig err=%v", err)
 		return nil, err
+	}
+
+	cfgs.SecurityConfig = in.SecurityConfig
+	if err := litedb.UpdateContainerConfig(cfgs); err != nil {
+		log.Infof("UpdateContainerConfig err=%v", err)
+		return nil, rpc.ErrDatabaseFail
 	}
 
 	return &reply, nil

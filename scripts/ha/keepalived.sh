@@ -173,6 +173,8 @@ function clean() {
     done
 }
 
+systemctl enable --now keepalived.service
+
 echo "----------------------------------"
 echo "在两台主机上部署keepalivd，
         设置ks-scmc高可用和mysql高可用。"

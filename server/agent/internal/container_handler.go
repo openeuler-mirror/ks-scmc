@@ -62,7 +62,7 @@ func dockerResourceConfig(in *pb.ResourceLimit) container.Resources {
 		r.CPUShares = toCPUShares(in.CpuPrio)
 		r.Memory = int64(in.MemoryLimit * megaBytes)
 		r.MemoryReservation = int64(in.MemorySoftLimit * megaBytes)
-		r.MemorySwap = int64(in.MemoryLimit * megaBytes) // prevent error: Memory limit should be smaller than already set memoryswap limit
+		r.MemorySwap = -1 // prevent contaienr start error
 	}
 
 	return r
@@ -178,7 +178,7 @@ func (s *ContainerServer) List(ctx context.Context, in *pb.ListRequest) (*pb.Lis
 		}
 
 		diskStat := &pb.DiskStat{
-			Used: float64(c.SizeRootFs) / 1e6, // 与docker client保持一致
+			Used: float64(c.SizeRw) / 1e6, // 与docker client保持一致
 		}
 
 		if v, ok := c.Labels["KS_SCMC_DISK_LIMIT"]; ok {

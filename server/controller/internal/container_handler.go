@@ -886,3 +886,141 @@ func (s *ContainerServer) ExportBackup(in *pb.ExportBackupRequest, stream pb.Con
 	// 上传镜像管理
 	return s.exportBackupImageToRegistry(img, c)
 }
+
+func (*ContainerServer) AddAppEntry(ctx context.Context, in *pb.AddAppEntryRequest) (*pb.AddAppEntryReply, error) {
+	if in.NodeId == 0 {
+		return nil, rpc.ErrInvalidArgument
+	}
+
+	n, err := db.QueryNodeByID(in.NodeId)
+	if err != nil {
+		if err == db.ErrRecordNotFound {
+			log.Infof("node info not found, id=%v", in.NodeId)
+		}
+		log.Infof("QueryNodeByID err=%v", err)
+		return nil, rpc.ErrDatabaseFail
+	}
+
+	conn, err := getAgentConn(n.Address)
+	if err != nil {
+		log.Infof("getAgentConn error=%v", err)
+		return nil, rpc.ErrInternal
+	}
+
+	return pb.NewContainerClient(conn).AddAppEntry(ctx, in)
+}
+
+func (*ContainerServer) RemoveAppEntry(ctx context.Context, in *pb.RemoveAppEntryRequest) (*pb.RemoveAppEntryReply, error) {
+	if in.NodeId == 0 {
+		return nil, rpc.ErrInvalidArgument
+	}
+
+	n, err := db.QueryNodeByID(in.NodeId)
+	if err != nil {
+		if err == db.ErrRecordNotFound {
+			log.Infof("node info not found, id=%v", in.NodeId)
+		}
+		log.Infof("QueryNodeByID err=%v", err)
+		return nil, rpc.ErrDatabaseFail
+	}
+
+	conn, err := getAgentConn(n.Address)
+	if err != nil {
+		log.Infof("getAgentConn error=%v", err)
+		return nil, rpc.ErrInternal
+	}
+
+	return pb.NewContainerClient(conn).RemoveAppEntry(ctx, in)
+}
+
+func (*ContainerServer) UpdateAppEntry(ctx context.Context, in *pb.UpdateAppEntryRequest) (*pb.UpdateAppEntryReply, error) {
+	if in.NodeId == 0 {
+		return nil, rpc.ErrInvalidArgument
+	}
+
+	n, err := db.QueryNodeByID(in.NodeId)
+	if err != nil {
+		if err == db.ErrRecordNotFound {
+			log.Infof("node info not found, id=%v", in.NodeId)
+		}
+		log.Infof("QueryNodeByID err=%v", err)
+		return nil, rpc.ErrDatabaseFail
+	}
+
+	conn, err := getAgentConn(n.Address)
+	if err != nil {
+		log.Infof("getAgentConn error=%v", err)
+		return nil, rpc.ErrInternal
+	}
+
+	return pb.NewContainerClient(conn).UpdateAppEntry(ctx, in)
+}
+
+func (*ContainerServer) ListAppEntry(ctx context.Context, in *pb.ListAppEntryRequest) (*pb.ListAppEntryReply, error) {
+	if in.NodeId == 0 {
+		return nil, rpc.ErrInvalidArgument
+	}
+
+	n, err := db.QueryNodeByID(in.NodeId)
+	if err != nil {
+		if err == db.ErrRecordNotFound {
+			log.Infof("node info not found, id=%v", in.NodeId)
+		}
+		log.Infof("QueryNodeByID err=%v", err)
+		return nil, rpc.ErrDatabaseFail
+	}
+
+	conn, err := getAgentConn(n.Address)
+	if err != nil {
+		log.Infof("getAgentConn error=%v", err)
+		return nil, rpc.ErrInternal
+	}
+
+	return pb.NewContainerClient(conn).ListAppEntry(ctx, in)
+}
+
+func (*ContainerServer) RunAppEntry(ctx context.Context, in *pb.RunAppEntryRequest) (*pb.RunAppEntryReply, error) {
+	if in.NodeId == 0 {
+		return nil, rpc.ErrInvalidArgument
+	}
+
+	n, err := db.QueryNodeByID(in.NodeId)
+	if err != nil {
+		if err == db.ErrRecordNotFound {
+			log.Infof("node info not found, id=%v", in.NodeId)
+		}
+		log.Infof("QueryNodeByID err=%v", err)
+		return nil, rpc.ErrDatabaseFail
+	}
+
+	conn, err := getAgentConn(n.Address)
+	if err != nil {
+		log.Infof("getAgentConn error=%v", err)
+		return nil, rpc.ErrInternal
+	}
+
+	return pb.NewContainerClient(conn).RunAppEntry(ctx, in)
+}
+
+func (*ContainerServer) KillAppEntry(ctx context.Context, in *pb.KillAppEntryRequest) (*pb.KillAppEntryReply, error) {
+	if in.NodeId == 0 {
+		return nil, rpc.ErrInvalidArgument
+	}
+
+	n, err := db.QueryNodeByID(in.NodeId)
+	if err != nil {
+		if err == db.ErrRecordNotFound {
+			log.Infof("node info not found, id=%v", in.NodeId)
+		}
+		log.Infof("QueryNodeByID err=%v", err)
+		return nil, rpc.ErrDatabaseFail
+	}
+
+	conn, err := getAgentConn(n.Address)
+	if err != nil {
+		log.Infof("getAgentConn error=%v", err)
+		return nil, rpc.ErrInternal
+	}
+
+	return pb.NewContainerClient(conn).KillAppEntry(ctx, in)
+}

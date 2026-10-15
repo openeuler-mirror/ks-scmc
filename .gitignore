@@ -3,6 +3,11 @@ ks-scmc-authz
 ks-scmc-user
 ks-scmc-encrypt
 
+buildrpm/_buildtmp
+buildrpm/_buildres
+buildrun/ks-run/ks-scmc/1.1
+buildrun/ks-scmc-1.1-*
+
 .vscode/***
 
 # comment off when coding, comment on when you need to merge code

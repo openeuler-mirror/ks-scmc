@@ -72,7 +72,7 @@ CREATE TABLE `image_infos` (
   `reject_reason` text COLLATE utf8mb4_unicode_ci,
   `approval_status` tinyint(1) NOT NULL DEFAULT '0' COMMENT '0:待审批 1:审批拒绝 2:审批通过',
   `verify_status` tinyint(1) NOT NULL DEFAULT '0' COMMENT '0:验签失败 1:异常 2:验签成功',
-  `signature` blob NOT NULL COMMENT '镜像文件签名内容',
+  `signature` blob COMMENT '镜像文件签名内容',
   `created_at` int(20) NOT NULL DEFAULT '0',
   `updated_at` int(20) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),

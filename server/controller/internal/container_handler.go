@@ -139,7 +139,7 @@ func (s *ContainerServer) Start(ctx context.Context, in *pb.StartRequest) (*pb.S
 			continue
 		}
 
-		conn, err := getAgentConn(nodeInfo.Address)
+		conn, err := getAgentConn(n.Address)
 		if err != nil {
 			log.Warnf("start container ErrInternal")
 			continue

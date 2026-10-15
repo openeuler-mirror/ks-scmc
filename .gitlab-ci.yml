@@ -1,0 +1,8 @@
+variables:
+  RPM_BUILD_REQUIRES: 'git golang make coreutils protobuf-compiler systemd'
+
+include:
+  - project: 'os/gitlab-ci'
+    ref: main
+    file: '/makefile/go.gitlab-ci.yml'
+

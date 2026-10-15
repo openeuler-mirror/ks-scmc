@@ -72,31 +72,29 @@ func (s *NodeServer) Create(ctx context.Context, in *pb.CreateRequest) (*pb.Crea
 		return nil, rpc.ErrInternal
 	}
 
-	// connect agent address, check is alive
-
-	nodeInfo, err := db.QueryNodeByAddr(in.Address)
+	n, err := db.QueryNodeByAddr(in.Address)
 	if err == db.ErrRecordNotFound {
 		if e := db.CreateNode(in.Name, in.Address, in.Comment); e != nil {
 			if e == db.ErrDuplicateKey {
 				return nil, rpc.ErrAlreadyExists
 			}
-			return nil, rpc.ErrInternal
+			return nil, rpc.ErrDatabaseFail
 		}
 	} else if err != nil {
 		log.Warnf("query node by addr err=%v", err)
-		return nil, rpc.ErrInternal
+		return nil, rpc.ErrDatabaseFail
 	} else {
-		if !nodeInfo.Deleted {
+		if !n.Deleted {
 			return nil, rpc.ErrAlreadyExists
 		}
 
 		// 记录存在, 更新字段, 将删除标记位设置为false
-		nodeInfo.Name = in.Name
-		nodeInfo.Comment = in.Comment
-		nodeInfo.Deleted = false
-		if e := db.UpdateNode(nodeInfo); e != nil {
+		n.Name = in.Name
+		n.Comment = in.Comment
+		n.Deleted = false
+		if e := db.UpdateNode(n); e != nil {
 			log.Warnf("update node err=%v", err)
-			return nil, rpc.ErrInternal
+			return nil, rpc.ErrDatabaseFail
 		}
 	}
 
@@ -105,60 +103,14 @@ func (s *NodeServer) Create(ctx context.Context, in *pb.CreateRequest) (*pb.Crea
 
 func (s *NodeServer) Remove(ctx context.Context, in *pb.RemoveRequest) (*pb.RemoveReply, error) {
 	if err := db.RemoveNode(in.Ids); err != nil {
-		return nil, rpc.ErrInternal
+		return nil, rpc.ErrDatabaseFail
 	}
 	return &pb.RemoveReply{}, nil
 }
 
+// Since `List` returns the data of `Status` too, client never calls `Status`, therefore abandon this interface
 func (s *NodeServer) Status(ctx context.Context, in *pb.StatusRequest) (*pb.StatusReply, error) {
-	reply := pb.StatusReply{}
-
-	nodes, err := db.ListNodes()
-	if err != nil {
-		return nil, rpc.ErrInternal
-	}
-
-	var nodeToQuery []*db.NodeInfo
-	for _, nodeID := range in.NodeIds {
-		for i, node := range nodes {
-			if node.ID == nodeID {
-				nodeToQuery = append(nodeToQuery, &nodes[i])
-				goto next
-			}
-		}
-		log.Warnf("node ID=%v not found", nodeID)
-		return nil, rpc.ErrNotFound
-	next:
-	}
-
-	for _, node := range nodeToQuery {
-		conn, err := getAgentConn(node.Address)
-		if err != nil {
-			log.Warnf("Failed to connect to agent service")
-			reply.StatusList = append(reply.StatusList, &pb.NodeStatus{
-				NodeId: node.ID,
-				State:  int64(pb.NodeState_Offline),
-			})
-			continue
-		}
-
-		cli := pb.NewNodeClient(conn)
-		ctx_, cancel := context.WithTimeout(context.Background(), time.Second*10)
-		defer cancel()
-		subReply, err := cli.Status(ctx_, in)
-		if err != nil {
-			log.Warnf("get node status ID=%v address=%v: %v", node.ID, node.Address, err)
-			return nil, rpc.ErrInternal
-		}
-
-		log.Debugf("subReply: %+v", subReply)
-		for i := range subReply.StatusList {
-			subReply.StatusList[i].NodeId = node.ID
-			reply.StatusList = append(reply.StatusList, subReply.StatusList[i])
-		}
-	}
-
-	return &reply, nil
+	return nil, rpc.ErrUnimplemented
 }
 
 func (s *NodeServer) Update(ctx context.Context, in *pb.UpdateRequest) (*pb.UpdateReply, error) {
@@ -168,45 +120,50 @@ func (s *NodeServer) Update(ctx context.Context, in *pb.UpdateRequest) (*pb.Upda
 		return nil, status.Errorf(codes.InvalidArgument, "节点备注长度限制0-200")
 	}
 
-	nodeInfo, err := db.QueryNodeByID(in.NodeId)
+	n, err := db.QueryNodeByID(in.NodeId)
 	if err != nil {
 		if err == db.ErrRecordNotFound {
 			return nil, rpc.ErrNotFound
 		}
-		return nil, rpc.ErrInternal
+		return nil, rpc.ErrDatabaseFail
 	}
-
-	// TODO 检查参数是否超过节点资源上限值
-	// get node status
 
 	if in.Comment != "" {
-		nodeInfo.Comment = in.Comment
+		n.Comment = in.Comment
 	}
 	if in.Name != "" {
-		nodeInfo.Name = in.Name
+		n.Name = in.Name
 	}
 	if in.RscLimit != nil {
-		nodeInfo.CpuLimit = in.RscLimit.CpuLimit
-		nodeInfo.MemoryLimit = in.RscLimit.MemoryLimit
-		nodeInfo.DiskLimit = in.RscLimit.DiskLimit
+		n.CpuLimit = in.RscLimit.CpuLimit
+		n.MemoryLimit = in.RscLimit.MemoryLimit
+		n.DiskLimit = in.RscLimit.DiskLimit
+
+		conn, err := getAgentConn(n.Address)
+		if err != nil {
+			return nil, rpc.ErrInternal
+		}
+
+		cli := pb.NewNodeClient(conn)
+		_, err = cli.Update(ctx, in)
+		if err != nil {
+			log.Warnf("Update node: %v", err)
+			return nil, err
+		}
 	}
 
-	if err := db.UpdateNode(nodeInfo); err != nil {
-		log.Infof("UpdateNode %+v err=%v", nodeInfo, err)
-		return nil, rpc.ErrInternal
+	if err := db.UpdateNode(n); err != nil {
+		log.Infof("UpdateNode %+v err=%v", n, err)
+		return nil, rpc.ErrDatabaseFail
 	}
 
 	return &pb.UpdateReply{}, nil
 }
 
-func GetNodeStatus(node *db.NodeInfo) (*pb.NodeStatus, error) {
-	return getNodeStatus(node)
-}
-
-func getNodeStatus(node *db.NodeInfo) (*pb.NodeStatus, error) {
-	conn, err := getAgentConn(node.Address)
+func GetNodeStatus(n *db.NodeInfo) (*pb.NodeStatus, error) {
+	conn, err := getAgentConn(n.Address)
 	if err != nil {
-		log.Warnf("Failed to connect to agent service, node=%+v", node)
+		log.Warnf("Failed to connect to agent service, node=%+v", n)
 		return nil, err
 	}
 
@@ -215,7 +172,7 @@ func getNodeStatus(node *db.NodeInfo) (*pb.NodeStatus, error) {
 	defer cancel()
 	r, err := cli.Status(ctx_, &pb.StatusRequest{})
 	if err != nil {
-		log.Warnf("get node status ID=%v address=%v: %v", node.ID, node.Address, err)
+		log.Warnf("get node status ID=%v address=%v: %v", n.ID, n.Address, err)
 		return nil, err
 	}
 

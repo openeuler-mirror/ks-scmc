@@ -28,10 +28,10 @@ func rpcNeedLog(method string) bool {
 		"/node.Node/Update",
 		"/node.Node/Remove",
 		"/container.Container/Create",
-		"/container.Container/StartContainer",
-		"/container.Container/StopContainer",
-		"/container.Container/RemoveContainer",
-		"/container.Container/RestartContainer",
+		"/container.Container/Start",
+		"/container.Container/Stop",
+		"/container.Container/Remove",
+		"/container.Container/Restart",
 		// "/container.Container/",
 		// "/container.Container/",
 		"/image.Image/Upload",
@@ -45,39 +45,49 @@ func rpcNeedLog(method string) bool {
 
 func UnaryInterceptor() grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (reply interface{}, err error) {
-		if !rpcNeedLog(info.FullMethod) {
-			goto handle
-		}
+		if rpcNeedLog(info.FullMethod) {
+			defer func(ctx context.Context) {
+				uid, ok := auth.UserIDFromContext(ctx)
+				if !ok {
+					log.Warnf("UserIDFromContext faild ctx: %++v", ctx)
+				}
 
-		defer func() {
-			u, _ := auth.UserInfoFromContext(ctx)
-			if u != nil {
-				writeLog(u, req.(proto.Message), err)
-			}
-		}()
-	handle:
+				writeLog(uid, req.(proto.Message), err)
+
+			}(ctx)
+		}
 		return handler(ctx, req)
 	}
 }
 
 func StreamInterceptor() grpc.StreamServerInterceptor {
-	return func(srv interface{}, stream grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
-		// wrapped := WrapServerStream(stream)
-		// wrapped.WrappedContext = stream.Context()
+	return func(srv interface{}, stream grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) (err error) {
+		ctx := stream.Context()
+		wrapperStream := NewWrapperStream(stream, ctx)
 
-		return handler(srv, stream)
+		defer func(ctx context.Context) {
+			uid, ok := auth.UserIDFromContext(ctx)
+			if !ok {
+				log.Warnf("UserIDFromContext faild ctx: %++v", ctx)
+			}
+
+			msg := wrapperStream.Context().Value("message")
+			writeLog(uid, msg.(proto.Message), err)
+		}(ctx)
+
+		return handler(srv, wrapperStream)
 	}
 }
 
-func writeLog(u *db.UserRoleInfo, v interface{}, err error) {
-	if u == nil || v == nil {
-		log.Infof("writeLog user=%+v msg=%+v", u, v)
+func writeLog(uid int64, v interface{}, err error) {
+	if v == nil {
+		log.Infof("writeLog  msg=%+v", v)
 		return
 	}
 
 	logData := parser{}.Parse(v)
 	if logData != nil {
-		logData.UserID = u.ID
+		logData.UserID = uid
 		if s, _ := status.FromError(err); s != nil {
 			logData.StatusCode = int64(s.Code())
 			logData.Error = s.Message()

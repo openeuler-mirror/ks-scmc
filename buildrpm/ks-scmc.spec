@@ -4,13 +4,17 @@
 
 %global debug_package %{nil}
 
+%global pkg_name ks-scmc
+%global pkg_ver 1.0.4
+%global pkg_rel 2
+
 Summary:        KylinSec security container magic cube
 License:        No License
 Group:          Tools/Container/Docker
 
-Name:           ks-scmc
-Version:        1.0.4
-Release:        2
+Name:           %{pkg_name}
+Version:        %{pkg_ver}
+Release:        %{pkg_rel}
 URL:            http://gitlab.kylinos.com.cn/os/%{name}
 Source0:        %{name}-%{version}.tar.gz
 
@@ -22,7 +26,7 @@ Requires: docker-ce coreutils bash socat systemd lsyncd rsync xinetd keepalived
 KylinSec security container magic cube provides simply, effecient and secure container management.
 
 %prep
-%autosetup -c -n %{name}-%{version}
+%setup -q -n %{name}-%{version}
 
 %build
 make && cd -

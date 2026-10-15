@@ -16,7 +16,7 @@ port = 10051
 [controller]
 host = "0.0.0.0"
 port = 10050
-check-auth = true
+super-user = true
 
 [mysql]
 addr = "127.0.0.1:3306"

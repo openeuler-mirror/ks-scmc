@@ -64,7 +64,7 @@ func getAllNodeData(needStatus bool) (r []*pb.NodeInfo) {
 func writeNodeWatchLogs(n *pb.NodeInfo) []*db.WarnLog {
 	var r []*db.WarnLog
 
-	if n.Status == nil {
+	if n.Status == nil || n.Status.State == int64(pb.NodeState_Offline) {
 		r = append(r, &db.WarnLog{
 			NodeId:      n.Id,
 			NodeInfo:    fmt.Sprintf("%s (%s)", n.Name, n.Address),
@@ -72,10 +72,9 @@ func writeNodeWatchLogs(n *pb.NodeInfo) []*db.WarnLog {
 			EventModule: int64(logging.EVENT_MODULE_NODE),
 			Detail:      "节点离线",
 		})
-		return r
 	}
 
-	if n.Status.State != int64(pb.NodeState_Online) {
+	if n.Status.State == int64(pb.NodeState_Unknown) {
 		r = append(r, &db.WarnLog{
 			NodeId:      n.Id,
 			NodeInfo:    fmt.Sprintf("%s (%s)", n.Name, n.Address),

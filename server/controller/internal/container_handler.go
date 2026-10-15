@@ -45,11 +45,18 @@ func (s *ContainerServer) List(ctx context.Context, in *pb.ListRequest) (*pb.Lis
 		return nil, rpc.ErrInternal
 	}
 
+	nodeIDs := in.NodeIds
+	if len(nodeIDs) == 0 {
+		for _, n := range nodes {
+			nodeIDs = append(nodeIDs, n.ID)
+		}
+	}
+
 	var (
 		mtx     sync.Mutex
 		wg      sync.WaitGroup
 		reply   pb.ListReply
-		counter = countInt64(in.NodeIds)
+		counter = countInt64(nodeIDs)
 	)
 
 	for _, n := range nodes {

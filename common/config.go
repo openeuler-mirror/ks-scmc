@@ -19,10 +19,15 @@ type AgentConfig struct {
 	OpensnitchRuleDir         string `mapstructure:"opensnitch-rule-dir"`
 	AuthzSock                 string `mapstructure:"authz-sock"`
 	BackupJob                 string `mapstructure:"backup-job"`
+	ContainerBackupTimeout    uint   `mapstructure:"container-backup-timeout"`
 }
 
 func (m *AgentConfig) Addr() string {
 	return fmt.Sprintf("%s:%d", m.Host, m.Port)
+}
+
+func (m *AgentConfig) BackupTimeoutDuration() time.Duration {
+	return time.Second * time.Duration(m.ContainerBackupTimeout)
 }
 
 type ControllerConfig struct {
@@ -133,6 +138,7 @@ func setDefault() {
 	viper.SetDefault("agent.opensnitch-rule-dir", "/etc/opensnitchd/rules")
 	viper.SetDefault("agent.authz-sock", "/var/lib/ks-scmc/authz.sock")
 	viper.SetDefault("agent.backup-job", "/var/lib/ks-scmc/backup_job.json")
+	viper.SetDefault("agent.container-backup-timeout", 120)
 
 	viper.SetDefault("controller.host", "0.0.0.0")
 	viper.SetDefault("controller.port", 10050)

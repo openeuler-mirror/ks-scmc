@@ -3,6 +3,7 @@ package internal
 import (
 	"context"
 
+	"github.com/docker/docker/api/types"
 	"github.com/shirou/gopsutil/disk"
 	"github.com/shirou/gopsutil/mem"
 	"google.golang.org/grpc/codes"
@@ -63,11 +64,17 @@ func nodeStatus() (*pb.NodeStatus, error) {
 		}
 	}
 
-	dockerInfo, err := cli.Info(context.Background())
+	containers, err := cli.ContainerList(context.Background(), types.ContainerListOptions{All: true, Size: true})
 	if err == nil {
+		runnings := 0
+		for _, c := range containers {
+			if c.State == "running" {
+				runnings = runnings + 1
+			}
+		}
 		ret.ContainerStat = &pb.ContainerStat{
-			Running: int64(dockerInfo.ContainersRunning),
-			Total:   int64(dockerInfo.Containers),
+			Running: int64(runnings),
+			Total:   int64(len(containers)),
 		}
 	}
 

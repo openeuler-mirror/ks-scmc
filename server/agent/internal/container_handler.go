@@ -362,8 +362,8 @@ func (s *ContainerServer) create(configs *pb.ContainerConfigs) (string, error) {
 			EndpointsConfig: make(map[string]*network.EndpointSettings, len(configs.Networks)),
 		}
 		for _, v := range configs.Networks {
-			if !checkNetworkInfo("", v.Interface, &v.IpAddress, int(v.IpPrefixLen)) {
-				return "", rpc.ErrInvalidArgument
+			if err := checkNetworkInfo("", v.Interface, &v.IpAddress, int(v.IpPrefixLen)); err != nil {
+				return "", err
 			}
 
 			networkConfig.EndpointsConfig[v.Interface] = &network.EndpointSettings{
@@ -609,8 +609,8 @@ func (s *ContainerServer) Update(ctx context.Context, in *pb.UpdateRequest) (*pb
 
 	if in.Networks != nil {
 		for _, v := range in.Networks {
-			if !checkNetworkInfo(in.ContainerId, v.Interface, &v.IpAddress, int(v.IpPrefixLen)) {
-				return nil, rpc.ErrInvalidArgument
+			if err := checkNetworkInfo(in.ContainerId, v.Interface, &v.IpAddress, int(v.IpPrefixLen)); err != nil {
+				return nil, err
 			}
 		}
 	}

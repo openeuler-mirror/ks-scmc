@@ -69,13 +69,18 @@ systemctl enable --now docker-registry.service docker-registry-gc.timer
 
 在一台节点上执行命令，分别在两个节点上安装mysql，创建backup用户，密码为backup，并配置mysql双主模式。
 
+**注意：需要配置防火墙允许mysql节点间的数据同步，或关闭防火墙**
+
 ```bash
-bash /etc/ks-scmc/mysql_double_master.sh
+# 参数用于配置mysql root用户密码
+bash /etc/ks-scmc/mysql_double_master.sh "PASSWORD"
 ```
 
 #### 4.2 （可选双节点高可用）keepalived高可用
 
-在一台节点上执行命令，分别在两个节点上安装keepalived，配置vip，通过vip实现ks-scmc-controller和mysql的高可用
+在一台节点上执行命令，分别在两个节点上安装keepalived，配置vip（虚拟IP），通过vip实现ks-scmc-controller和mysql的高可用
+
+**注意：需要配置防火墙允许keepalived心跳，或关闭防火墙**
 
 ```bash
 bash /etc/ks-scmc/keepalived.sh

@@ -201,6 +201,8 @@ func nodeStats(n *pbnode.ListReply, r *pb.DashboardReply) {
 			r.Node.OfflineCount++
 		}
 	}
+
+	r.Node.TotalCount = r.Node.OnlineCount + r.Node.OfflineCount
 }
 
 func containerStats(t int64, n *pbnode.ListReply, r *pb.DashboardReply) {

@@ -45,7 +45,11 @@ func UserPermFromContext(ctx context.Context) ([]*pb.Permission, bool) {
 
 func UnaryInterceptor() grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (reply interface{}, err error) {
-		if common.NeedCheckAuth() && rpcNeedCheckAuth(info.FullMethod) {
+		if common.SuperUser() && rpcAllowSuperUser(info.FullMethod) {
+			goto handle
+		}
+
+		if rpcNeedCheckAuth(info.FullMethod) {
 			userID, sessionKey, err := getAuthInfo(ctx)
 			if err != nil {
 				return nil, err
@@ -66,13 +70,14 @@ func UnaryInterceptor() grpc.UnaryServerInterceptor {
 			}
 
 		}
+	handle:
 		return handler(ctx, req)
 	}
 }
 
 func StreamInterceptor() grpc.StreamServerInterceptor {
 	return func(srv interface{}, stream grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
-		if common.NeedCheckAuth() && rpcNeedCheckAuth(info.FullMethod) {
+		if rpcNeedCheckAuth(info.FullMethod) {
 			ctx := stream.Context()
 			userID, sessionKey, err := getAuthInfo(ctx)
 			if err != nil {
@@ -133,6 +138,21 @@ func rpcNeedCheckPerm(method string) bool {
 		return false
 	}
 	return true
+}
+
+func rpcAllowSuperUser(method string) bool {
+	switch method {
+	case "/user.User/ListUser",
+		"/user.User/CreateUser",
+		"/user.User/UpdateUser",
+		"/user.User/RemoveUser",
+		"/user.User/ListRole",
+		"/user.User/CreateRole",
+		"/user.User/UpdateRole",
+		"/user.User/RemoveRole":
+		return true
+	}
+	return false
 }
 
 func checkUserSession(userID, sessionKey string) error {

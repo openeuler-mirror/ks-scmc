@@ -1,6 +1,7 @@
 package args
 
 import (
+	"math"
 	"net"
 	"regexp"
 	"unicode/utf8"
@@ -12,12 +13,20 @@ const (
 	PatternImageVersion  = `^[a-zA-Z0-9][a-zA-Z0-9_.-]*$`
 )
 
-type Argument struct {
+type StringArgument struct {
 	length  func(string) bool
 	pattern string
 }
 
-func (a *Argument) Check(s string) bool {
+type Float64Argument struct {
+	valid func(float64) bool
+}
+
+type Int64Argument struct {
+	valid func(int64) bool
+}
+
+func (a *StringArgument) Check(s string) bool {
 	if !a.length(s) {
 		return false
 	}
@@ -28,6 +37,26 @@ func (a *Argument) Check(s string) bool {
 	return regexp.MustCompile(a.pattern).MatchString(s)
 }
 
+func (r *Float64Argument) Check(in ...float64) bool {
+	for _, i := range in {
+		if r.valid(i) {
+			continue
+		}
+		return false
+	}
+	return true
+}
+
+func (r *Int64Argument) Check(in ...int64) bool {
+	for _, i := range in {
+		if r.valid(i) {
+			continue
+		}
+		return false
+	}
+	return true
+}
+
 func lengthChecker(min, max uint32) func(string) bool {
 	return func(s string) bool {
 		c := uint32(utf8.RuneCountInString(s))
@@ -36,32 +65,42 @@ func lengthChecker(min, max uint32) func(string) bool {
 }
 
 var (
-	NodeAddr = &Argument{
+	NodeAddr = &StringArgument{
 		length: lengthChecker(1, 100),
 	}
-	NodeName = &Argument{
+	NodeName = &StringArgument{
 		length: lengthChecker(1, 50),
 	}
-	NodeComment = &Argument{
+	NodeComment = &StringArgument{
 		length: lengthChecker(0, 200),
 	}
-	ContainerName = &Argument{
+	ContainerName = &StringArgument{
 		length:  lengthChecker(1, 50),
 		pattern: PatternContainerName,
 	}
 	ContainerDesc = NodeComment
-	ImageName     = &Argument{
+	ImageName     = &StringArgument{
 		length:  lengthChecker(1, 50),
 		pattern: PatternImageName,
 	}
-	ImageVersion = &Argument{
+	ImageVersion = &StringArgument{
 		length:  lengthChecker(1, 20),
 		pattern: PatternImageVersion,
 	}
 	ImageDesc  = NodeComment
 	BackupDesc = NodeComment
-	NicName    = &Argument{
+	NicName    = &StringArgument{
 		length: lengthChecker(1, 200),
+	}
+	Float64Resource = Float64Argument{
+		valid: func(f float64) bool {
+			return f == math.Max(f, 0)
+		},
+	}
+	Int64Resource = Int64Argument{
+		valid: func(i int64) bool {
+			return i > 0
+		},
 	}
 )
 

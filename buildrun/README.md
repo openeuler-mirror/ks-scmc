@@ -7,7 +7,7 @@
 [base]
 name=KylinSec OS-$releasever - Base
 gpgcheck=0
-baseurl=http://192.168.120.17/kojifiles/repos/KY3.3-6-PG-build/latest/x86_64/
+baseurl=http://192.168.120.17/kojifiles/repos/KY3.3-6-PG-ks-scmc-1.1-build/latest/x86_64/
 gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-kylin-release
 
 [docker]
@@ -31,7 +31,7 @@ gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-kylin-release
 2 change /etc/yum.conf make keepcache=1
 
 3 get depend packages
-yum install docker-ce coreutils bash socat systemd lsyncd rsync xinetd keepalived ks-license-client ks-license-gui-client kernel-headers kernel
+yum install docker-ce coreutils bash socat systemd lsyncd rsync xinetd keepalived ks-license-client ks-license-gui-client kernel-kek-devel kernel-kek
 
 4 change ALLOWED_OS_VERSION in ks-run/install.sh
 

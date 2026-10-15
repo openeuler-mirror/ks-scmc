@@ -17,13 +17,16 @@ port = 10051
 host = "0.0.0.0"
 port = 10050
 check-auth = true
-check-perm = true
 
 [mysql]
-addr = "localhost:3306"
+addr = "127.0.0.1:3306"
 user = "ks-scmc"
+# 通过ks-scmc-encrypt加密的密码
 password = ""
 db = "ks-scmc"
+
+[sqlite]
+path = "/var/lib/ks-scmc/data.db"
 
 [cadvisor]
 addr = "127.0.0.1:8080"

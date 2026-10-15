@@ -1,9 +1,12 @@
 package audit
 
 import (
+	"context"
 	"fmt"
 
 	log "github.com/sirupsen/logrus"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/metadata"
 
 	"scmc/model/db"
 	"scmc/rpc/pb/container"
@@ -57,6 +60,8 @@ func (p parser) Parse(v interface{}) *db.RuntimeLog {
 		return p.ApproveImage(m)
 	case *image.UploadRequest:
 		return p.UploadImage(m)
+	case *image.UpdateRequest:
+		return p.UpdateImage(m)
 	case *image.DownloadRequest:
 		return p.DownloadImage(m)
 	case nil:
@@ -251,6 +256,19 @@ func (parser) UploadImage(r *image.UploadRequest) *db.RuntimeLog {
 	return l
 }
 
+func (parser) UpdateImage(r *image.UpdateRequest) *db.RuntimeLog {
+	l := &db.RuntimeLog{
+		EventType:   int64(logging.EVENT_TYPE_UPDATE_IMAGE),
+		EventModule: int64(logging.EVENT_MODULE_IMAGE),
+	}
+
+	if r.Info != nil {
+		l.Target = fmt.Sprintf("镜像版本=%s:%s", r.Info.Name, r.Info.Version)
+	}
+
+	return l
+}
+
 func (parser) RemoveImage(r *image.RemoveRequest) *db.RuntimeLog {
 	return &db.RuntimeLog{
 		EventType:   int64(logging.EVENT_TYPE_REMOVE_IMAGE),
@@ -274,4 +292,55 @@ func (parser) DownloadImage(r *image.DownloadRequest) *db.RuntimeLog {
 		EventModule: int64(logging.EVENT_MODULE_IMAGE),
 		Detail:      fmt.Sprintf("镜像ID=%v", r.ImageId),
 	}
+}
+
+type WrapperStream struct {
+	Ss  grpc.ServerStream
+	Ctx context.Context
+	msg int
+}
+
+func NewWrapperStream(ss grpc.ServerStream, ctx context.Context) grpc.ServerStream {
+	return &WrapperStream{
+		Ss:  ss,
+		Ctx: ctx,
+		msg: 0,
+	}
+}
+
+func (w *WrapperStream) Context() context.Context {
+	return w.Ctx
+}
+
+func (w *WrapperStream) RecvMsg(msg interface{}) error {
+	err := w.Ss.RecvMsg(msg)
+	if w.msg == 0 {
+		ctx := context.WithValue(w.Ctx, "message", msg)
+		w.Ctx = ctx
+		w.msg++
+	}
+
+	return err
+}
+
+func (w *WrapperStream) SendMsg(msg interface{}) error {
+	err := w.Ss.SendMsg(msg)
+	if w.msg == 0 {
+		ctx := context.WithValue(w.Ctx, "message", msg)
+		w.Ctx = ctx
+		w.msg++
+	}
+	return err
+}
+
+func (w *WrapperStream) SendHeader(md metadata.MD) error {
+	return w.Ss.SendHeader(md)
+}
+
+func (w *WrapperStream) SetHeader(md metadata.MD) error {
+	return w.Ss.SetHeader(md)
+}
+
+func (w *WrapperStream) SetTrailer(md metadata.MD) {
+	w.Ss.SetTrailer(md)
 }

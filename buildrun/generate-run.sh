@@ -2,6 +2,7 @@
 export KS_PROJECK_NAME=$1
 export KS_PROJECK_VERSION=$2
 export KS_ARCH_NAME=$3
+export KS_ALLOW_OS=$4
 
 CURR_PATH=$(cd $(dirname $0); pwd -P)
 
@@ -38,11 +39,15 @@ cat > $readmefile <<EOF
 
 麒麟信安安全容器魔方安装部署包
 
-1、使用说明
+1、支持平台
+硬件架构：$KS_ARCH_NAME
+操作系统：$KS_ALLOW_OS
+
+2、使用说明
 执行 sh $KS_PROJECK_NAME-$KS_PROJECK_VERSION-$(date "+%Y%m%d")-${KS_ARCH_NAME}.run 完成安装
 执行 uninstall-${KS_PROJECK_NAME}.sh 完成卸载
 
-2、软件用到的依赖包，已经全部整理到 run 包内 
+3、软件用到的依赖包，已经全部整理到 run 包内 
 
 EOF
 

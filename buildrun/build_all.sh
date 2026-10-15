@@ -2,6 +2,7 @@
 
 set -e
 
+g_software_name=ks-scmc
 g_basedir=$(cd $(dirname $0); pwd -P)
 cd $g_basedir
 
@@ -50,13 +51,13 @@ fi
 # install pkg one by one, mariadb-server cannot be started
 cd \$RPM_PATH
 
-deppgs=\$(ls | grep -v '^ks-ha')
+deppgs=\$(ls | grep -v '^$g_software_name')
 cat /etc/.kyinfo | grep 3.3-6D > /dev/null
 if [[ \$? -eq 0 ]];then
-    deppgs=\$(ls | grep -v '^ks-ha' | grep -v '^python3')
+    deppgs=\$(ls | grep -v '^$g_software_name' | grep -v '^python3')
 fi
 
-kspkgs=\$(ls | grep -E "^ks-ha")
+kspkgs=\$(ls | grep -E "^$g_software_name")
 if [[ ! \$deppgs == "" ]];then
     sudo yum localinstall \$deppgs -y --nogpgcheck --disablerepo=*
     if [[ \$? -ne 0 ]];then
@@ -85,7 +86,7 @@ function process_uninstall_shell()
 
 shelldir=\$(cd "\$(dirname "\$0")";pwd)
 shellname=\$(basename "\$0")
-kspkgs="\$(rpm -qa | grep -E '^ks-ha')"
+kspkgs="\$(rpm -qa | grep -E '^$g_software_name')"
 
 echo "sudo rpm -e \$kspkgs --nodeps"
 sudo rpm -e \$kspkgs --nodeps
@@ -100,7 +101,7 @@ EOF
 support_archs=(x86_64 aarch64)
 #support_archs=(x86_64)
 
-ls $g_basedir/ks-run | grep ^ks-ha | while read proj; do
+ls $g_basedir/ks-run | grep ^$g_software_name | while read proj; do
     ls $g_basedir/ks-run/$proj | while read osver; do
 
         rm -f $g_basedir/ks-run/$proj/$osver/*.sh

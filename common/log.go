@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/sirupsen/logrus"
 	"gopkg.in/natefinch/lumberjack.v2"
@@ -14,32 +15,34 @@ import (
 
 type logFormatter struct{}
 
-func (m *logFormatter) Format(entry *logrus.Entry) ([]byte, error) {
+func (m *logFormatter) Format(e *logrus.Entry) ([]byte, error) {
 	var b *bytes.Buffer
-	if entry.Buffer != nil {
-		b = entry.Buffer
+	if e.Buffer != nil {
+		b = e.Buffer
 	} else {
 		b = &bytes.Buffer{}
 	}
 
-	timestamp := entry.Time.Format("2006-01-02 15:04:05.999")
-	var newLog string
+	t := e.Time.Format("01-02 15:04:05.999")
+	s := fmt.Sprintf("%s %s: %s\n", t, e.Level, e.Message)
 
-	if entry.HasCaller() {
-		fileName := filepath.Base(entry.Caller.File)
-		newLog = fmt.Sprintf("[%s] [%s] [%s:%d]  %s\n", timestamp, entry.Level, fileName, entry.Caller.Line, entry.Message)
-	} else {
-		newLog = fmt.Sprintf("[%s] [%s]: %s\n", timestamp, entry.Level, entry.Message)
+	if e.HasCaller() {
+		s = fmt.Sprintf("%s %s [%s:%d]: %s\n", t, e.Level,
+			filepath.Base(e.Caller.File), e.Caller.Line, e.Message)
 	}
 
-	b.WriteString(newLog)
+	b.WriteString(s)
 	return b.Bytes(), nil
 }
 
 func InitLogger(name string) {
+	if !strings.HasSuffix(name, ".log") {
+		name += ".log"
+	}
+
 	logger := &lumberjack.Logger{
 		Filename:   filepath.Join(Config.Log.Basedir, name),
-		MaxSize:    1,
+		MaxSize:    10,
 		MaxBackups: 100,
 		MaxAge:     100,
 		LocalTime:  true,

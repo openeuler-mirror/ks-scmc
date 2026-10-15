@@ -20,25 +20,24 @@ type NodeServer struct {
 }
 
 func (s *NodeServer) List(ctx context.Context, in *pb.ListRequest) (*pb.ListReply, error) {
-	reply := pb.ListReply{}
-
 	nodes, err := db.ListNodes()
 	if err != nil {
-		return nil, rpc.ErrInternal
+		return nil, rpc.ErrDatabaseFail
 	}
 
-	for _, node := range nodes {
-		s, _ := getNodeStatus(&node)
+	var reply pb.ListReply
+	for _, n := range nodes {
+		s, _ := GetNodeStatus(n)
 		reply.Nodes = append(reply.Nodes, &pb.NodeInfo{
-			Id:         node.ID,
-			Name:       node.Name,
-			Address:    node.Address,
-			Comment:    node.Comment,
-			UnreadWarn: node.UnreadWarn,
+			Id:         n.ID,
+			Name:       n.Name,
+			Address:    n.Address,
+			Comment:    n.Comment,
+			UnreadWarn: n.UnreadWarn,
 			RscLimit: &pb.ResourceLimit{
-				CpuLimit:    node.CpuLimit,
-				MemoryLimit: node.MemoryLimit,
-				DiskLimit:   node.DiskLimit,
+				CpuLimit:    n.CpuLimit,
+				MemoryLimit: n.MemoryLimit,
+				DiskLimit:   n.DiskLimit,
 			},
 			Status: s,
 		})

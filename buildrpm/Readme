@@ -1,0 +1,13 @@
+
+script to build rpm
+
+first make build env ready:
+
+1 yum install http://192.168.120.17/kojifiles/packages/mock/1.4.2/1.ky3/noarch/mock-1.4.2-1.ky3.noarch.rpm
+
+2 sed 's/%(uid)s/99/g' /usr/lib/python2.7/site-packages/mockbuild/util.py -i
+
+then:
+
+./build.sh
+

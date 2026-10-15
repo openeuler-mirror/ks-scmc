@@ -102,11 +102,11 @@ func (s *ImageServer) uploadCheckMetadata(md *pb.UploadInfo) error {
 		return rpc.ErrInvalidArgument
 	} else if md.Size > imageMaxSize() {
 		return status.Errorf(codes.InvalidArgument, "镜像大小超过上限")
-	} else if !args.IsValidImageName(md.Name) {
+	} else if !args.ImageName.Check(md.Name) {
 		return status.Errorf(codes.InvalidArgument, "镜像名参数错误")
-	} else if !args.IsValidImageVersion(md.Version) {
+	} else if !args.ImageVersion.Check(md.Version) {
 		return status.Errorf(codes.InvalidArgument, "镜像版本参数错误")
-	} else if !args.IsValidImageDesc(md.Description) {
+	} else if !args.ImageDesc.Check(md.Description) {
 		return status.Errorf(codes.InvalidArgument, "镜像描述参数错误")
 	}
 	return nil
@@ -115,7 +115,7 @@ func (s *ImageServer) uploadCheckMetadata(md *pb.UploadInfo) error {
 func (s *ImageServer) updateCheckMetadata(md *pb.UploadInfo) error {
 	if md == nil {
 		return rpc.ErrInvalidArgument
-	} else if !args.IsValidImageDesc(md.Description) {
+	} else if !args.ImageDesc.Check(md.Description) {
 		return status.Errorf(codes.InvalidArgument, "镜像描述参数错误")
 	}
 

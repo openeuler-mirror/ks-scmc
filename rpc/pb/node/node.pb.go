@@ -163,6 +163,7 @@ type CreateRequest struct {
 	Name    string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
 	Address string `protobuf:"bytes,2,opt,name=address,proto3" json:"address,omitempty"`
 	Comment string `protobuf:"bytes,3,opt,name=comment,proto3" json:"comment,omitempty"`
+	Uuid    string `protobuf:"bytes,4,opt,name=uuid,proto3" json:"uuid,omitempty"` // 内部RPC使用
 }
 
 func (x *CreateRequest) Reset() {

@@ -33,8 +33,8 @@ type ControllerConfig struct {
 	ImageDir       string `mapstructure:"image-dir"`
 	ImageSigner    string `mapstructure:"image-signer"`
 	ImageMaxSize   uint64 `mapstructure:"image-max-size"`
-	CheckAuth      bool   `mapstructure:"check-auth"`
 	SessionTimeout uint   `mapstructure:"session-timeout"`
+	SuperUser      bool   `mapstructure:"super-user"`
 	// cert
 }
 
@@ -139,8 +139,8 @@ func setDefault() {
 	viper.SetDefault("controller.image-dir", "/var/lib/ks-scmc/images")
 	viper.SetDefault("controller.image-signer", "/var/lib/ks-scmc/images/public-key.txt")
 	viper.SetDefault("controller.image-max-size", 5*(1<<30))
-	viper.SetDefault("controller.check-auth", true)
 	viper.SetDefault("controller.session-timeout", 30*60)
+	viper.SetDefault("controller.super-user", false)
 
 	viper.SetDefault("mysql.addr", "127.0.0.1:3306")
 	viper.SetDefault("mysql.user", "root")
@@ -185,6 +185,6 @@ func LoadConfig(path string) error {
 	return nil
 }
 
-func NeedCheckAuth() bool {
-	return Config.Controller.CheckAuth
+func SuperUser() bool {
+	return Config.Controller.SuperUser
 }

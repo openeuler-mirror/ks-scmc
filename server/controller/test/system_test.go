@@ -56,3 +56,17 @@ func TestSetSecuritySwitch(t *testing.T) {
 		t.Logf("reply: %+v", reply)
 	})
 }
+
+func TestDashboard(t *testing.T) {
+	testRunner(func(ctx context.Context, conn *grpc.ClientConn) {
+		cli := pb.NewSystemClient(conn)
+		request := pb.DashboardRequest{}
+
+		reply, err := cli.Dashboard(ctx, &request)
+		if err != nil {
+			t.Errorf("List: %v", err)
+		}
+
+		t.Logf("List reply: %v", reply)
+	})
+}

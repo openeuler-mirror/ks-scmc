@@ -1308,9 +1308,22 @@ func (*ContainerServer) ExportBackup(in *pb.ExportBackupRequest, stream pb.Conta
 		log.Warnf("ImageSave err=%v", err)
 		return rpc.ErrInternal
 	}
-
-	buf := make([]byte, 16*1024)
 	defer r.Close()
+
+	chunk := pb.ExportBackupReply{
+		ImgSize:    img.Size,
+		ImgName:    strings.Split(b.ImageRef, ":")[0],
+		ImgVersion: in.ImgVersion,
+	}
+	if err := stream.Send(&chunk); err != nil {
+		log.Warnf("ExportBackup send image info err=%v", err)
+		return rpc.ErrInternal
+	}
+
+	chunk.ImgSize = 0
+	chunk.ImgName = ""
+	chunk.ImgVersion = ""
+	buf := make([]byte, 16*1024)
 	for {
 		n, err := r.Read(buf)
 		if err != nil {
@@ -1320,13 +1333,7 @@ func (*ContainerServer) ExportBackup(in *pb.ExportBackupRequest, stream pb.Conta
 			log.Warnf("read image content err=%v", err)
 			return rpc.ErrInternal
 		}
-
-		chunk := pb.ExportBackupReply{
-			Data:       buf[:n],
-			ImgSize:    img.Size,
-			ImgName:    strings.Split(b.ImageRef, ":")[0],
-			ImgVersion: in.ImgVersion,
-		}
+		chunk.Data = buf[:n]
 		if err := stream.Send(&chunk); err != nil {
 			log.Warnf("ExportBackup send stream err=%v", err)
 			return rpc.ErrInternal

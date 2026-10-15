@@ -21,6 +21,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
+	"scmc/common"
 	"scmc/model/authz"
 	"scmc/model/db"
 	"scmc/model/docker"
@@ -332,13 +333,12 @@ func (s *ContainerServer) create(configs *pb.ContainerConfigs) (string, error) {
 		})
 	}
 
-	if configs.EnableGraphic {
-		if err := containerGraphicSetup(configs.Name, &config, &hostConfig); err != nil {
-			log.Infof("containerGraphicSetup err=%v", err)
-			return "", rpc.ErrInternal
-		}
-		config.Labels["KS_SCMC_GRAPHIC"] = "1"
+	// configs.EnableGraphic 默认开启，后面应用里有图形化选项
+	if err := containerGraphicSetup(configs.Name, &config, &hostConfig); err != nil {
+		log.Infof("containerGraphicSetup err=%v", err)
+		return "", rpc.ErrInternal
 	}
+	config.Labels["KS_SCMC_GRAPHIC"] = "1"
 
 	if configs.RestartPolicy != nil {
 		hostConfig.RestartPolicy.Name = configs.RestartPolicy.Name
@@ -1041,6 +1041,10 @@ func (*ContainerServer) CreateBackup(ctx context.Context, in *pb.CreateBackupReq
 
 	b, err := litedb.CreateContainerBackup(cfgs.UUID, in.BackupName, in.BackupDesc)
 	if err != nil {
+		if strings.HasPrefix(err.Error(), "UNIQUE constraint failed") {
+			return nil, status.Errorf(codes.InvalidArgument, "已存在同名备份")
+		}
+
 		return nil, rpc.ErrInternal
 	}
 
@@ -1237,31 +1241,43 @@ func addBackupJob(b *litedb.ContainerBackup) {
 		return
 	}
 
-	info, err := cli.ContainerInspect(context.Background(), b.ContainerID)
+	ctx, cancel := context.WithTimeout(context.Background(), common.Config.Agent.BackupTimeoutDuration())
+	defer cancel()
+
+	info, err := cli.ContainerInspect(ctx, b.ContainerID)
 	if err != nil {
 		log.Warnf("inspect container=%v err=%v", b.ContainerID, err)
 		b.Status = 2
+		if err := litedb.UpdateContainerBackup(b); err != nil {
+			log.Errorf("db.UpdateContainerBackup err=%v", err)
+		}
 		return
 	}
 
 	if info.Config == nil {
 		log.Warnf("inspect container=%v .Config=nil", b.ContainerID)
 		b.Status = 2
+		if err := litedb.UpdateContainerBackup(b); err != nil {
+			log.Errorf("db.UpdateContainerBackup err=%v", err)
+		}
 		return
 	}
 
 	b.ImageRef = strings.Split(info.Config.Image, ":")[0] + ":" + b.BackupName
-	newImage, err := cli.ContainerCommit(context.Background(), b.ContainerID, types.ContainerCommitOptions{
+	newImage, err := cli.ContainerCommit(ctx, b.ContainerID, types.ContainerCommitOptions{
 		Reference: b.ImageRef,
 		Pause:     true,
 	})
 	if err != nil {
 		log.Warnf("commit container=%v err=%v", b.ContainerID, err)
 		b.Status = 2
+		if err := litedb.UpdateContainerBackup(b); err != nil {
+			log.Errorf("db.UpdateContainerBackup err=%v", err)
+		}
 		return
 	}
 
-	imageInfo, _, err := cli.ImageInspectWithRaw(context.Background(), newImage.ID)
+	imageInfo, _, err := cli.ImageInspectWithRaw(ctx, newImage.ID)
 	if err != nil {
 		log.Warnf("inspect image=%v err=%v", newImage.ID, err)
 		b.Status = 2

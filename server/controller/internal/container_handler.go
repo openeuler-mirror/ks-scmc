@@ -40,76 +40,54 @@ type ContainerServer struct {
 }
 
 func (s *ContainerServer) List(ctx context.Context, in *pb.ListRequest) (*pb.ListReply, error) {
-	reply := pb.ListReply{}
-
 	nodes, err := db.ListNodes()
 	if err != nil {
-		log.Warnf("query nodes: %v", err)
 		return nil, rpc.ErrInternal
 	}
 
-	var nodeToQuery []*db.NodeInfo
-	if in.NodeIds == nil {
-		for i := range nodes {
-			nodeToQuery = append(nodeToQuery, &nodes[i])
-		}
-	} else {
-		for _, nodeID := range uniqueInt64(in.NodeIds) {
-			for i, node := range nodes {
-				if node.ID == nodeID {
-					nodeToQuery = append(nodeToQuery, &nodes[i])
-					goto next
-				}
-			}
-			log.Infof("node ID=%v not found", nodeID)
-			return nil, rpc.ErrNotFound
-		next:
-		}
-	}
-
 	var (
-		mtx sync.Mutex
-		wg  sync.WaitGroup
+		mtx     sync.Mutex
+		wg      sync.WaitGroup
+		reply   pb.ListReply
+		counter = countInt64(in.NodeIds)
 	)
-	for _, node := range nodeToQuery {
+
+	for _, n := range nodes {
+		if counter[n.ID] == 0 {
+			continue
+		}
+
 		wg.Add(1)
-		go func(ctx context.Context, node *db.NodeInfo) {
+		go func(n *db.NodeInfo) {
 			defer wg.Done()
-			conn, err := getAgentConn(node.Address)
+			conn, err := getAgentConn(n.Address)
 			if err != nil {
-				log.Warnf("get agent Conn address=%v: %v", node.Address, err)
-
 				mtx.Lock()
 				defer mtx.Unlock()
-				reply.FailNodes = append(reply.FailNodes, node.Address)
+				reply.FailNodes = append(reply.FailNodes, n.Address)
 				return
 			}
 
-			cli := pb.NewContainerClient(conn)
-			ctx_, cancel := context.WithTimeout(ctx, time.Second*10)
-			defer cancel()
-			subReply, err := cli.List(ctx_, in)
+			r, err := pb.NewContainerClient(conn).List(ctx, in)
 			if err != nil {
-				log.Warnf("get container list ID=%v address=%v: %v", node.ID, node.Address, err)
-
+				log.Warnf("container.List node=%+v, err=%v", n, err)
 				mtx.Lock()
 				defer mtx.Unlock()
-				reply.FailNodes = append(reply.FailNodes, node.Address)
+				reply.FailNodes = append(reply.FailNodes, n.Address)
 				return
 			}
 
-			for i := range subReply.Containers {
-				subReply.Containers[i].NodeId = node.ID
-				subReply.Containers[i].NodeAddress = node.Address
+			for i := range r.Containers {
+				r.Containers[i].NodeId = n.ID
+				r.Containers[i].NodeAddress = n.Address
 			}
 			mtx.Lock()
 			defer mtx.Unlock()
-			reply.Containers = append(reply.Containers, subReply.Containers...)
-		}(ctx, node)
+			reply.Containers = append(reply.Containers, r.Containers...)
+		}(n)
 	}
 
 	wg.Wait()
-
 	return &reply, nil
 }
 

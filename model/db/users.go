@@ -55,7 +55,7 @@ type UserSession struct {
 
 type UserRoleInfo struct {
 	UserInfo
-	PermsJSON string
+	PermsJSON []*Perm `gorm:"serializer:json"`
 }
 
 func (UserRoleInfo) TableName() string {

@@ -167,3 +167,17 @@ func FindTemplate(id int64) (*ContainerTemplates, error) {
 
 	return &data, nil
 }
+
+func TemplateCount() (int64, error) {
+	db, err := getConn()
+	if err != nil {
+		return 0, err
+	}
+
+	var c int64
+	if err := db.Model(&ContainerTemplates{}).Count(&c).Error; err != nil {
+		return 0, err
+	}
+
+	return c, nil
+}

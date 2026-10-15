@@ -100,47 +100,36 @@ func (s *ContainerServer) Create(ctx context.Context, in *pb.CreateRequest) (*pb
 		return nil, status.Errorf(codes.InvalidArgument, "容器描述参数错误")
 	}
 
-	nodeInfo, err := db.QueryNodeByID(in.NodeId)
+	n, err := db.QueryNodeByID(in.NodeId)
 	if err != nil {
 		if err == db.ErrRecordNotFound {
 			return nil, rpc.ErrNotFound
 		}
-		return nil, rpc.ErrInternal
+		return nil, rpc.ErrDatabaseFail
 	}
 
-	conn, err := getAgentConn(nodeInfo.Address)
+	conn, err := getAgentConn(n.Address)
 	if err != nil {
 		return nil, rpc.ErrInternal
 	}
 
-	cli := pb.NewContainerClient(conn)
-	ctx_, cancel := context.WithTimeout(context.Background(), time.Second*10)
-	defer cancel()
-	agentReply, err := cli.Create(ctx_, in)
-	if err != nil && agentReply == nil {
-		log.Warnf("Create container: %v", err)
-		return nil, err
-	}
-
-	return agentReply, nil
+	return pb.NewContainerClient(conn).Create(ctx, in)
 }
 
 func (s *ContainerServer) Start(ctx context.Context, in *pb.StartRequest) (*pb.StartReply, error) {
-	reply := pb.StartReply{}
-
 	if len(in.Ids) <= 0 {
 		return nil, rpc.ErrInvalidArgument
 	}
 
+	var reply pb.StartReply
 	for _, c := range in.Ids {
-		nodeId, containerIds := c.NodeId, uniqueString(c.ContainerIds)
-
-		if nodeId <= 0 || len(containerIds) <= 0 {
+		containerIDs := uniqueString(c.ContainerIds)
+		if c.NodeId <= 0 || len(containerIDs) <= 0 {
 			log.Warnf("start container ErrInvalidArgument")
 			continue
 		}
 
-		nodeInfo, err := db.QueryNodeByID(nodeId)
+		n, err := db.QueryNodeByID(c.NodeId)
 		if err != nil {
 			if err == db.ErrRecordNotFound {
 				log.Warnf("start container ErrRecordNotFound")

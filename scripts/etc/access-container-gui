@@ -1,9 +1,7 @@
 #!/usr/bin/bash
-
-# set -x
 set -e
 
-if [[ $# -le 1 ]]; then
+if [[ $# -lt 1 ]]; then
     echo "Usage $0 [container ID/name] [container cmd]" >&2
     exit 1
 fi

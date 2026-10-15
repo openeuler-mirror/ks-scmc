@@ -36,7 +36,7 @@ cp -r $CURR_PATH/ks-run/install.sh $CURR_PATH/ks-run-tmp/
 readmefile=$CURR_PATH/$KS_PROJECK_NAME-$KS_PROJECK_VERSION-$(date "+%Y%m%d")-${KS_ARCH_NAME}.readme
 cat > $readmefile <<EOF
 
-麒麟信安高可用集群管理软件安装部署包
+麒麟信安安全容器魔方安装部署包
 
 1、使用说明
 执行 sh $KS_PROJECK_NAME-$KS_PROJECK_VERSION-$(date "+%Y%m%d")-${KS_ARCH_NAME}.run 完成安装

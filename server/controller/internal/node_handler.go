@@ -48,9 +48,9 @@ func (s *NodeServer) List(ctx context.Context, in *pb.ListRequest) (*pb.ListRepl
 func (s *NodeServer) Create(ctx context.Context, in *pb.CreateRequest) (*pb.CreateReply, error) {
 	if !args.IsValidNodeAddr(in.Address) {
 		return nil, status.Errorf(codes.InvalidArgument, "节点地址参数错误")
-	} else if !args.IsValidNodeName(in.Name) {
+	} else if !args.NodeName.Check(in.Name) {
 		return nil, status.Errorf(codes.InvalidArgument, "节点名称参数错误")
-	} else if !args.IsValidNodeComment(in.Comment) {
+	} else if !args.NodeComment.Check(in.Comment) {
 		return nil, status.Errorf(codes.InvalidArgument, "节点备注参数错误")
 	}
 

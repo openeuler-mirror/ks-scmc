@@ -9,10 +9,15 @@ import (
 type UserRole struct {
 	ID         int64 ` gorm:"primaryKey"`
 	Name       string
-	IsEditable bool // 是否可更新删除
-	PermsJSON  string
-	CreatedAt  int64 `gorm:"autoCreateTime"`
-	UpdatedAt  int64 `gorm:"autoCreateTime"`
+	IsEditable bool    // 是否可更新删除
+	PermsJSON  []*Perm `gorm:"serializer:json"`
+	CreatedAt  int64   `gorm:"autoCreateTime"`
+	UpdatedAt  int64   `gorm:"autoCreateTime"`
+}
+
+type Perm struct {
+	ID    int32
+	Allow bool
 }
 
 func QueryRoleByName(ctx context.Context, roleName string) (*UserRole, error) {

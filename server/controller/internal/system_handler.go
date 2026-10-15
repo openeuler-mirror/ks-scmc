@@ -5,7 +5,6 @@ import (
 
 	log "github.com/sirupsen/logrus"
 
-	"scmc/common"
 	"scmc/model/db"
 	"scmc/model/session"
 	"scmc/rpc"
@@ -84,10 +83,6 @@ func (s *SystemServer) SetSecuritySwitch(ctx context.Context, in *pb.SetSecurity
 }
 
 func (s *SystemServer) hasPerm(target pbuser.PERMISSION, perms []*db.Perm) bool {
-	if !common.NeedCheckAuth() {
-		return true // 不需要用户登录 无需校验权限位
-	}
-
 	isOn, _ := db.GetSecuritySwitch()
 	if !isOn {
 		return true // 安全开关关闭 无需校验权限位
@@ -99,7 +94,7 @@ func (s *SystemServer) hasPerm(target pbuser.PERMISSION, perms []*db.Perm) bool 
 // Dashboard resturn system dashboard based on user permssion
 func (s *SystemServer) Dashboard(ctx context.Context, in *pb.DashboardRequest) (*pb.DashboardReply, error) {
 	uid, _, ok := auth.UserSessionFromContext(ctx)
-	if !ok && common.NeedCheckAuth() {
+	if !ok {
 		log.Warnf("auth.UserSessionFromContext ctx=%+v", ctx)
 		return nil, rpc.ErrInternal
 	}

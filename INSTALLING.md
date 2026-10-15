@@ -90,26 +90,42 @@ bash /etc/ks-scmc/keepalived.sh
 
 在两台服务器上都运行`bash /etc/ks-scmc/sync_image.sh`，按提示输入。
 
-
 #### 4.4 复制镜像签名公钥
 
-密钥生成导出方法请参考 **6 镜像签名密钥配置**
+密钥生成导出方法请参考[6 镜像签名密钥配置](#jump)
 
-```
+```bash
 mkdir -p /var/lib/ks-scmc/images/
 cp public-key.txt /var/lib/ks-scmc/images/public-key.txt
 ```
 
 #### 4.5 mysql数据库配置
 
-```
+```bash
 # 启动systemd服务
 systemctl enable --now mysqld.service
 
-# 创建数据库表, 数据库授权 "123456"是数据库密码, 可以依照需要设置
+# 创建数据库表, 数据库授权，数据库密码, 可以依照需要设置
 # 如果已配置双节点高可用，只需要在其中一个节点运行这条命令
-bash /etc/ks-scmc/setup_db.sh "123456"
+bash /etc/ks-scmc/setup_db.sh "PASSWORD"
 ```
+
+为避免数据库密码泄露，配置文件中需要对明文密码进行加密：
+
+首先使用`ks-scmc-encrypt`命令对明文加密
+
+```bash
+$ ks-scmc-encrypt "PASSWORD"    # 输入参数明文密码，输出 xxxx 为加密后内容
+xxxx
+```
+
+修改配置文件 `/etc/ks-scmc/server.toml` 中数据库密码字段
+
+```toml
+[mysql]
+password = "加密后内容"
+```
+
 
 #### 4.6 启动Controller服务
 
@@ -120,14 +136,19 @@ bash /etc/ks-scmc/setup_db.sh "123456"
 
 修改的内容如下
 
-```
+注意：若配置双节点,需配置virtual-if和virtual-ip
+
+```toml
 [controller]
 virtual-if = "虚拟IP网卡名"
 virtual-ip = "虚拟IP地址"
+```
 
+注意：若配置mysql配置双主复制，则mysql IP地址为虚拟IP地址
+
+```toml
 [mysql]
-addr = "虚拟IP地址:3306"
-password = "4.5中所设置的密码"
+addr = "mysql IP地址:3306"
 
 [registry]
 addr = "镜像服务IP:PORT"
@@ -135,34 +156,32 @@ addr = "镜像服务IP:PORT"
 
 运行systemd服务
 
-```
+```bash
 systemctl enable --now ks-scmc-controller.service
 ```
 
 #### 4.7 创建默认三权用户
 
-首先需要修改配置文件`/etc/ks-scmc/server.toml`. 将`[controller]`下的`check-auth`和`check-perm`值为`false`，避免用户和权限检查导致操作失败
+打开配置文件`/etc/ks-scmc/server.toml`. 确保`[controller]`下的配置项`super-user`值为`true`，开启超级用户配置
 
-```
+```toml
 [controller]
-check-auth = false
-check-perm = false
+super-user = true
 ```
 
-重启controller服务，使配置更改生效
+如果之前的值是`false`，需要重启controller服务，使配置更改生效
 
-```
+```bash
 systemctl restart ks-scmc-controller.service
 ```
 
 运行以下命令将创建三个管理员用户`sysadm secadm audadm`，密码都是`12345678`。
 
-```
+```bash
 bash /etc/ks-scmc/init_users.sh
 ```
 
-创建完用户之后可以将修改的配置项`check-auth`和`check-perm`恢复为true，重启controller服务。
-
+创建完用户之后可以将配置项`super-user`改为`false`，重启controller服务。用于禁止对用户、角色的增删改查操作。
 
 ### 5 配置 Agent 服务
 
@@ -183,54 +202,49 @@ bash /etc/ks-scmc/setup_agent.sh
 - 配置opensnitch服务
 - 开启authz插件
 
-
 #### 5.2 配置docker
 
 修改docker配置文件`/etc/docker/daemon.json`，内容如下：
 
-```
+```json
 {
-	"live-restore": true,
-	"bridge": "none",
-	"authorization-plugins": ["authz-plugin"],
-	"host": [
-		"unix:///var/run/docker.sock"
-	],
-	"insecure-registries": [
-		"127.0.0.1:5000"
-	],
-	"registry-mirrors": [
-		"http://127.0.0.1:5000"
-	],
-	"data-root": "/var/lib/docker",
-	"selinux-enabled": false
+    "live-restore": true,
+    "bridge": "none",
+    "authorization-plugins": ["authz-plugin"],
+    "host": [
+        "unix:///var/run/docker.sock"
+    ],
+    "insecure-registries": [
+        "127.0.0.1:5000"
+    ],
+    "registry-mirrors": [
+        "http://127.0.0.1:5000"
+    ],
+    "data-root": "/var/lib/docker",
+    "selinux-enabled": false
 }
 ```
 
 注意：
+
 1. `insecure-registries`和`registry-mirrors`需要对应**3 配置镜像服务**配置的镜像服务的地址
 2. `data-root`对应路径所在分区需要保证是xfs分区
 
-
 保存文件重启docker服务：`systemctl restart docker.service`
 
-#### 5.3 虚拟网卡配置
+#### 5.3 启动Agent服务
 
-运行`bash /etc/ks-scmc/create_network.sh`，按提示输入。
-
-#### 5.4 启动Agent服务
-
-```
+```bash
 systemctl enable --now ks-scmc-agent.service
 ```
 
-### 6 镜像签名密钥配置
+### <span id="jump">6 镜像签名密钥配置</span>
 
 后端（controller服务）保存公钥，服务端导入私钥。
 
 #### 6.1 生成密钥对
 
-```
+```bash
 gpg --full-generate-key
 ```
 
@@ -238,7 +252,7 @@ gpg --full-generate-key
 
 #### 6.2 导出密钥
 
-```
+```bash
 # 导出公钥
 gpg --output public-key.txt --export C5885179647A3BA4
 
@@ -246,10 +260,9 @@ gpg --output public-key.txt --export C5885179647A3BA4
 gpg --output private-key.txt --export-secret-keys C5885179647A3BA4
 ```
 
-
 #### 6.3 导入密钥
 
-```
+```bash
 gpg --import [密钥文件]
 ```
 
@@ -257,6 +270,6 @@ gpg --import [密钥文件]
 
 -u 选项用于指定密钥
 
-```
+```bash
 gpg -u C5885179647A3BA4 --detach-sign [被签名文件]
 ```

@@ -2,7 +2,6 @@ package internal
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 
 	"github.com/google/uuid"
@@ -56,6 +55,12 @@ func (s *UserServer) Login(ctx context.Context, in *pb.LoginRequest) (*pb.LoginR
 		addr = pr.Addr.String()
 	}
 
+	// get user role info
+	role, err := db.QueryRoleById(ctx, userInfo.RoleID)
+	if err != nil {
+		return nil, rpc.ErrInternal
+	}
+
 	// UUID create session
 	sessionKey := uuid.New().String()
 	old, err := db.CreateSession(userInfo.ID, sessionKey, addr)
@@ -71,6 +76,14 @@ func (s *UserServer) Login(ctx context.Context, in *pb.LoginRequest) (*pb.LoginR
 	return &pb.LoginReply{
 		UserId:  userInfo.ID,
 		AuthKey: fmt.Sprintf("%d%c%s", userInfo.ID, common.UserSessionySeprator, sessionKey),
+		UserRole: &pb.UserRole{
+			Id:         role.ID,
+			Name:       role.Name,
+			IsEditable: role.IsEditable,
+			CreatedAt:  role.CreatedAt,
+			UpdatedAt:  role.UpdatedAt,
+			Perms:      convertPerms(role.PermsJSON),
+		},
 	}, nil
 }
 
@@ -195,26 +208,26 @@ func (s *UserServer) ListUser(ctx context.Context, in *pb.ListUserRequest) (*pb.
 		rolesMap[r.ID] = r
 	}
 
-	reply := pb.ListUserReply{}
-	for _, userinfo := range users {
-		u := &pb.UserInfo{
-			Id:         userinfo.ID,
-			LoginName:  userinfo.Username,
-			RealName:   userinfo.RealName,
-			IsActive:   userinfo.IsActive,
-			IsEditable: userinfo.IsEditable,
-			RoleId:     userinfo.RoleID,
-			CreatedAt:  userinfo.CreatedAt,
-			UpdatedAt:  userinfo.UpdatedAt,
+	var reply pb.ListUserReply
+	for _, u := range users {
+		user := &pb.UserInfo{
+			Id:         u.ID,
+			LoginName:  u.Username,
+			RealName:   u.RealName,
+			IsActive:   u.IsActive,
+			IsEditable: u.IsEditable,
+			RoleId:     u.RoleID,
+			CreatedAt:  u.CreatedAt,
+			UpdatedAt:  u.UpdatedAt,
 		}
 
-		if r, ok := rolesMap[u.RoleId]; ok {
-			u.RoleInfo = &pb.UserRole{
+		if r, ok := rolesMap[user.RoleId]; ok {
+			user.RoleInfo = &pb.UserRole{
 				Id:   r.ID,
 				Name: r.Name,
 			}
 		}
-		reply.Users = append(reply.Users, u)
+		reply.Users = append(reply.Users, user)
 	}
 
 	return &reply, nil
@@ -259,11 +272,6 @@ func (s *UserServer) CreateUser(ctx context.Context, in *pb.CreateUserRequest) (
 		return nil, rpc.ErrInternal
 	}
 
-	var perms []*pb.Permission
-	err = json.Unmarshal([]byte(roleInfo.PermsJSON), &perms)
-	if err != nil {
-		log.Warnf("json unmarshal err: %v", err)
-	}
 	return &pb.CreateUserReply{
 		UserInfo: &pb.UserInfo{
 			Id:         userInfo.ID,
@@ -280,7 +288,7 @@ func (s *UserServer) CreateUser(ctx context.Context, in *pb.CreateUserRequest) (
 				IsEditable: roleInfo.IsEditable,
 				CreatedAt:  roleInfo.CreatedAt,
 				UpdatedAt:  roleInfo.UpdatedAt,
-				Perms:      perms,
+				Perms:      convertPerms(roleInfo.PermsJSON),
 			},
 		},
 	}, nil
@@ -338,11 +346,6 @@ func (s *UserServer) UpdateUser(ctx context.Context, in *pb.UpdateUserRequest) (
 		return nil, rpc.ErrInternal
 	}
 
-	var perms []*pb.Permission
-	err = json.Unmarshal([]byte(roleInfo.PermsJSON), &perms)
-	if err != nil {
-		log.Warnf("json unmarshal err: %v", err)
-	}
 	return &pb.UpdateUserReply{
 		UserInfo: &pb.UserInfo{
 			Id:         userInfo.ID,
@@ -359,7 +362,7 @@ func (s *UserServer) UpdateUser(ctx context.Context, in *pb.UpdateUserRequest) (
 				IsEditable: roleInfo.IsEditable,
 				CreatedAt:  roleInfo.CreatedAt,
 				UpdatedAt:  roleInfo.UpdatedAt,
-				Perms:      perms,
+				Perms:      convertPerms(roleInfo.PermsJSON),
 			},
 		},
 	}, nil
@@ -405,7 +408,6 @@ func (s *UserServer) RemoveUser(ctx context.Context, in *pb.RemoveUserRequest) (
 // 用户角色列表
 func (s *UserServer) ListRole(ctx context.Context, in *pb.ListRoleRequest) (*pb.ListRoleReply, error) {
 	roles, err := db.ListRole()
-
 	if err != nil {
 		log.Errorf("ListUser err=%v", err)
 		return nil, rpc.ErrInternal
@@ -413,14 +415,11 @@ func (s *UserServer) ListRole(ctx context.Context, in *pb.ListRoleRequest) (*pb.
 
 	var reply pb.ListRoleReply
 	for _, r := range roles {
-		var perms []*pb.Permission
-		json.Unmarshal([]byte(r.PermsJSON), &perms)
-
 		reply.Roles = append(reply.Roles, &pb.UserRole{
 			Id:         r.ID,
 			Name:       r.Name,
 			IsEditable: r.IsEditable,
-			Perms:      perms,
+			Perms:      convertPerms(r.PermsJSON),
 			CreatedAt:  r.CreatedAt,
 			UpdatedAt:  r.UpdatedAt,
 		})
@@ -438,19 +437,13 @@ func (s *UserServer) CreateRole(ctx context.Context, in *pb.CreateRoleRequest) (
 		return nil, rpc.ErrInvalidArgument
 	}
 
-	permsJSON, err := json.Marshal(in.RoleInfo.Perms)
-	if err != nil {
-		log.Warnf("marshal perms json err=%v", err)
-		return nil, rpc.ErrInternal
-	}
-
 	role := &db.UserRole{
 		Name:       in.RoleInfo.Name,
 		IsEditable: in.RoleInfo.IsEditable,
-		PermsJSON:  string(permsJSON),
+		PermsJSON:  restorePerms(in.RoleInfo.Perms),
 	}
 
-	if err = db.CreateRole(ctx, role); err != nil {
+	if err := db.CreateRole(ctx, role); err != nil {
 		log.Warnf("createUser: %v", err)
 		if err == db.ErrDuplicateKey {
 			return nil, rpc.ErrAlreadyExists
@@ -458,11 +451,6 @@ func (s *UserServer) CreateRole(ctx context.Context, in *pb.CreateRoleRequest) (
 		return nil, rpc.ErrInternal
 	}
 
-	var perms []*pb.Permission
-	err = json.Unmarshal([]byte(role.PermsJSON), &perms)
-	if err != nil {
-		log.Warnf("json unmarshal err: %v", err)
-	}
 	return &pb.CreateRoleReply{
 		RoleInfo: &pb.UserRole{
 			Id:         role.ID,
@@ -470,7 +458,7 @@ func (s *UserServer) CreateRole(ctx context.Context, in *pb.CreateRoleRequest) (
 			IsEditable: role.IsEditable,
 			CreatedAt:  role.CreatedAt,
 			UpdatedAt:  role.UpdatedAt,
-			Perms:      perms,
+			Perms:      convertPerms(role.PermsJSON),
 		},
 	}, nil
 }
@@ -491,25 +479,14 @@ func (s *UserServer) UpdateRole(ctx context.Context, in *pb.UpdateRoleRequest) (
 		return nil, rpc.ErrNotFound
 	}
 
-	permsJSON, err := json.Marshal(in.RoleInfo.Perms)
-	if err != nil {
-		log.Warnf("marshal perms json err=%v", err)
-		return nil, rpc.ErrInternal
-	}
-
 	role.Name = in.RoleInfo.Name
-	role.PermsJSON = string(permsJSON)
+	role.PermsJSON = restorePerms(in.RoleInfo.Perms)
 
 	if err = db.UpdateRole(ctx, role); err != nil {
 		log.Warnf("role UpdateRole err: %v", err)
 		return nil, err
 	}
 
-	var perms []*pb.Permission
-	err = json.Unmarshal([]byte(role.PermsJSON), &perms)
-	if err != nil {
-		log.Warnf("json unmarshal err: %v", err)
-	}
 	return &pb.UpdateRoleReply{
 		RoleInfo: &pb.UserRole{
 			Id:         role.ID,
@@ -517,7 +494,7 @@ func (s *UserServer) UpdateRole(ctx context.Context, in *pb.UpdateRoleRequest) (
 			IsEditable: role.IsEditable,
 			CreatedAt:  role.CreatedAt,
 			UpdatedAt:  role.UpdatedAt,
-			Perms:      perms,
+			Perms:      convertPerms(role.PermsJSON),
 		},
 	}, nil
 }
@@ -534,4 +511,32 @@ func (s *UserServer) RemoveRole(ctx context.Context, in *pb.RemoveRoleRequest) (
 		return nil, err
 	}
 	return &pb.RemoveRoleReply{}, nil
+}
+
+func convertPerms(dbPerms []*db.Perm) []*pb.Permission {
+	perms := make([]*pb.Permission, 0, len(dbPerms))
+	for _, perm := range dbPerms {
+		if perm == nil {
+			continue
+		}
+		perms = append(perms, &pb.Permission{
+			Id:    perm.ID,
+			Allow: perm.Allow,
+		})
+	}
+	return perms
+}
+
+func restorePerms(pbPerms []*pb.Permission) []*db.Perm {
+	perms := make([]*db.Perm, 0, len(pbPerms))
+	for _, perm := range pbPerms {
+		if perm == nil {
+			continue
+		}
+		perms = append(perms, &db.Perm{
+			ID:    perm.Id,
+			Allow: perm.Allow,
+		})
+	}
+	return perms
 }

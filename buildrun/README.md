@@ -33,6 +33,4 @@ gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-kylin-release
 3 get depend packages
 yum install docker-ce coreutils bash socat systemd lsyncd rsync xinetd keepalived ks-license-client ks-license-gui-client kernel-kek-devel kernel-kek
 
-4 change ALLOWED_OS_VERSION in ks-run/install.sh
-
-5 build run 
+4 build run 

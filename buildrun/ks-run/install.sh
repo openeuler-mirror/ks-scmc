@@ -25,7 +25,7 @@ fi
 OS_VERSION=`cat /etc/.kyinfo | grep ^milestone | awk -F ' ' '{ print $3 }'`
 echo "OS version:${OS_VERSION}"
 
-ALLOWED_OS_VERSION="3.3-6C"
+ALLOWED_OS_VERSION="$KS_ALLOW_OS"
 if [[ "$OS_VERSION" == "$ALLOWED_OS_VERSION"* ]];then
     echo "OS version mismatched, Allowed OS Version:$ALLOWED_OS_VERSION"
     exit 1

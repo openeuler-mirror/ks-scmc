@@ -6,7 +6,7 @@
 
 %global pkg_name ks-scmc
 %global pkg_ver 1.0.4
-%global pkg_rel 2
+%global pkg_rel 3
 
 Summary:        KylinSec security container magic cube
 License:        No License
@@ -14,7 +14,7 @@ Group:          Tools/Container/Docker
 
 Name:           %{pkg_name}
 Version:        %{pkg_ver}
-Release:        %{pkg_rel}
+Release:        %{pkg_rel}%{?dist}
 URL:            http://gitlab.kylinos.com.cn/os/%{name}
 Source0:        %{name}-%{version}.tar.gz
 

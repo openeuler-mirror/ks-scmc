@@ -10,6 +10,8 @@ import (
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/events"
 	log "github.com/sirupsen/logrus"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 
 	"scmc/common"
 	"scmc/model/docker"
@@ -159,16 +161,16 @@ func checkConflict(containerId, ifs string, ipAddr *string, masklen int) bool {
 	return false
 }
 
-func checkNetworkInfo(containerId, ifs string, ipAddr *string, masklen int) bool {
+func checkNetworkInfo(containerId, ifs string, ipAddr *string, masklen int) error {
 	if !checkIfs(ifs) {
-		return false
+		return status.Error(codes.Internal, "网卡未找到")
 	}
 
 	if !checkConflict(containerId, ifs, ipAddr, masklen) {
-		return false
+		return status.Error(codes.InvalidArgument, "IP冲突")
 	}
 
-	return true
+	return nil
 }
 
 func ContainerWhiteCongig() error {

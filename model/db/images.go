@@ -17,6 +17,12 @@ const (
 	VerifyPass     = 2
 )
 
+type ImageStat struct {
+	ToApproveCount int64 // 待审批镜像数
+	TotalCount     int64 // 镜像个数
+	TotalSize      int64 // 镜像总大小 单位字节
+}
+
 type ImageInfo struct {
 	ID             int64 `gorm:"primaryKey"`
 	Name           string
@@ -185,6 +191,28 @@ func QueryImageByNameVersion(name, version string) (*ImageInfo, error) {
 		return nil, result.Error
 	} else if result.RowsAffected == 0 {
 		return nil, nil
+	}
+
+	return &data, nil
+}
+
+// GetImageStats returns the number of pending approvals, the number of approvals and the total image size
+func GetImageStats() (*ImageStat, error) {
+	db, err := getConn()
+	if err != nil {
+		return nil, err
+	}
+
+	var data ImageStat
+
+	query := "SUM(file_size) AS total_size, " +
+		"COUNT(file_size) AS total_count, " +
+		"COUNT(IF(approval_status=?, 1, NULL)) AS to_approve_count"
+
+	result := db.Model(&ImageInfo{}).Select(query, ApprovalWait).Scan(&data)
+	if result.Error != nil {
+		log.Warnf("GetImageStats %v", result.Error)
+		return nil, result.Error
 	}
 
 	return &data, nil

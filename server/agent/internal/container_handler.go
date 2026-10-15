@@ -362,7 +362,7 @@ func (s *ContainerServer) create(configs *pb.ContainerConfigs) (string, error) {
 			EndpointsConfig: make(map[string]*network.EndpointSettings, len(configs.Networks)),
 		}
 		for _, v := range configs.Networks {
-			if err := checkNetworkInfo("", v.Interface, &v.IpAddress, int(v.IpPrefixLen)); err != nil {
+			if err := checkNetworkInfo(v.Interface, "", &v.IpAddress, int(v.IpPrefixLen)); err != nil {
 				return "", err
 			}
 
@@ -604,7 +604,7 @@ func (s *ContainerServer) Update(ctx context.Context, in *pb.UpdateRequest) (*pb
 
 	if in.Networks != nil {
 		for _, v := range in.Networks {
-			if err := checkNetworkInfo(in.ContainerId, v.Interface, &v.IpAddress, int(v.IpPrefixLen)); err != nil {
+			if err := checkNetworkInfo(v.Interface, in.ContainerId, &v.IpAddress, int(v.IpPrefixLen)); err != nil {
 				return nil, err
 			}
 		}
@@ -917,9 +917,9 @@ func (s *ContainerServer) inspect(id string, backup bool) (*pb.ContainerConfigs,
 	}
 
 	if info.NetworkSettings != nil {
-		for k, m := range info.NetworkSettings.Networks {
-			if k == "bridge" {
-				continue // "bridge" 是默认创建的网络连接, 需要忽略
+		for iface, m := range info.NetworkSettings.Networks {
+			if isPredefinedNetwork(iface) {
+				continue // 需要忽略默认创建的网络连接
 			}
 
 			var ipAddr string
@@ -934,7 +934,7 @@ func (s *ContainerServer) inspect(id string, backup bool) (*pb.ContainerConfigs,
 			}
 
 			configs.Networks = append(configs.Networks, &pb.NetworkConfig{
-				Interface:   k,
+				Interface:   iface,
 				ContainerId: info.ID,
 				IpAddress:   ipAddr,
 				IpPrefixLen: int32(m.IPPrefixLen),

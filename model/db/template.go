@@ -87,10 +87,22 @@ func ListTemplate(ctx context.Context, perPage int64, nextPage int64) (*PageInfo
 		return nil, nil, err
 	}
 
-	pageinfo := NewPageInfo(ctx, db, perPage, nextPage)
-
-	offsetnum := pageinfo.Getoffset()
 	var containerTemplates []ContainerTemplates
+	if perPage == -1 {
+		if err := db.Find(&containerTemplates).Error; err != nil {
+			log.Warnf("db list template : %v", err)
+			return nil, nil, err
+		}
+		return &PageInfo{
+			PerPage:    perPage,
+			CurPage:    1,
+			TotalRows:  int64(len(containerTemplates)),
+			TotalPages: 1,
+		}, containerTemplates, nil
+	}
+
+	pageinfo := NewPageInfo(ctx, db, perPage, nextPage)
+	offsetnum := pageinfo.Getoffset()
 	if result := db.WithContext(ctx).Offset(int(offsetnum)).Limit(int(pageinfo.PerPage)).Find(&containerTemplates); result.Error != nil {
 		log.Errorf("db list template %v", result.Error)
 		return nil, nil, translateError(result.Error)

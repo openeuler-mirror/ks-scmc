@@ -2,16 +2,19 @@ package internal
 
 import (
 	"context"
+	"strings"
 
 	"github.com/docker/docker/api/types"
 	"github.com/shirou/gopsutil/disk"
 	"github.com/shirou/gopsutil/mem"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"gorm.io/gorm"
 
 	log "github.com/sirupsen/logrus"
 
 	"scmc/model/docker"
+	"scmc/model/litedb"
 	"scmc/rpc"
 	pb "scmc/rpc/pb/node"
 )
@@ -130,4 +133,34 @@ func (s *NodeServer) Update(ctx context.Context, in *pb.UpdateRequest) (*pb.Upda
 	}
 
 	return &pb.UpdateReply{}, nil
+}
+
+func (s *NodeServer) Create(ctx context.Context, in *pb.CreateRequest) (*pb.CreateReply, error) {
+	if len(in.Uuid) == 0 {
+		return nil, rpc.ErrInvalidArgument
+	}
+
+	err := litedb.CreateNodeInfo(1, in.Uuid) // 强制设置id=1，表只能有一条记录
+	if err != nil {
+		log.Warnf("Node.Create uuid=%s err=%v", in.Uuid, err)
+		if strings.HasPrefix(err.Error(), "UNIQUE constraint failed") {
+			return nil, status.Error(codes.Internal, "节点已加入其他集群")
+		}
+		return nil, rpc.ErrDatabaseFail
+	}
+	return &pb.CreateReply{}, nil
+}
+
+func (s *NodeServer) Remove(ctx context.Context, in *pb.RemoveRequest) (*pb.RemoveReply, error) {
+	err := litedb.RemoveNodeInfo(1, in.Uuid) // 强制设置id=1，表只能有一条记录
+	if err != nil {
+		log.Warnf("Node.Remove uuid=%s err=%v", in.Uuid, err)
+		if err == gorm.ErrRecordNotFound {
+			goto success
+		}
+		return nil, rpc.ErrDatabaseFail
+	}
+
+success:
+	return &pb.RemoveReply{}, nil
 }

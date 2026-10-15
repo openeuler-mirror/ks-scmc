@@ -8,6 +8,7 @@ import (
 	"scmc/model/db"
 	"scmc/rpc"
 	pb "scmc/rpc/pb/network"
+	"scmc/server/args"
 )
 
 type NetworkServer struct {
@@ -216,7 +217,7 @@ func (s *NetworkServer) RemoveIPtables(ctx context.Context, in *pb.RemoveIPtable
 }
 
 func (*NetworkServer) CreateNic(ctx context.Context, in *pb.CreateNicRequest) (*pb.CreateNicReply, error) {
-	if in.Name == "" || in.NodeId == 0 {
+	if !args.NicName.Check(in.Name) || in.NodeId == 0 {
 		return nil, rpc.ErrInvalidArgument
 	}
 

@@ -51,6 +51,7 @@ CREATE TABLE `node_infos` (
   `memory_limit` decimal(20,1) NOT NULL DEFAULT '0.0' COMMENT '内存使用 单位MB',
   `disk_limit` decimal(20,1) NOT NULL DEFAULT '0.0' COMMENT '磁盘使用 单位MB',
   `deleted` tinyint(4) NOT NULL DEFAULT '0' COMMENT '删除标记位 0:未删除',
+  `uuid` varchar(255) NOT NULL DEFAULT '' COMMENT '节点添加/删除时使用, 防止节点被不同集群的controller服务添加',
   `created_at` int(20) NOT NULL DEFAULT '0',
   `updated_at` int(20) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),

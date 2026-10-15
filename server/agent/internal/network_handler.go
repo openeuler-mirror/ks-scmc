@@ -5,12 +5,14 @@ import (
 	"net"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/network"
 	"github.com/docker/docker/client"
 	log "github.com/sirupsen/logrus"
+	"github.com/vishvananda/netlink"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
@@ -127,15 +129,16 @@ func (s *NetworkServer) List(ctx context.Context, in *pb.ListRequest) (*pb.ListR
 	}
 
 	for _, i := range ifs {
-		log.Printf("%+v", i)
+		log.Debugf("Network interface %+v", i)
 		virtual, err := isVirtualNic(i.Name)
 		if virtual || err != nil {
 			continue
 		}
 
 		realIf := &pb.NetworkInterface{
-			Name: i.Name,
-			IsUp: true,
+			Name:       i.Name,
+			IsUp:       strings.Contains(i.Flags.String(), "up"),
+			MacAddress: i.HardwareAddr.String(),
 		}
 
 		addrs, err := i.Addrs()
@@ -143,10 +146,11 @@ func (s *NetworkServer) List(ctx context.Context, in *pb.ListRequest) (*pb.ListR
 			log.Warnf("retrieve addrs from interface %v err=%v", i, err)
 		}
 
-		for _, a := range addrs {
-			ip, ipNet, err := net.ParseCIDR(a.String())
+		if len(addrs) > 0 {
+			addr := addrs[0]
+			ip, ipNet, err := net.ParseCIDR(addr.String())
 			if err != nil {
-				log.Warnf("net.ParseCIDR(%s) err=%v", a.String(), err)
+				log.Warnf("net.ParseCIDR(%s) err=%v", addr.String(), err)
 				continue
 			}
 
@@ -154,6 +158,34 @@ func (s *NetworkServer) List(ctx context.Context, in *pb.ListRequest) (*pb.ListR
 				ones, _ := ipNet.Mask.Size()
 				realIf.IpAddress = ipv4.String()
 				realIf.IpMaskLen = int32(ones)
+
+				var s []string
+				for _, i := range ipNet.Mask {
+					s = append(s, strconv.Itoa(int(i)))
+				}
+				realIf.IpMask = strings.Join(s, ".")
+			}
+
+			// retrive gateway
+			link, err := netlink.LinkByName(i.Name)
+			if err != nil {
+				log.Infof("netlink.LinkByName(%s) err=%v", i.Name, err)
+				continue
+			}
+
+			routes, err := netlink.RouteList(link, netlink.FAMILY_V4)
+			if err != nil {
+				log.Infof("link=%s netlink.RouteList %v", i.Name, err)
+				continue
+			}
+
+			for _, r := range routes {
+				if r.Gw != nil {
+					realIf.Gateway = r.Gw.String()
+				}
+			}
+			if realIf.Gateway == "" {
+				realIf.Gateway = "0.0.0.0"
 			}
 		}
 		reply.RealIfs = append(reply.RealIfs, realIf)

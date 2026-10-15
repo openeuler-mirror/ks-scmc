@@ -15,6 +15,7 @@ import (
 	"scmc/model/db"
 	"scmc/rpc"
 	pb "scmc/rpc/pb/container"
+	"scmc/server"
 	"scmc/server/args"
 )
 
@@ -485,6 +486,37 @@ func (s *ContainerServer) ListTemplate(ctx context.Context, in *pb.ListTemplateR
 	return &reply, nil
 }
 
+func CheckImageLegal(nodeId int64, image string) error {
+	images, err := db.GetImageMap()
+	if err != nil {
+		return rpc.ErrDatabaseFail
+	}
+
+	n, err := db.QueryNodeByID(nodeId)
+	if err != nil {
+		if err == db.ErrRecordNotFound {
+			return rpc.ErrNotFound
+		}
+		return rpc.ErrDatabaseFail
+	}
+
+	conn, err := getAgentConn(n.Address)
+	if err != nil {
+		return rpc.ErrInternal
+	}
+
+	backupImages, err := server.ListBackupImage(conn)
+	if err != nil {
+		log.Warnf("ListBackupImage err=%v", err)
+		return rpc.ErrInternal
+	}
+	if !images[image] && !backupImages[image] {
+		return status.Errorf(codes.InvalidArgument, "容器镜像非法")
+	}
+
+	return nil
+}
+
 func (s *ContainerServer) CreateTemplate(ctx context.Context, in *pb.CreateTemplateRequest) (*pb.CreateTemplateReply, error) {
 	if in.Data == nil || in.Data.Conf == nil || in.Data.NodeId <= 0 {
 		return nil, rpc.ErrInvalidArgument
@@ -492,6 +524,10 @@ func (s *ContainerServer) CreateTemplate(ctx context.Context, in *pb.CreateTempl
 		return nil, status.Errorf(codes.InvalidArgument, "模板名参数错误")
 	} else if !args.ContainerDesc.Check(in.Data.Conf.Desc) {
 		return nil, status.Errorf(codes.InvalidArgument, "模板描述参数错误")
+	}
+
+	if err := CheckImageLegal(in.Data.NodeId, in.Data.Conf.Image); err != nil {
+		return nil, err
 	}
 
 	if in.Data.Conf.ResouceLimit != nil {

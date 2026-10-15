@@ -2,6 +2,7 @@
 package db
 
 import (
+	"github.com/google/uuid"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -62,7 +63,7 @@ func RemoveNode(ids []int64) error {
 		return err
 	}
 
-	result := db.Model(&NodeInfo{}).Where("id IN ?", ids).Update("deleted", 1)
+	result := db.Model(&NodeInfo{}).Where("id IN ?", ids).Update("deleted", 1).Update("name", uuid.New().String())
 	if result.Error != nil {
 		log.Errorf("db remove node ids=%v: %v", ids, result.Error)
 		return result.Error

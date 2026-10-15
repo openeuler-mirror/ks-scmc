@@ -2,6 +2,7 @@ package auth
 
 import (
 	"context"
+	"strconv"
 	"strings"
 	"time"
 
@@ -31,6 +32,17 @@ func UserInfoFromContext(ctx context.Context) (*db.UserRoleInfo, bool) {
 	return v, ok
 }
 
+func UserIDFromContext(ctx context.Context) (int64, bool) {
+	v, ok := ctx.Value(keyUserID).(string)
+
+	uid, err := strconv.ParseInt(v, 10, 64)
+	if err != nil {
+		log.Warnf("parse string=%s to int, err=%s", v, err)
+	}
+
+	return uid, ok
+}
+
 // UserSessionFromContext returns user_id, user_session from context
 func UserSessionFromContext(ctx context.Context) (string, string, bool) {
 	u, ok0 := ctx.Value(keyUserID).(string)
@@ -45,6 +57,8 @@ func UserPermFromContext(ctx context.Context) ([]*pb.Permission, bool) {
 
 func UnaryInterceptor() grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (reply interface{}, err error) {
+		ctx = context.WithValue(ctx, keyUserID, "0") // default uid
+
 		if common.SuperUser() && rpcAllowSuperUser(info.FullMethod) {
 			goto handle
 		}
@@ -77,8 +91,10 @@ func UnaryInterceptor() grpc.UnaryServerInterceptor {
 
 func StreamInterceptor() grpc.StreamServerInterceptor {
 	return func(srv interface{}, stream grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
+		ctx := stream.Context()
+		ctx = context.WithValue(ctx, keyUserID, "0") // default uid
+
 		if rpcNeedCheckAuth(info.FullMethod) {
-			ctx := stream.Context()
 			userID, sessionKey, err := getAuthInfo(ctx)
 			if err != nil {
 				return err

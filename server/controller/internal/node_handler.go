@@ -168,12 +168,20 @@ func GetNodeStatus(n *db.NodeInfo) (*pb.NodeStatus, error) {
 	}
 
 	cli := pb.NewNodeClient(conn)
-	ctx_, cancel := context.WithTimeout(context.Background(), time.Second*50)
+	ctx_, cancel := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancel()
 	r, err := cli.Status(ctx_, &pb.StatusRequest{})
 	if err != nil {
 		log.Warnf("get node status ID=%v address=%v: %v", n.ID, n.Address, err)
-		return nil, err
+		s, ok := status.FromError(err)
+		if ok && s.Code() == codes.Unavailable {
+			return &pb.NodeStatus{
+				State: int64(pb.NodeState_Offline),
+			}, nil
+		}
+		return &pb.NodeStatus{
+			State: int64(pb.NodeState_Unknown),
+		}, nil
 	}
 
 	var s *pb.NodeStatus

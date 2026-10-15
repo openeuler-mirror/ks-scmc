@@ -92,6 +92,43 @@ func (s *SystemServer) hasPerm(target pbuser.PERMISSION, perms []*db.Perm) bool 
 }
 
 // Dashboard resturn system dashboard based on user permssion
+func (o *SystemServer) Dashboard(ctx context.Context, in *pb.DashboardRequest) (*pb.DashboardReply, error) {
+	var ns NodeServer
+	nodeList, err := ns.List(ctx, &pbnode.ListRequest{})
+	if err != nil {
+		log.Infof("node.List err=%v", err)
+		return nil, rpc.ErrInternal
+	}
+
+	imageStats, err := db.GetImageStats()
+	if err != nil {
+		log.Infof("db.GetImageStats err=%v", err)
+		return nil, rpc.ErrInternal
+	}
+
+	templateCount, err := db.TemplateCount()
+	if err != nil {
+		log.Infof("db.TemplateCount err=%v", err)
+		return nil, rpc.ErrInternal
+	}
+
+	r := pb.DashboardReply{
+		Image: &pb.ImageStats{
+			TotalCount: imageStats.TotalCount,
+			TotalSize:  imageStats.TotalSize,
+		},
+		Audit: &pb.AuditStats{
+			ImageToApproveCount: imageStats.ToApproveCount,
+		},
+	}
+	nodeStats(nodeList, &r)
+	containerStats(templateCount, nodeList, &r)
+	logStats(nodeList, &r)
+
+	return &r, nil
+}
+
+/*
 func (s *SystemServer) Dashboard(ctx context.Context, in *pb.DashboardRequest) (*pb.DashboardReply, error) {
 	uid, _, ok := auth.UserSessionFromContext(ctx)
 	if !ok {
@@ -152,6 +189,7 @@ func (s *SystemServer) Dashboard(ctx context.Context, in *pb.DashboardRequest) (
 
 	return &r, nil
 }
+*/
 
 func nodeStats(n *pbnode.ListReply, r *pb.DashboardReply) {
 	r.Node = &pb.NodeStats{}

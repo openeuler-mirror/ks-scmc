@@ -271,6 +271,7 @@ func getPermID(method string) pb.PERMISSION {
 		"/container.Container/DelBackupJob",
 		"/container.Container/AddAppEntry",
 		"/container.Container/RemoveAppEntry",
+		"/container.Container/KillAppEntry",
 		"/container.Container/UpdateAppEntry",
 		"/container.Container/RunAppEntry",
 		"/network.Network/Connect",

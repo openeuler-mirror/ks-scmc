@@ -152,7 +152,7 @@ func (s *ContainerServer) Start(ctx context.Context, in *pb.StartRequest) (*pb.S
 		request := pb.StartRequest{
 			Ids: []*pb.ContainerIdList{
 				{
-					ContainerIds: containerIds,
+					ContainerIds: containerIDs,
 				},
 			},
 		}
@@ -164,7 +164,7 @@ func (s *ContainerServer) Start(ctx context.Context, in *pb.StartRequest) (*pb.S
 		}
 
 		for i := range subReply.FailInfos {
-			subReply.FailInfos[i].NodeInfo = nodeInfo.Address
+			subReply.FailInfos[i].NodeInfo = n.Address
 		}
 		reply.FailInfos = append(reply.FailInfos, subReply.FailInfos...)
 		reply.OkIds = append(reply.OkIds, subReply.OkIds...)
@@ -183,21 +183,19 @@ func (s *ContainerServer) Start(ctx context.Context, in *pb.StartRequest) (*pb.S
 }
 
 func (s *ContainerServer) Stop(ctx context.Context, in *pb.StopRequest) (*pb.StopReply, error) {
-	reply := pb.StopReply{}
-
 	if len(in.Ids) <= 0 {
 		return nil, rpc.ErrInvalidArgument
 	}
 
+	var reply pb.StopReply
 	for _, c := range in.Ids {
-		nodeId, containerIds := c.NodeId, uniqueString(c.ContainerIds)
-
-		if nodeId <= 0 || len(containerIds) <= 0 {
+		containerIDs := uniqueString(c.ContainerIds)
+		if c.NodeId <= 0 || len(containerIDs) <= 0 {
 			log.Warnf("stop container ErrInvalidArgument")
 			continue
 		}
 
-		nodeInfo, err := db.QueryNodeByID(nodeId)
+		n, err := db.QueryNodeByID(c.NodeId)
 		if err != nil {
 			if err == db.ErrRecordNotFound {
 				log.Warnf("stop container ErrRecordNotFound")
@@ -207,7 +205,7 @@ func (s *ContainerServer) Stop(ctx context.Context, in *pb.StopRequest) (*pb.Sto
 			continue
 		}
 
-		conn, err := getAgentConn(nodeInfo.Address)
+		conn, err := getAgentConn(n.Address)
 		if err != nil {
 			log.Warnf("stop container ErrInternal")
 			continue
@@ -220,7 +218,7 @@ func (s *ContainerServer) Stop(ctx context.Context, in *pb.StopRequest) (*pb.Sto
 		request := pb.StopRequest{
 			Ids: []*pb.ContainerIdList{
 				{
-					ContainerIds: containerIds,
+					ContainerIds: containerIDs,
 				},
 			},
 		}
@@ -232,7 +230,7 @@ func (s *ContainerServer) Stop(ctx context.Context, in *pb.StopRequest) (*pb.Sto
 		}
 
 		for i := range subReply.FailInfos {
-			subReply.FailInfos[i].NodeInfo = nodeInfo.Address
+			subReply.FailInfos[i].NodeInfo = n.Address
 		}
 		reply.FailInfos = append(reply.FailInfos, subReply.FailInfos...)
 		reply.OkIds = append(reply.OkIds, subReply.OkIds...)
@@ -251,21 +249,19 @@ func (s *ContainerServer) Stop(ctx context.Context, in *pb.StopRequest) (*pb.Sto
 }
 
 func (s *ContainerServer) Restart(ctx context.Context, in *pb.RestartRequest) (*pb.RestartReply, error) {
-	reply := pb.RestartReply{}
-
 	if len(in.Ids) <= 0 {
 		return nil, rpc.ErrInvalidArgument
 	}
 
+	var reply pb.RestartReply
 	for _, c := range in.Ids {
-		nodeId, containerIds := c.NodeId, uniqueString(c.ContainerIds)
-
-		if nodeId <= 0 || len(containerIds) <= 0 {
+		containerIDs := uniqueString(c.ContainerIds)
+		if c.NodeId <= 0 || len(containerIDs) <= 0 {
 			log.Warnf("restart container ErrInvalidArgument")
 			continue
 		}
 
-		nodeInfo, err := db.QueryNodeByID(nodeId)
+		n, err := db.QueryNodeByID(c.NodeId)
 		if err != nil {
 			if err == db.ErrRecordNotFound {
 				log.Warnf("restart container ErrRecordNotFound")
@@ -275,7 +271,7 @@ func (s *ContainerServer) Restart(ctx context.Context, in *pb.RestartRequest) (*
 			continue
 		}
 
-		conn, err := getAgentConn(nodeInfo.Address)
+		conn, err := getAgentConn(n.Address)
 		if err != nil {
 			log.Warnf("restart container ErrInternal")
 			continue
@@ -288,7 +284,7 @@ func (s *ContainerServer) Restart(ctx context.Context, in *pb.RestartRequest) (*
 		request := pb.RestartRequest{
 			Ids: []*pb.ContainerIdList{
 				{
-					ContainerIds: containerIds,
+					ContainerIds: containerIDs,
 				},
 			},
 		}
@@ -300,7 +296,7 @@ func (s *ContainerServer) Restart(ctx context.Context, in *pb.RestartRequest) (*
 		}
 
 		for i := range subReply.FailInfos {
-			subReply.FailInfos[i].NodeInfo = nodeInfo.Address
+			subReply.FailInfos[i].NodeInfo = n.Address
 		}
 		reply.FailInfos = append(reply.FailInfos, subReply.FailInfos...)
 		reply.OkIds = append(reply.OkIds, subReply.OkIds...)
@@ -319,21 +315,19 @@ func (s *ContainerServer) Restart(ctx context.Context, in *pb.RestartRequest) (*
 }
 
 func (s *ContainerServer) Remove(ctx context.Context, in *pb.RemoveRequest) (*pb.RemoveReply, error) {
-	reply := pb.RemoveReply{}
 	if len(in.Ids) <= 0 {
 		return nil, rpc.ErrInvalidArgument
 	}
 
+	var reply pb.RemoveReply
 	for _, c := range in.Ids {
-		nodeId, containerIds := c.NodeId, uniqueString(c.ContainerIds)
-		log.Debugf("remove container, nodeId: %v", nodeId)
-
-		if nodeId <= 0 || len(containerIds) <= 0 {
+		containerIDs := uniqueString(c.ContainerIds)
+		if c.NodeId <= 0 || len(containerIDs) <= 0 {
 			log.Warnf("remove container ErrInvalidArgument")
 			continue
 		}
 
-		nodeInfo, err := db.QueryNodeByID(nodeId)
+		n, err := db.QueryNodeByID(c.NodeId)
 		if err != nil {
 			if err == db.ErrRecordNotFound {
 				log.Warnf("remove container ErrRecordNotFound")
@@ -343,7 +337,7 @@ func (s *ContainerServer) Remove(ctx context.Context, in *pb.RemoveRequest) (*pb
 			continue
 		}
 
-		conn, err := getAgentConn(nodeInfo.Address)
+		conn, err := getAgentConn(n.Address)
 		if err != nil {
 			log.Warnf("remove container ErrInternal")
 			continue
@@ -356,7 +350,7 @@ func (s *ContainerServer) Remove(ctx context.Context, in *pb.RemoveRequest) (*pb
 		request := pb.RemoveRequest{
 			Ids: []*pb.ContainerIdList{
 				{
-					ContainerIds: containerIds,
+					ContainerIds: containerIDs,
 				},
 			},
 		}
@@ -368,7 +362,7 @@ func (s *ContainerServer) Remove(ctx context.Context, in *pb.RemoveRequest) (*pb
 		}
 
 		for i := range subReply.FailInfos {
-			subReply.FailInfos[i].NodeInfo = nodeInfo.Address
+			subReply.FailInfos[i].NodeInfo = n.Address
 		}
 		reply.FailInfos = append(reply.FailInfos, subReply.FailInfos...)
 		reply.OkIds = append(reply.OkIds, subReply.OkIds...)
@@ -391,29 +385,20 @@ func (s *ContainerServer) Inspect(ctx context.Context, in *pb.InspectRequest) (*
 		return nil, rpc.ErrInvalidArgument
 	}
 
-	nodeInfo, err := db.QueryNodeByID(in.NodeId)
+	n, err := db.QueryNodeByID(in.NodeId)
 	if err != nil {
 		if err == db.ErrRecordNotFound {
 			return nil, rpc.ErrNotFound
 		}
-		return nil, rpc.ErrInternal
+		return nil, rpc.ErrDatabaseFail
 	}
 
-	conn, err := getAgentConn(nodeInfo.Address)
+	conn, err := getAgentConn(n.Address)
 	if err != nil {
 		return nil, rpc.ErrInternal
 	}
 
-	cli := pb.NewContainerClient(conn)
-	ctx_, cancel := context.WithTimeout(context.Background(), time.Second*10)
-	defer cancel()
-	agentReply, err := cli.Inspect(ctx_, in)
-	if err != nil {
-		log.Warnf("Inspect container: %v", err)
-		return nil, err
-	}
-
-	return agentReply, nil
+	return pb.NewContainerClient(conn).Inspect(ctx, in)
 }
 
 func (s *ContainerServer) Update(ctx context.Context, in *pb.UpdateRequest) (*pb.UpdateReply, error) {
@@ -421,55 +406,37 @@ func (s *ContainerServer) Update(ctx context.Context, in *pb.UpdateRequest) (*pb
 		return nil, rpc.ErrInvalidArgument
 	}
 
-	nodeInfo, err := db.QueryNodeByID(in.NodeId)
+	n, err := db.QueryNodeByID(in.NodeId)
 	if err != nil {
 		if err == db.ErrRecordNotFound {
 			return nil, rpc.ErrNotFound
 		}
-		return nil, rpc.ErrInternal
+		return nil, rpc.ErrDatabaseFail
 	}
 
-	conn, err := getAgentConn(nodeInfo.Address)
+	conn, err := getAgentConn(n.Address)
 	if err != nil {
 		return nil, rpc.ErrInternal
 	}
 
-	cli := pb.NewContainerClient(conn)
-	ctx_, cancel := context.WithTimeout(context.Background(), time.Second*10)
-	defer cancel()
-	agentReply, err := cli.Update(ctx_, in)
-	if err != nil {
-		log.Warnf("Update container: %v", err)
-		return nil, err
-	}
-
-	return agentReply, nil
+	return pb.NewContainerClient(conn).Update(ctx, in)
 }
 
 func (s *ContainerServer) MonitorHistory(ctx context.Context, in *pb.MonitorHistoryRequest) (*pb.MonitorHistoryReply, error) {
-	nodeInfo, err := db.QueryNodeByID(in.NodeId)
+	n, err := db.QueryNodeByID(in.NodeId)
 	if err != nil {
 		if err == db.ErrRecordNotFound {
 			return nil, rpc.ErrNotFound
 		}
-		return nil, rpc.ErrInternal
+		return nil, rpc.ErrDatabaseFail
 	}
 
-	conn, err := getAgentConn(nodeInfo.Address)
+	conn, err := getAgentConn(n.Address)
 	if err != nil {
 		return nil, rpc.ErrInternal
 	}
 
-	cli := pb.NewContainerClient(conn)
-	ctx_, cancel := context.WithTimeout(context.Background(), time.Second*10)
-	defer cancel()
-	agentReply, err := cli.MonitorHistory(ctx_, in)
-	if err != nil {
-		log.Warnf("monitor history: %v", err)
-		return nil, err
-	}
-
-	return agentReply, nil
+	return pb.NewContainerClient(conn).MonitorHistory(ctx, in)
 }
 
 func (s *ContainerServer) ListTemplate(ctx context.Context, in *pb.ListTemplateRequest) (*pb.ListTemplateReply, error) {
@@ -596,137 +563,88 @@ func (*ContainerServer) CreateBackup(ctx context.Context, in *pb.CreateBackupReq
 		return nil, rpc.ErrInvalidArgument
 	}
 
-	nodeInfo, err := db.QueryNodeByID(in.NodeId)
+	n, err := db.QueryNodeByID(in.NodeId)
 	if err != nil {
 		if err == db.ErrRecordNotFound {
 			return nil, rpc.ErrNotFound
 		}
-		return nil, rpc.ErrInternal
+		return nil, rpc.ErrDatabaseFail
 	}
 
-	conn, err := getAgentConn(nodeInfo.Address)
+	conn, err := getAgentConn(n.Address)
 	if err != nil {
 		return nil, rpc.ErrInternal
 	}
 
-	cli := pb.NewContainerClient(conn)
-	ctx_, cancel := context.WithTimeout(context.Background(), time.Second*10)
-	defer cancel()
-	subReply, err := cli.CreateBackup(ctx_, in)
-	if err != nil {
-		log.Infof("agent CreateBackup err=%v", err)
-		return nil, rpc.ErrInternal
-	}
-
-	return subReply, nil
+	return pb.NewContainerClient(conn).CreateBackup(ctx, in)
 }
 
 func (*ContainerServer) UpdateBackup(ctx context.Context, in *pb.UpdateBackupRequest) (*pb.UpdateBackupReply, error) {
-	if !args.IsValidBackupDesc(in.BackupDesc) {
-		return nil, status.Errorf(codes.InvalidArgument, "参数错误：备份描述无效")
-	}
-
-	nodeInfo, err := db.QueryNodeByID(in.NodeId)
+	n, err := db.QueryNodeByID(in.NodeId)
 	if err != nil {
 		if err == db.ErrRecordNotFound {
 			return nil, rpc.ErrNotFound
 		}
-		return nil, rpc.ErrInternal
+		return nil, rpc.ErrDatabaseFail
 	}
 
-	conn, err := getAgentConn(nodeInfo.Address)
+	conn, err := getAgentConn(n.Address)
 	if err != nil {
 		return nil, rpc.ErrInternal
 	}
 
-	cli := pb.NewContainerClient(conn)
-	ctx_, cancel := context.WithTimeout(context.Background(), time.Second*10)
-	defer cancel()
-	subReply, err := cli.UpdateBackup(ctx_, in)
-	if err != nil {
-		log.Infof("agent UpdateBackup err=%v", err)
-		return nil, rpc.ErrInternal
-	}
-
-	return subReply, nil
+	return pb.NewContainerClient(conn).UpdateBackup(ctx, in)
 }
 
 func (*ContainerServer) RemoveBackup(ctx context.Context, in *pb.RemoveBackupRequest) (*pb.RemoveBackupReply, error) {
-	nodeInfo, err := db.QueryNodeByID(in.NodeId)
+	n, err := db.QueryNodeByID(in.NodeId)
 	if err != nil {
 		if err == db.ErrRecordNotFound {
 			return nil, rpc.ErrNotFound
 		}
-		return nil, rpc.ErrInternal
+		return nil, rpc.ErrDatabaseFail
 	}
 
-	conn, err := getAgentConn(nodeInfo.Address)
+	conn, err := getAgentConn(n.Address)
 	if err != nil {
 		return nil, rpc.ErrInternal
 	}
 
-	cli := pb.NewContainerClient(conn)
-	ctx_, cancel := context.WithTimeout(context.Background(), time.Second*10)
-	defer cancel()
-	subReply, err := cli.RemoveBackup(ctx_, in)
-	if err != nil {
-		log.Infof("agent RemoveBackup err=%v", err)
-		return nil, rpc.ErrInternal
-	}
-
-	return subReply, nil
+	return pb.NewContainerClient(conn).RemoveBackup(ctx, in)
 }
 
 func (*ContainerServer) ResumeBackup(ctx context.Context, in *pb.ResumeBackupRequest) (*pb.ResumeBackupReply, error) {
-	nodeInfo, err := db.QueryNodeByID(in.NodeId)
+	n, err := db.QueryNodeByID(in.NodeId)
 	if err != nil {
 		if err == db.ErrRecordNotFound {
 			return nil, rpc.ErrNotFound
 		}
-		return nil, rpc.ErrInternal
+		return nil, rpc.ErrDatabaseFail
 	}
 
-	conn, err := getAgentConn(nodeInfo.Address)
+	conn, err := getAgentConn(n.Address)
 	if err != nil {
 		return nil, rpc.ErrInternal
 	}
 
-	cli := pb.NewContainerClient(conn)
-	ctx_, cancel := context.WithTimeout(context.Background(), time.Second*10)
-	defer cancel()
-	subReply, err := cli.ResumeBackup(ctx_, in)
-	if err != nil {
-		log.Infof("agent ResumeBackup err=%v", err)
-		return nil, rpc.ErrInternal
-	}
-
-	return subReply, nil
+	return pb.NewContainerClient(conn).ResumeBackup(ctx, in)
 }
 
 func (*ContainerServer) ListBackup(ctx context.Context, in *pb.ListBackupRequest) (*pb.ListBackupReply, error) {
-	nodeInfo, err := db.QueryNodeByID(in.NodeId)
+	n, err := db.QueryNodeByID(in.NodeId)
 	if err != nil {
 		if err == db.ErrRecordNotFound {
 			return nil, rpc.ErrNotFound
 		}
-		return nil, rpc.ErrInternal
+		return nil, rpc.ErrDatabaseFail
 	}
 
-	conn, err := getAgentConn(nodeInfo.Address)
+	conn, err := getAgentConn(n.Address)
 	if err != nil {
 		return nil, rpc.ErrInternal
 	}
 
-	cli := pb.NewContainerClient(conn)
-	ctx_, cancel := context.WithTimeout(context.Background(), time.Second*10)
-	defer cancel()
-	subReply, err := cli.ListBackup(ctx_, in)
-	if err != nil {
-		log.Infof("agent ListBackup err=%v", err)
-		return nil, rpc.ErrInternal
-	}
-
-	return subReply, nil
+	return pb.NewContainerClient(conn).ListBackup(ctx, in)
 }
 
 func (*ContainerServer) exportBackupImageToClient(r pb.Container_ExportBackupClient, w pb.Container_ExportBackupServer) error {
@@ -779,7 +697,7 @@ func (s *ContainerServer) ExportBackup(in *pb.ExportBackupRequest, stream pb.Con
 		return rpc.ErrInvalidArgument
 	}
 
-	nodeInfo, err := db.QueryNodeByID(in.NodeId)
+	n, err := db.QueryNodeByID(in.NodeId)
 	if err != nil {
 		log.Infof("QueryNodeByID err=%v", err)
 		if err == db.ErrRecordNotFound {
@@ -788,7 +706,7 @@ func (s *ContainerServer) ExportBackup(in *pb.ExportBackupRequest, stream pb.Con
 		return rpc.ErrInternal
 	}
 
-	conn, err := getAgentConn(nodeInfo.Address)
+	conn, err := getAgentConn(n.Address)
 	if err != nil {
 		log.Infof("getAgentConn err=%v", err)
 		return rpc.ErrInternal

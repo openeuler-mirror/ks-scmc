@@ -258,8 +258,9 @@ func getPermID(method string) pb.PERMISSION {
 		"/network.Network/CreateIPtables",
 		"/network.Network/ModifyIPtables",
 		"/network.Network/RemoveIPtables",
-		"/network.Network/Create",
-		"/network.Network/Remove",
+		"/network.Network/CreateNic",
+		"/network.Network/RemoveNic",
+		"/network.Network/UpdateNic",
 		"/security.Security/UpdateProcProtection",
 		"/security.Security/UpdateFileProtection":
 		return pb.PERMISSION_CONTAINER_INFO_WRITE

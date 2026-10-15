@@ -106,6 +106,13 @@ func (s *ContainerServer) Create(ctx context.Context, in *pb.CreateRequest) (*pb
 	} else if !args.ContainerDesc.Check(in.Configs.Desc) {
 		return nil, status.Errorf(codes.InvalidArgument, "容器描述参数错误")
 	}
+	if in.Configs.ResouceLimit != nil {
+		r := in.Configs.ResouceLimit
+		if !args.Float64Resource.Check(r.CpuLimit, r.DiskLimit, r.MemoryLimit, r.MemorySoftLimit) ||
+			!args.Int64Resource.Check(r.CpuPrio) {
+			return nil, status.Errorf(codes.InvalidArgument, "容器资源参数错误")
+		}
+	}
 
 	n, err := db.QueryNodeByID(in.NodeId)
 	if err != nil {
@@ -412,6 +419,13 @@ func (s *ContainerServer) Update(ctx context.Context, in *pb.UpdateRequest) (*pb
 	if in.NodeId <= 0 || in.ContainerId == "" {
 		return nil, rpc.ErrInvalidArgument
 	}
+	if in.ResourceLimit != nil {
+		r := in.ResourceLimit
+		if !args.Float64Resource.Check(r.CpuLimit, r.DiskLimit, r.MemoryLimit, r.MemorySoftLimit) ||
+			!args.Int64Resource.Check(r.CpuPrio) {
+			return nil, status.Errorf(codes.InvalidArgument, "容器资源参数错误")
+		}
+	}
 
 	n, err := db.QueryNodeByID(in.NodeId)
 	if err != nil {
@@ -480,6 +494,14 @@ func (s *ContainerServer) CreateTemplate(ctx context.Context, in *pb.CreateTempl
 		return nil, status.Errorf(codes.InvalidArgument, "模板描述参数错误")
 	}
 
+	if in.Data.Conf.ResouceLimit != nil {
+		r := in.Data.Conf.ResouceLimit
+		if !args.Float64Resource.Check(r.CpuLimit, r.DiskLimit, r.MemoryLimit, r.MemorySoftLimit) ||
+			!args.Int64Resource.Check(r.CpuPrio) {
+			return nil, status.Errorf(codes.InvalidArgument, "容器资源参数错误")
+		}
+	}
+
 	id, err := db.CreateTemplate(ctx, &db.ContainerTemplates{
 		Name:       in.Data.Conf.Name,
 		ConfigJSON: in.Data.Conf,
@@ -505,6 +527,13 @@ func (s *ContainerServer) UpdateTemplate(ctx context.Context, in *pb.UpdateTempl
 		return nil, status.Errorf(codes.InvalidArgument, "模板名参数错误")
 	} else if !args.ContainerDesc.Check(in.Data.Conf.Desc) {
 		return nil, status.Errorf(codes.InvalidArgument, "模板描述参数错误")
+	}
+	if in.Data.Conf.ResouceLimit != nil {
+		r := in.Data.Conf.ResouceLimit
+		if !args.Float64Resource.Check(r.CpuLimit, r.DiskLimit, r.MemoryLimit, r.MemorySoftLimit) ||
+			!args.Int64Resource.Check(r.CpuPrio) {
+			return nil, status.Errorf(codes.InvalidArgument, "容器资源参数错误")
+		}
 	}
 
 	data, err := db.FindTemplate(in.Data.Id)

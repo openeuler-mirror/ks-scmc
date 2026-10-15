@@ -8,7 +8,6 @@ import (
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/proto"
 
-	"scmc/common"
 	"scmc/model/db"
 	"scmc/rpc/middleware/auth"
 	"scmc/rpc/pb/logging"
@@ -46,7 +45,7 @@ func rpcNeedLog(method string) bool {
 
 func UnaryInterceptor() grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (reply interface{}, err error) {
-		if !common.NeedCheckAuth() || !rpcNeedLog(info.FullMethod) {
+		if !rpcNeedLog(info.FullMethod) {
 			goto handle
 		}
 

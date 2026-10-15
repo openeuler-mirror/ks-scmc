@@ -25,13 +25,13 @@ fi
 OS_VERSION=`cat /etc/.kyinfo | grep ^milestone | awk -F ' ' '{ print $3 }'`
 echo "OS version:${OS_VERSION}"
 
-if [[ "$OS_VERSION" == "$VER_PROJECK_NAME"* ]];then
-    DEST_DIR="$VER_PROJECK_NAME"
-else
-    echo "OS version mismatched, PROJECK OS Version:$VER_PROJECK_NAME"
+ALLOWED_OS_VERSION="3.3-6C"
+if [[ "$OS_VERSION" == "$ALLOWED_OS_VERSION"* ]];then
+    echo "OS version mismatched, Allowed OS Version:$ALLOWED_OS_VERSION"
     exit 1
 fi
 
+DEST_DIR="$VER_PROJECK_NAME"
 if [ -d ${KS_PATH}/${PROJECK_NAME}/${DEST_DIR} ]; then
 	chmod +x ${KS_PATH}/${PROJECK_NAME}/${DEST_DIR}/install-${PROJECK_NAME}.sh && ${KS_PATH}/${PROJECK_NAME}/${DEST_DIR}/install-${PROJECK_NAME}.sh ${KS_PATH}/${PROJECK_NAME}/${DEST_DIR}
 

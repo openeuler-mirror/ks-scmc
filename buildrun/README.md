@@ -31,6 +31,8 @@ gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-kylin-release
 2 change /etc/yum.conf make keepcache=1
 
 3 get depend packages
-yum install docker-ce coreutils bash socat systemd lsyncd rsync xinetd keepalived ks-license-client ks-license-gui-client  
+yum install docker-ce coreutils bash socat systemd lsyncd rsync xinetd keepalived ks-license-client ks-license-gui-client kernel-headers kernel
 
-4 build run 
+4 change ALLOWED_OS_VERSION in ks-run/install.sh
+
+5 build run 

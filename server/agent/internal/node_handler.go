@@ -5,6 +5,9 @@ import (
 
 	"github.com/shirou/gopsutil/disk"
 	"github.com/shirou/gopsutil/mem"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
+
 	log "github.com/sirupsen/logrus"
 
 	"scmc/model/docker"
@@ -51,9 +54,9 @@ func nodeStatus() (*pb.NodeStatus, error) {
 		log.Infof("disk.Usage err=%v", err)
 	} else {
 		ret.DiskStat = &pb.DiskStat{
-			Total:          diskUsage.Total,
-			Free:           diskUsage.Free,
-			Used:           diskUsage.Used,
+			Total:          diskUsage.Total / megaBytes,
+			Free:           diskUsage.Free / megaBytes,
+			Used:           diskUsage.Used / megaBytes,
 			UsedPercentage: diskUsage.UsedPercent,
 		}
 	}
@@ -79,4 +82,37 @@ func (*NodeServer) Status(ctx context.Context, in *pb.StatusRequest) (*pb.Status
 	return &pb.StatusReply{
 		StatusList: []*pb.NodeStatus{s},
 	}, nil
+}
+
+func (s *NodeServer) Update(ctx context.Context, in *pb.UpdateRequest) (*pb.UpdateReply, error) {
+	if in.RscLimit == nil {
+		return nil, rpc.ErrInvalidArgument
+	}
+
+	if memInfo, err := mem.VirtualMemory(); err != nil {
+		log.Warnf("VirtualMemory err=%v", err)
+		return nil, rpc.ErrInternal
+	} else {
+		memTotal := float64(memInfo.Total / megaBytes)
+		if memTotal < in.RscLimit.MemoryLimit {
+			return nil, status.Errorf(codes.InvalidArgument, "内存参数超过上限%.0f", memTotal)
+		}
+	}
+
+	cpuNUM := float64(numCPU())
+	if cpuNUM < in.RscLimit.CpuLimit {
+		return nil, status.Errorf(codes.InvalidArgument, "CPU参数超过上限%.0f", cpuNUM)
+	}
+
+	if diskUsage, err := disk.Usage("/"); err != nil {
+		log.Warnf("disk.Usage err=%v", err)
+		return nil, rpc.ErrInternal
+	} else {
+		diskTotal := float64(diskUsage.Total / megaBytes)
+		if diskTotal < in.RscLimit.DiskLimit {
+			return nil, status.Errorf(codes.InvalidArgument, "磁盘参数超过上限%.0f", diskTotal)
+		}
+	}
+
+	return &pb.UpdateReply{}, nil
 }

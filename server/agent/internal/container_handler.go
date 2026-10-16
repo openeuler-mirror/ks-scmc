@@ -21,6 +21,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
+	"scmc/common"
 	"scmc/model/authz"
 	"scmc/model/db"
 	"scmc/model/docker"
@@ -61,7 +62,7 @@ func dockerResourceConfig(in *pb.ResourceLimit) container.Resources {
 		r.CPUShares = toCPUShares(in.CpuPrio)
 		r.Memory = int64(in.MemoryLimit * megaBytes)
 		r.MemoryReservation = int64(in.MemorySoftLimit * megaBytes)
-		r.MemorySwap = int64(in.MemoryLimit * megaBytes) // prevent error: Memory limit should be smaller than already set memoryswap limit
+		r.MemorySwap = -1 // prevent contaienr start error
 	}
 
 	return r
@@ -177,7 +178,7 @@ func (s *ContainerServer) List(ctx context.Context, in *pb.ListRequest) (*pb.Lis
 		}
 
 		diskStat := &pb.DiskStat{
-			Used: float64(c.SizeRootFs) / 1e6, // 与docker client保持一致
+			Used: float64(c.SizeRw) / 1e6, // 与docker client保持一致
 		}
 
 		if v, ok := c.Labels["KS_SCMC_DISK_LIMIT"]; ok {
@@ -332,13 +333,12 @@ func (s *ContainerServer) create(configs *pb.ContainerConfigs) (string, error) {
 		})
 	}
 
-	if configs.EnableGraphic {
-		if err := containerGraphicSetup(configs.Name, &config, &hostConfig); err != nil {
-			log.Infof("containerGraphicSetup err=%v", err)
-			return "", rpc.ErrInternal
-		}
-		config.Labels["KS_SCMC_GRAPHIC"] = "1"
+	// configs.EnableGraphic 默认开启，后面应用里有图形化选项
+	if err := containerGraphicSetup(configs.Name, &config, &hostConfig); err != nil {
+		log.Infof("containerGraphicSetup err=%v", err)
+		return "", rpc.ErrInternal
 	}
+	config.Labels["KS_SCMC_GRAPHIC"] = "1"
 
 	if configs.RestartPolicy != nil {
 		hostConfig.RestartPolicy.Name = configs.RestartPolicy.Name
@@ -362,7 +362,7 @@ func (s *ContainerServer) create(configs *pb.ContainerConfigs) (string, error) {
 			EndpointsConfig: make(map[string]*network.EndpointSettings, len(configs.Networks)),
 		}
 		for _, v := range configs.Networks {
-			if err := checkNetworkInfo("", v.Interface, &v.IpAddress, int(v.IpPrefixLen)); err != nil {
+			if err := checkNetworkInfo(v.Interface, "", &v.IpAddress, int(v.IpPrefixLen)); err != nil {
 				return "", err
 			}
 
@@ -604,7 +604,7 @@ func (s *ContainerServer) Update(ctx context.Context, in *pb.UpdateRequest) (*pb
 
 	if in.Networks != nil {
 		for _, v := range in.Networks {
-			if err := checkNetworkInfo(in.ContainerId, v.Interface, &v.IpAddress, int(v.IpPrefixLen)); err != nil {
+			if err := checkNetworkInfo(v.Interface, in.ContainerId, &v.IpAddress, int(v.IpPrefixLen)); err != nil {
 				return nil, err
 			}
 		}
@@ -863,7 +863,11 @@ func (s *ContainerServer) inspect(id string, backup bool) (*pb.ContainerConfigs,
 	}
 
 	if info.Config != nil {
-		configs.Image = info.Config.Image
+		// if image tag exists, use the tag, if not use image id
+		if _, _, err := cli.ImageInspectWithRaw(context.Background(), info.Config.Image); err == nil {
+			configs.Image = info.Config.Image
+		}
+
 		if v, ok := info.Config.Labels["KS_SCMC_DESC"]; ok {
 			configs.Desc = v
 		}
@@ -917,9 +921,9 @@ func (s *ContainerServer) inspect(id string, backup bool) (*pb.ContainerConfigs,
 	}
 
 	if info.NetworkSettings != nil {
-		for k, m := range info.NetworkSettings.Networks {
-			if k == "bridge" {
-				continue // "bridge" 是默认创建的网络连接, 需要忽略
+		for iface, m := range info.NetworkSettings.Networks {
+			if isPredefinedNetwork(iface) {
+				continue // 需要忽略默认创建的网络连接
 			}
 
 			var ipAddr string
@@ -934,7 +938,7 @@ func (s *ContainerServer) inspect(id string, backup bool) (*pb.ContainerConfigs,
 			}
 
 			configs.Networks = append(configs.Networks, &pb.NetworkConfig{
-				Interface:   k,
+				Interface:   iface,
 				ContainerId: info.ID,
 				IpAddress:   ipAddr,
 				IpPrefixLen: int32(m.IPPrefixLen),
@@ -1041,6 +1045,10 @@ func (*ContainerServer) CreateBackup(ctx context.Context, in *pb.CreateBackupReq
 
 	b, err := litedb.CreateContainerBackup(cfgs.UUID, in.BackupName, in.BackupDesc)
 	if err != nil {
+		if strings.HasPrefix(err.Error(), "UNIQUE constraint failed") {
+			return nil, status.Errorf(codes.InvalidArgument, "已存在同名备份")
+		}
+
 		return nil, rpc.ErrInternal
 	}
 
@@ -1237,31 +1245,43 @@ func addBackupJob(b *litedb.ContainerBackup) {
 		return
 	}
 
-	info, err := cli.ContainerInspect(context.Background(), b.ContainerID)
+	ctx, cancel := context.WithTimeout(context.Background(), common.Config.Agent.BackupTimeoutDuration())
+	defer cancel()
+
+	info, err := cli.ContainerInspect(ctx, b.ContainerID)
 	if err != nil {
 		log.Warnf("inspect container=%v err=%v", b.ContainerID, err)
 		b.Status = 2
+		if err := litedb.UpdateContainerBackup(b); err != nil {
+			log.Errorf("db.UpdateContainerBackup err=%v", err)
+		}
 		return
 	}
 
 	if info.Config == nil {
 		log.Warnf("inspect container=%v .Config=nil", b.ContainerID)
 		b.Status = 2
+		if err := litedb.UpdateContainerBackup(b); err != nil {
+			log.Errorf("db.UpdateContainerBackup err=%v", err)
+		}
 		return
 	}
 
 	b.ImageRef = strings.Split(info.Config.Image, ":")[0] + ":" + b.BackupName
-	newImage, err := cli.ContainerCommit(context.Background(), b.ContainerID, types.ContainerCommitOptions{
+	newImage, err := cli.ContainerCommit(ctx, b.ContainerID, types.ContainerCommitOptions{
 		Reference: b.ImageRef,
 		Pause:     true,
 	})
 	if err != nil {
 		log.Warnf("commit container=%v err=%v", b.ContainerID, err)
 		b.Status = 2
+		if err := litedb.UpdateContainerBackup(b); err != nil {
+			log.Errorf("db.UpdateContainerBackup err=%v", err)
+		}
 		return
 	}
 
-	imageInfo, _, err := cli.ImageInspectWithRaw(context.Background(), newImage.ID)
+	imageInfo, _, err := cli.ImageInspectWithRaw(ctx, newImage.ID)
 	if err != nil {
 		log.Warnf("inspect image=%v err=%v", newImage.ID, err)
 		b.Status = 2
@@ -1308,9 +1328,22 @@ func (*ContainerServer) ExportBackup(in *pb.ExportBackupRequest, stream pb.Conta
 		log.Warnf("ImageSave err=%v", err)
 		return rpc.ErrInternal
 	}
-
-	buf := make([]byte, 16*1024)
 	defer r.Close()
+
+	chunk := pb.ExportBackupReply{
+		ImgSize:    img.Size,
+		ImgName:    strings.Split(b.ImageRef, ":")[0],
+		ImgVersion: in.ImgVersion,
+	}
+	if err := stream.Send(&chunk); err != nil {
+		log.Warnf("ExportBackup send image info err=%v", err)
+		return rpc.ErrInternal
+	}
+
+	chunk.ImgSize = 0
+	chunk.ImgName = ""
+	chunk.ImgVersion = ""
+	buf := make([]byte, 16*1024)
 	for {
 		n, err := r.Read(buf)
 		if err != nil {
@@ -1320,13 +1353,7 @@ func (*ContainerServer) ExportBackup(in *pb.ExportBackupRequest, stream pb.Conta
 			log.Warnf("read image content err=%v", err)
 			return rpc.ErrInternal
 		}
-
-		chunk := pb.ExportBackupReply{
-			Data:       buf[:n],
-			ImgSize:    img.Size,
-			ImgName:    strings.Split(b.ImageRef, ":")[0],
-			ImgVersion: in.ImgVersion,
-		}
+		chunk.Data = buf[:n]
 		if err := stream.Send(&chunk); err != nil {
 			log.Warnf("ExportBackup send stream err=%v", err)
 			return rpc.ErrInternal

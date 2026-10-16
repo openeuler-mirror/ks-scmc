@@ -24,8 +24,6 @@ type LoggingClient interface {
 	ListWarn(ctx context.Context, in *ListWarnRequest, opts ...grpc.CallOption) (*ListWarnReply, error)
 	// 设置告警事件已读
 	ReadWarn(ctx context.Context, in *ReadWarnRequest, opts ...grpc.CallOption) (*ReadWarnReply, error)
-	// 实时订阅告警日志
-	SubscribeWarn(ctx context.Context, in *SubscribeWarnRequest, opts ...grpc.CallOption) (Logging_SubscribeWarnClient, error)
 }
 
 type loggingClient struct {
@@ -63,38 +61,6 @@ func (c *loggingClient) ReadWarn(ctx context.Context, in *ReadWarnRequest, opts 
 	return out, nil
 }
 
-func (c *loggingClient) SubscribeWarn(ctx context.Context, in *SubscribeWarnRequest, opts ...grpc.CallOption) (Logging_SubscribeWarnClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Logging_ServiceDesc.Streams[0], "/logging.Logging/SubscribeWarn", opts...)
-	if err != nil {
-		return nil, err
-	}
-	x := &loggingSubscribeWarnClient{stream}
-	if err := x.ClientStream.SendMsg(in); err != nil {
-		return nil, err
-	}
-	if err := x.ClientStream.CloseSend(); err != nil {
-		return nil, err
-	}
-	return x, nil
-}
-
-type Logging_SubscribeWarnClient interface {
-	Recv() (*SubscribeWarnReply, error)
-	grpc.ClientStream
-}
-
-type loggingSubscribeWarnClient struct {
-	grpc.ClientStream
-}
-
-func (x *loggingSubscribeWarnClient) Recv() (*SubscribeWarnReply, error) {
-	m := new(SubscribeWarnReply)
-	if err := x.ClientStream.RecvMsg(m); err != nil {
-		return nil, err
-	}
-	return m, nil
-}
-
 // LoggingServer is the server API for Logging service.
 // All implementations must embed UnimplementedLoggingServer
 // for forward compatibility
@@ -105,8 +71,6 @@ type LoggingServer interface {
 	ListWarn(context.Context, *ListWarnRequest) (*ListWarnReply, error)
 	// 设置告警事件已读
 	ReadWarn(context.Context, *ReadWarnRequest) (*ReadWarnReply, error)
-	// 实时订阅告警日志
-	SubscribeWarn(*SubscribeWarnRequest, Logging_SubscribeWarnServer) error
 	mustEmbedUnimplementedLoggingServer()
 }
 
@@ -122,9 +86,6 @@ func (UnimplementedLoggingServer) ListWarn(context.Context, *ListWarnRequest) (*
 }
 func (UnimplementedLoggingServer) ReadWarn(context.Context, *ReadWarnRequest) (*ReadWarnReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ReadWarn not implemented")
-}
-func (UnimplementedLoggingServer) SubscribeWarn(*SubscribeWarnRequest, Logging_SubscribeWarnServer) error {
-	return status.Errorf(codes.Unimplemented, "method SubscribeWarn not implemented")
 }
 func (UnimplementedLoggingServer) mustEmbedUnimplementedLoggingServer() {}
 
@@ -193,27 +154,6 @@ func _Logging_ReadWarn_Handler(srv interface{}, ctx context.Context, dec func(in
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Logging_SubscribeWarn_Handler(srv interface{}, stream grpc.ServerStream) error {
-	m := new(SubscribeWarnRequest)
-	if err := stream.RecvMsg(m); err != nil {
-		return err
-	}
-	return srv.(LoggingServer).SubscribeWarn(m, &loggingSubscribeWarnServer{stream})
-}
-
-type Logging_SubscribeWarnServer interface {
-	Send(*SubscribeWarnReply) error
-	grpc.ServerStream
-}
-
-type loggingSubscribeWarnServer struct {
-	grpc.ServerStream
-}
-
-func (x *loggingSubscribeWarnServer) Send(m *SubscribeWarnReply) error {
-	return x.ServerStream.SendMsg(m)
-}
-
 // Logging_ServiceDesc is the grpc.ServiceDesc for Logging service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -234,12 +174,6 @@ var Logging_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Logging_ReadWarn_Handler,
 		},
 	},
-	Streams: []grpc.StreamDesc{
-		{
-			StreamName:    "SubscribeWarn",
-			Handler:       _Logging_SubscribeWarn_Handler,
-			ServerStreams: true,
-		},
-	},
+	Streams:  []grpc.StreamDesc{},
 	Metadata: "logging.proto",
 }

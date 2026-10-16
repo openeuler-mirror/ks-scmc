@@ -33,7 +33,6 @@ message CreateRequest {
     string name    = 1;
     string address = 2;
     string comment = 3;
-    string uuid    = 4;  // 内部RPC使用
 }
 
 message CreateReply {
@@ -41,8 +40,7 @@ message CreateReply {
 }
 
 message RemoveRequest {
-    repeated int64 ids  = 1;
-    string         uuid = 2;    // 内部RPC使用
+    repeated int64 ids = 1;
 }
 
 message RemoveReply {}

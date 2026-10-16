@@ -23,8 +23,7 @@
 
 ## 配置运行
 
-使用 ansible-playbook 执行自动化部署
-使用方法参考 [scripts/deploy/README.md](scripts/deploy/README.md)
+参考 [INSTALLING.md](./INSTALLING.md)
 
 ## 日志
 

@@ -18,6 +18,32 @@ import (
 	"scmc/model/iptables"
 )
 
+func checkIfs(ifs string) bool {
+	cli, err := docker.Client()
+	if err != nil {
+		return false
+	}
+
+	list, err := cli.NetworkList(context.Background(), types.NetworkListOptions{})
+	if err != nil {
+		log.Warnf("NetworkList: %v", err)
+		return false
+	}
+
+	for _, i := range list {
+		//不显示默认网卡
+		if i.Name == "bridge" || i.Name == "host" || i.Name == "none" {
+			continue
+		}
+		if ifs == i.Name {
+			return true
+		}
+	}
+
+	log.Errorf("%v not in docker nic", ifs)
+	return false
+}
+
 func ipv4ToUint(ipaddr net.IP) uint32 {
 	if ipaddr.To4() == nil {
 		return 0
@@ -43,17 +69,20 @@ func uintToIPv4(ipaddr uint32) net.IP {
 	return ip
 }
 
-func isPredefinedNetwork(name string) bool {
-	return name == "bridge" || name == "host" || name == "none"
-}
-
-func checkIPConflict(iface types.NetworkResource, containerId string, ipAddr *string, masklen int) bool {
-	if iface.IPAM.Config == nil || len(iface.IPAM.Config) < 1 {
+func checkConflict(containerId, ifs string, ipAddr *string, masklen int) bool {
+	cli, err := docker.Client()
+	if err != nil {
 		return false
 	}
 
-	cli, err := docker.Client()
+	//获取网卡信息
+	inspect, err := cli.NetworkInspect(context.Background(), ifs, types.NetworkInspectOptions{})
 	if err != nil {
+		log.Warnf("NetworkInspect: %v", err)
+		return false
+	}
+
+	if inspect.IPAM.Config == nil || len(inspect.IPAM.Config) < 1 {
 		return false
 	}
 
@@ -72,7 +101,7 @@ func checkIPConflict(iface types.NetworkResource, containerId string, ipAddr *st
 		}
 
 		for k, n := range c.NetworkSettings.Networks {
-			if k != iface.Name {
+			if k != ifs {
 				continue
 			}
 			if n.IPAMConfig != nil && n.IPAMConfig.IPv4Address != "" {
@@ -87,7 +116,7 @@ func checkIPConflict(iface types.NetworkResource, containerId string, ipAddr *st
 		}
 	}
 
-	nicIP, subnet, _ := net.ParseCIDR(iface.IPAM.Config[0].Subnet)
+	nicIP, subnet, _ := net.ParseCIDR(inspect.IPAM.Config[0].Subnet)
 
 	//判断输入的IP
 	if *ipAddr != "" {
@@ -132,30 +161,12 @@ func checkIPConflict(iface types.NetworkResource, containerId string, ipAddr *st
 	return false
 }
 
-func checkNetworkInfo(ifaceName, containerId string, ipAddr *string, masklen int) error {
-	cli, err := docker.Client()
-	if err != nil {
-		return err
-	}
-
-	// 检查网卡是否存在
-	if isPredefinedNetwork(ifaceName) {
-		log.Errorf("Unsupported interface=%v", ifaceName)
+func checkNetworkInfo(containerId, ifs string, ipAddr *string, masklen int) error {
+	if !checkIfs(ifs) {
 		return status.Error(codes.Internal, "网卡未找到")
 	}
 
-	iface, err := cli.NetworkInspect(context.Background(), ifaceName, types.NetworkInspectOptions{})
-	if err != nil {
-		log.Errorf("NetworkInspect networkID=%v err=%v", iface, err)
-		return status.Error(codes.Internal, "网卡未找到")
-	}
-
-	if *ipAddr == "" && iface.Driver == "bridge" {
-		// bridge 网卡通过docker自动分配IP
-		return nil
-	}
-
-	if !checkIPConflict(iface, containerId, ipAddr, masklen) {
+	if !checkConflict(containerId, ifs, ipAddr, masklen) {
 		return status.Error(codes.InvalidArgument, "IP冲突")
 	}
 
@@ -241,7 +252,7 @@ func getLinkIfs() []string {
 		}
 
 		//默认网卡
-		if isPredefinedNetwork(i.Name) {
+		if i.Name == "bridge" {
 			continue
 		}
 

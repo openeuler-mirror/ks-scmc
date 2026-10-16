@@ -57,9 +57,6 @@ func getConn() (*gorm.DB, error) {
 	if !m.HasTable(&AppEntry{}) {
 		m.CreateTable(&AppEntry{})
 	}
-	if !m.HasTable(&NodeInfo{}) {
-		m.CreateTable(&NodeInfo{})
-	}
 
 	conn, err := _db.DB()
 	if err != nil {

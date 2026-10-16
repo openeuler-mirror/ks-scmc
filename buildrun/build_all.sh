@@ -54,9 +54,11 @@ kspkgs=\$(ls | grep -E "^$g_software_name")
 if [[ ! \$deppgs == "" ]];then
     sudo yum localinstall \$deppgs -y --nogpgcheck --disablerepo=*
     if [[ \$? -ne 0 ]];then
-        echo "please make sure the repo is valid or remove all invalid repo"
+        echo "unknown error, please connact administrator"
         exit 1
     fi 
+
+    rpm -qa | grep kernel-kek-4.18.0-147.ky3.kb23.pg && rpm -e kernel-kek-4.18.0-147.ky3.kb23.pg
 fi
 
 sudo rpm -Uvh \$kspkgs --nodeps --force

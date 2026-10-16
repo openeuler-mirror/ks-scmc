@@ -28,14 +28,14 @@ xauth -f ${AUTH_FILE} add ${HOSTNAME}/unix:${DISPLAY_NUMBER} MIT-MAGIC-COOKIE-1 
 # Proxy with the :0 DISPLAY
 socat UNIX-LISTEN:${SOCK_DIR}/X${DISPLAY_NUMBER},fork TCP4:localhost:60${DISPLAY_NUMBER} 2>/dev/null &
 
-cat > ${BASE_DIR}/config.json << EOF
+cat > ${SOCK_DIR}/docker.json << EOF
 {
     "HttpHeaders": {
         "Authz-User": "KS-SCMC-SERVICE"
     }
 }
 EOF
-export DOCKER_CONFIG=${BASE_DIR}
+export DOCKER_CONFIG=${SOCK_DIR}
 
 # make sure container is running
 IS_RUNNING=$(docker inspect -f '{{ .State.Running }}' ${CONTAINER_NAME})

@@ -13,8 +13,6 @@ service Logging {
     rpc ListWarn(ListWarnRequest) returns (ListWarnReply) {}
     // 设置告警事件已读
     rpc ReadWarn(ReadWarnRequest) returns (ReadWarnReply) {}
-    // 实时订阅告警日志
-    rpc SubscribeWarn(SubscribeWarnRequest) returns (stream SubscribeWarnReply) {}
 }
 
 message Filter {
@@ -66,12 +64,6 @@ message ReadWarnRequest {
 }
 
 message ReadWarnReply {}
-
-message SubscribeWarnRequest {}
-
-message SubscribeWarnReply {
-    repeated WarnLog logs = 1;
-}
 
 enum EVENT_MODULE {
     NONE      = 0;

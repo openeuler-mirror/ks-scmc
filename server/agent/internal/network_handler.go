@@ -74,7 +74,7 @@ func (s *NetworkServer) List(ctx context.Context, in *pb.ListRequest) (*pb.ListR
 
 	for _, n := range ns {
 		//不显示默认网卡
-		if isPredefinedNetwork(n.Name) {
+		if n.Name == "bridge" || n.Name == "host" || n.Name == "none" {
 			continue
 		}
 		if len(n.IPAM.Config) != 1 {

@@ -10,7 +10,6 @@ import (
 	pb "scmc/rpc/pb/node"
 	"scmc/server/args"
 
-	"github.com/google/uuid"
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -61,27 +60,21 @@ func (s *NodeServer) Create(ctx context.Context, in *pb.CreateRequest) (*pb.Crea
 		return nil, rpc.ErrInternal
 	}
 
-	// agent 服务检查是否自身是否已被添加
-	uuid_ := uuid.New().String()
-	_, err = pb.NewNodeClient(conn).Create(ctx, &pb.CreateRequest{Uuid: uuid_})
+	// connect agent address, check is alive
+	_, err = pb.NewNodeClient(conn).Status(ctx, &pb.StatusRequest{})
 	if err != nil {
+		log.Warnf("check agent service err=%v", err)
 		if st, ok := status.FromError(err); ok {
 			if st.Code() == codes.Unavailable {
 				return nil, status.Errorf(codes.Internal, "节点连接失败")
 			}
 		}
-		return nil, err
+		return nil, rpc.ErrInternal
 	}
 
 	n, err := db.QueryNodeByAddr(in.Address)
 	if err == db.ErrRecordNotFound {
-		n := db.NodeInfo{
-			Name:    in.Name,
-			Address: in.Address,
-			Comment: in.Comment,
-			UUID:    uuid_,
-		}
-		if e := db.CreateNode(&n); e != nil {
+		if e := db.CreateNode(in.Name, in.Address, in.Comment); e != nil {
 			if e == db.ErrDuplicateKey {
 				return nil, rpc.ErrAlreadyExists
 			}
@@ -99,7 +92,6 @@ func (s *NodeServer) Create(ctx context.Context, in *pb.CreateRequest) (*pb.Crea
 		n.Name = in.Name
 		n.Comment = in.Comment
 		n.Deleted = false
-		n.UUID = uuid_
 		if e := db.UpdateNode(n); e != nil {
 			log.Warnf("update node err=%v", err)
 			return nil, rpc.ErrDatabaseFail
@@ -110,39 +102,8 @@ func (s *NodeServer) Create(ctx context.Context, in *pb.CreateRequest) (*pb.Crea
 }
 
 func (s *NodeServer) Remove(ctx context.Context, in *pb.RemoveRequest) (*pb.RemoveReply, error) {
-	if len(in.Ids) == 0 {
-		return nil, rpc.ErrInvalidArgument
-	}
-
-	nodes, err := db.QueryNodeByIDs(in.Ids)
-	if err != nil {
+	if err := db.RemoveNode(in.Ids); err != nil {
 		return nil, rpc.ErrDatabaseFail
-	} else if len(nodes) == 0 {
-		return nil, status.Error(codes.NotFound, "节点不存在")
-	}
-
-	for _, n := range nodes {
-		conn, err := getAgentConn(n.Address)
-		if err != nil {
-			log.Warnf("get agent connection addr=%v err=%v", n.Address, err)
-			return nil, rpc.ErrInternal
-		}
-
-		_, err = pb.NewNodeClient(conn).Remove(ctx, &pb.RemoveRequest{Uuid: n.UUID})
-		if err != nil {
-			if st, ok := status.FromError(err); ok {
-				if st.Code() == codes.Unavailable {
-					return nil, status.Errorf(codes.Internal, "节点连接失败")
-				}
-			}
-			return nil, err
-		}
-
-		n.Deleted = true
-		n.Name = uuid.New().String() // issue #67161
-		if err := db.UpdateNode(n); err != nil {
-			return nil, rpc.ErrDatabaseFail
-		}
 	}
 	return &pb.RemoveReply{}, nil
 }

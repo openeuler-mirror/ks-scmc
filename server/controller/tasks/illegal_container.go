@@ -9,6 +9,7 @@ import (
 	"google.golang.org/grpc"
 
 	"scmc/model/db"
+	"scmc/model/warnlog"
 	pb "scmc/rpc/pb/container"
 	"scmc/rpc/pb/logging"
 	"scmc/server"
@@ -43,7 +44,9 @@ func StopContainer(conn *grpc.ClientConn, id string) (*pb.StopReply, error) {
 	})
 }
 
-type IllegalContainer struct{}
+type IllegalContainer struct {
+	Publisher *warnlog.Publisher
+}
 
 func (i *IllegalContainer) Interval() time.Duration {
 	return time.Minute
@@ -95,6 +98,7 @@ func (i *IllegalContainer) ScanNodeContainers(images map[string]bool, n *db.Node
 			}
 
 			db.CreateWarnLog(warnLog)
+			i.Publisher.Publish(warnLog)
 		}
 	}
 }

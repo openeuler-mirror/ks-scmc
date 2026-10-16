@@ -29,7 +29,7 @@
     # 创建管理员用户
     ${BIN} -s ${SERVER_ADDR} -c create_admin "{}"
 - name: CONTROLLER 复制镜像签名公钥
-  when: image_dir|length > 0
+  when: image_verify_pubkey|length > 0
   run_once: true
   copy:
     src: '{{ image_verify_pubkey }}'

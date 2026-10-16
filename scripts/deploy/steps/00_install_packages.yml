@@ -1,0 +1,31 @@
+---
+- name: INSTALL 下载安装包
+  when: install.download_url|length > 0
+  get_url:
+    url: '{{ install.download_url }}'
+    username: '{{ install.username }}'
+    password: '{{ install.password }}'
+    dest: '{{ install.dest }}'
+    mode: '0755'
+- name: INSTALL 安装依赖包
+  command:
+    cmd: '{{ install.dest }}'
+    stdin: '3'
+- name: INSTALL 禁用 firewalld
+  service: name=firewalld enabled=false
+- name: INSTALL 禁用SELinux
+  shell: sed -i "s/^SELINUX=.*/SELINUX=Disabled/g" /etc/selinux/config
+- name: INSTALL 设置默认内核 {{ install.default_kernel }}
+  when: install.default_kernel|length > 0
+  shell: |
+    set -e
+    ENTRIES=$(awk -F\' '$1=="menuentry " {print $2}' /etc/grub2.cfg | nl -v 0)
+    INDEX=$(echo "${ENTRIES}" | grep {{ install.default_kernel }} | head -1 | awk '{print $1}')
+    if [[ -n ${INDEX} ]]; then
+      grub2-set-default ${INDEX}
+    fi
+- name: INSTALL 重启服务器  # 使用新内核启动
+  reboot:
+- name: INSTALL 删除安装包
+  when: install.delete == true
+  command: rm -f {{ install.dest }}

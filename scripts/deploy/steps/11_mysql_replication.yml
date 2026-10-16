@@ -2,7 +2,7 @@
 - name: MYSQL 更新配置文件(高可用)
   template:
     src: template/mysql-server.conf.j2
-    dest: /etc/my.cnf.d/mysql5-server.cnf
+    dest: /etc/my.cnf
     owner: root
     group: root
     mode: '0644'
@@ -13,7 +13,8 @@
   shell: |
     set -e
     mysql -uroot -p'{{ mysql.root_password }}' << EOF
-    GRANT REPLICATION SLAVE ON *.* TO replacation@'{{ other_host }}' IDENTIFIED BY 'replacation.2023';
+    CREATE USER 'replacation'@'{{ other_host }}' IDENTIFIED BY 'replacation.2023';
+    GRANT REPLICATION SLAVE ON *.* TO replacation@'{{ other_host }}';
     FLUSH PRIVILEGES;
     EOF
 - name: MYSQL 主从复制(高可用)

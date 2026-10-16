@@ -1,15 +1,17 @@
 #!/usr/bin/bash
 set -e
-CONTAINER_NAME="$1"
-CONTAINER_CMD=${2:-'/bin/bash'}
 
-if [[ -z $CONTAINER_NAME ]]; then
-    echo "Container ID/name] not provided" >&2
+if [[ $# -lt 1 ]]; then
+    echo "Usage $0 [container ID/name] [container cmd]" >&2
     exit 1
 fi
 
+CONTAINER_NAME="$1"
+CONTAINER_CMD=${2:-'/bin/bash'}
 BASE_DIR="/var/lib/ks-scmc/containers"
+
 SOCK_DIR=${BASE_DIR}/${CONTAINER_NAME}/socket
+
 HOSTNAME=$(docker inspect -f '{{ .Config.Hostname }}' ${CONTAINER_NAME})
 
 # Get the DISPLAY slot
@@ -26,16 +28,7 @@ fi
 xauth -f ${AUTH_FILE} add ${HOSTNAME}/unix:${DISPLAY_NUMBER} MIT-MAGIC-COOKIE-1 ${AUTH_COOKIE}
 
 # Proxy with the :0 DISPLAY
-socat UNIX-LISTEN:${SOCK_DIR}/X${DISPLAY_NUMBER},fork TCP4:localhost:60${DISPLAY_NUMBER} 2>/dev/null &
-
-cat > ${SOCK_DIR}/docker.json << EOF
-{
-    "HttpHeaders": {
-        "Authz-User": "KS-SCMC-SERVICE"
-    }
-}
-EOF
-export DOCKER_CONFIG=${SOCK_DIR}
+socat UNIX-LISTEN:${SOCK_DIR}/X${DISPLAY_NUMBER},fork TCP4:localhost:60${DISPLAY_NUMBER} &
 
 # make sure container is running
 IS_RUNNING=$(docker inspect -f '{{ .State.Running }}' ${CONTAINER_NAME})

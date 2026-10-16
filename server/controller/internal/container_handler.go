@@ -123,6 +123,10 @@ func (s *ContainerServer) Create(ctx context.Context, in *pb.CreateRequest) (*pb
 		return nil, rpc.ErrDatabaseFail
 	}
 
+	if err := CheckImageLegal(in.NodeId, in.Configs.Image); err != nil {
+		return nil, err
+	}
+
 	conn, err := getAgentConn(n.Address)
 	if err != nil {
 		return nil, rpc.ErrInternal

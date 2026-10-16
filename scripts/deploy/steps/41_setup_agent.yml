@@ -7,8 +7,6 @@
     sysctl_set: yes
     state: present
     reload: yes
-- name: AGENT 重启network
-  service: name=network state=restarted
 # 访问容器的图形界面需要开启 SSH X11 forwarding
 - name: AGENT 开启ssh X11 forwarding
   shell: sed -i 's/^X11Forwarding no/X11Forwarding yes/g' /etc/ssh/sshd_config

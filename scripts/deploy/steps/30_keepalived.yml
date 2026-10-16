@@ -1,0 +1,11 @@
+---
+- name: KEEPALIVED 配置虚拟IP(高可用)
+  template:
+    src: template/keepalived.conf.j2
+    dest: /etc/keepalived/keepalived.conf
+    owner: root
+    group: root
+    mode: '0644'
+    backup: true
+- name: KEEPALIVED 启用虚拟IP(高可用)
+  service: name=keepalived state=restarted enabled=true

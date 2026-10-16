@@ -1,7 +1,0 @@
----
-- name: IMAGE 启动docker-registry
-  service: name=docker-registry state=restarted enabled=true
-- name: IMAGE 启动docker-registry-gc
-  service: name=docker-registry-gc.timer state=restarted enabled=true
-- name: IMAGE 创建镜像上传目录 {{ image_dir }}
-  shell: mkdir -p {{ image_dir }}

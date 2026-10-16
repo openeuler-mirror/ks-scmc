@@ -15,7 +15,6 @@ type NodeInfo struct {
 	MemoryLimit float64
 	DiskLimit   float64
 	Deleted     bool
-	UUID        string
 	CreatedAt   int64 `gorm:"autoCreateTime"`
 	UpdatedAt   int64 `gorm:"autoUpdateTime"`
 }
@@ -40,19 +39,36 @@ func ListNodes() ([]*NodeInfo, error) {
 	return data, nil
 }
 
-func CreateNode(data *NodeInfo) error {
+func CreateNode(name, address, comment string) error {
 	db, err := getConn()
 	if err != nil {
 		return err
 	}
 
-	result := db.Create(&data)
+	nodeInfo := NodeInfo{Name: name, Address: address, Comment: comment}
+	result := db.Create(&nodeInfo)
 	if result.Error != nil {
 		log.Errorf("db create node %v", result.Error)
 		return translateError(result.Error)
 	}
 
-	log.Debugf("db create node id=%v", data.ID)
+	log.Debugf("db create node id=%v", nodeInfo.ID)
+	return nil
+}
+
+func RemoveNode(ids []int64) error {
+	db, err := getConn()
+	if err != nil {
+		return err
+	}
+
+	result := db.Model(&NodeInfo{}).Where("id IN ?", ids).Update("deleted", 1)
+	if result.Error != nil {
+		log.Errorf("db remove node ids=%v: %v", ids, result.Error)
+		return result.Error
+	}
+
+	log.Debugf("db remove node ids=%v OK", ids)
 	return nil
 }
 
@@ -88,22 +104,6 @@ func QueryNodeByID(id int64) (*NodeInfo, error) {
 	}
 
 	return &nodeInfo, nil
-}
-
-func QueryNodeByIDs(ids []int64) ([]*NodeInfo, error) {
-	db, err := getConn()
-	if err != nil {
-		return nil, err
-	}
-
-	var data []*NodeInfo
-	result := db.Find(&data, "id IN ? AND deleted = 0", ids)
-	if result.Error != nil {
-		log.Warnf("query node ids=%v: %v", ids, err)
-		return nil, translateError(result.Error)
-	}
-
-	return data, nil
 }
 
 func QueryNodeByAddr(addr string) (*NodeInfo, error) {

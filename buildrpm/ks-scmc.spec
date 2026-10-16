@@ -25,6 +25,7 @@ Requires: coreutils bash socat systemd lsyncd rsync xinetd keepalived
 Requires: docker-ce cadvisor docker-registry influxdb opensnitch 
 Requires: ks-license-client ks-license-gui-client 
 Requires: kernel-kek-devel kernel-kek
+Requires: mysql-community-server
 
 %description
 KylinSec security container magic cube provides simply, effecient and secure container management.

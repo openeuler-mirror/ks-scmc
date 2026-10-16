@@ -9,10 +9,8 @@ import (
 	"google.golang.org/grpc"
 
 	"scmc/model/db"
-	"scmc/model/warnlog"
 	pb "scmc/rpc/pb/container"
 	"scmc/rpc/pb/logging"
-	"scmc/server"
 	"scmc/server/controller/internal"
 )
 
@@ -21,6 +19,21 @@ const (
 	ImageSourceUpload = 1
 	ImageSourceBackup = 2
 )
+
+func dbImages() (map[string]bool, error) {
+	dbImages, err := db.QueryImageByStatus()
+	if err != nil {
+		log.Warnf("query db images err=%v", err)
+		return nil, err
+	}
+
+	data := make(map[string]bool, len(dbImages))
+	for _, i := range dbImages {
+		data[i.Name+":"+i.Version] = true
+	}
+
+	return data, nil
+}
 
 func ListContainer(conn *grpc.ClientConn, listAll bool) (*pb.ListReply, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
@@ -44,9 +57,25 @@ func StopContainer(conn *grpc.ClientConn, id string) (*pb.StopReply, error) {
 	})
 }
 
-type IllegalContainer struct {
-	Publisher *warnlog.Publisher
+func ListBackupImage(conn *grpc.ClientConn) (map[string]bool, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+	defer cancel()
+
+	cli := pb.NewContainerClient(conn)
+	reply, err := cli.ListBackupImage(ctx, &pb.ListBackupImageRequest{})
+	if err != nil {
+		return nil, err
+	}
+
+	r := make(map[string]bool, len(reply.Images))
+	for _, i := range reply.Images {
+		r[i] = true
+	}
+
+	return r, nil
 }
+
+type IllegalContainer struct{}
 
 func (i *IllegalContainer) Interval() time.Duration {
 	return time.Minute
@@ -63,7 +92,7 @@ func (i *IllegalContainer) ScanNodeContainers(images map[string]bool, n *db.Node
 		return
 	}
 
-	backupImages, err := server.ListBackupImage(conn)
+	backupImages, err := ListBackupImage(conn)
 	if err != nil {
 		log.Warnf("ListBackupImage err=%v", err)
 		return
@@ -98,7 +127,6 @@ func (i *IllegalContainer) ScanNodeContainers(images map[string]bool, n *db.Node
 			}
 
 			db.CreateWarnLog(warnLog)
-			i.Publisher.Publish(warnLog)
 		}
 	}
 }
@@ -108,7 +136,7 @@ func (i *IllegalContainer) Run() {
 		return
 	}
 
-	images, err := db.GetImageMap()
+	images, err := dbImages()
 	if err != nil {
 		log.Infof("get valid images err=%v", err)
 		return

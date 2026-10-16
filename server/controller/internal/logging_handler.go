@@ -6,50 +6,12 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"scmc/model/db"
-	"scmc/model/warnlog"
 	"scmc/rpc"
 	pb "scmc/rpc/pb/logging"
 )
 
 type LoggingServer struct {
 	pb.UnimplementedLoggingServer
-	Pub *warnlog.Publisher
-}
-
-func (s *LoggingServer) SubscribeWarn(in *pb.SubscribeWarnRequest, stream pb.Logging_SubscribeWarnServer) error {
-	ch := s.Pub.Subscribe("WarnLog")
-	defer s.Pub.Evict(ch)
-
-	for {
-		select {
-		case message := <-ch:
-			log.Debugf("message: %++v", message)
-			var reply pb.SubscribeWarnReply
-			if m, ok := message.([]*db.WarnLog); ok {
-				for _, log := range m {
-					reply.Logs = append(reply.Logs, &pb.WarnLog{
-						Id:            log.ID,
-						NodeId:        log.NodeId,
-						NodeInfo:      log.NodeInfo,
-						EventType:     log.EventType,
-						EventModule:   log.EventModule,
-						ContainerName: log.ContainerName,
-						Detail:        log.Detail,
-						HaveRead:      log.HaveRead,
-						CreatedAt:     log.CreatedAt,
-						UpdatedAt:     log.UpdatedAt,
-					})
-				}
-
-				if err := stream.Send(&reply); err != nil {
-					return err
-				}
-			}
-		case <-stream.Context().Done():
-			return nil
-		}
-	}
-
 }
 
 func (s *LoggingServer) ListRuntime(ctx context.Context, in *pb.ListRuntimeRequest) (*pb.ListRuntimeReply, error) {

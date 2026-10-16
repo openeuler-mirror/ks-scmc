@@ -56,10 +56,12 @@ find $CURR_PATH/ks-run-tmp -name *.rpm | while read line;do
 done
 
 sed -i "s/KS_PROJECK_NAME/$KS_PROJECK_NAME/g" $CURR_PATH/ks-run.sh
+sed -i "s/KS_ALLOW_OS/$KS_ALLOW_OS/g" $CURR_PATH/ks-run.sh
 tar cvf $CURR_PATH/ks-run-tmp.tar.gz -C $CURR_PATH ks-run-tmp
 cat $CURR_PATH/ks-run.sh $CURR_PATH/ks-run-tmp.tar.gz > $CURR_PATH/$KS_PROJECK_NAME-$KS_PROJECK_VERSION-$(date "+%Y%m%d")-${KS_ARCH_NAME}.run
 chmod +x $CURR_PATH/$KS_PROJECK_NAME-$KS_PROJECK_VERSION-$(date "+%Y%m%d")-${KS_ARCH_NAME}.run
 md5sum $CURR_PATH/$KS_PROJECK_NAME-$KS_PROJECK_VERSION-$(date "+%Y%m%d")-${KS_ARCH_NAME}.run > $CURR_PATH/$KS_PROJECK_NAME-$KS_PROJECK_VERSION-$(date "+%Y%m%d")-${KS_ARCH_NAME}.md5
 sed -i "s/$KS_PROJECK_NAME/KS_PROJECK_NAME/g" $CURR_PATH/ks-run.sh
+sed -i "s/$KS_ALLOW_OS/KS_ALLOW_OS/g" $CURR_PATH/ks-run.sh
 rm -rf $CURR_PATH/ks-run-tmp.tar.gz $CURR_PATH/ks-run-tmp
 

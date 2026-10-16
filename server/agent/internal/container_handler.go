@@ -863,7 +863,11 @@ func (s *ContainerServer) inspect(id string, backup bool) (*pb.ContainerConfigs,
 	}
 
 	if info.Config != nil {
-		configs.Image = info.Config.Image
+		// if image tag exists, use the tag, if not use image id
+		if _, _, err := cli.ImageInspectWithRaw(context.Background(), info.Config.Image); err == nil {
+			configs.Image = info.Config.Image
+		}
+
 		if v, ok := info.Config.Labels["KS_SCMC_DESC"]; ok {
 			configs.Desc = v
 		}

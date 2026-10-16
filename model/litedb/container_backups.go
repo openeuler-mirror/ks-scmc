@@ -6,7 +6,7 @@ type ContainerBackup struct {
 	ID          int64 `gorm:"primaryKey;not null"`
 	UUID        string
 	ContainerID string
-	BackupName  string `gorm:"uniqueIndex"`
+	BackupName  string
 	BackupDesc  string
 	ImageRef    string
 	ImageID     string

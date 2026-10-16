@@ -13,17 +13,15 @@ import (
 
 type LoggingServer struct {
 	pb.UnimplementedLoggingServer
-	Pub *warnlog.Publisher
 }
 
 func (s *LoggingServer) SubscribeWarn(in *pb.SubscribeWarnRequest, stream pb.Logging_SubscribeWarnServer) error {
-	ch := s.Pub.Subscribe("WarnLog")
-	defer s.Pub.Evict(ch)
+	ch := warnlog.Subscribe()
+	defer warnlog.Evict(ch)
 
 	for {
 		select {
 		case message := <-ch:
-			log.Debugf("message: %++v", message)
 			var reply pb.SubscribeWarnReply
 			if m, ok := message.([]*db.WarnLog); ok {
 				for _, log := range m {

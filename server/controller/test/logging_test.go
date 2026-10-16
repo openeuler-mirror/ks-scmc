@@ -2,12 +2,45 @@ package test
 
 import (
 	"context"
+	"io"
 	pb "scmc/rpc/pb/logging"
 	"testing"
 	"time"
 
 	"google.golang.org/grpc"
 )
+
+func TestSubscribeWarn(t *testing.T) {
+	testRunner(func(ctx context.Context, conn *grpc.ClientConn) {
+		cli := pb.NewLoggingClient(conn)
+		request := pb.SubscribeWarnRequest{}
+
+		stream, err := cli.SubscribeWarn(ctx, &request)
+		if err != nil {
+			t.Errorf("download: %v", err)
+		}
+
+		for {
+			if stream.Context().Err() == context.Canceled || stream.Context().Err() == context.DeadlineExceeded {
+				t.Errorf("context error: %v", stream.Context().Err())
+			}
+
+			reply, err := stream.Recv()
+			if err == io.EOF {
+				t.Logf("no more data")
+				break
+			}
+			if err != nil {
+				t.Errorf("cannot receive chunk data: %v", err)
+				break
+			}
+			for _, log := range reply.Logs {
+				t.Logf("log: %++v", log)
+			}
+
+		}
+	})
+}
 
 func TestListRuntimeLog(t *testing.T) {
 	testRunner(func(ctx context.Context, conn *grpc.ClientConn) {

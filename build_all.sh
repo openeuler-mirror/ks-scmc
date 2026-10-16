@@ -19,6 +19,10 @@ dobuild() {
 	pushd $SHELL_FOLDER/buildrun
 	bash ./build_all.sh
 	popd
+
+	pushd $SHELL_FOLDER/scripts
+	zip $SHELL_FOLDER/buildrun/${pkg_name}-deploy-$(date "+%Y%m%d").zip deploy/ -r
+	popd
 }
 
 usage() {

@@ -31,6 +31,6 @@ gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-kylin-release
 2 change /etc/yum.conf make keepcache=1
 
 3 get depend packages
-yum install docker-ce cadvisor docker-registry influxdb opensnitch coreutils bash socat systemd lsyncd rsync xinetd keepalived ks-license-client ks-license-gui-client kernel-kek-devel kernel-kek
+yum localinstall ks-scmmc
 
 4 build run 

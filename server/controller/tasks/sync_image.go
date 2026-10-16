@@ -9,6 +9,7 @@ import (
 
 	"scmc/model/db"
 	pb "scmc/rpc/pb/image"
+	"scmc/server"
 	"scmc/server/controller/internal"
 )
 
@@ -64,7 +65,7 @@ func agentSync(conn *grpc.ClientConn, req *pb.AgentSyncRequest) error {
 // SyncNodeImages 读取数据库中镜像列表，删除节点上多余的（注意不能删除备份产生的镜像），
 // 拉取缺失的
 func SyncNodeImages() {
-	images, err := dbImages()
+	images, err := db.GetImageMap()
 	if err != nil {
 		log.Infof("get valid images err=%v", err)
 		return
@@ -88,7 +89,7 @@ func syncNodeImages(dbImages map[string]bool, addr string) {
 		return
 	}
 
-	backupImages, err := ListBackupImage(conn)
+	backupImages, err := server.ListBackupImage(conn)
 	if err != nil {
 		log.Warnf("ListBackupImage err=%v", err)
 		return

@@ -2,7 +2,7 @@
 
 set -x
 
-use_git_code=0
+use_git_code=1
 use_mock_build=1
 pkgname=ks-scmc
 

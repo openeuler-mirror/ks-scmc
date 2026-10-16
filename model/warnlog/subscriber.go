@@ -4,48 +4,43 @@ import (
 	"sync"
 )
 
-type (
-	subscriber chan interface{}
-)
+var instance = &Publisher{
+	buffer: 5,
+	subs:   make(map[chan interface{}]bool, 1),
+}
+
 type Publisher struct {
 	sync.RWMutex
 
 	buffer int
-	subs   map[subscriber]interface{}
+	subs   map[chan interface{}]bool
 }
 
-func NewPublisher(buffer int) *Publisher {
-	return &Publisher{
-		buffer: buffer,
-		subs:   make(map[subscriber]interface{}),
-	}
-}
-
-func (p *Publisher) Subscribe(stream interface{}) chan interface{} {
+func (p *Publisher) Subscribe() chan interface{} {
 	ch := make(chan interface{}, p.buffer)
 
 	p.Lock()
-	p.subs[ch] = stream
-	p.Unlock()
+	defer p.Unlock()
+	p.subs[ch] = true
 
 	return ch
 }
 
-func (p *Publisher) Publish(message interface{}) {
+func (p *Publisher) Publish(msg interface{}) {
 	p.Lock()
 	defer p.Unlock()
 
 	for sub := range p.subs {
-		sub <- message
+		sub <- msg
 	}
 }
 
-func (p *Publisher) Evict(sub chan interface{}) {
+func (p *Publisher) Evict(ch chan interface{}) {
 	p.Lock()
 	defer p.Unlock()
 
-	delete(p.subs, sub)
-	close(sub)
+	delete(p.subs, ch)
+	close(ch)
 }
 
 func (p *Publisher) Close() {
@@ -56,4 +51,16 @@ func (p *Publisher) Close() {
 		delete(p.subs, sub)
 		close(sub)
 	}
+}
+
+func Subscribe() chan interface{} {
+	return instance.Subscribe()
+}
+
+func Publish(msg interface{}) {
+	instance.Publish(msg)
+}
+
+func Evict(ch chan interface{}) {
+	instance.Evict(ch)
 }

@@ -45,7 +45,6 @@ func StopContainer(conn *grpc.ClientConn, id string) (*pb.StopReply, error) {
 }
 
 type IllegalContainer struct {
-	Publisher *warnlog.Publisher
 }
 
 func (i *IllegalContainer) Interval() time.Duration {
@@ -86,7 +85,7 @@ func (i *IllegalContainer) ScanNodeContainers(images map[string]bool, n *db.Node
 				log.Infof("StopContainer %v err=%v", c.Info.Id, err)
 			}
 
-			warnLog := []*db.WarnLog{
+			data := []*db.WarnLog{
 				{
 					NodeId:        n.ID,
 					NodeInfo:      fmt.Sprintf("%s (%s)", n.Name, n.Address),
@@ -97,8 +96,8 @@ func (i *IllegalContainer) ScanNodeContainers(images map[string]bool, n *db.Node
 				},
 			}
 
-			db.CreateWarnLog(warnLog)
-			i.Publisher.Publish(warnLog)
+			db.CreateWarnLog(data)
+			warnlog.Publish(data)
 		}
 	}
 }

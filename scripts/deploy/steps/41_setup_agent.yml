@@ -7,6 +7,8 @@
     sysctl_set: yes
     state: present
     reload: yes
+- name: AGENT 重启network
+  service: name=network state=restarted
 # 访问容器的图形界面需要开启 SSH X11 forwarding
 - name: AGENT 开启ssh X11 forwarding
   shell: sed -i 's/^X11Forwarding no/X11Forwarding yes/g' /etc/ssh/sshd_config
@@ -22,6 +24,40 @@
 - name: AGENT influxdb配置策略
   shell:
     influx -execute 'CREATE DATABASE "cadvisor"; CREATE RETENTION POLICY "cadvisor_retention" ON "cadvisor" DURATION 7d REPLICATION 1 DEFAULT;'
+# cadvisor组件用于采集监控数据
+- name: AGENT 配置cadvisor
+  shell: |
+    # 修改服务端口
+    sed -i 's/CADVISOR_PORT="4194"/CADVISOR_PORT="8080"/g' /etc/sysconfig/cadvisor
+    # 采集数据写入influxdb
+    sed -i 's/CADVISOR_STORAGE_DRIVER=""/CADVISOR_STORAGE_DRIVER="influxdb"/g' /etc/sysconfig/cadvisor
+
+    cat >> /etc/sysconfig/cadvisor << EOF
+
+    # List of metrics to be disabled
+    CADVISOR_DISABLED_METRICS="tcp,udp,sched,process,percpu"
+    EOF
+
+    cat > /usr/lib/systemd/system/cadvisor.service << EOF
+    [Unit]
+    Description=cAdvisor
+
+    [Service]
+    EnvironmentFile=/etc/sysconfig/cadvisor
+    ExecStart=/usr/bin/cadvisor \\
+            --docker=\${CADVISOR_DOCKER_ENDPOINT} \\
+            --port=\${CADVISOR_PORT} \\
+            --storage_driver=\${CADVISOR_STORAGE_DRIVER} \\
+            --storage_driver_host=\${CADVISOR_STORAGE_DRIVER_HOST} \\
+            --storage_driver_password=\${CADVISOR_STORAGE_DRIVER_PASSWORD} \\
+            --storage_driver_secure=\${CADVISOR_STORAGE_DRIVER_SECURE} \\
+            --storage_driver_user=\${CADVISOR_STORAGE_DRIVER_USER} \\
+            --logtostderr=\${CADVISOR_LOG_TO_STDERR} \\
+            --disable_metrics=\${CADVISOR_DISABLED_METRICS}
+
+    [Install]
+    WantedBy=multi-user.target
+    EOF
 # 容器网络进程白名单功能依赖opensnitch
 - name: AGENT opensnitch配置系统规则
   copy:

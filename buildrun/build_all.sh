@@ -20,12 +20,7 @@ function process_install_shell()
 #!/bin/bash
 
 # check the os version
-VERSION_KY=\$(cat  /etc/.kyinfo  | grep "milestone = $osversion")
-if [ "\${VERSION_KY}" == "" ]; then
-    echo "WARNING: This only can install on kylinsec $osversion"
-    exit 1
-fi
-
+# has checked in ks-run/install.sh
 
 # check arch type
 ARCH_TYPE=\$(cat /etc/.kyinfo | grep "arch =" | awk -F ' ' '{ print \$3 }')

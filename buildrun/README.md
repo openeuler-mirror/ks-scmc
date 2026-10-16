@@ -31,6 +31,8 @@ gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-kylin-release
 2 change /etc/yum.conf make keepcache=1
 
 3 get depend packages
-yum localinstall ks-scmmc
+yum localinstall ks-scmmc 
+and
+replace kernel-kek and kernel-kek-devel
 
 4 build run 

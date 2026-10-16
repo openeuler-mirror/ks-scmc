@@ -14,6 +14,7 @@ import (
 )
 
 const megaBytes = 1 << 20
+const dockerMegaByets = int(1e6)
 
 func cpuQuery(interval uint) string {
 	division := time.Minute * time.Duration(interval)
@@ -24,17 +25,17 @@ func cpuQuery(interval uint) string {
 }
 
 func memQuery() string {
-	f := `SELECT mean("value") / %d FROM "memory_working_set"
+	f := `SELECT max("value") / %d FROM "memory_working_set"
 	WHERE ("container_name" = $container) AND time >= $start and time <= $end
 	GROUP BY time($interval) fill(0)`
 	return fmt.Sprintf(f, megaBytes)
 }
 
 func diskQuery() string {
-	f := `SELECT mean("value") / %d FROM "fs_usage"
+	f := `SELECT max("value") / %d FROM "fs_usage"
 	WHERE ("container_name" = $container) AND time >= $start and time <= $end
-	GROUP BY time($interval) fill(0)`
-	return fmt.Sprintf(f, megaBytes)
+	GROUP BY time($interval) fill(previous)`
+	return fmt.Sprintf(f, dockerMegaByets)
 }
 
 func rxQuery() string {
@@ -100,7 +101,11 @@ func influxdbQuery(start, end int64, interval uint, containerName string) (*pb.M
 			for _, s := range r.Series {
 				for _, v := range s.Values {
 					ts, _ := v[0].(json.Number).Int64()
-					val, _ := v[1].(json.Number).Float64()
+					val := 0.0
+					n, ok := v[1].(json.Number)
+					if ok {
+						val, _ = n.Float64()
+					}
 					list = append(list, &pb.MonitorSample{
 						Timestamp: ts,
 						Value:     val,

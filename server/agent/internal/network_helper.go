@@ -9,6 +9,8 @@ import (
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/events"
+	"github.com/docker/docker/api/types/network"
+	"github.com/docker/docker/client"
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"

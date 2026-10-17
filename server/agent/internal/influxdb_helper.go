@@ -52,6 +52,77 @@ func txQuery() string {
 	return fmt.Sprintf(f, megaBytes)
 }
 
+func cpuMaxQuery() string {
+	f := `SELECT max(non_negative_difference) FROM (
+	SELECT non_negative_difference(mean("value")) / 10000000000 FROM "cpu_usage_total"
+	WHERE ("container_name" = '/') AND time >= $start and time <= $end
+	GROUP BY time(10s) fill(previous));`
+	return f
+}
+
+func memMaxQuery() string {
+	f := `SELECT max(value) / 1048576 FROM "fs_usage"
+	WHERE ("container_name" = '/') AND time >= $start and time <= $end;`
+	return f
+}
+
+func diskMaxQuery() string {
+	f := `SELECT max(value) / 1048576 FROM "memory_working_set"
+	WHERE ("container_name" = '/') AND time >= $start and time <= $end;`
+	return f
+}
+
+func influxdbQueryNodeMax(start, end int64) ([3]float64, error) {
+	var data [3]float64
+
+	cli, err := client.NewHTTPClient(client.HTTPConfig{
+		Addr: "http://" + common.Config.InfluxDB.Addr,
+	})
+	if err != nil {
+		log.Warnf("get influxdb client error=%v", err)
+		return data, err
+	}
+	defer cli.Close()
+
+	queries := strings.Join([]string{
+		cpuMaxQuery(),
+		memMaxQuery(),
+		diskMaxQuery(),
+	}, " ")
+
+	q := client.NewQueryWithParameters(queries, "cadvisor", "s", client.Params{
+		"start": client.TimeValue(time.Unix(start, 0)),
+		"end":   client.TimeValue(time.Unix(end, 0)),
+	})
+
+	response, err := cli.Query(q)
+	if err != nil {
+		log.Warnf("influxdb query error=%v", err)
+		return data, err
+	} else if response.Error() != nil {
+		log.Warnf("influxdb query error=%v", response.Error())
+		return data, response.Error()
+	}
+
+	for i, r := range response.Results {
+		if len(data) <= i {
+			break
+		}
+
+		for _, s := range r.Series {
+			for _, v := range s.Values {
+				n, ok := v[1].(json.Number)
+				if ok {
+					data[i], _ = n.Float64()
+				}
+			}
+		}
+	}
+
+	log.Debugf("in time [%v-%v], max used: %v", start, end, data)
+	return data, nil
+}
+
 func influxdbQuery(start, end int64, interval uint, containerName string) (*pb.MonitorHistoryReply, error) {
 	cli, err := client.NewHTTPClient(client.HTTPConfig{
 		Addr: "http://" + common.Config.InfluxDB.Addr,

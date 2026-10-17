@@ -224,16 +224,13 @@ func (*NetworkServer) CreateNic(ctx context.Context, in *pb.CreateNicRequest) (*
 	n, err := db.QueryNodeByID(in.NodeId)
 	if err != nil {
 		if err == db.ErrRecordNotFound {
-			log.Warnf("node id=%v not found.", in.NodeId)
 			return nil, rpc.ErrNotFound
 		}
-		log.Warnf("QueryNode id=%v err=%v", in.NodeId, err)
 		return nil, rpc.ErrDatabaseFail
 	}
 
 	conn, err := getAgentConn(n.Address)
 	if err != nil {
-		log.Warnf("Failed to connect to agent service, node=%+v", n)
 		return nil, rpc.ErrInternal
 	}
 
@@ -248,16 +245,13 @@ func (*NetworkServer) RemoveNic(ctx context.Context, in *pb.RemoveNicRequest) (*
 	n, err := db.QueryNodeByID(in.NodeId)
 	if err != nil {
 		if err == db.ErrRecordNotFound {
-			log.Warnf("node id=%v not found.", in.NodeId)
 			return nil, rpc.ErrNotFound
 		}
-		log.Warnf("QueryNode id=%v err=%v", in.NodeId, err)
 		return nil, rpc.ErrDatabaseFail
 	}
 
 	conn, err := getAgentConn(n.Address)
 	if err != nil {
-		log.Warnf("Failed to connect to agent service, node=%+v", n)
 		return nil, rpc.ErrInternal
 	}
 
@@ -272,16 +266,13 @@ func (*NetworkServer) UpdateNic(ctx context.Context, in *pb.UpdateNicRequest) (*
 	n, err := db.QueryNodeByID(in.NodeId)
 	if err != nil {
 		if err == db.ErrRecordNotFound {
-			log.Warnf("node id=%v not found.", in.NodeId)
 			return nil, rpc.ErrNotFound
 		}
-		log.Warnf("QueryNode id=%v err=%v", in.NodeId, err)
 		return nil, rpc.ErrDatabaseFail
 	}
 
 	conn, err := getAgentConn(n.Address)
 	if err != nil {
-		log.Warnf("Failed to connect to agent service, node=%+v", n)
 		return nil, rpc.ErrInternal
 	}
 

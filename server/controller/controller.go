@@ -8,7 +8,6 @@ import (
 	"google.golang.org/grpc/keepalive"
 
 	"scmc/common"
-	"scmc/model/warnlog"
 	"scmc/rpc/middleware/audit"
 	"scmc/rpc/middleware/auth"
 	"scmc/rpc/middleware/debug"
@@ -49,24 +48,19 @@ func Server() (*grpc.Server, error) {
 
 	s := grpc.NewServer(opts...)
 
-	p := warnlog.NewPublisher(5)
-	defer p.Close()
-
 	container.RegisterContainerServer(s, &internal.ContainerServer{})
 	image.RegisterImageServer(s, &internal.ImageServer{})
 	network.RegisterNetworkServer(s, &internal.NetworkServer{})
 	node.RegisterNodeServer(s, &internal.NodeServer{})
 	user.RegisterUserServer(s, &internal.UserServer{})
-	logging.RegisterLoggingServer(s, &internal.LoggingServer{
-		Pub: p,
-	})
+	logging.RegisterLoggingServer(s, &internal.LoggingServer{})
 	system.RegisterSystemServer(s, &internal.SystemServer{})
 
 	go internal.RuntimeLogWriter()
 
 	tasks.AddTask(
 		&tasks.SyncImages{},
-		&tasks.IllegalContainer{p},
+		&tasks.IllegalContainer{},
 		&tasks.PushImage{},
 		&tasks.NodeStatus{},
 	)

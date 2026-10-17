@@ -269,6 +269,8 @@ message UpdateRequest {
     RestartPolicy          restart_policy  = 4;
     repeated NetworkConfig networks        = 5;
     SecurityConfig         security_config = 6;
+    repeated Mount         mounts          = 7;  // 共享目录
+    map<string, string>    envs            = 8;  // 环境变量
 }
 
 message UpdateReply {}

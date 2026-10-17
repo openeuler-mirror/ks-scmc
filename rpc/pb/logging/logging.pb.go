@@ -562,10 +562,11 @@ type ListWarnReply struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Logs       []*WarnLog `protobuf:"bytes,1,rep,name=logs,proto3" json:"logs,omitempty"`
-	PageSize   int64      `protobuf:"varint,2,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`       // 页大小
-	PageNo     int64      `protobuf:"varint,3,opt,name=page_no,json=pageNo,proto3" json:"page_no,omitempty"`             // 当前页
-	TotalPages int64      `protobuf:"varint,4,opt,name=total_pages,json=totalPages,proto3" json:"total_pages,omitempty"` // 总页数
+	Logs           []*WarnLog `protobuf:"bytes,1,rep,name=logs,proto3" json:"logs,omitempty"`
+	PageSize       int64      `protobuf:"varint,2,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`                   // 页大小
+	PageNo         int64      `protobuf:"varint,3,opt,name=page_no,json=pageNo,proto3" json:"page_no,omitempty"`                         // 当前页
+	TotalPages     int64      `protobuf:"varint,4,opt,name=total_pages,json=totalPages,proto3" json:"total_pages,omitempty"`             // 总页数
+	TotalWarnnings int64      `protobuf:"varint,5,opt,name=total_warnnings,json=totalWarnnings,proto3" json:"total_warnnings,omitempty"` // 告警总条数
 }
 
 func (x *ListWarnReply) Reset() {

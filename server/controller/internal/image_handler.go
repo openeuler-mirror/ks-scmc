@@ -100,7 +100,7 @@ func (s *ImageServer) uploadCheckMetadata(md *pb.UploadInfo) error {
 	} else if md.Size == 0 {
 		return rpc.ErrInvalidArgument
 	} else if md.Size > imageMaxSize() {
-		return status.Errorf(codes.InvalidArgument, "镜像大小超过上限")
+		return rpc.ErrImageSize(float64(imageMaxSize()))
 	} else if !args.ImageName.Check(md.Name) {
 		return status.Errorf(codes.InvalidArgument, "镜像名参数错误")
 	} else if !args.ImageVersion.Check(md.Version) {
@@ -119,7 +119,7 @@ func (s *ImageServer) updateCheckMetadata(md *pb.UploadInfo) error {
 	}
 
 	if md.Size > 0 && md.Size > imageMaxSize() {
-		return status.Errorf(codes.InvalidArgument, "镜像大小超过上限")
+		return rpc.ErrImageSize(float64(imageMaxSize()))
 	}
 
 	return nil
@@ -143,7 +143,7 @@ func (s *ImageServer) receiveImageFile(securitySwitch bool, img *db.ImageInfo, s
 	if err := f.ReadStream(stream); err != nil {
 		f.Destroy()
 		log.Errorf("Write stream data to image file err=%v", err)
-		return nil, status.Error(codes.InvalidArgument, "读写镜像数据失败")
+		return nil, status.Errorf(codes.InvalidArgument, "读写镜像数据失败：%s", err.Error())
 	}
 
 	// verify sha256 checksum

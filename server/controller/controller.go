@@ -2,10 +2,12 @@ package controller
 
 import (
 	"fmt"
+	"os"
 	"time"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/keepalive"
+	"google.golang.org/grpc/reflection"
 
 	"scmc/common"
 	"scmc/rpc/middleware/audit"
@@ -65,5 +67,8 @@ func Server() (*grpc.Server, error) {
 		&tasks.NodeStatus{},
 	)
 
+	if os.Getenv("GRPC_REFLECTION") == "1" {
+		reflection.Register(s) // for grpc debugging tools
+	}
 	return s, nil
 }

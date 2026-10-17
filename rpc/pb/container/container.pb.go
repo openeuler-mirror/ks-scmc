@@ -5853,7 +5853,7 @@ func file_container_proto_rawDescGZIP() []byte {
 }
 
 var file_container_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_container_proto_msgTypes = make([]protoimpl.MessageInfo, 85)
+var file_container_proto_msgTypes = make([]protoimpl.MessageInfo, 86)
 var file_container_proto_goTypes = []interface{}{
 	(BACKUP_STATUS)(0),               // 0: container.BACKUP_STATUS
 	(*ExportBackupRequest)(nil),      // 1: container.ExportBackupRequest
@@ -5939,11 +5939,12 @@ var file_container_proto_goTypes = []interface{}{
 	(*ContainerTemplate)(nil),        // 81: container.ContainerTemplate
 	(*ContainerBackup)(nil),          // 82: container.ContainerBackup
 	(*ContainerFailInfo)(nil),        // 83: container.ContainerFailInfo
-	nil,                              // 84: container.ContainerInfo.LabelsEntry
-	nil,                              // 85: container.ContainerConfigs.EnvsEntry
-	(*security.ProcProtection)(nil),  // 86: security.ProcProtection
-	(*security.FileProtection)(nil),  // 87: security.FileProtection
-	(*security.NetworkRuleList)(nil), // 88: security.NetworkRuleList
+	nil,                              // 84: container.UpdateRequest.EnvsEntry
+	nil,                              // 85: container.ContainerInfo.LabelsEntry
+	nil,                              // 86: container.ContainerConfigs.EnvsEntry
+	(*security.ProcProtection)(nil),  // 87: security.ProcProtection
+	(*security.FileProtection)(nil),  // 88: security.FileProtection
+	(*security.NetworkRuleList)(nil), // 89: security.NetworkRuleList
 }
 var file_container_proto_depIdxs = []int32{
 	82, // 0: container.InspectBackupReply.backup:type_name -> container.ContainerBackup
@@ -5967,99 +5968,101 @@ var file_container_proto_depIdxs = []int32{
 	68, // 18: container.UpdateRequest.restart_policy:type_name -> container.RestartPolicy
 	77, // 19: container.UpdateRequest.networks:type_name -> container.NetworkConfig
 	79, // 20: container.UpdateRequest.security_config:type_name -> container.SecurityConfig
-	66, // 21: container.RemoveRequest.ids:type_name -> container.ContainerIdList
-	83, // 22: container.RemoveReply.fail_infos:type_name -> container.ContainerFailInfo
-	75, // 23: container.StatusReply.status:type_name -> container.ResourceStat
-	76, // 24: container.MonitorHistoryReply.cpu_usage:type_name -> container.MonitorSample
-	76, // 25: container.MonitorHistoryReply.memory_usage:type_name -> container.MonitorSample
-	76, // 26: container.MonitorHistoryReply.disk_usage:type_name -> container.MonitorSample
-	76, // 27: container.MonitorHistoryReply.net_rx:type_name -> container.MonitorSample
-	76, // 28: container.MonitorHistoryReply.net_tx:type_name -> container.MonitorSample
-	78, // 29: container.MonitorHistoryReply.rsc_limit:type_name -> container.ResourceLimit
-	81, // 30: container.ListTemplateReply.data:type_name -> container.ContainerTemplate
-	81, // 31: container.CreateTemplateRequest.data:type_name -> container.ContainerTemplate
-	81, // 32: container.UpdateTemplateRequest.data:type_name -> container.ContainerTemplate
-	81, // 33: container.InspectTemplateReply.data:type_name -> container.ContainerTemplate
-	65, // 34: container.NodeContainer.info:type_name -> container.ContainerInfo
-	84, // 35: container.ContainerInfo.labels:type_name -> container.ContainerInfo.LabelsEntry
-	75, // 36: container.ContainerInfo.resource_stat:type_name -> container.ResourceStat
-	70, // 37: container.ResourceStat.cpu_stat:type_name -> container.CpuStat
-	71, // 38: container.ResourceStat.mem_stat:type_name -> container.MemoryStat
-	73, // 39: container.ResourceStat.disk_stat:type_name -> container.DiskStat
-	72, // 40: container.ResourceStat.block_stat:type_name -> container.BlockStat
-	74, // 41: container.ResourceStat.net_stat:type_name -> container.NetworkStats
-	86, // 42: container.SecurityConfig.proc_protection:type_name -> security.ProcProtection
-	86, // 43: container.SecurityConfig.nproc_protection:type_name -> security.ProcProtection
-	87, // 44: container.SecurityConfig.file_protection:type_name -> security.FileProtection
-	88, // 45: container.SecurityConfig.network_rule:type_name -> security.NetworkRuleList
-	67, // 46: container.ContainerConfigs.mounts:type_name -> container.Mount
-	77, // 47: container.ContainerConfigs.networks:type_name -> container.NetworkConfig
-	85, // 48: container.ContainerConfigs.envs:type_name -> container.ContainerConfigs.EnvsEntry
-	68, // 49: container.ContainerConfigs.restart_policy:type_name -> container.RestartPolicy
-	78, // 50: container.ContainerConfigs.resouce_limit:type_name -> container.ResourceLimit
-	79, // 51: container.ContainerConfigs.security_config:type_name -> container.SecurityConfig
-	80, // 52: container.ContainerTemplate.conf:type_name -> container.ContainerConfigs
-	30, // 53: container.Container.List:input_type -> container.ListRequest
-	32, // 54: container.Container.Create:input_type -> container.CreateRequest
-	34, // 55: container.Container.Inspect:input_type -> container.InspectRequest
-	36, // 56: container.Container.Start:input_type -> container.StartRequest
-	38, // 57: container.Container.Stop:input_type -> container.StopRequest
-	46, // 58: container.Container.Remove:input_type -> container.RemoveRequest
-	42, // 59: container.Container.Restart:input_type -> container.RestartRequest
-	44, // 60: container.Container.Update:input_type -> container.UpdateRequest
-	18, // 61: container.Container.CreateBackup:input_type -> container.CreateBackupRequest
-	20, // 62: container.Container.UpdateBackup:input_type -> container.UpdateBackupRequest
-	22, // 63: container.Container.ResumeBackup:input_type -> container.ResumeBackupRequest
-	24, // 64: container.Container.RemoveBackup:input_type -> container.RemoveBackupRequest
-	26, // 65: container.Container.ListBackup:input_type -> container.ListBackupRequest
-	1,  // 66: container.Container.ExportBackup:input_type -> container.ExportBackupRequest
-	28, // 67: container.Container.ListBackupImage:input_type -> container.ListBackupImageRequest
-	3,  // 68: container.Container.InspectBackup:input_type -> container.InspectBackupRequest
-	52, // 69: container.Container.ListTemplate:input_type -> container.ListTemplateRequest
-	54, // 70: container.Container.CreateTemplate:input_type -> container.CreateTemplateRequest
-	56, // 71: container.Container.UpdateTemplate:input_type -> container.UpdateTemplateRequest
-	60, // 72: container.Container.InspectTemplate:input_type -> container.InspectTemplateRequest
-	58, // 73: container.Container.RemoveTemplate:input_type -> container.RemoveTemplateRequest
-	6,  // 74: container.Container.ListAppEntry:input_type -> container.ListAppEntryRequest
-	8,  // 75: container.Container.AddAppEntry:input_type -> container.AddAppEntryRequest
-	10, // 76: container.Container.UpdateAppEntry:input_type -> container.UpdateAppEntryRequest
-	12, // 77: container.Container.RemoveAppEntry:input_type -> container.RemoveAppEntryRequest
-	14, // 78: container.Container.RunAppEntry:input_type -> container.RunAppEntryRequest
-	16, // 79: container.Container.KillAppEntry:input_type -> container.KillAppEntryRequest
-	50, // 80: container.Container.MonitorHistory:input_type -> container.MonitorHistoryRequest
-	31, // 81: container.Container.List:output_type -> container.ListReply
-	33, // 82: container.Container.Create:output_type -> container.CreateReply
-	35, // 83: container.Container.Inspect:output_type -> container.InspectReply
-	37, // 84: container.Container.Start:output_type -> container.StartReply
-	39, // 85: container.Container.Stop:output_type -> container.StopReply
-	47, // 86: container.Container.Remove:output_type -> container.RemoveReply
-	43, // 87: container.Container.Restart:output_type -> container.RestartReply
-	45, // 88: container.Container.Update:output_type -> container.UpdateReply
-	19, // 89: container.Container.CreateBackup:output_type -> container.CreateBackupReply
-	21, // 90: container.Container.UpdateBackup:output_type -> container.UpdateBackupReply
-	23, // 91: container.Container.ResumeBackup:output_type -> container.ResumeBackupReply
-	25, // 92: container.Container.RemoveBackup:output_type -> container.RemoveBackupReply
-	27, // 93: container.Container.ListBackup:output_type -> container.ListBackupReply
-	2,  // 94: container.Container.ExportBackup:output_type -> container.ExportBackupReply
-	29, // 95: container.Container.ListBackupImage:output_type -> container.ListBackupImageReply
-	4,  // 96: container.Container.InspectBackup:output_type -> container.InspectBackupReply
-	53, // 97: container.Container.ListTemplate:output_type -> container.ListTemplateReply
-	55, // 98: container.Container.CreateTemplate:output_type -> container.CreateTemplateReply
-	57, // 99: container.Container.UpdateTemplate:output_type -> container.UpdateTemplateReply
-	61, // 100: container.Container.InspectTemplate:output_type -> container.InspectTemplateReply
-	59, // 101: container.Container.RemoveTemplate:output_type -> container.RemoveTemplateReply
-	7,  // 102: container.Container.ListAppEntry:output_type -> container.ListAppEntryReply
-	9,  // 103: container.Container.AddAppEntry:output_type -> container.AddAppEntryReply
-	11, // 104: container.Container.UpdateAppEntry:output_type -> container.UpdateAppEntryReply
-	13, // 105: container.Container.RemoveAppEntry:output_type -> container.RemoveAppEntryReply
-	15, // 106: container.Container.RunAppEntry:output_type -> container.RunAppEntryReply
-	17, // 107: container.Container.KillAppEntry:output_type -> container.KillAppEntryReply
-	51, // 108: container.Container.MonitorHistory:output_type -> container.MonitorHistoryReply
-	81, // [81:109] is the sub-list for method output_type
-	53, // [53:81] is the sub-list for method input_type
-	53, // [53:53] is the sub-list for extension type_name
-	53, // [53:53] is the sub-list for extension extendee
-	0,  // [0:53] is the sub-list for field type_name
+	67, // 21: container.UpdateRequest.mounts:type_name -> container.Mount
+	84, // 22: container.UpdateRequest.envs:type_name -> container.UpdateRequest.EnvsEntry
+	66, // 23: container.RemoveRequest.ids:type_name -> container.ContainerIdList
+	83, // 24: container.RemoveReply.fail_infos:type_name -> container.ContainerFailInfo
+	75, // 25: container.StatusReply.status:type_name -> container.ResourceStat
+	76, // 26: container.MonitorHistoryReply.cpu_usage:type_name -> container.MonitorSample
+	76, // 27: container.MonitorHistoryReply.memory_usage:type_name -> container.MonitorSample
+	76, // 28: container.MonitorHistoryReply.disk_usage:type_name -> container.MonitorSample
+	76, // 29: container.MonitorHistoryReply.net_rx:type_name -> container.MonitorSample
+	76, // 30: container.MonitorHistoryReply.net_tx:type_name -> container.MonitorSample
+	78, // 31: container.MonitorHistoryReply.rsc_limit:type_name -> container.ResourceLimit
+	81, // 32: container.ListTemplateReply.data:type_name -> container.ContainerTemplate
+	81, // 33: container.CreateTemplateRequest.data:type_name -> container.ContainerTemplate
+	81, // 34: container.UpdateTemplateRequest.data:type_name -> container.ContainerTemplate
+	81, // 35: container.InspectTemplateReply.data:type_name -> container.ContainerTemplate
+	65, // 36: container.NodeContainer.info:type_name -> container.ContainerInfo
+	85, // 37: container.ContainerInfo.labels:type_name -> container.ContainerInfo.LabelsEntry
+	75, // 38: container.ContainerInfo.resource_stat:type_name -> container.ResourceStat
+	70, // 39: container.ResourceStat.cpu_stat:type_name -> container.CpuStat
+	71, // 40: container.ResourceStat.mem_stat:type_name -> container.MemoryStat
+	73, // 41: container.ResourceStat.disk_stat:type_name -> container.DiskStat
+	72, // 42: container.ResourceStat.block_stat:type_name -> container.BlockStat
+	74, // 43: container.ResourceStat.net_stat:type_name -> container.NetworkStats
+	87, // 44: container.SecurityConfig.proc_protection:type_name -> security.ProcProtection
+	87, // 45: container.SecurityConfig.nproc_protection:type_name -> security.ProcProtection
+	88, // 46: container.SecurityConfig.file_protection:type_name -> security.FileProtection
+	89, // 47: container.SecurityConfig.network_rule:type_name -> security.NetworkRuleList
+	67, // 48: container.ContainerConfigs.mounts:type_name -> container.Mount
+	77, // 49: container.ContainerConfigs.networks:type_name -> container.NetworkConfig
+	86, // 50: container.ContainerConfigs.envs:type_name -> container.ContainerConfigs.EnvsEntry
+	68, // 51: container.ContainerConfigs.restart_policy:type_name -> container.RestartPolicy
+	78, // 52: container.ContainerConfigs.resouce_limit:type_name -> container.ResourceLimit
+	79, // 53: container.ContainerConfigs.security_config:type_name -> container.SecurityConfig
+	80, // 54: container.ContainerTemplate.conf:type_name -> container.ContainerConfigs
+	30, // 55: container.Container.List:input_type -> container.ListRequest
+	32, // 56: container.Container.Create:input_type -> container.CreateRequest
+	34, // 57: container.Container.Inspect:input_type -> container.InspectRequest
+	36, // 58: container.Container.Start:input_type -> container.StartRequest
+	38, // 59: container.Container.Stop:input_type -> container.StopRequest
+	46, // 60: container.Container.Remove:input_type -> container.RemoveRequest
+	42, // 61: container.Container.Restart:input_type -> container.RestartRequest
+	44, // 62: container.Container.Update:input_type -> container.UpdateRequest
+	18, // 63: container.Container.CreateBackup:input_type -> container.CreateBackupRequest
+	20, // 64: container.Container.UpdateBackup:input_type -> container.UpdateBackupRequest
+	22, // 65: container.Container.ResumeBackup:input_type -> container.ResumeBackupRequest
+	24, // 66: container.Container.RemoveBackup:input_type -> container.RemoveBackupRequest
+	26, // 67: container.Container.ListBackup:input_type -> container.ListBackupRequest
+	1,  // 68: container.Container.ExportBackup:input_type -> container.ExportBackupRequest
+	28, // 69: container.Container.ListBackupImage:input_type -> container.ListBackupImageRequest
+	3,  // 70: container.Container.InspectBackup:input_type -> container.InspectBackupRequest
+	52, // 71: container.Container.ListTemplate:input_type -> container.ListTemplateRequest
+	54, // 72: container.Container.CreateTemplate:input_type -> container.CreateTemplateRequest
+	56, // 73: container.Container.UpdateTemplate:input_type -> container.UpdateTemplateRequest
+	60, // 74: container.Container.InspectTemplate:input_type -> container.InspectTemplateRequest
+	58, // 75: container.Container.RemoveTemplate:input_type -> container.RemoveTemplateRequest
+	6,  // 76: container.Container.ListAppEntry:input_type -> container.ListAppEntryRequest
+	8,  // 77: container.Container.AddAppEntry:input_type -> container.AddAppEntryRequest
+	10, // 78: container.Container.UpdateAppEntry:input_type -> container.UpdateAppEntryRequest
+	12, // 79: container.Container.RemoveAppEntry:input_type -> container.RemoveAppEntryRequest
+	14, // 80: container.Container.RunAppEntry:input_type -> container.RunAppEntryRequest
+	16, // 81: container.Container.KillAppEntry:input_type -> container.KillAppEntryRequest
+	50, // 82: container.Container.MonitorHistory:input_type -> container.MonitorHistoryRequest
+	31, // 83: container.Container.List:output_type -> container.ListReply
+	33, // 84: container.Container.Create:output_type -> container.CreateReply
+	35, // 85: container.Container.Inspect:output_type -> container.InspectReply
+	37, // 86: container.Container.Start:output_type -> container.StartReply
+	39, // 87: container.Container.Stop:output_type -> container.StopReply
+	47, // 88: container.Container.Remove:output_type -> container.RemoveReply
+	43, // 89: container.Container.Restart:output_type -> container.RestartReply
+	45, // 90: container.Container.Update:output_type -> container.UpdateReply
+	19, // 91: container.Container.CreateBackup:output_type -> container.CreateBackupReply
+	21, // 92: container.Container.UpdateBackup:output_type -> container.UpdateBackupReply
+	23, // 93: container.Container.ResumeBackup:output_type -> container.ResumeBackupReply
+	25, // 94: container.Container.RemoveBackup:output_type -> container.RemoveBackupReply
+	27, // 95: container.Container.ListBackup:output_type -> container.ListBackupReply
+	2,  // 96: container.Container.ExportBackup:output_type -> container.ExportBackupReply
+	29, // 97: container.Container.ListBackupImage:output_type -> container.ListBackupImageReply
+	4,  // 98: container.Container.InspectBackup:output_type -> container.InspectBackupReply
+	53, // 99: container.Container.ListTemplate:output_type -> container.ListTemplateReply
+	55, // 100: container.Container.CreateTemplate:output_type -> container.CreateTemplateReply
+	57, // 101: container.Container.UpdateTemplate:output_type -> container.UpdateTemplateReply
+	61, // 102: container.Container.InspectTemplate:output_type -> container.InspectTemplateReply
+	59, // 103: container.Container.RemoveTemplate:output_type -> container.RemoveTemplateReply
+	7,  // 104: container.Container.ListAppEntry:output_type -> container.ListAppEntryReply
+	9,  // 105: container.Container.AddAppEntry:output_type -> container.AddAppEntryReply
+	11, // 106: container.Container.UpdateAppEntry:output_type -> container.UpdateAppEntryReply
+	13, // 107: container.Container.RemoveAppEntry:output_type -> container.RemoveAppEntryReply
+	15, // 108: container.Container.RunAppEntry:output_type -> container.RunAppEntryReply
+	17, // 109: container.Container.KillAppEntry:output_type -> container.KillAppEntryReply
+	51, // 110: container.Container.MonitorHistory:output_type -> container.MonitorHistoryReply
+	83, // [83:111] is the sub-list for method output_type
+	55, // [55:83] is the sub-list for method input_type
+	55, // [55:55] is the sub-list for extension type_name
+	55, // [55:55] is the sub-list for extension extendee
+	0,  // [0:55] is the sub-list for field type_name
 }
 
 func init() { file_container_proto_init() }
@@ -7071,7 +7074,7 @@ func file_container_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_container_proto_rawDesc,
 			NumEnums:      1,
-			NumMessages:   85,
+			NumMessages:   86,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

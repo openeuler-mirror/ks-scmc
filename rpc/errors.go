@@ -1,6 +1,7 @@
 package rpc
 
 import (
+	"github.com/docker/go-units"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
@@ -45,3 +46,7 @@ var (
 	ErrContainerCmdOperation    = rpcError(pb.Errno_CCmdOperationFailed, "配置启停控制失败")
 	ErrContainerNetworkRule     = rpcError(pb.Errno_CNetworkRuleFailed, "配置网络规则失败")
 )
+
+func ErrImageSize(size float64) error {
+	return status.Errorf(codes.InvalidArgument, "镜像大小超过上限（%s）", units.BytesSize(size))
+}

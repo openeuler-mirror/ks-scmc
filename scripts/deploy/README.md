@@ -8,16 +8,18 @@
 
 ## 0 安装依赖
 
-需要安装两个python依赖包：
+首先安装python3及其包管理工具：`yum install -y python3 python3-pip`
+
+安装python依赖包：
 
 - ansible >= 2.9
 - paramiko
 
-以下三种方法任选一种可行的即可。
+操作系统版本KY3.3（python3.6）使用yum安装：`yum install -y ansible python3-paramiko`
 
-1. 安装当前目录下的python依赖包：`pip3 install deps/*`
-2. 安装RPM包：`yum install ansible python3-paramiko` （确保ansible最低版本2.9）
-3. 在线安装pip包：`pip3 install ansible>=2.9 paramiko`
+操作系统版本KY3.4（python3.7）使用pip安装当前目录下的依赖包：`pip3 install deps/*`
+
+其他版本的操作系统/python 可以在线安装pip包：`pip3 install ansible>=2.9 paramiko`
 
 ## 1 更新配置文件 `hosts`
 

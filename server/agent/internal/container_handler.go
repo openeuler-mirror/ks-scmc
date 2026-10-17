@@ -378,7 +378,9 @@ func (s *ContainerServer) Start(ctx context.Context, in *pb.StartRequest) (*pb.S
 		if err := cli.ContainerStart(context.Background(), id, opts); err != nil {
 			log.Warnf("ContainerStart: id=%v %v", id, err)
 			var faileReason string
-			if s, _ := status.FromError(err); s != nil {
+			if strings.HasSuffix(err.Error(), "Address already in use") {
+				faileReason = "IP已被占用"
+			} else if s, _ := status.FromError(err); s != nil {
 				faileReason = s.Message()
 			}
 			reply.FailInfos = append(reply.FailInfos, &pb.ContainerFailInfo{

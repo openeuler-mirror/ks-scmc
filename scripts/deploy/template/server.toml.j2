@@ -19,6 +19,7 @@ port = 10050
 super-user = true
 virtual-if = "{{ cluster.virtual_ip_nic | default('') }}"
 virtual-ip = "{{ cluster.virtual_ip | default('') }}"
+image-dir = "{{ image_dir }}"
 
 [mysql]
 addr = "{{ lookup('env', 'cluster.virtual_ip') | default('127.0.0.1', true) }}:3306"

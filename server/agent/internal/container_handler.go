@@ -143,13 +143,9 @@ func (s *ContainerServer) setSecurityConfig(id, uuid, name string, pid int, from
 	}
 
 	if fromUpdate {
-		if err := kysec.CleanFileAccess(id); err != nil {
-			log.Warnf("%v CleanFileAccess err:%v", id, err)
+		if err := kysec.CleanAll(id, false); err != nil {
+			log.Warnf("kysec.CleanAll: %v", err)
 			return rpc.ErrContainerFileProtection
-		}
-		if err := kysec.CleanWhiteList(id); err != nil {
-			log.Warnf("%v CleanWhiteList err:%v", id, err)
-			return rpc.ErrContainerProcProtection
 		}
 	}
 
@@ -189,19 +185,9 @@ func (s *ContainerServer) setSecurityConfig(id, uuid, name string, pid int, from
 		}
 	}
 
-	if sec.DisableCmdOperation {
-		if err := authz.AddSensitiveContainers(name, id); err != nil {
-			log.Warnf("AddSensitiveContainers err=%v", err)
-			return rpc.ErrContainerCmdOperation
-		}
-	} else {
-		if fromUpdate {
-			if err := authz.DelSensitiveContainers(name, id); err != nil {
-				log.Warnf("DelSensitiveContainers err=%v", err)
-				return rpc.ErrContainerCmdOperation
-			}
-		}
-
+	if err := authz.HandleSensitiveContainer(sec.DisableCmdOperation, fromUpdate, name, id); err != nil {
+		log.Warnf("HandleSensitiveContainer err=%v", err)
+		return rpc.ErrContainerCmdOperation
 	}
 
 	if sec.NetworkRule != nil {
@@ -237,10 +223,7 @@ func (s *ContainerServer) create(configs *pb.ContainerConfigs) (string, error) {
 	}
 
 	if err := ensureImage(configs.Image); err != nil {
-		if _, ok := status.FromError(err); ok {
-			return "", err
-		}
-		return "", rpc.ErrInternal
+		return "", status.Errorf(codes.Internal, "检查镜像信息失败")
 	}
 
 	config := container.Config{
@@ -249,18 +232,13 @@ func (s *ContainerServer) create(configs *pb.ContainerConfigs) (string, error) {
 			"KS_SCMC_DESC": configs.Desc,
 			"KS_SCMC_UUID": configs.Uuid,
 		},
+		Env:         createContainerEnvs(configs.Envs, configs.Uuid),
 		AttachStdin: true, // AttachStdin, Tty: make sure container like OS(ubuntu, centos) will not exit after start
 		Tty:         true,
 	}
 	hostConfig := container.HostConfig{
 		Privileged: false, // force non-privileged
 	}
-	var networkConfig *network.NetworkingConfig
-
-	for k, v := range configs.Envs {
-		config.Env = append(config.Env, fmt.Sprintf("%s=%s", k, v))
-	}
-	config.Env = append(config.Env, fmt.Sprintf("KS_SCMC_UUID=%s", configs.Uuid))
 
 	for _, m := range configs.Mounts {
 		hostConfig.Mounts = append(hostConfig.Mounts, mount.Mount{
@@ -276,7 +254,6 @@ func (s *ContainerServer) create(configs *pb.ContainerConfigs) (string, error) {
 		log.Infof("containerGraphicSetup err=%v", err)
 		return "", rpc.ErrInternal
 	}
-	config.Labels["KS_SCMC_GRAPHIC"] = "1"
 
 	if configs.RestartPolicy != nil {
 		hostConfig.RestartPolicy.Name = configs.RestartPolicy.Name
@@ -294,32 +271,33 @@ func (s *ContainerServer) create(configs *pb.ContainerConfigs) (string, error) {
 		}
 	}
 
+	networkConfig := &network.NetworkingConfig{
+		EndpointsConfig: make(map[string]*network.EndpointSettings, len(configs.Networks)),
+	}
+	for _, v := range configs.Networks {
+		if err := checkNetworkInfo(v.Interface, "", &v.IpAddress, int(v.IpPrefixLen)); err != nil {
+			return "", err
+		}
+
+		networkConfig.EndpointsConfig[v.Interface] = &network.EndpointSettings{
+			IPAMConfig: &network.EndpointIPAMConfig{
+				IPv4Address: v.IpAddress,
+			},
+			IPAddress:   v.IpAddress,
+			IPPrefixLen: int(v.IpPrefixLen),
+			MacAddress:  v.MacAddress,
+			Gateway:     v.Gateway,
+		}
+	}
+
 	var networkConfigCreate *network.NetworkingConfig
 	if len(configs.Networks) > 0 {
-		networkConfig = &network.NetworkingConfig{
-			EndpointsConfig: make(map[string]*network.EndpointSettings, len(configs.Networks)),
-		}
-		for _, v := range configs.Networks {
-			if err := checkNetworkInfo(v.Interface, "", &v.IpAddress, int(v.IpPrefixLen)); err != nil {
-				return "", err
-			}
-
-			networkConfig.EndpointsConfig[v.Interface] = &network.EndpointSettings{
-				IPAMConfig: &network.EndpointIPAMConfig{},
-			}
-
-			networkConfig.EndpointsConfig[v.Interface].IPAMConfig.IPv4Address = v.IpAddress
-			networkConfig.EndpointsConfig[v.Interface].IPAddress = v.IpAddress
-			networkConfig.EndpointsConfig[v.Interface].IPPrefixLen = int(v.IpPrefixLen)
-			networkConfig.EndpointsConfig[v.Interface].MacAddress = v.MacAddress
-			networkConfig.EndpointsConfig[v.Interface].Gateway = v.Gateway
-		}
-
 		ifs := configs.Networks[0].Interface
 		networkConfigCreate = &network.NetworkingConfig{
-			EndpointsConfig: make(map[string]*network.EndpointSettings, 1),
+			EndpointsConfig: map[string]*network.EndpointSettings{
+				ifs: networkConfig.EndpointsConfig[ifs],
+			},
 		}
-		networkConfigCreate.EndpointsConfig[ifs] = networkConfig.EndpointsConfig[ifs]
 	}
 
 	body, err := cli.ContainerCreate(context.Background(), &config, &hostConfig, networkConfigCreate, nil, configs.Name)
@@ -540,15 +518,13 @@ func (s *ContainerServer) Update(ctx context.Context, in *pb.UpdateRequest) (*pb
 		return nil, rpc.ErrDatabaseFail
 	}
 
-	if in.Networks != nil {
-		for _, v := range in.Networks {
-			if err := checkNetworkInfo(v.Interface, in.ContainerId, &v.IpAddress, int(v.IpPrefixLen)); err != nil {
-				return nil, err
-			}
+	for _, v := range in.Networks {
+		if err := checkNetworkInfo(v.Interface, in.ContainerId, &v.IpAddress, int(v.IpPrefixLen)); err != nil {
+			return nil, err
 		}
 	}
 
-	inspectConfigs, err := s.inspect(in.ContainerId, false)
+	inspectConfigs, pid, err := s.inspect(in.ContainerId, false)
 	if err != nil {
 		log.Warnf("inspect container=%v err=%v", in.ContainerId, err)
 		return nil, rpc.ErrInternal
@@ -580,82 +556,7 @@ func (s *ContainerServer) Update(ctx context.Context, in *pb.UpdateRequest) (*pb
 		log.Infof("ContainerUpdate result warnings: %v", body.Warnings)
 	}
 
-	var pid int
-	if in.Networks != nil {
-		info, err := cli.ContainerInspect(context.Background(), in.ContainerId)
-		if err != nil {
-			log.Warnf("ContainerInspect: %v", err)
-			return nil, transDockerError(err)
-		}
-		if info.State != nil {
-			pid = info.State.Pid
-		}
-
-		if info.NetworkSettings != nil {
-			m := make(map[string]struct{})
-			for _, v := range in.Networks {
-				m[v.Interface] = struct{}{}
-			}
-			for k := range info.NetworkSettings.Networks {
-				if _, ok := m[k]; !ok {
-					if err = cli.NetworkDisconnect(context.Background(), k, in.ContainerId, true); err != nil {
-						log.Warnf("NetworkDisconnect: %v", err)
-					}
-				}
-			}
-
-			for _, v := range in.Networks {
-				_, ok := info.NetworkSettings.Networks[v.Interface]
-				if ok {
-					//修改
-					if v.IpAddress != info.NetworkSettings.Networks[v.Interface].IPAddress {
-						if err = cli.NetworkDisconnect(context.Background(), v.Interface, in.ContainerId, true); err != nil {
-							log.Warnf("NetworkDisconnect: %v", err)
-						}
-					} else {
-						continue
-					}
-				}
-				config := &network.EndpointSettings{
-					NetworkID:   v.Interface,
-					Gateway:     v.Gateway,
-					IPAddress:   v.IpAddress,
-					IPPrefixLen: int(v.IpPrefixLen),
-					MacAddress:  v.MacAddress,
-				}
-
-				config.IPAMConfig = &network.EndpointIPAMConfig{
-					IPv4Address: v.IpAddress,
-				}
-
-				err = cli.NetworkConnect(context.Background(), v.Interface, in.ContainerId, config)
-				if err != nil {
-					log.Warnf("NetworkConnect: %v", err)
-					return nil, transDockerError(err)
-				}
-			}
-		} else {
-			for _, v := range in.Networks {
-				config := &network.EndpointSettings{
-					NetworkID:   v.Interface,
-					Gateway:     v.Gateway,
-					IPAddress:   v.IpAddress,
-					IPPrefixLen: int(v.IpPrefixLen),
-					MacAddress:  v.MacAddress,
-				}
-
-				config.IPAMConfig = &network.EndpointIPAMConfig{
-					IPv4Address: v.IpAddress,
-				}
-
-				err = cli.NetworkConnect(context.Background(), v.Interface, in.ContainerId, config)
-				if err != nil {
-					log.Warnf("NetworkConnect: %v", err)
-					return nil, transDockerError(err)
-				}
-			}
-		}
-	}
+	updateNetwork(ctx, cli, in.ContainerId, in.Networks)
 
 	if err := s.setSecurityConfig(in.ContainerId, inspectConfigs.Uuid, inspectConfigs.Name, pid, true, in.SecurityConfig); err != nil {
 		log.Warnf("Update setSecurityConfig err=%v", err)
@@ -671,6 +572,51 @@ func (s *ContainerServer) Update(ctx context.Context, in *pb.UpdateRequest) (*pb
 	return &reply, nil
 }
 
+func updateNetwork(ctx context.Context, cli *client.Client, containerID string, networks []*pb.NetworkConfig) error {
+	if len(networks) == 0 {
+		return nil
+	}
+
+	info, err := cli.ContainerInspect(context.Background(), containerID)
+	if err != nil {
+		log.Warnf("ContainerInspect: %v", err)
+		return transDockerError(err)
+	}
+
+	if info.NetworkSettings == nil {
+		for _, v := range networks {
+			dockerNetworkConnect(ctx, cli, containerID, v)
+		}
+		return nil
+	}
+
+	m := make(map[string]bool, len(networks))
+	for _, v := range networks {
+		m[v.Interface] = true
+	}
+	for k := range info.NetworkSettings.Networks {
+		if _, ok := m[k]; ok {
+			continue
+		}
+		dockerNetworkDisconnect(ctx, cli, containerID, k) // 被删除的连接
+	}
+
+	for _, v := range networks {
+		_, ok := info.NetworkSettings.Networks[v.Interface]
+		if !ok {
+			dockerNetworkConnect(ctx, cli, containerID, v) // 新连接
+			continue
+		}
+
+		// 修改IP
+		if v.IpAddress != info.NetworkSettings.Networks[v.Interface].IPAddress {
+			dockerNetworkDisconnect(ctx, cli, containerID, v.Interface)
+			dockerNetworkConnect(ctx, cli, containerID, v)
+		}
+	}
+	return nil
+}
+
 func (s *ContainerServer) remove(cli *client.Client, containerID string, force bool) error {
 	if cli == nil {
 		c, err := docker.Client()
@@ -680,7 +626,7 @@ func (s *ContainerServer) remove(cli *client.Client, containerID string, force b
 		cli = c
 	}
 
-	configs, err := s.inspect(containerID, false)
+	configs, _, err := s.inspect(containerID, false)
 	if err != nil {
 		log.Warnf("inspect container=%v err=%v", containerID, err)
 		return err
@@ -751,8 +697,6 @@ func (s *ContainerServer) Remove(ctx context.Context, in *pb.RemoveRequest) (*pb
 		reply.OkIds = append(reply.OkIds, id)
 	}
 
-	// TODO remove container configs
-	// TODO remove container backups
 	litedb.RemoveContainerConfig(reply.OkIds)
 	go s.removeContainerBackups(reply.OkIds)
 
@@ -777,16 +721,16 @@ func (s *ContainerServer) removeContainerBackups(ids []string) error {
 	return nil
 }
 
-func (s *ContainerServer) inspect(id string, backup bool) (*pb.ContainerConfigs, error) {
+func (s *ContainerServer) inspect(id string, backup bool) (*pb.ContainerConfigs, int, error) {
 	cli, err := docker.Client()
 	if err != nil {
-		return nil, rpc.ErrInternal
+		return nil, 0, rpc.ErrInternal
 	}
 
 	info, _, err := cli.ContainerInspectWithRaw(context.Background(), id, true)
 	if err != nil {
 		log.Warnf("ContainerInspectWithRaw: %v", err)
-		return nil, transDockerError(err)
+		return nil, 0, transDockerError(err)
 	}
 
 	configs := &pb.ContainerConfigs{
@@ -796,48 +740,23 @@ func (s *ContainerServer) inspect(id string, backup bool) (*pb.ContainerConfigs,
 		ResouceLimit: &pb.ResourceLimit{},
 	}
 
+	var pid int
 	if info.State != nil {
 		configs.Status = info.State.Status
+		pid = info.State.Pid
 	}
 
 	if info.Config != nil {
-		// if image tag exists, use the tag, if not use image id
-		if _, _, err := cli.ImageInspectWithRaw(context.Background(), info.Config.Image); err == nil {
-			configs.Image = info.Config.Image
-		}
+		s.inspectConfig(cli, info.Config, configs)
+	}
 
-		if v, ok := info.Config.Labels["KS_SCMC_DESC"]; ok {
-			configs.Desc = v
-		}
-
-		if v, ok := info.Config.Labels["KS_SCMC_GRAPHIC"]; ok {
-			if v == "1" {
-				configs.EnableGraphic = true
-			}
-		}
-
-		if v, ok := info.Config.Labels["KS_SCMC_UUID"]; ok {
-			configs.Uuid = v
-		}
-
-		if len(info.Config.Env) > 0 {
-			configs.Envs = make(map[string]string, len(info.Config.Env))
-			for _, e := range info.Config.Env {
-				parts := strings.SplitN(e, "=", 2)
-				if len(parts) >= 2 {
-					configs.Envs[parts[0]] = parts[1]
-				}
-			}
-		}
-
-		for _, m := range info.Mounts {
-			configs.Mounts = append(configs.Mounts, &pb.Mount{
-				Type:     string(m.Type),
-				Source:   m.Source,
-				Target:   m.Destination,
-				ReadOnly: !m.RW,
-			})
-		}
+	for _, m := range info.Mounts {
+		configs.Mounts = append(configs.Mounts, &pb.Mount{
+			Type:     string(m.Type),
+			Source:   m.Source,
+			Target:   m.Destination,
+			ReadOnly: !m.RW,
+		})
 	}
 
 	if info.HostConfig != nil {
@@ -859,34 +778,61 @@ func (s *ContainerServer) inspect(id string, backup bool) (*pb.ContainerConfigs,
 	}
 
 	if info.NetworkSettings != nil {
-		for iface, m := range info.NetworkSettings.Networks {
-			if isPredefinedNetwork(iface) {
-				continue // 需要忽略默认创建的网络连接
-			}
-
-			var ipAddr string
-			if m.IPAMConfig != nil {
-				// 返回用户填的IP地址
-				ipAddr = m.IPAMConfig.IPv4Address
-			}
-
-			if !backup && m.IPAddress != "" {
-				// 非备份情况下，当用户没填IP地址，返回运行时IP
-				ipAddr = m.IPAddress
-			}
-
-			configs.Networks = append(configs.Networks, &pb.NetworkConfig{
-				Interface:   iface,
-				ContainerId: info.ID,
-				IpAddress:   ipAddr,
-				IpPrefixLen: int32(m.IPPrefixLen),
-				MacAddress:  m.MacAddress,
-				Gateway:     m.Gateway,
-			})
-		}
+		s.inspectNetwork(info.ID, backup, info.NetworkSettings, configs)
 	}
 
-	return configs, nil
+	return configs, pid, nil
+}
+
+func (s *ContainerServer) inspectConfig(cli *client.Client, config *container.Config, ret *pb.ContainerConfigs) {
+	// if image tag exists, use the tag, if not use image id
+	if _, _, err := cli.ImageInspectWithRaw(context.Background(), config.Image); err == nil {
+		ret.Image = config.Image
+	}
+
+	if v, ok := config.Labels["KS_SCMC_DESC"]; ok {
+		ret.Desc = v
+	}
+
+	if v, ok := config.Labels["KS_SCMC_UUID"]; ok {
+		ret.Uuid = v
+	}
+
+	if len(config.Env) > 0 {
+		ret.Envs = make(map[string]string, len(config.Env))
+		for _, e := range config.Env {
+			parts := strings.SplitN(e, "=", 2)
+			if len(parts) >= 2 {
+				ret.Envs[parts[0]] = parts[1]
+			}
+		}
+	}
+}
+
+func (s *ContainerServer) inspectNetwork(id string, backup bool, settings *types.NetworkSettings, ret *pb.ContainerConfigs) {
+	for iface, m := range settings.Networks {
+		if isPredefinedNetwork(iface) {
+			continue // 需要忽略默认创建的网络连接
+		}
+
+		var ipAddr string
+		if m.IPAMConfig != nil {
+			ipAddr = m.IPAMConfig.IPv4Address // 返回用户填的IP地址
+		}
+
+		if !backup && m.IPAddress != "" {
+			ipAddr = m.IPAddress // 非备份情况下，当用户没填IP地址，返回运行时IP
+		}
+
+		ret.Networks = append(ret.Networks, &pb.NetworkConfig{
+			Interface:   iface,
+			ContainerId: id,
+			IpAddress:   ipAddr,
+			IpPrefixLen: int32(m.IPPrefixLen),
+			MacAddress:  m.MacAddress,
+			Gateway:     m.Gateway,
+		})
+	}
 }
 
 func (s *ContainerServer) Inspect(ctx context.Context, in *pb.InspectRequest) (*pb.InspectReply, error) {
@@ -896,7 +842,7 @@ func (s *ContainerServer) Inspect(ctx context.Context, in *pb.InspectRequest) (*
 		return nil, rpc.ErrDatabaseFail
 	}
 
-	configs, err := s.inspect(in.ContainerId, false)
+	configs, _, err := s.inspect(in.ContainerId, false)
 	if err != nil {
 		return nil, err
 	}
@@ -1096,7 +1042,7 @@ func (s *ContainerServer) ResumeBackup(ctx context.Context, in *pb.ResumeBackupR
 	}
 
 	// inspect container
-	configs, err := s.inspect(in.ContainerId, true)
+	configs, _, err := s.inspect(in.ContainerId, true)
 	if err != nil {
 		log.Warnf("inspect container=%v err=%v", in.ContainerId, err)
 		return nil, rpc.ErrInternal

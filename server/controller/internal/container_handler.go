@@ -111,7 +111,7 @@ func (s *ContainerServer) Create(ctx context.Context, in *pb.CreateRequest) (*pb
 		r := in.Configs.ResouceLimit
 		if !args.Float64Resource.Check(r.CpuLimit, r.DiskLimit, r.MemoryLimit, r.MemorySoftLimit) ||
 			!args.Int64Resource.Check(r.CpuPrio) {
-			return nil, status.Errorf(codes.InvalidArgument, "容器资源参数错误")
+			return nil, rpc.ErrContainerResourceArgs
 		}
 	}
 
@@ -428,7 +428,7 @@ func (s *ContainerServer) Update(ctx context.Context, in *pb.UpdateRequest) (*pb
 		r := in.ResourceLimit
 		if !args.Float64Resource.Check(r.CpuLimit, r.DiskLimit, r.MemoryLimit, r.MemorySoftLimit) ||
 			!args.Int64Resource.Check(r.CpuPrio) {
-			return nil, status.Errorf(codes.InvalidArgument, "容器资源参数错误")
+			return nil, rpc.ErrContainerResourceArgs
 		}
 	}
 
@@ -538,7 +538,7 @@ func (s *ContainerServer) CreateTemplate(ctx context.Context, in *pb.CreateTempl
 		r := in.Data.Conf.ResouceLimit
 		if !args.Float64Resource.Check(r.CpuLimit, r.DiskLimit, r.MemoryLimit, r.MemorySoftLimit) ||
 			!args.Int64Resource.Check(r.CpuPrio) {
-			return nil, status.Errorf(codes.InvalidArgument, "容器资源参数错误")
+			return nil, rpc.ErrContainerResourceArgs
 		}
 	}
 
@@ -572,7 +572,7 @@ func (s *ContainerServer) UpdateTemplate(ctx context.Context, in *pb.UpdateTempl
 		r := in.Data.Conf.ResouceLimit
 		if !args.Float64Resource.Check(r.CpuLimit, r.DiskLimit, r.MemoryLimit, r.MemorySoftLimit) ||
 			!args.Int64Resource.Check(r.CpuPrio) {
-			return nil, status.Errorf(codes.InvalidArgument, "容器资源参数错误")
+			return nil, rpc.ErrContainerResourceArgs
 		}
 	}
 

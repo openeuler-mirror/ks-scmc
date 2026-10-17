@@ -228,3 +228,33 @@ func GetNodeStatus(n *db.NodeInfo) (*pb.NodeStatus, error) {
 	}
 	return s, nil
 }
+
+func GetNodeUsage(n *db.NodeInfo) (*pb.NodeStatus, error) {
+	conn, err := getAgentConn(n.Address)
+	if err != nil {
+		log.Warnf("Failed to connect to agent service, node=%+v", n)
+		return nil, err
+	}
+
+	cli := pb.NewNodeClient(conn)
+	ctx_, cancel := context.WithTimeout(context.Background(), time.Second*5)
+	defer cancel()
+	require := &pb.UsageRequest{
+		StartTime: int64(time.Now().Unix() - 60),
+		EndTime:   int64(time.Now().Unix()),
+	}
+	r, err := cli.Usage(ctx_, require)
+	if err != nil {
+		log.Warnf("get node Usage ID=%v address=%v: %v", n.ID, n.Address, err)
+		s, ok := status.FromError(err)
+		if ok && s.Code() == codes.Unavailable {
+			return &pb.NodeStatus{
+				State: int64(pb.NodeState_Offline),
+			}, nil
+		}
+		return &pb.NodeStatus{
+			State: int64(pb.NodeState_Unknown),
+		}, nil
+	}
+	return r.Status, err
+}

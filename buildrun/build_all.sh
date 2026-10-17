@@ -86,6 +86,9 @@ kspkgs="\$(rpm -qa | grep -E '^$g_software_name')"
 echo "sudo rpm -e \$kspkgs --nodeps"
 sudo rpm -e \$kspkgs --nodeps
 
+systemctl disable cadvisor.service --now
+systemctl disable opensnitch.service --now
+
 echo "sudo rm -rf \$shelldir/\$shellname"
 sudo rm -rf \$shelldir/\$shellname
 

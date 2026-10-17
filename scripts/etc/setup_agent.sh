@@ -48,7 +48,9 @@ ExecStart=/usr/bin/cadvisor \\
         --storage_driver_secure=\${CADVISOR_STORAGE_DRIVER_SECURE} \\
         --storage_driver_user=\${CADVISOR_STORAGE_DRIVER_USER} \\
         --logtostderr=\${CADVISOR_LOG_TO_STDERR} \\
-        --disable_metrics=\${CADVISOR_DISABLED_METRICS}
+        --disable_metrics=\${CADVISOR_DISABLE_METRICS} \\
+        --event_storage_age_limit=\${CADVISOR_EVENT_STORAGE_AGE_LIMIT} \\
+        --global_housekeeping_interval=\${CADVISOR_GLOBAL_HOUSEKEEPING_INTERVAL}
 
 [Install]
 WantedBy=multi-user.target

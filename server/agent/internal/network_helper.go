@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net"
 	"os"
+	"time"
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/events"
@@ -164,20 +165,8 @@ func checkNetworkInfo(ifaceName, containerId string, ipAddr *string, masklen int
 	return nil
 }
 
-func ContainerWhiteCongig() error {
-	cli, err := docker.Client()
-	if err != nil {
-		return err
-	}
-
-	options := types.EventsOptions{}
-	eventq, errq := cli.Events(context.Background(), options)
-	if err != nil {
-		log.Warnf("Events: %v", err)
-		return err
-	}
-
-	eventProcessor := func(e events.Message) {
+func ContainerWhiteConfig() error {
+	eventProcessor := func(cli *client.Client, e events.Message) {
 		switch e.Status {
 		case "start":
 			{
@@ -194,33 +183,29 @@ func ContainerWhiteCongig() error {
 					iptables.ContainerWhitelistInitialization(fileName, info.State.Pid)
 				}
 			}
-			/*
-				case "destroy":
-					{
-						var name string
-						if e.Actor.Attributes != nil {
-							name = e.Actor.Attributes["name"]
-						}
-						fileName := e.ID + "-" + name
-						model.ContainerRemveIPtables(fileName)
-					}
-			*/
 		}
 	}
-
-	go func() {
-		for {
-			select {
-			case evt := <-eventq:
-				eventProcessor(evt)
-			case err := <-errq:
-				log.Errorf("error getting events from daemon: %v", err)
-				return
-			}
+	for {
+		cli, err := docker.Client()
+		if err != nil {
+			return err
 		}
-	}()
 
-	return nil
+		options := types.EventsOptions{}
+		eventq, errq := cli.Events(context.Background(), options)
+		if err != nil {
+			log.Warnf("Events: %v", err)
+			return err
+		}
+
+		select {
+		case evt := <-eventq:
+			eventProcessor(cli, evt)
+		case err := <-errq:
+			log.Infof("error getting events from daemon: %v", err)
+			time.Sleep(time.Second * 1)
+		}
+	}
 }
 
 func getLinkIfs() []string {

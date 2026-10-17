@@ -69,7 +69,7 @@ func Server() (*grpc.Server, error) {
 	resumeContainerConfigs()
 
 	go internal.NodeWhitelistConfig()
-	go internal.ContainerWhiteCongig()
+	go internal.ContainerWhiteConfig()
 	go internal.CPUUsageProbe()
 
 	return s, nil

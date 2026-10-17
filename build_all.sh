@@ -23,6 +23,11 @@ dobuild() {
 	pushd $SHELL_FOLDER/scripts
 	zip $SHELL_FOLDER/buildrun/${pkg_name}-deploy-$(date "+%Y%m%d").zip deploy/ -r
 	popd
+
+	pushd $SHELL_FOLDER/sdk
+	rm -rf __pycache__/ *_pb2.py *_pb2_grpc.py
+	popd
+	zip $SHELL_FOLDER/buildrun/${pkg_name}-sdk-$(date "+%Y%m%d").zip sdk/ -r
 }
 
 usage() {

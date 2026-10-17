@@ -41,13 +41,8 @@
     FLUSH PRIVILEGES;
     EOF
 - name: MYSQL 检查主从复制状态（高可用）
-  timeout: 60
-  shell: |
-    while 1; do
-      SLAVE_STAUTS=$(mysql -uroot -p'{{ mysql.root_password }}' -e "SHOW SLAVE STATUS \G" | grep "Slave_IO_Running")
-      if [[ "$SLAVE_STAUTS" =~ "Yes" ]]; then
-        break
-      else
-        sleep 1
-      fi
-    done
+  shell: mysql -uroot -p'{{ mysql.root_password }}' -e "SHOW SLAVE STATUS \G"
+  register: replication_status
+  until: "replication_status.stdout.find('Slave_IO_Running: Yes') != -1"
+  retries: 30
+  delay: 1

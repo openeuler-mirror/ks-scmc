@@ -57,14 +57,27 @@ func UserPermFromContext(ctx context.Context) ([]*pb.Permission, bool) {
 
 func UnaryInterceptor() grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (reply interface{}, err error) {
-		ctx = context.WithValue(ctx, keyUserID, "0") // default uid
+		md, ok := metadata.FromIncomingContext(ctx)
+		if !ok {
+			log.Infof("get metadata from incoming context failed")
+			return nil, rpc.ErrUnauthenticated
+		}
 
+		yes, err := checkApiToken(md)
+		if yes {
+			if err != nil {
+				return nil, err
+			}
+			goto handle
+		}
+
+		ctx = context.WithValue(ctx, keyUserID, "0") // default uid
 		if common.SuperUser() && rpcAllowSuperUser(info.FullMethod) {
 			goto handle
 		}
 
 		if rpcNeedCheckAuth(info.FullMethod) {
-			userID, sessionKey, err := getAuthInfo(ctx)
+			userID, sessionKey, err := getAuthInfo(md)
 			if err != nil {
 				return nil, err
 			}
@@ -94,8 +107,22 @@ func StreamInterceptor() grpc.StreamServerInterceptor {
 		ctx := stream.Context()
 		ctx = context.WithValue(ctx, keyUserID, "0") // default uid
 
+		md, ok := metadata.FromIncomingContext(ctx)
+		if !ok {
+			log.Infof("get metadata from incoming context failed")
+			return rpc.ErrUnauthenticated
+		}
+
+		yes, err := checkApiToken(md)
+		if yes {
+			if err != nil {
+				return err
+			}
+			return handler(srv, stream)
+		}
+
 		if rpcNeedCheckAuth(info.FullMethod) {
-			userID, sessionKey, err := getAuthInfo(ctx)
+			userID, sessionKey, err := getAuthInfo(md)
 			if err != nil {
 				return err
 			}
@@ -208,13 +235,7 @@ func checkUserPermission(ctx context.Context, userID, method string) (context.Co
 	return c, nil
 }
 
-func getAuthInfo(ctx context.Context) (userID, sessionKey string, err error) {
-	md, ok := metadata.FromIncomingContext(ctx)
-	if !ok {
-		log.Infof("get metadata from incoming context failed")
-		return userID, sessionKey, rpc.ErrUnauthenticated
-	}
-
+func getAuthInfo(md metadata.MD) (userID, sessionKey string, err error) {
 	values := md["authorization"]
 	if len(values) == 0 {
 		log.Infof("'authorization' not exist in request metadata.")
@@ -334,4 +355,37 @@ func HasPerm(target pb.PERMISSION, perms []*db.Perm) bool {
 		}
 	}
 	return false
+}
+
+func checkApiToken(md metadata.MD) (yes bool, err error) {
+	values := md["x-api-client-name"]
+	if len(values) == 0 {
+		log.Tracef("'x-api-client-name' not exist in request metadata.")
+		return false, nil
+	}
+	name := strings.TrimSpace(values[0])
+
+	values = md["x-api-client-token"]
+	if len(values) == 0 {
+		log.Tracef("'x-api-client-token' not exist in request metadata.")
+		return false, nil
+	}
+	token := strings.TrimSpace(values[0])
+
+	if len(name) == 0 || len(token) == 0 {
+		return false, nil
+	}
+
+	t, err := db.FindApiTokenByName(name)
+	if err != nil {
+		log.Errorf("find api token in db: %v", err)
+		return true, rpc.ErrDatabaseFail
+	} else if t == nil {
+		log.Infof("api name=%v has no match", name)
+		return true, rpc.ErrUnauthenticated
+	} else if token != strings.TrimSpace(t.Token) {
+		log.Infof("api name=%v token=%v has no match", name, token)
+		return true, rpc.ErrUnauthenticated
+	}
+	return true, nil
 }

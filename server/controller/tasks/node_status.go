@@ -7,7 +7,6 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"scmc/model/db"
-	"scmc/model/warnlog"
 	"scmc/rpc/pb/logging"
 	pb "scmc/rpc/pb/node"
 	"scmc/server/controller/internal"
@@ -65,68 +64,44 @@ func getAllNodeData(needStatus bool) (r []*pb.NodeInfo) {
 func writeNodeWatchLogs(n *pb.NodeInfo) []*db.WarnLog {
 	var r []*db.WarnLog
 
-	if n.Status == nil || n.Status.State == int64(pb.NodeState_Offline) {
+	newWarnLog := func(n *pb.NodeInfo, et logging.EVENT_TYPE, detail string) {
 		r = append(r, &db.WarnLog{
 			NodeId:      n.Id,
 			NodeInfo:    fmt.Sprintf("%s (%s)", n.Name, n.Address),
-			EventType:   int64(logging.EVENT_TYPE_WARN_NODE_OFFLINE),
+			EventType:   int64(et),
 			EventModule: int64(logging.EVENT_MODULE_NODE),
-			Detail:      "节点离线",
+			Detail:      detail,
 		})
 	}
 
-	if n.Status.State == int64(pb.NodeState_Unknown) {
-		r = append(r, &db.WarnLog{
-			NodeId:      n.Id,
-			NodeInfo:    fmt.Sprintf("%s (%s)", n.Name, n.Address),
-			EventType:   int64(logging.EVENT_TYPE_WARN_NODE_ABNORMAL),
-			EventModule: int64(logging.EVENT_MODULE_NODE),
-			Detail:      "节点状态异常",
-		})
+	newResourceUsageWarn := func(n *pb.NodeInfo, detail string) {
+		newWarnLog(n, logging.EVENT_TYPE_WARN_RESOURCE_USAGE, detail)
 	}
 
-	if n.RscLimit != nil {
-		if n.RscLimit.CpuLimit > 0 && n.Status.CpuStat != nil {
-			if n.Status.CpuStat.Used > n.RscLimit.CpuLimit {
-				r = append(r, &db.WarnLog{
-					NodeId:      n.Id,
-					NodeInfo:    fmt.Sprintf("%s (%s)", n.Name, n.Address),
-					EventType:   int64(logging.EVENT_TYPE_WARN_RESOURCE_USAGE),
-					EventModule: int64(logging.EVENT_MODULE_NODE),
-					Detail:      fmt.Sprintf("CPU使用率 %.2f%%", n.Status.CpuStat.Used*100),
-				})
-			}
+	st := n.Status
+	if st == nil || st.State == int64(pb.NodeState_Offline) {
+		newWarnLog(n, logging.EVENT_TYPE_WARN_NODE_OFFLINE, "节点离线")
+	}
+
+	if st.State == int64(pb.NodeState_Unknown) {
+		newWarnLog(n, logging.EVENT_TYPE_WARN_NODE_ABNORMAL, "节点状态异常")
+	}
+
+	lim := n.RscLimit
+	if lim != nil {
+		if lim.CpuLimit > 0 && st.CpuStat != nil && (st.CpuStat.Used > lim.CpuLimit) {
+			newResourceUsageWarn(n, fmt.Sprintf("CPU使用率 %.2f%%", st.CpuStat.Used*100))
 		}
 
-		if n.RscLimit.MemoryLimit > 0 && n.Status.MemStat != nil {
-			if float64(n.Status.MemStat.Used) > n.RscLimit.MemoryLimit {
-				r = append(r, &db.WarnLog{
-					NodeId:      n.Id,
-					NodeInfo:    fmt.Sprintf("%s (%s)", n.Name, n.Address),
-					EventType:   int64(logging.EVENT_TYPE_WARN_RESOURCE_USAGE),
-					EventModule: int64(logging.EVENT_MODULE_NODE),
-					Detail:      fmt.Sprintf("内存使用 %dMB", n.Status.MemStat.Used),
-				})
-			}
+		if lim.MemoryLimit > 0 && st.MemStat != nil && (float64(st.MemStat.Used) > lim.MemoryLimit) {
+			newResourceUsageWarn(n, fmt.Sprintf("内存使用 %dMB", st.MemStat.Used))
 		}
 
-		if n.RscLimit.DiskLimit > 0 && n.Status.DiskStat != nil {
-			if float64(n.Status.DiskStat.Used) > n.RscLimit.DiskLimit {
-				r = append(r, &db.WarnLog{
-					NodeId:      n.Id,
-					NodeInfo:    fmt.Sprintf("%s (%s)", n.Name, n.Address),
-					EventType:   int64(logging.EVENT_TYPE_WARN_RESOURCE_USAGE),
-					EventModule: int64(logging.EVENT_MODULE_NODE),
-					Detail:      fmt.Sprintf("磁盘使用 %dMB", n.Status.DiskStat.Used),
-				})
-			}
+		if lim.DiskLimit > 0 && st.DiskStat != nil && (float64(st.DiskStat.Used) > lim.DiskLimit) {
+			newResourceUsageWarn(n, fmt.Sprintf("磁盘使用 %dMB", st.DiskStat.Used))
 		}
 	}
 
-	if len(r) > 0 {
-		db.CreateWarnLog(r)
-		warnlog.Publish(r)
-	}
-
+	db.CreateWarnLog(r)
 	return r
 }

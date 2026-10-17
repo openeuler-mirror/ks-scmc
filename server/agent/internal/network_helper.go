@@ -18,6 +18,7 @@ import (
 	"scmc/common"
 	"scmc/model/docker"
 	"scmc/model/iptables"
+	pb "scmc/rpc/pb/container"
 )
 
 func ipv4ToUint(ipaddr net.IP) uint32 {
@@ -49,80 +50,79 @@ func isPredefinedNetwork(name string) bool {
 	return name == "bridge" || name == "host" || name == "none"
 }
 
+func getContainerIPs(skipContainerID, matchIface string) (map[uint32]bool, error) {
+	cli, err := docker.Client()
+	if err != nil {
+		return nil, err
+	}
+
+	opts := types.ContainerListOptions{All: true, Size: true}
+	containers, err := cli.ContainerList(context.Background(), opts)
+	if err != nil {
+		log.Warnf("ContainerList: %v", err)
+		return nil, err
+	}
+
+	containerIPs := make(map[uint32]bool)
+	for _, c := range containers {
+		if skipContainerID == c.ID {
+			continue // (self) container id to skip
+		}
+
+		for k, n := range c.NetworkSettings.Networks {
+			if k != matchIface {
+				continue
+			}
+
+			var ipStr string
+			if n.IPAMConfig != nil && n.IPAMConfig.IPv4Address != "" {
+				ipStr = n.IPAMConfig.IPv4Address
+			} else if n.IPAddress != "" {
+				ipStr = n.IPAddress
+			}
+			containerIPs[ipStrToUint(ipStr)] = true
+		}
+	}
+	return containerIPs, nil
+}
+
 func checkIPConflict(iface types.NetworkResource, containerId string, ipAddr *string, masklen int) bool {
 	if iface.IPAM.Config == nil || len(iface.IPAM.Config) < 1 {
 		return false
 	}
 
-	cli, err := docker.Client()
+	containerIPs, err := getContainerIPs(containerId, iface.Name)
 	if err != nil {
 		return false
 	}
 
-	//获取已使用的ip
-	opts := types.ContainerListOptions{All: true, Size: true}
-	containers, err := cli.ContainerList(context.Background(), opts)
-	if err != nil {
-		log.Warnf("ContainerList: %v", err)
-		return true
-	}
-
-	containerIPs := make(map[uint32]struct{})
-	for _, c := range containers {
-		if containerId == c.ID {
-			continue
-		}
-
-		for k, n := range c.NetworkSettings.Networks {
-			if k != iface.Name {
-				continue
-			}
-			if n.IPAMConfig != nil && n.IPAMConfig.IPv4Address != "" {
-				if ip := ipStrToUint(n.IPAMConfig.IPv4Address); ip != 0 {
-					containerIPs[ip] = struct{}{}
-				}
-			} else if n.IPAddress != "" {
-				if ip := ipStrToUint(n.IPAddress); ip != 0 {
-					containerIPs[ip] = struct{}{}
-				}
-			}
-		}
-	}
-
-	nicIP, subnet, _ := net.ParseCIDR(iface.IPAM.Config[0].Subnet)
-
-	//判断输入的IP
-	if *ipAddr != "" {
-		//判断ip是否在网段内
+	_, subnet, _ := net.ParseCIDR(iface.IPAM.Config[0].Subnet)
+	if *ipAddr != "" { // 处理用户输入的IP
 		if masklen == 0 {
 			masklen, _ = subnet.Mask.Size()
 		}
-		splitIP := fmt.Sprintf("%s/%d", *ipAddr, masklen)
-		netIP, _, _ := net.ParseCIDR(splitIP)
-		if !subnet.Contains(netIP) {
-			log.Warnf("%v(%v) is not within the range of %v(%v)", subnet, nicIP, splitIP, netIP)
-			return false
+		ipNet, _, _ := net.ParseCIDR(fmt.Sprintf("%s/%d", *ipAddr, masklen))
+		if !subnet.Contains(ipNet) {
+			log.Warnf("ipnet=%v not int subnet=%v", ipNet, subnet)
+			return false // ip不在子网段内
 		}
 
 		//判断IP是否已使用
 		ip := ipStrToUint(*ipAddr)
 		if _, ok := containerIPs[ip]; ok {
-			log.Warnf("*ipAddr:%v is used", *ipAddr)
-			return false
+			log.Warnf("ip=%v is used by other container", *ipAddr)
+			return false // ip已被其他容器使用
 		}
 		return true
 	}
 
-	uintIP := ipv4ToUint(subnet.IP)
-
-	//没有输入IP，分配IP
-	for i := uint32(2); ; i++ {
-		tmp := uintIP + i
-		if _, ok := containerIPs[tmp]; ok {
+	// 没有输入IP，分配IP
+	for i := ipv4ToUint(subnet.IP) + uint32(2); ; i++ {
+		if _, ok := containerIPs[i]; ok {
 			continue
 		}
 
-		ip := uintToIPv4(tmp)
+		ip := uintToIPv4(i)
 		if !subnet.Contains(ip) {
 			break
 		}
@@ -130,7 +130,7 @@ func checkIPConflict(iface types.NetworkResource, containerId string, ipAddr *st
 		return true
 	}
 
-	log.Warnf("ip has run out")
+	log.Warnf("subnet=%v has no free ips", subnet)
 	return false
 }
 
@@ -289,5 +289,33 @@ func NodeWhitelistConfig() error {
 		iptables.NodeWhitelistInit(ifs)
 	}
 
+	return nil
+}
+
+func dockerNetworkDisconnect(ctx context.Context, cli *client.Client, containerID, iface string) error {
+	err := cli.NetworkDisconnect(ctx, iface, containerID, true)
+	if err != nil {
+		log.Warnf("NetworkDisconnect: %v", err)
+	}
+	return err
+}
+
+func dockerNetworkConnect(ctx context.Context, cli *client.Client, containerID string, n *pb.NetworkConfig) error {
+	config := &network.EndpointSettings{
+		NetworkID:   n.Interface,
+		Gateway:     n.Gateway,
+		IPAddress:   n.IpAddress,
+		IPPrefixLen: int(n.IpPrefixLen),
+		MacAddress:  n.MacAddress,
+		IPAMConfig: &network.EndpointIPAMConfig{
+			IPv4Address: n.IpAddress,
+		},
+	}
+
+	err := cli.NetworkConnect(ctx, n.Interface, containerID, config)
+	if err != nil {
+		log.Warnf("NetworkConnect: %v", err)
+		return transDockerError(err)
+	}
 	return nil
 }

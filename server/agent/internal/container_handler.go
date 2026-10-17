@@ -975,27 +975,8 @@ func (*ContainerServer) RemoveBackup(ctx context.Context, in *pb.RemoveBackupReq
 		return nil, rpc.ErrInternal
 	}
 
-	cfgs, err := litedb.GetContainerConfigByUUID(b.UUID)
-	if err != nil {
-		log.Infof("db.GetContainerConfigsByUUID err=%v", err)
-		if err == db.ErrRecordNotFound {
-			return nil, rpc.ErrNotFound
-		}
-		return nil, rpc.ErrInternal
-	}
-
-	cli, err := docker.Client()
-	if err != nil {
-		return nil, rpc.ErrInternal
-	}
-
-	ci, err := cli.ContainerInspect(context.Background(), cfgs.ContainerID)
-	if err != nil {
-		log.Infof("ContainerInspect err=%v", err)
-		return nil, rpc.ErrInternal
-	}
-
-	if ci.Image == b.ImageRef {
+	// 正在进行的备份ImageRef字段无内容，成功和失败的有
+	if b.ImageRef == "" {
 		return nil, rpc.ErrRemoveContainerBackupWhenRunning
 	}
 

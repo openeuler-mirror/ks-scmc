@@ -41,7 +41,7 @@ func getAllNodeData(needStatus bool) (r []*pb.NodeInfo) {
 	for _, n := range nodes {
 		var s *pb.NodeStatus
 		if needStatus {
-			s, _ = internal.GetNodeStatus(n)
+			s, _ = internal.GetNodeUsage(n)
 		}
 
 		r = append(r, &pb.NodeInfo{
@@ -89,15 +89,15 @@ func writeNodeWatchLogs(n *pb.NodeInfo) []*db.WarnLog {
 
 	lim := n.RscLimit
 	if lim != nil {
-		if lim.CpuLimit > 0 && st.CpuStat != nil && (st.CpuStat.Used > lim.CpuLimit) {
+		if lim.CpuLimit > 0 && st.CpuStat != nil && (st.CpuStat.Used >= lim.CpuLimit) {
 			newResourceUsageWarn(n, fmt.Sprintf("CPU使用率 %.2f%%", st.CpuStat.Used*100))
 		}
 
-		if lim.MemoryLimit > 0 && st.MemStat != nil && (float64(st.MemStat.Used) > lim.MemoryLimit) {
+		if lim.MemoryLimit > 0 && st.MemStat != nil && (float64(st.MemStat.Used) >= lim.MemoryLimit) {
 			newResourceUsageWarn(n, fmt.Sprintf("内存使用 %dMB", st.MemStat.Used))
 		}
 
-		if lim.DiskLimit > 0 && st.DiskStat != nil && (float64(st.DiskStat.Used) > lim.DiskLimit) {
+		if lim.DiskLimit > 0 && st.DiskStat != nil && (float64(st.DiskStat.Used) >= lim.DiskLimit) {
 			newResourceUsageWarn(n, fmt.Sprintf("磁盘使用 %dMB", st.DiskStat.Used))
 		}
 	}

@@ -62,8 +62,8 @@ func (s *NodeServer) Create(ctx context.Context, in *pb.CreateRequest) (*pb.Crea
 	}
 
 	// agent 服务检查是否自身是否已被添加
-	uuid_ := uuid.New().String()
-	_, err = pb.NewNodeClient(conn).Create(ctx, &pb.CreateRequest{Uuid: uuid_})
+	uuid := uuid.New().String()
+	_, err = pb.NewNodeClient(conn).Create(ctx, &pb.CreateRequest{Uuid: uuid})
 	if err != nil {
 		if st, ok := status.FromError(err); ok {
 			if st.Code() == codes.Unavailable {
@@ -79,7 +79,7 @@ func (s *NodeServer) Create(ctx context.Context, in *pb.CreateRequest) (*pb.Crea
 			Name:    in.Name,
 			Address: in.Address,
 			Comment: in.Comment,
-			UUID:    uuid_,
+			UUID:    uuid,
 		}
 		if e := db.CreateNode(&n); e != nil {
 			if e == db.ErrDuplicateKey {
@@ -99,7 +99,7 @@ func (s *NodeServer) Create(ctx context.Context, in *pb.CreateRequest) (*pb.Crea
 		n.Name = in.Name
 		n.Comment = in.Comment
 		n.Deleted = false
-		n.UUID = uuid_
+		n.UUID = uuid
 		if e := db.UpdateNode(n); e != nil {
 			log.Warnf("update node err=%v", err)
 			return nil, rpc.ErrDatabaseFail
@@ -202,7 +202,6 @@ func (s *NodeServer) Update(ctx context.Context, in *pb.UpdateRequest) (*pb.Upda
 func GetNodeStatus(n *db.NodeInfo) (*pb.NodeStatus, error) {
 	conn, err := getAgentConn(n.Address)
 	if err != nil {
-		log.Warnf("Failed to connect to agent service, node=%+v", n)
 		return nil, err
 	}
 

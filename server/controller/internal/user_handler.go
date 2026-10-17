@@ -7,7 +7,9 @@ import (
 	"github.com/google/uuid"
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/crypto/bcrypt"
+	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/peer"
 	"google.golang.org/grpc/status"
 
@@ -73,9 +75,14 @@ func (s *UserServer) Login(ctx context.Context, in *pb.LoginRequest) (*pb.LoginR
 		session.Timers.TriggerAndRemove(old.SessionKey)
 	}
 
+	authKey := fmt.Sprintf("%d%c%s", userInfo.ID, common.UserSessionySeprator, sessionKey)
+
+	// set authorizatio key in headers, for client interceptors' convenience
+	grpc.SetHeader(ctx, metadata.Pairs("authorization", authKey))
+
 	return &pb.LoginReply{
 		UserId:  userInfo.ID,
-		AuthKey: fmt.Sprintf("%d%c%s", userInfo.ID, common.UserSessionySeprator, sessionKey),
+		AuthKey: authKey,
 		UserRole: &pb.UserRole{
 			Id:         role.ID,
 			Name:       role.Name,

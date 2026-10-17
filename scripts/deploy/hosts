@@ -26,7 +26,7 @@ all:
     mysql:
       root_password: kylin.2023   # MySQL root密码, 可自定义
       scmc_password: kylin@2023   # MySQL 服务访问密码, 可自定义
-    docker_dir: /var/lib/docker   # docker数据路径, 可自定义
-    image_dir: /var/lib/ks-scmc/images/
+    docker_dir: /var/lib/docker   # docker数据路径, 可自定义; 请确保所在分区有足够空间
+    image_dir: /var/lib/ks-scmc/images/   # 请确保所在分区有足够空间
     image_verify_pubkey: ''       # 镜像校验公钥文件（本地路径）
     script_dir: /etc/ks-scmc

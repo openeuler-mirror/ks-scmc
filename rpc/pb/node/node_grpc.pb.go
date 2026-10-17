@@ -28,6 +28,8 @@ type NodeClient interface {
 	Update(ctx context.Context, in *UpdateRequest, opts ...grpc.CallOption) (*UpdateReply, error)
 	// 获取节点状态
 	Status(ctx context.Context, in *StatusRequest, opts ...grpc.CallOption) (*StatusReply, error)
+	// 获取CPU MEM DISK使用情况
+	Usage(ctx context.Context, in *UsageRequest, opts ...grpc.CallOption) (*UsageReply, error)
 	// 安全配置
 	UpdateFileProtect(ctx context.Context, in *UpdateFileProtectRequest, opts ...grpc.CallOption) (*UpdateFileProtectReply, error)
 	UpdateNetworkRule(ctx context.Context, in *UpdateNetworkRuleRequest, opts ...grpc.CallOption) (*UpdateNetworkRuleReply, error)

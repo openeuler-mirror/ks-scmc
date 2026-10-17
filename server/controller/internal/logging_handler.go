@@ -123,6 +123,7 @@ func (s *LoggingServer) ListWarn(ctx context.Context, in *pb.ListWarnRequest) (*
 	reply.PageNo = p.PageNo
 	reply.PageSize = p.PageSize
 	reply.TotalPages = p.TotalPages
+	reply.TotalWarnnings = p.TotalRows
 
 	return &reply, nil
 }

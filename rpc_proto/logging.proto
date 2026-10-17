@@ -55,10 +55,11 @@ message ListWarnRequest {
 }
 
 message ListWarnReply {
-    repeated WarnLog logs        = 1;
-    int64            page_size   = 2;  // 页大小
-    int64            page_no     = 3;  // 当前页
-    int64            total_pages = 4;  // 总页数
+    repeated WarnLog logs            = 1;
+    int64            page_size       = 2;  // 页大小
+    int64            page_no         = 3;  // 当前页
+    int64            total_pages     = 4;  // 总页数
+    int64            total_warnnings = 5;  // 告警总条数
 }
 
 message ReadWarnRequest {

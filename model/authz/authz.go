@@ -59,10 +59,17 @@ func updateAuthzConfig(action authz.AUTHZ_ACTION, containerName, containerID str
 	return nil
 }
 
-func AddSensitiveContainers(containerName, containerID string) error {
-	return updateAuthzConfig(authz.AUTHZ_ACTION_ADD_SENSITIVE_CONTAINER, containerName, containerID)
-}
-
 func DelSensitiveContainers(containerName, containerID string) error {
 	return updateAuthzConfig(authz.AUTHZ_ACTION_DEL_SENSITIVE_CONTAINER, containerName, containerID)
+}
+
+func HandleSensitiveContainer(isSensitive, fromUpdate bool, name, id string) error {
+	if isSensitive {
+		return updateAuthzConfig(authz.AUTHZ_ACTION_ADD_SENSITIVE_CONTAINER, name, id)
+	}
+
+	if fromUpdate {
+		return updateAuthzConfig(authz.AUTHZ_ACTION_DEL_SENSITIVE_CONTAINER, name, id)
+	}
+	return nil
 }

@@ -58,22 +58,21 @@ func isVirtualNic(name string) (bool, error) {
 	return true, nil
 }
 
-func (s *NetworkServer) List(ctx context.Context, in *pb.ListRequest) (*pb.ListReply, error) {
-	var reply pb.ListReply
-
+func (s *NetworkServer) listDockerIfaces(ctx context.Context) ([]*pb.NetworkInterface, error) {
 	cli, err := docker.Client()
 	if err != nil {
 		return nil, rpc.ErrInternal
 	}
 
-	ns, err := cli.NetworkList(context.Background(), types.NetworkListOptions{})
+	ns, err := cli.NetworkList(ctx, types.NetworkListOptions{})
 	if err != nil {
 		log.Warnf("NetworkList: %v", err)
 		return nil, transDockerError(err)
 	}
 
+	ifaces := make([]*pb.NetworkInterface, 0, len(ns))
 	for _, n := range ns {
-		//不显示默认网卡
+		// 不显示默认网卡
 		if isPredefinedNetwork(n.Name) {
 			continue
 		}

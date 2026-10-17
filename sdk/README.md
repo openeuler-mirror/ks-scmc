@@ -9,9 +9,25 @@ yum install python3 python3-pip
 
 2. 安装 grpc 相关包
 
+需要根据python版本不同安装不同的依赖包
+
+**python3.6**
+
 ```bash
-pip3 install deps/*
+cd deps/python3.6
+# 更新 pip
+pip3 install pip-21.3.1-py3-none-any.whl
+/usr/local/bin/pip3 install *.whl
 ```
+
+**python3.7**
+
+```bash
+cd deps/python3.7
+pip3 install *.whl
+```
+
+高于python3.7的版本可以尝试3.7的方法，如果失败需要自行安装依赖包 `grpcio` 和 `grpcio_tools`
 
 3. 生成协议代码
 

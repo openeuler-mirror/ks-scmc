@@ -7,6 +7,7 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"scmc/model/db"
+	"scmc/model/warnlog"
 	"scmc/rpc/pb/logging"
 	pb "scmc/rpc/pb/node"
 	"scmc/server/controller/internal"
@@ -124,6 +125,7 @@ func writeNodeWatchLogs(n *pb.NodeInfo) []*db.WarnLog {
 
 	if len(r) > 0 {
 		db.CreateWarnLog(r)
+		warnlog.Publish(r)
 	}
 
 	return r

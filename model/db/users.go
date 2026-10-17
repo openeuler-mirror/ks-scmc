@@ -141,7 +141,7 @@ func QueryUser(ctx context.Context, username string) (*UserInfo, error) {
 	var userInfo UserInfo
 	result := db.Where("username = ?", username).First(&userInfo)
 	if result.Error != nil {
-		log.Warnf("db query user: %v", result.Error)
+		log.Warn("QueryUser db error: ", result.Error)
 		return nil, result.Error
 	}
 
@@ -161,7 +161,7 @@ func QueryUserByID(id interface{}) (*UserInfo, error) {
 	var userInfo UserInfo
 	result := db.First(&userInfo, id)
 	if result.Error != nil {
-		log.Warnf("db query user: %v", result.Error)
+		log.Warn("QueryUserByID db error: ", result.Error)
 		return nil, result.Error
 	}
 
@@ -181,7 +181,7 @@ func QueryUsers(ids []int64) ([]*UserInfo, error) {
 	var users []*UserInfo
 	result := db.Find(&users, "id IN ?", ids)
 	if result.Error != nil {
-		log.Warnf("db query user: %v", result.Error)
+		log.Warn("QueryUsers db error: ", result.Error)
 		return nil, result.Error
 	}
 

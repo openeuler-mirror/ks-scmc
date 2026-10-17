@@ -17,7 +17,5 @@ func (p *PushImage) RunAtInit() bool {
 }
 
 func (p *PushImage) Run() {
-	if isMaster() {
-		registry.CheckImagePush()
-	}
+	registry.CheckImagePush()
 }

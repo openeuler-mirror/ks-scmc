@@ -570,6 +570,45 @@ func (s *ContainerServer) Update(ctx context.Context, in *pb.UpdateRequest) (*pb
 		return nil, rpc.ErrDatabaseFail
 	}
 
+	var change int
+	var envs []string
+
+	if !reflect.DeepEqual(inspectConfigs.Envs, in.Envs) {
+		change |= docker.EnvBit
+		for k, v := range in.Envs {
+			envs = append(envs, k+"="+v)
+		}
+		log.Debugf("%v envs change, %+v, %+v", inspectConfigs.ContainerId, in.Envs, envs)
+	}
+
+	mountMap, equal := docker.CompareMounts(inspectConfigs.Mounts, in.Mounts)
+	if !equal {
+		change |= docker.MountBit
+		log.Debugf("%v mounts change", inspectConfigs.ContainerId)
+	}
+
+	if change != docker.NoneBit {
+		if err = docker.ModifyContainerConfig(inspectConfigs.ContainerId, change, envs, mountMap); err != nil {
+			log.Infof("UpdateContainerConfig err=%v", err)
+			return nil, rpc.ErrInternal
+		}
+		log.Infof("status:%v", inspectConfigs.Status)
+		var timeout = time.Second
+		if inspectConfigs.Status == "running" {
+			if err = cli.ContainerRestart(context.Background(), in.ContainerId, &timeout); err != nil {
+				log.Warnf("restart id=%v %v", in.ContainerId, err)
+			}
+		} else {
+			if err := cli.ContainerStart(context.Background(), in.ContainerId, types.ContainerStartOptions{}); err != nil {
+				log.Warnf("start id=%v %v", in.ContainerId, err)
+			}
+			if err := cli.ContainerStop(context.Background(), in.ContainerId, &timeout); err != nil {
+				log.Warnf("stop id=%v %v", in.ContainerId, err)
+			}
+		}
+		log.Infof("modify %v end, change:%v", in.ContainerId, change)
+	}
+
 	return &reply, nil
 }
 

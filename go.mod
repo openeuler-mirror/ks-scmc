@@ -11,6 +11,7 @@ require (
 	github.com/docker/docker v20.10.12+incompatible
 	github.com/docker/docker-credential-helpers v0.6.4 // indirect
 	github.com/docker/go-plugins-helpers v0.0.0-20211224144127-6eecb7beb651
+	github.com/docker/go-units v0.4.0 // indirect
 	github.com/fvbommel/sortorder v1.0.2 // indirect
 	github.com/go-sql-driver/mysql v1.6.0
 	github.com/google/cadvisor v0.43.0

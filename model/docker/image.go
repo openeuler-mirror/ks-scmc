@@ -15,7 +15,6 @@ import (
 func prepareRegistry() (cli *client.Client, encodedAuth string, err error) {
 	cli, err = Client()
 	if err != nil {
-		log.Errorf("try to connect to container daemon: %v", err)
 		return nil, "", err
 	}
 
@@ -88,7 +87,6 @@ func PushImage(repoTag string) error {
 func RemoveImage(force bool, repoTags ...string) error {
 	cli, err := Client()
 	if err != nil {
-		log.Errorf("try to connect to container daemon: %v", err)
 		return err
 	}
 
@@ -103,7 +101,6 @@ func RemoveImage(force bool, repoTags ...string) error {
 func IsImageExist(imageRef string) (bool, error) {
 	cli, err := Client()
 	if err != nil {
-		log.Errorf("try to connect to container daemon: %v", err)
 		return false, err
 	}
 

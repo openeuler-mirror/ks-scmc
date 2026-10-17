@@ -87,7 +87,7 @@ func (s *NetworkServer) listDockerIfaces(ctx context.Context) ([]*pb.NetworkInte
 			log.Warnf("bridge network[%s] parse subnet=%v return err=%v", n.Name, conf.Subnet, err)
 		}
 
-		detail, err := cli.NetworkInspect(context.Background(), n.Name, types.NetworkInspectOptions{})
+		detail, err := cli.NetworkInspect(ctx, n.Name, types.NetworkInspectOptions{})
 		if err != nil {
 			log.Warnf("NetworkInspect: %v", err)
 		}
@@ -97,99 +97,112 @@ func (s *NetworkServer) listDockerIfaces(ctx context.Context) ([]*pb.NetworkInte
 			linkIfs = detail.Options["parent"]
 		}
 
-		/*
-			var containers []*pb.ContainerNetwork
-			for cid, c := range detail.Containers {
-				caddr, cmasklen, _ := parseSubnet(c.IPv4Address)
-				containers = append(containers, &pb.ContainerNetwork{
-					ContainerId: cid,
-					IpAddress:   caddr,
-					IpMaskLen:   int32(cmasklen),
-					MacAddress:  c.MacAddress,
-				})
-			}
-		*/
-
-		reply.VirtualIfs = append(reply.VirtualIfs, &pb.NetworkInterface{
+		ifaces = append(ifaces, &pb.NetworkInterface{
 			Name:      n.Name,
 			BindReal:  linkIfs,
 			IpAddress: addr,
 			IpMaskLen: int32(masklen),
 			Gateway:   conf.Gateway,
 			IsUp:      true,
-			// Containers: containers,
 		})
 	}
 
+	return ifaces, nil
+}
+
+func (s *NetworkServer) ifaceGateway(name string) (string, error) {
+	link, err := netlink.LinkByName(name)
+	if err != nil {
+		log.Infof("netlink.LinkByName(%s) err=%v", name, err)
+		return "", err
+	}
+
+	routes, err := netlink.RouteList(link, netlink.FAMILY_V4)
+	if err != nil {
+		log.Infof("link=%s netlink.RouteList %v", name, err)
+		return "", err
+	}
+
+	var gw string
+	for _, r := range routes {
+		if r.Gw != nil {
+			gw = r.Gw.String()
+		}
+	}
+	if gw == "" {
+		gw = "0.0.0.0"
+	}
+	return gw, nil
+}
+
+func (s *NetworkServer) listPhysicalIfaces() ([]*pb.NetworkInterface, error) {
 	ifs, err := net.Interfaces()
 	if err != nil {
 		log.Warnf("net.Interface err=%v", err)
 		return nil, rpc.ErrInternal
 	}
 
+	ifaces := make([]*pb.NetworkInterface, 0, len(ifs))
 	for _, i := range ifs {
-		log.Debugf("Network interface %+v", i)
-		virtual, err := isVirtualNic(i.Name)
-		if virtual || err != nil {
+		log.Tracef("Network interface %+v", i)
+		isVirt, err := isVirtualNic(i.Name)
+		if isVirt || err != nil {
 			continue
 		}
 
-		realIf := &pb.NetworkInterface{
+		iface := &pb.NetworkInterface{
 			Name:       i.Name,
 			IsUp:       strings.Contains(i.Flags.String(), "up"),
 			MacAddress: i.HardwareAddr.String(),
 		}
 
 		addrs, err := i.Addrs()
-		if err != nil {
+		if err != nil || len(addrs) == 0 {
 			log.Warnf("retrieve addrs from interface %v err=%v", i, err)
+			continue
 		}
 
-		if len(addrs) > 0 {
-			addr := addrs[0]
-			ip, ipNet, err := net.ParseCIDR(addr.String())
-			if err != nil {
-				log.Warnf("net.ParseCIDR(%s) err=%v", addr.String(), err)
-				continue
-			}
-
-			if ipv4 := ip.To4(); ipv4 != nil {
-				ones, _ := ipNet.Mask.Size()
-				realIf.IpAddress = ipv4.String()
-				realIf.IpMaskLen = int32(ones)
-
-				var s []string
-				for _, i := range ipNet.Mask {
-					s = append(s, strconv.Itoa(int(i)))
-				}
-				realIf.IpMask = strings.Join(s, ".")
-			}
-
-			// retrive gateway
-			link, err := netlink.LinkByName(i.Name)
-			if err != nil {
-				log.Infof("netlink.LinkByName(%s) err=%v", i.Name, err)
-				continue
-			}
-
-			routes, err := netlink.RouteList(link, netlink.FAMILY_V4)
-			if err != nil {
-				log.Infof("link=%s netlink.RouteList %v", i.Name, err)
-				continue
-			}
-
-			for _, r := range routes {
-				if r.Gw != nil {
-					realIf.Gateway = r.Gw.String()
-				}
-			}
-			if realIf.Gateway == "" {
-				realIf.Gateway = "0.0.0.0"
-			}
+		addr := addrs[0]
+		ip, ipNet, err := net.ParseCIDR(addr.String())
+		if err != nil {
+			log.Warnf("net.ParseCIDR(%s) err=%v", addr.String(), err)
+			continue
 		}
-		reply.RealIfs = append(reply.RealIfs, realIf)
+
+		if ipv4 := ip.To4(); ipv4 != nil {
+			ones, _ := ipNet.Mask.Size()
+			iface.IpAddress = ipv4.String()
+			iface.IpMaskLen = int32(ones)
+
+			var s []string
+			for _, i := range ipNet.Mask {
+				s = append(s, strconv.Itoa(int(i)))
+			}
+			iface.IpMask = strings.Join(s, ".")
+		}
+		iface.Gateway, _ = s.ifaceGateway(i.Name)
+		ifaces = append(ifaces, iface)
 	}
-	return &reply, nil
+	return ifaces, nil
+}
+
+func (s *NetworkServer) List(ctx context.Context, in *pb.ListRequest) (*pb.ListReply, error) {
+	dockerIfaces, err := s.listDockerIfaces(ctx)
+	if err != nil {
+		log.Errorf("listDockerIfaces: %v", err)
+		return nil, err
+	}
+
+	physicalIfaces, err := s.listPhysicalIfaces()
+	if err != nil {
+		log.Errorf("listPhysicalIfaces: %v", err)
+		return nil, err
+	}
+
+	return &pb.ListReply{
+		RealIfs:    physicalIfaces,
+		VirtualIfs: dockerIfaces,
+	}, nil
 }
 
 func (s *NetworkServer) Connect(ctx context.Context, in *pb.ConnectRequest) (*pb.ConnectReply, error) {

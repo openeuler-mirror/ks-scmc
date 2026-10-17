@@ -10,7 +10,7 @@ ETC     := /etc
 
 all: $(BINARY)
 
-$(BINARY): $(RPC)
+$(BINARY): clean
 	go build -ldflags="-s -w" scmc/cmd/$@
 
 .PHONY: $(RPC)

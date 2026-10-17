@@ -96,6 +96,35 @@ func (*NodeServer) Status(ctx context.Context, in *pb.StatusRequest) (*pb.Status
 	}, nil
 }
 
+func (*NodeServer) Usage(ctx context.Context, in *pb.UsageRequest) (*pb.UsageReply, error) {
+	_, err := docker.Client()
+	if err != nil {
+		return nil, rpc.ErrInternal
+	}
+
+	data, err := influxdbQueryNodeMax(in.StartTime, in.EndTime)
+	if err != nil {
+		return nil, rpc.ErrInternal
+	}
+
+	reply := &pb.UsageReply{
+		Status: &pb.NodeStatus{
+			State: int64(pb.NodeState_Online),
+			CpuStat: &pb.CpuStat{
+				Used: data[0],
+			},
+			MemStat: &pb.MemoryStat{
+				Used: uint64(data[1]),
+			},
+			DiskStat: &pb.DiskStat{
+				Used: uint64(data[2]),
+			},
+		},
+	}
+
+	return reply, nil
+}
+
 func (s *NodeServer) Update(ctx context.Context, in *pb.UpdateRequest) (*pb.UpdateReply, error) {
 	if in.RscLimit == nil {
 		return nil, rpc.ErrInvalidArgument

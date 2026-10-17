@@ -70,6 +70,7 @@ type Pager struct {
 	PageSize   int64
 	PageNo     int64
 	TotalPages int64
+	TotalRows  int64
 }
 
 type query struct {
@@ -163,6 +164,7 @@ func PageQuery(pageSize, pageNo int64, qs queries, data interface{}) (*Pager, er
 		PageSize:   pageSize,
 		PageNo:     pageNo,
 		TotalPages: totalPages,
+		TotalRows:  totalRows,
 	}, nil
 }
 

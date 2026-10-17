@@ -33,17 +33,15 @@ var (
 	ErrInvalidImage       = status.Error(codes.Internal, "无效的镜像")
 	ErrDatabaseFail       = status.Error(codes.InvalidArgument, "内部错误：数据库访问失败")
 
+	ErrContainerResourceArgs            = status.Error(codes.InvalidArgument, "容器资源参数错误")
 	ErrRemoveContainerWhenRunning       = status.Error(codes.Internal, "容器正在运行，无法删除")
 	ErrRemoveContainerBackupWhenRunning = status.Error(codes.Internal, "容器正在使用此备份点，无法删除")
-
-	ErrContainerBasicConfigNoPerm    = status.Error(codes.PermissionDenied, "无权限设置容器常规配置")
-	ErrContainerSecurityConfigNoPerm = status.Error(codes.PermissionDenied, "无权限设置容器安全策略")
+	ErrContainerBasicConfigNoPerm       = status.Error(codes.PermissionDenied, "无权限设置容器常规配置")
+	ErrContainerSecurityConfigNoPerm    = status.Error(codes.PermissionDenied, "无权限设置容器安全策略")
 
 	ErrContainerProcProtection  = rpcError(pb.Errno_CProcProtectionFailed, "配置进程保护失败")
 	ErrContainerNprocProtection = rpcError(pb.Errno_CNprocProtectionFailed, "配置网络进程保护失败")
 	ErrContainerFileProtection  = rpcError(pb.Errno_CFileProtectionFailed, "配置文件保护失败")
 	ErrContainerCmdOperation    = rpcError(pb.Errno_CCmdOperationFailed, "配置启停控制失败")
 	ErrContainerNetworkRule     = rpcError(pb.Errno_CNetworkRuleFailed, "配置网络规则失败")
-
-// ErrUserNotExist
 )

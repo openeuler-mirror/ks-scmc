@@ -64,7 +64,7 @@ CREATE TABLE `image_infos` (
   `name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
   `version` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
   `description` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
-  `file_size` int(20) NOT NULL DEFAULT '0',
+  `file_size` bigint(20) NOT NULL DEFAULT '0',
   `file_type` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
   `check_sum` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
   `image_id` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT 'docker镜像ID',

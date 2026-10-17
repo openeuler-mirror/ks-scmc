@@ -747,7 +747,7 @@ func (*ContainerServer) exportBackupImageToRegistry(img *db.ImageInfo, stream pb
 	if err := f.ReadStream(ExportBackupStream{stream}); err != nil {
 		log.Errorf("Write stream data to image file err=%v", err)
 		f.Destroy()
-		return status.Error(codes.InvalidArgument, "读写镜像数据失败")
+		return status.Errorf(codes.InvalidArgument, "读写镜像数据失败：%s", err.Error())
 	}
 
 	img.FilePath = f.Path()

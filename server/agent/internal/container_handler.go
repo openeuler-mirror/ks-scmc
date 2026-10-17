@@ -120,77 +120,15 @@ func (s *ContainerServer) List(ctx context.Context, in *pb.ListRequest) (*pb.Lis
 	var reply pb.ListReply
 	for _, c := range containers {
 		info := pb.ContainerInfo{
-			Id:      c.ID,
-			Image:   c.Image,
-			ImageId: c.ImageID,
-			Command: c.Command,
-			State:   c.State,
-			Created: c.Created,
-		}
-
-		if c.State != "created" {
-			ci, err := cli.ContainerInspect(ctx, c.ID)
-			if err != nil {
-				log.Warnf("ContainerInspect id=%v err=%v", c.ID, err)
-				// dont return error
-			} else {
-				if ci.State != nil {
-					startedAt, err := time.ParseInLocation(time.RFC3339Nano, ci.State.StartedAt, time.UTC)
-					if err != nil {
-						log.Warnf("ParseInLocation time=%v err=%v", ci.State.StartedAt, err)
-					} else {
-						info.Started = startedAt.Unix()
-					}
-				}
-			}
-		}
-
-		// 参考docker cli实现 去掉link特性连接的其他容器名
-		for _, name := range c.Names {
-			if strings.HasPrefix(name, "/") && len(strings.Split(name[1:], "/")) == 1 {
-				info.Name = name[1:]
-				break
-			}
-		}
-
-		initResourceStat := func() {
-			info.ResourceStat = &pb.ResourceStat{
-				CpuStat: &pb.CpuStat{},
-				MemStat: &pb.MemoryStat{},
-			}
-		}
-		if c.State == "running" {
-			initResourceStat()
-		}
-
-		if stats != nil {
-			if stat, ok := stats[c.ID]; ok {
-				if info.ResourceStat == nil {
-					initResourceStat()
-				}
-				if stat.CpuStat != nil {
-					info.ResourceStat.CpuStat = stat.CpuStat
-				}
-				if stat.MemStat != nil {
-					info.ResourceStat.MemStat = stat.MemStat
-				}
-			}
-		}
-
-		diskStat := &pb.DiskStat{
-			Used: float64(c.SizeRw) / 1e6, // 与docker client保持一致
-		}
-
-		if v, ok := c.Labels["KS_SCMC_DISK_LIMIT"]; ok {
-			fmt.Sscanf(v, "%f", &diskStat.Limit)
-		}
-
-		if info.ResourceStat != nil {
-			info.ResourceStat.DiskStat = diskStat
-		} else {
-			info.ResourceStat = &pb.ResourceStat{
-				DiskStat: diskStat,
-			}
+			Id:           c.ID,
+			Image:        c.Image,
+			ImageId:      c.ImageID,
+			Command:      c.Command,
+			State:        c.State,
+			Created:      c.Created,
+			Started:      containerStartedTime(ctx, cli, &c),
+			Name:         containerName(c.Names),
+			ResourceStat: containerResourceStat(stats, &c),
 		}
 
 		reply.Containers = append(reply.Containers, &pb.NodeContainer{Info: &info})

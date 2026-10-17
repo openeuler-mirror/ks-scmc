@@ -15,6 +15,7 @@
 # influxdb 数据库存储监控历史数据
 - name: AGENT 配置influxdb
   shell: |
+    rm -rf /var/lib/influxdb/*
     ln -sf /usr/lib/influxdb/scripts/influxdb.service /usr/lib/systemd/system/influxdb.service
 - name: AGENT 启动influxdb
   service: name=influxdb state=restarted enabled=true
@@ -63,6 +64,9 @@
     EOF
   args:
     executable: /bin/bash
+- name: 清除旧数据
+  shell: |
+    rm -f /var/lib/ks-scmc/data.db /var/lib/ks-scmc/images/*
 - name: AGENT 启动服务
   service:
     name: "{{ item }}"

@@ -32,6 +32,77 @@ type RuleInfo struct {
 	Policy       string //动作 ACCEPT DROP REJECT ... -j
 }
 
+func (r *RuleInfo) srcOrDest() (string, error) {
+	part := func(ip, prefix string) (string, error) {
+		suffix := ""
+		addr := net.ParseIP(ip)
+		if addr != nil {
+			suffix = "/32"
+		} else {
+			if _, _, err := net.ParseCIDR(ip); err != nil {
+				log.Warnf("incorrect ip address: %v", err)
+				return "", os.ErrInvalid
+			}
+		}
+
+		return prefix + ip + suffix, nil
+	}
+
+	ret := ""
+	s, err := part(r.Source, "-s ")
+	if err != nil {
+		return "", err
+	}
+	ret = strings.TrimSpace(ret + " " + s)
+
+	s, err = part(r.Destination, "-d ")
+	if err != nil {
+		return "", err
+	}
+	return strings.TrimSpace(ret + " " + s), nil
+}
+
+func (r *RuleInfo) protoAndPort() string {
+	s := ""
+	proto := strings.ToLower(r.Protocol)
+
+	if proto != "" {
+		s += "-p " + proto
+		if proto == "tcp" || proto == "udp" {
+			if r.SrcPort != "" {
+				s += "--sport " + r.SrcPort
+			}
+			if r.DestPort != "" {
+				s += "--dport " + r.DestPort
+			}
+		}
+	}
+	return s
+}
+func (r *RuleInfo) IPTables() (string, error) {
+	var parts []string
+
+	p, err := r.srcOrDest()
+	if err != nil {
+		return "", err
+	}
+	parts = append(parts, p, r.protoAndPort())
+
+	if r.InInterface != "" {
+		parts = append(parts, "-i "+r.InInterface)
+	}
+
+	if r.OutInterface != "" {
+		parts = append(parts, "-o "+r.OutInterface)
+	}
+
+	if r.Policy != "" {
+		parts = append(parts, "-j "+r.Policy)
+	}
+
+	return strings.TrimSpace(strings.Join(parts, " ")), nil
+}
+
 type ChainRules struct {
 	Chain string //链 INPUT FORWARD OUTPUT -A
 	Rules []RuleInfo
@@ -339,76 +410,8 @@ func ListRules(who int, pid int) ([]ChainRules, error) {
 	return chainRules, nil
 }
 
-func spliceRules(info RuleInfo) (string, error) {
-	var arr []string
-	if info.Source != "" {
-		addr := net.ParseIP(info.Source)
-		if addr == nil {
-			if _, _, err := net.ParseCIDR(info.Source); err != nil {
-				log.Warnf("incorrect source ip address")
-				return "", os.ErrInvalid
-			} else {
-				str := "-s " + info.Source
-				arr = append(arr, str)
-			}
-		} else {
-			str := "-s " + info.Source + "/32"
-			arr = append(arr, str)
-		}
-	}
-
-	if info.Destination != "" {
-		addr := net.ParseIP(info.Destination)
-		if addr == nil {
-			if _, _, err := net.ParseCIDR(info.Destination); err != nil {
-				log.Warnf("incorrect destination ip address")
-				return "", os.ErrInvalid
-			} else {
-				str := "-d " + info.Destination
-				arr = append(arr, str)
-			}
-		} else {
-			str := "-d " + info.Destination + "/32"
-			arr = append(arr, str)
-		}
-	}
-
-	if info.Protocol != "" {
-		str := "-p " + info.Protocol
-		arr = append(arr, str)
-		if info.Protocol == "TCP" || info.Protocol == "UDP" || info.Protocol == "tcp" || info.Protocol == "udp" {
-			if info.SrcPort != "" {
-				str := "--sport " + info.SrcPort
-				arr = append(arr, str)
-			}
-			if info.DestPort != "" {
-				str := "--dport " + info.DestPort
-				arr = append(arr, str)
-			}
-		}
-	}
-
-	if info.InInterface != "" {
-		str := "-i " + info.InInterface
-		arr = append(arr, str)
-	}
-
-	if info.OutInterface != "" {
-		str := "-o " + info.OutInterface
-		arr = append(arr, str)
-	}
-
-	if info.Policy != "" {
-		str := "-j " + info.Policy
-		arr = append(arr, str)
-	}
-
-	res := strings.Join(arr, " ")
-	return res, nil
-}
-
 func AddRule(who int, containerId string, pid int, chain string, info RuleInfo) error {
-	rule, err := spliceRules(info)
+	rule, err := info.IPTables()
 	if err != nil || rule == "" {
 		log.Warnf("invalid parameter:[%+v]", info)
 		return os.ErrInvalid
@@ -450,7 +453,7 @@ func getRuleLineNumber(fullRule, fileName string) (int, error) {
 }
 
 func DelRule(who int, containerId string, pid int, chain string, info RuleInfo) error {
-	rule, err := spliceRules(info)
+	rule, err := info.IPTables()
 	if err != nil || rule == "" {
 		log.Warnf("invalid parameter:[%+v]", info)
 		return os.ErrInvalid
@@ -481,12 +484,12 @@ func DelRule(who int, containerId string, pid int, chain string, info RuleInfo) 
 }
 
 func ModifyRule(who int, containerId string, pid int, oldchain string, oldRule RuleInfo, newchain string, newRule RuleInfo) error {
-	old, err := spliceRules(oldRule)
+	old, err := oldRule.IPTables()
 	if err != nil || old == "" {
 		log.Warnf("invalid parameter:[%+v]", old)
 		return os.ErrInvalid
 	}
-	new, err := spliceRules(newRule)
+	new, err := newRule.IPTables()
 	if err != nil || new == "" {
 		log.Warnf("invalid parameter:[%+v]", new)
 		return os.ErrInvalid
@@ -543,11 +546,7 @@ func ContainerWhitelistInitialization(containerIdName string, pid int) error {
 			return nil
 		}
 	} else {
-		if enable {
-			cmd = fmt.Sprintf("grep -xe \"%s\" %s || %s && nsenter -t %d -n iptables-restore %s", inputRule, fileName, chainCmd, pid, fileName)
-		} else {
-			cmd = fmt.Sprintf("grep -xe \"%s\" %s || %s && nsenter -t %d -n iptables-restore %s", inputRule, fileName, chainCmd, pid, fileName)
-		}
+		cmd = fmt.Sprintf("grep -xe \"%s\" %s || %s && nsenter -t %d -n iptables-restore %s", inputRule, fileName, chainCmd, pid, fileName)
 	}
 
 	if _, err := callShell(cmd); err != nil {
@@ -656,38 +655,37 @@ func ruleToCmd(filePath, fileName string, isOn bool, rules []*litedb.NetworkRule
 	}
 
 	var allRule string
+	// TODO refactor to type function
 	for _, rule := range rules {
 		var curRule string
 		var prestr string = "-A INPUT "
 		var sufstr string = " -j ACCEPT"
 		var addrstr string
 		if rule.Addr != "" {
-			addr := net.ParseIP(rule.Addr)
-			if addr == nil {
-				addrstr = "-s " + rule.Addr
-			} else {
-				addrstr = "-s " + rule.Addr + "/32"
+			addrstr = "-s " + rule.Addr
+			if net.ParseIP(rule.Addr) != nil {
+				addrstr += "/32"
 			}
 		}
 
 		//多个协议情况处理
 		for _, protocol := range rule.Protocols {
-			if protocol != "" {
-				var arr []string
-				arr = append(arr, prestr)
-				arr = append(arr, addrstr)
-				str := "-p " + protocol
-				arr = append(arr, str)
-				if protocol == "TCP" || protocol == "UDP" || protocol == "tcp" || protocol == "udp" {
-					if rule.Port != 0 {
-						str = fmt.Sprintf("--sport %d", rule.Port)
-						arr = append(arr, str)
-					}
-				}
-				arr = append(arr, sufstr)
-				res := strings.Join(arr, " ") + "\n"
-				curRule = curRule + res
+			protocol = strings.ToLower(protocol)
+			if protocol == "" {
+				continue
 			}
+			var arr []string
+			arr = append(arr, prestr)
+			arr = append(arr, addrstr)
+			str := "-p " + protocol
+			arr = append(arr, str)
+			if (protocol == "tcp" || protocol == "udp") && rule.Port != 0 {
+				str = fmt.Sprintf("--sport %d", rule.Port)
+				arr = append(arr, str)
+			}
+			arr = append(arr, sufstr)
+			res := strings.Join(arr, " ") + "\n"
+			curRule = curRule + res
 		}
 
 		//只有ip没有协议情况处理

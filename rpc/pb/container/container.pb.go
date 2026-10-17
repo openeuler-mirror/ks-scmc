@@ -2456,6 +2456,20 @@ func (x *UpdateRequest) GetSecurityConfig() *SecurityConfig {
 	return nil
 }
 
+func (x *UpdateRequest) GetMounts() []*Mount {
+	if x != nil {
+		return x.Mounts
+	}
+	return nil
+}
+
+func (x *UpdateRequest) GetEnvs() map[string]string {
+	if x != nil {
+		return x.Envs
+	}
+	return nil
+}
+
 type UpdateReply struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache

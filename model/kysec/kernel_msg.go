@@ -31,26 +31,6 @@ const (
 	MSG_SIZE     = 84
 )
 
-/*
-type whiteList struct {
-	id      [ID_MAX_SIZE]byte  //白名单列表id --- 容器的id
-	hash    [WL_HASH_SIZE]byte //程序 hash
-	pathlen int                //全路径长度
-	path    []byte             //程序全路径
-}
-
-type fileAccessControl struct {
-	id             [ID_MAX_SIZE]byte //文件访问控制列表id --- 容器的id
-	filePathLen    int               //客体长度
-	programPathLen int               //主体长度，保留
-	filePath       []byte            //客体全路径
-}
-
-type controlSwitch struct {
-	id      [ID_MAX_SIZE]byte //列表id --- 容器的id
-	enabled bool              //开关
-}
-*/
 var localEndian binary.ByteOrder = binary.LittleEndian
 
 func init() {
@@ -356,4 +336,20 @@ func CleanFileAccess(containerId string) error {
 	freeWhiteListToKern(fd, []byte(containerId), NLMSG_FUNC_TYPE_AC)
 	deinitNetlink(fd)
 	return nil
+}
+
+func CleanAll(containerID string, force bool) error {
+	err := CleanFileAccess(containerID)
+	if err != nil {
+		log.Warnf("%v CleanFileAccess: %v", containerID, err)
+		if !force {
+			return err
+		}
+	}
+
+	err = CleanWhiteList(containerID)
+	if err != nil {
+		log.Warnf("%v CleanWhiteList: %v", containerID, err)
+	}
+	return err
 }

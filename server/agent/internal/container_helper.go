@@ -2,9 +2,13 @@ package internal
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
+	"time"
 
+	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/mount"
 	"github.com/docker/docker/client"
@@ -12,6 +16,7 @@ import (
 
 	"scmc/common"
 	"scmc/model/docker"
+	pb "scmc/rpc/pb/container"
 )
 
 const (
@@ -113,4 +118,73 @@ func containerIsRunningWithCli(ctx context.Context, cli *client.Client, containe
 	}
 
 	return containerIsRunning(ctx, cli, containerID)
+}
+
+func containerStartedTime(ctx context.Context, cli *client.Client, c *types.Container) int64 {
+	if c.State == "created" {
+		return 0
+	}
+
+	info, err := cli.ContainerInspect(ctx, c.ID)
+	if err != nil {
+		log.Warnf("ContainerInspect id=%v err=%v", c.ID, err)
+		return 0 // dont return error
+	}
+
+	if info.State != nil {
+		startedAt, err := time.ParseInLocation(time.RFC3339Nano, info.State.StartedAt, time.UTC)
+		if err != nil {
+			log.Warnf("ParseInLocation time=%v err=%v", info.State.StartedAt, err)
+			return 0
+		}
+		return startedAt.Unix()
+	}
+	return 0
+}
+
+func containerName(names []string) string {
+	// 参考docker cli实现 去掉link特性连接的其他容器名
+	for _, name := range names {
+		if strings.HasPrefix(name, "/") && len(strings.Split(name[1:], "/")) == 1 {
+			return name[1:]
+		}
+	}
+	return ""
+}
+
+func containerResourceStat(realtimeStats map[string]*pb.ResourceStat, c *types.Container) *pb.ResourceStat {
+	data := pb.ResourceStat{
+		CpuStat: &pb.CpuStat{},
+		MemStat: &pb.MemoryStat{},
+		DiskStat: &pb.DiskStat{
+			Used: float64(c.SizeRw) / 1e6, // 与docker client保持一致
+		},
+	}
+
+	if v, ok := c.Labels["KS_SCMC_DISK_LIMIT"]; ok {
+		fmt.Sscanf(v, "%f", &data.DiskStat.Limit)
+	}
+
+	if realtimeStats == nil {
+		return &data
+	}
+
+	if stat, ok := realtimeStats[c.ID]; ok {
+		if stat.CpuStat != nil {
+			data.CpuStat = stat.CpuStat
+		}
+		if stat.MemStat != nil {
+			data.MemStat = stat.MemStat
+		}
+	}
+	return &data
+}
+
+func createContainerEnvs(m map[string]string, uuid string) []string {
+	ret := make([]string, 0, len(m)+1)
+	for k, v := range m {
+		ret = append(ret, fmt.Sprintf("%s=%s", k, v))
+	}
+	ret = append(ret, "KS_SCMC_UUID="+uuid)
+	return ret
 }

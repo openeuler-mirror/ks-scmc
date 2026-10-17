@@ -142,15 +142,18 @@ func (i *ImageFile) parseDockerID() error {
 		return err
 	}
 
+	var hasManifest, hasImageID bool
+
 	r := tar.NewReader(i.f)
 	for h, err := r.Next(); err != io.EOF; h, err = r.Next() {
 		if err != nil {
-			log.Warnf("Read tar file=%+v err=%v", i.f, err)
+			log.Warnf("Read tar file=%+v err=%v", i.f, err) // image tar file header
 			return err
 		}
 
 		fname := h.FileInfo().Name()
 		if fname == registry.ManifestFileName {
+			hasManifest = true
 			continue
 		}
 
@@ -158,11 +161,20 @@ func (i *ImageFile) parseDockerID() error {
 			continue
 		} else {
 			i.dockerID = fname[0:index]
+			hasImageID = true
+		}
+
+		if hasManifest && hasImageID {
 			return nil
 		}
 	}
 
-	return errors.New("Image ID cannot be found.")
+	if !hasManifest {
+		return errors.New("镜像缺少manifest.json")
+	} else if !hasImageID {
+		return errors.New("无法解析镜像ID")
+	}
+	return nil
 }
 
 func (i *ImageFile) SHA256() string {

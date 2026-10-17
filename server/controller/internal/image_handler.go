@@ -67,7 +67,6 @@ func (s *ImageServer) noticeAgentSync(toRemove, toPull []string) {
 	for _, n := range nodes {
 		conn, err := getAgentConn(n.Address)
 		if err != nil {
-			log.Warnf("Failed to connect to agent service, node=%+v", n)
 			continue
 		}
 

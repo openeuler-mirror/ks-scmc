@@ -2372,12 +2372,14 @@ type UpdateRequest struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	NodeId         int64            `protobuf:"varint,1,opt,name=node_id,json=nodeId,proto3" json:"node_id,omitempty"`
-	ContainerId    string           `protobuf:"bytes,2,opt,name=container_id,json=containerId,proto3" json:"container_id,omitempty"`
-	ResourceLimit  *ResourceLimit   `protobuf:"bytes,3,opt,name=resource_limit,json=resourceLimit,proto3" json:"resource_limit,omitempty"`
-	RestartPolicy  *RestartPolicy   `protobuf:"bytes,4,opt,name=restart_policy,json=restartPolicy,proto3" json:"restart_policy,omitempty"`
-	Networks       []*NetworkConfig `protobuf:"bytes,5,rep,name=networks,proto3" json:"networks,omitempty"`
-	SecurityConfig *SecurityConfig  `protobuf:"bytes,6,opt,name=security_config,json=securityConfig,proto3" json:"security_config,omitempty"`
+	NodeId         int64             `protobuf:"varint,1,opt,name=node_id,json=nodeId,proto3" json:"node_id,omitempty"`
+	ContainerId    string            `protobuf:"bytes,2,opt,name=container_id,json=containerId,proto3" json:"container_id,omitempty"`
+	ResourceLimit  *ResourceLimit    `protobuf:"bytes,3,opt,name=resource_limit,json=resourceLimit,proto3" json:"resource_limit,omitempty"`
+	RestartPolicy  *RestartPolicy    `protobuf:"bytes,4,opt,name=restart_policy,json=restartPolicy,proto3" json:"restart_policy,omitempty"`
+	Networks       []*NetworkConfig  `protobuf:"bytes,5,rep,name=networks,proto3" json:"networks,omitempty"`
+	SecurityConfig *SecurityConfig   `protobuf:"bytes,6,opt,name=security_config,json=securityConfig,proto3" json:"security_config,omitempty"`
+	Mounts         []*Mount          `protobuf:"bytes,7,rep,name=mounts,proto3" json:"mounts,omitempty"`                                                                                     // 共享目录
+	Envs           map[string]string `protobuf:"bytes,8,rep,name=envs,proto3" json:"envs,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"` // 环境变量
 }
 
 func (x *UpdateRequest) Reset() {

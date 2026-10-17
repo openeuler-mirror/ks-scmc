@@ -17,6 +17,8 @@ service Node {
     rpc Update(UpdateRequest) returns (UpdateReply) {}
     // 获取节点状态
     rpc Status(StatusRequest) returns (StatusReply) {}
+    // 获取CPU MEM DISK使用情况
+    rpc Usage(UsageRequest) returns (UsageReply) {}
 
     // 安全配置
     rpc UpdateFileProtect(UpdateFileProtectRequest) returns (UpdateFileProtectReply) {}  // 文件保护
@@ -53,6 +55,16 @@ message StatusRequest {
 
 message StatusReply {
     repeated NodeStatus status_list = 1;
+}
+
+message UsageRequest {
+    int64 id         = 1;
+    int64 start_time = 2;  // 起始时间 UNIX时间戳
+    int64 end_time   = 3;  // 结束时间 UNIX时间戳
+}
+
+message UsageReply {
+    NodeStatus status = 1;
 }
 
 message UpdateRequest {

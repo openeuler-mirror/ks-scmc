@@ -1,8 +1,8 @@
 variables:
-  RPM_BUILD_REQUIRES: 'git golang make coreutils protobuf-compiler systemd'
+  RPM_BUILD_REQUIRES: 'git golang make coreutils'
+  PROEJCT_EXCLUSIONS: 'vendor/**,**/*.pb.go,**/*_test.go'
 
 include:
   - project: 'os/gitlab-ci'
-    ref: main
+    ref: golang
     file: '/makefile/go.gitlab-ci.yml'
-

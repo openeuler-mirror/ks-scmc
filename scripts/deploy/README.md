@@ -1,5 +1,6 @@
+# 安全容器后台部署
 
-# 安全容器后台配置脚本
+本文档源文件路径在项目仓库下 `scripts/deploy/README.md`
 
 通过 `ansible-playbook` 完成自动化部署，支持两种场景后台服务部署
 
@@ -7,6 +8,8 @@
 - 双节点高可用集群
 
 ## 0 安装依赖
+
+下载并解压部署脚本 `ks-scmc-deploy-XXX.zip`，运行部署脚本需要安装python和ansible。
 
 首先安装python3及其包管理工具：`yum install -y python3 python3-pip`
 

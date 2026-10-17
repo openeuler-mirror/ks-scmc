@@ -88,6 +88,15 @@ func (c *nodeClient) Status(ctx context.Context, in *StatusRequest, opts ...grpc
 	return out, nil
 }
 
+func (c *nodeClient) Usage(ctx context.Context, in *UsageRequest, opts ...grpc.CallOption) (*UsageReply, error) {
+	out := new(UsageReply)
+	err := c.cc.Invoke(ctx, "/node.Node/Usage", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *nodeClient) UpdateFileProtect(ctx context.Context, in *UpdateFileProtectRequest, opts ...grpc.CallOption) (*UpdateFileProtectReply, error) {
 	out := new(UpdateFileProtectReply)
 	err := c.cc.Invoke(ctx, "/node.Node/UpdateFileProtect", in, out, opts...)
@@ -120,6 +129,8 @@ type NodeServer interface {
 	Update(context.Context, *UpdateRequest) (*UpdateReply, error)
 	// 获取节点状态
 	Status(context.Context, *StatusRequest) (*StatusReply, error)
+	// 获取CPU MEM DISK使用情况
+	Usage(context.Context, *UsageRequest) (*UsageReply, error)
 	// 安全配置
 	UpdateFileProtect(context.Context, *UpdateFileProtectRequest) (*UpdateFileProtectReply, error)
 	UpdateNetworkRule(context.Context, *UpdateNetworkRuleRequest) (*UpdateNetworkRuleReply, error)
@@ -144,6 +155,9 @@ func (UnimplementedNodeServer) Update(context.Context, *UpdateRequest) (*UpdateR
 }
 func (UnimplementedNodeServer) Status(context.Context, *StatusRequest) (*StatusReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Status not implemented")
+}
+func (UnimplementedNodeServer) Usage(context.Context, *UsageRequest) (*UsageReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Usage not implemented")
 }
 func (UnimplementedNodeServer) UpdateFileProtect(context.Context, *UpdateFileProtectRequest) (*UpdateFileProtectReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateFileProtect not implemented")
@@ -254,6 +268,24 @@ func _Node_Status_Handler(srv interface{}, ctx context.Context, dec func(interfa
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Node_Usage_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UsageRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(NodeServer).Usage(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/node.Node/Usage",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(NodeServer).Usage(ctx, req.(*UsageRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _Node_UpdateFileProtect_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(UpdateFileProtectRequest)
 	if err := dec(in); err != nil {
@@ -316,6 +348,10 @@ var Node_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Status",
 			Handler:    _Node_Status_Handler,
+		},
+		{
+			MethodName: "Usage",
+			Handler:    _Node_Usage_Handler,
 		},
 		{
 			MethodName: "UpdateFileProtect",

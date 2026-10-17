@@ -21,8 +21,13 @@ import (
 	pb "scmc/rpc/pb/user"
 )
 
-func generatePassword(input string) ([]byte, error) {
-	return bcrypt.GenerateFromPassword([]byte(input), bcrypt.DefaultCost)
+func generatePassword(input string) (string, error) {
+	raw, err := bcrypt.GenerateFromPassword([]byte(input), bcrypt.DefaultCost)
+	if err != nil {
+		log.Warnf("bcrypt.GenerateFromPassword err=%v", err)
+		return "", err
+	}
+	return string(raw), nil
 }
 
 type UserServer struct {
@@ -119,9 +124,8 @@ func (s *UserServer) Signup(ctx context.Context, in *pb.SignupRequest) (*pb.Sign
 	}
 
 	// pre-process: bcrypt password
-	rawBytes, err := generatePassword(in.Password)
+	passwordEn, err := generatePassword(in.Password)
 	if err != nil {
-		log.Warnf("generatePassword: %v", err)
 		return nil, rpc.ErrInternal
 	}
 
@@ -136,7 +140,7 @@ func (s *UserServer) Signup(ctx context.Context, in *pb.SignupRequest) (*pb.Sign
 	var newUserInfo *db.UserInfo = &db.UserInfo{
 		Username:   in.Username,
 		RealName:   in.Username,
-		PasswordEn: string(rawBytes),
+		PasswordEn: passwordEn,
 	}
 	if err := db.CreateUser(ctx, newUserInfo); err != nil {
 		return nil, rpc.ErrInternal
@@ -178,13 +182,12 @@ func (s *UserServer) UpdatePassword(ctx context.Context, in *pb.UpdatePasswordRe
 		return nil, status.Error(codes.InvalidArgument, "新密码无变化") // rpc.ErrInvalidArgument
 	}
 
-	rawBytes, err := generatePassword(in.NewPassword)
+	passwordEn, err := generatePassword(in.NewPassword)
 	if err != nil {
-		log.Warnf("generatePassword: %v", err)
 		return nil, rpc.ErrInternal
 	}
 
-	if err := u.UpdatePassword(string(rawBytes)); err != nil {
+	if err := u.UpdatePassword(passwordEn); err != nil {
 		return nil, rpc.ErrInternal
 	}
 
@@ -256,16 +259,15 @@ func (s *UserServer) CreateUser(ctx context.Context, in *pb.CreateUserRequest) (
 		return nil, rpc.ErrInternal
 	}
 
-	rawBytes, err := generatePassword(in.UserInfo.Password)
+	passwordEn, err := generatePassword(in.UserInfo.Password)
 	if err != nil {
-		log.Warnf("generatePassword: %v", err)
 		return nil, rpc.ErrInternal
 	}
 
 	userInfo := &db.UserInfo{
 		Username:   in.UserInfo.LoginName,
 		RealName:   in.UserInfo.RealName,
-		PasswordEn: string(rawBytes),
+		PasswordEn: passwordEn,
 		IsActive:   in.UserInfo.IsActive,
 		IsEditable: in.UserInfo.IsEditable,
 		RoleID:     in.UserInfo.RoleId,
@@ -326,12 +328,10 @@ func (s *UserServer) UpdateUser(ctx context.Context, in *pb.UpdateUserRequest) (
 		userInfo.RealName = in.UserInfo.RealName
 	}
 	if len(in.UserInfo.Password) > 0 {
-		rawBytes, err := generatePassword(in.UserInfo.Password)
+		userInfo.PasswordEn, err = generatePassword(in.UserInfo.Password)
 		if err != nil {
-			log.Warnf("generatePassword: %v", err)
 			return nil, rpc.ErrInternal
 		}
-		userInfo.PasswordEn = string(rawBytes)
 	}
 	var roleInfo *db.UserRole
 	if in.UserInfo.RoleId > 0 {

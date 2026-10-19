@@ -12,7 +12,6 @@ import (
 	"scmc/model/warnlog"
 	pb "scmc/rpc/pb/container"
 	"scmc/rpc/pb/logging"
-	"scmc/server"
 	"scmc/server/controller/internal"
 )
 
@@ -55,14 +54,14 @@ func (i *IllegalContainer) RunAtInit() bool {
 	return true
 }
 
-func (i *IllegalContainer) ScanNodeContainers(images map[string]bool, n *db.NodeInfo) {
+func (i *IllegalContainer) ScanNodeContainers(images map[string]*db.ImageInfo, n *db.NodeInfo) {
 	conn, err := internal.GetAgentConn(n.Address)
 	if err != nil {
 		log.Warnf("restart container ErrInternal")
 		return
 	}
 
-	backupImages, err := server.ListBackupImage(conn)
+	backupImages, err := internal.ListBackupImage(conn)
 	if err != nil {
 		log.Warnf("ListBackupImage err=%v", err)
 		return
@@ -79,7 +78,7 @@ func (i *IllegalContainer) ScanNodeContainers(images map[string]bool, n *db.Node
 			continue
 		}
 
-		if !images[c.Info.Image] && !backupImages[c.Info.Image] {
+		if images[c.Info.Image] == nil && !backupImages[c.Info.Image] {
 			log.Debugf("stop container=%s", c.Info.Name)
 			if _, err := StopContainer(conn, c.Info.Id); err != nil {
 				log.Infof("StopContainer %v err=%v", c.Info.Id, err)

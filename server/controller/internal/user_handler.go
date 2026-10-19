@@ -3,6 +3,7 @@ package internal
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/google/uuid"
 	log "github.com/sirupsen/logrus"
@@ -41,20 +42,32 @@ func (s *UserServer) Login(ctx context.Context, in *pb.LoginRequest) (*pb.LoginR
 	}
 
 	// database operations
-	userInfo, err := db.QueryUser(ctx, in.Username)
+	u, err := db.QueryUser(ctx, in.Username)
 	if err != nil {
 		if err == db.ErrRecordNotFound {
 			return nil, rpc.ErrNotFound
 		}
 		return nil, rpc.ErrInternal
-	} else if userInfo == nil {
+	} else if u == nil {
 		return nil, rpc.ErrNotFound
 	}
 
+	lockRemain := time.Until(time.Unix(u.LockUntil, 0))
+	if lockRemain > 0 {
+		return nil, status.Errorf(codes.Unauthenticated, "账户已锁定，%v后重试", lockRemain.Round(time.Second))
+	}
+
 	// check password
-	if err := userInfo.CheckPassword(in.Password); err != nil {
-		log.Infof("check password: %v", err)
-		return nil, rpc.ErrWrongPassword
+	if err := u.CheckPassword(in.Password); err != nil {
+		if err == bcrypt.ErrMismatchedHashAndPassword {
+			if err := u.TryLock(); err != nil {
+				log.Errorf("try lock user=%s: %v", u.Username, err)
+			}
+			time.Sleep(time.Second * 5)
+			return nil, rpc.ErrWrongPassword
+		}
+		log.Errorf("check password for user=%s: %v", u.Username, err)
+		return nil, rpc.ErrInternal
 	}
 
 	var addr string
@@ -63,16 +76,16 @@ func (s *UserServer) Login(ctx context.Context, in *pb.LoginRequest) (*pb.LoginR
 	}
 
 	// get user role info
-	role, err := db.QueryRoleById(ctx, userInfo.RoleID)
+	role, err := db.QueryRoleById(ctx, u.RoleID)
 	if err != nil {
 		return nil, rpc.ErrInternal
 	}
 
 	// UUID create session
 	sessionKey := uuid.New().String()
-	old, err := db.CreateSession(userInfo.ID, sessionKey, addr)
+	old, err := db.CreateSession(u, sessionKey, addr)
 	if err != nil {
-		log.Warnf("create seccion err: %v", err)
+		log.Error("create session: ", err)
 		return nil, rpc.ErrDatabaseFail
 	}
 
@@ -80,13 +93,13 @@ func (s *UserServer) Login(ctx context.Context, in *pb.LoginRequest) (*pb.LoginR
 		session.Timers.TriggerAndRemove(old.SessionKey)
 	}
 
-	authKey := fmt.Sprintf("%d%c%s", userInfo.ID, common.UserSessionySeprator, sessionKey)
+	authKey := fmt.Sprintf("%d%c%s", u.ID, common.UserSessionySeprator, sessionKey)
 
 	// set authorizatio key in headers, for client interceptors' convenience
 	grpc.SetHeader(ctx, metadata.Pairs("authorization", authKey))
 
 	return &pb.LoginReply{
-		UserId:  userInfo.ID,
+		UserId:  u.ID,
 		AuthKey: authKey,
 		UserRole: &pb.UserRole{
 			Id:         role.ID,

@@ -175,7 +175,7 @@ super-user = true
 systemctl restart ks-scmc-controller.service
 ```
 
-运行以下命令将创建三个管理员用户`sysadm secadm audadm`，密码都是`12345678`。
+运行以下命令将创建三个管理员用户`sysadm secadm audadm`，密码分别为`sys.1234 sec.1234 aud.1234`。
 
 ```bash
 bash /etc/ks-scmc/init_users.sh

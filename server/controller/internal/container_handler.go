@@ -15,7 +15,6 @@ import (
 	"scmc/model/db"
 	"scmc/rpc"
 	pb "scmc/rpc/pb/container"
-	"scmc/server"
 	"scmc/server/args"
 )
 
@@ -509,12 +508,12 @@ func CheckImageLegal(nodeId int64, image string) error {
 		return rpc.ErrInternal
 	}
 
-	backupImages, err := server.ListBackupImage(conn)
+	backupImages, err := ListBackupImage(conn)
 	if err != nil {
 		log.Warnf("ListBackupImage err=%v", err)
 		return rpc.ErrInternal
 	}
-	if !images[image] && !backupImages[image] {
+	if images[image] == nil && !backupImages[image] {
 		return status.Errorf(codes.InvalidArgument, "容器镜像非法")
 	}
 

@@ -30,7 +30,6 @@ import (
 	"scmc/model/kysec"
 	"scmc/model/litedb"
 	"scmc/model/opensnitch"
-	"scmc/model/registry"
 	"scmc/rpc"
 	pb "scmc/rpc/pb/container"
 	"scmc/server/args"
@@ -70,29 +69,12 @@ func dockerResourceConfig(in *pb.ResourceLimit) container.Resources {
 }
 
 func ensureImage(imageRef string) error {
-	exist, err := docker.IsImageExist(imageRef)
+	_, err := docker.IsImageExist(imageRef)
 	if err != nil {
 		log.Infof("docker.IsImageExist err=%v", err)
 		return rpc.ErrInternal
 	}
-	if exist {
-		return nil
-	}
 
-	exist, err = registry.IsImageExist(imageRef)
-	if err != nil {
-		log.Infof("registry.IsImageExist err=%v", err)
-		return err
-	}
-	if !exist {
-		log.Infof("image[%v] not exist in registry", imageRef)
-		return rpc.ErrInternal
-	}
-
-	if err = docker.PullImage(imageRef); err != nil {
-		log.Infof("pull image[%v] err: %v", imageRef, err)
-		return err
-	}
 	return nil
 }
 
@@ -752,14 +734,11 @@ func (s *ContainerServer) removeContainerBackups(ids []string) error {
 		return err
 	}
 
-	var images []string
 	for _, b := range backups {
-		images = append(images, b.ImageRef)
+		docker.RemoveImage(context.Background(), b.ImageRef, false)
 	}
 
-	docker.RemoveImage(false, images...)
 	litedb.RemoveContainerBackup(backups)
-
 	return nil
 }
 
@@ -1031,7 +1010,7 @@ func (*ContainerServer) RemoveBackup(ctx context.Context, in *pb.RemoveBackupReq
 		return nil, rpc.ErrInternal
 	}
 
-	ci, err := cli.ContainerInspect(context.Background(), cfgs.ContainerID)
+	ci, err := cli.ContainerInspect(ctx, cfgs.ContainerID)
 	if err != nil {
 		log.Infof("ContainerInspect err=%v", err)
 		return nil, rpc.ErrInternal
@@ -1046,7 +1025,7 @@ func (*ContainerServer) RemoveBackup(ctx context.Context, in *pb.RemoveBackupReq
 		return nil, rpc.ErrInternal
 	}
 
-	docker.RemoveImage(false, b.ImageRef)
+	docker.RemoveImage(ctx, b.ImageRef, false)
 
 	return &pb.RemoveBackupReply{}, nil
 }
@@ -1423,7 +1402,7 @@ func (*ContainerServer) RunAppEntry(ctx context.Context, in *pb.RunAppEntryReque
 		return nil, rpc.ErrInternal
 	}
 
-	if !containerIsRunningWithCli(ctx, cli, app.ContainerID) {
+	if !containerIsRunning(ctx, cli, app.ContainerID) {
 		return nil, status.Error(codes.InvalidArgument, "容器未运行")
 	}
 
@@ -1477,7 +1456,7 @@ func (*ContainerServer) KillAppEntry(ctx context.Context, in *pb.KillAppEntryReq
 		return nil, rpc.ErrInternal
 	}
 
-	if !containerIsRunningWithCli(ctx, cli, app.ContainerID) {
+	if !containerIsRunning(ctx, cli, app.ContainerID) {
 		return nil, status.Error(codes.InvalidArgument, "容器未运行")
 	}
 

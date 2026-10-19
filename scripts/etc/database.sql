@@ -10,9 +10,11 @@ CREATE TABLE `user_infos` (
   `password_en` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
   `is_active` tinyint(1) NOT NULL DEFAULT '0',
   `is_editable` tinyint(1) NOT NULL DEFAULT '0',
-  `role_id` bigint(20) NOT NULL DEFAULT '0',
-  `created_at` int(20) NOT NULL DEFAULT '0',
-  `updated_at` int(20) NOT NULL DEFAULT '0',
+  `role_id` int(10) NOT NULL DEFAULT '0',
+  `fail_cnt` int(10) NOT NULL DEFAULT '0' COMMENT '登陆失败次数',
+  `lock_until` bigint(20) NOT NULL DEFAULT '0' COMMENT '登陆解锁时间, 0表示未锁定',
+  `created_at` bigint(20) NOT NULL DEFAULT '0',
+  `updated_at` bigint(20) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `username` (`username`),
   KEY `role_id` (`role_id`)
@@ -23,8 +25,8 @@ CREATE TABLE `user_roles` (
   `name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
   `is_editable` tinyint(1) NOT NULL DEFAULT '0',
   `perms_json` text COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '权限数组 用JSON形式保存 [{"id":1, "name":"NODE", "read":1, "write":0}, ...]',
-  `created_at` int(20) NOT NULL DEFAULT '0',
-  `updated_at` int(20) NOT NULL DEFAULT '0',
+  `created_at` bigint(20) NOT NULL DEFAULT '0',
+  `updated_at` bigint(20) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -34,9 +36,9 @@ CREATE TABLE `user_sessions` (
   `user_id` bigint(20) unsigned NOT NULL,
   `session_key` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
   `source` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
-  `expired_at` int(20) NOT NULL DEFAULT '0',
-  `created_at` int(20) NOT NULL DEFAULT '0',
-  `updated_at` int(20) NOT NULL DEFAULT '0',
+  `expired_at` bigint(20) NOT NULL DEFAULT '0',
+  `created_at` bigint(20) NOT NULL DEFAULT '0',
+  `updated_at` bigint(20) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `user_id` (`user_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -52,8 +54,8 @@ CREATE TABLE `node_infos` (
   `disk_limit` decimal(20,1) NOT NULL DEFAULT '0.0' COMMENT '磁盘使用 单位MB',
   `deleted` tinyint(4) NOT NULL DEFAULT '0' COMMENT '删除标记位 0:未删除',
   `uuid` varchar(255) NOT NULL DEFAULT '' COMMENT '节点添加/删除时使用, 防止节点被不同集群的controller服务添加',
-  `created_at` int(20) NOT NULL DEFAULT '0',
-  `updated_at` int(20) NOT NULL DEFAULT '0',
+  `created_at` bigint(20) NOT NULL DEFAULT '0',
+  `updated_at` bigint(20) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`),
   UNIQUE KEY `address` (`address`)
@@ -74,8 +76,8 @@ CREATE TABLE `image_infos` (
   `approval_status` tinyint(1) NOT NULL DEFAULT '0' COMMENT '0:待审批 1:审批拒绝 2:审批通过',
   `verify_status` tinyint(1) NOT NULL DEFAULT '0' COMMENT '0:验签失败 1:异常 2:验签成功',
   `signature` blob COMMENT '镜像文件签名内容',
-  `created_at` int(20) NOT NULL DEFAULT '0',
-  `updated_at` int(20) NOT NULL DEFAULT '0',
+  `created_at` bigint(20) NOT NULL DEFAULT '0',
+  `updated_at` bigint(20) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `index_unique` (`name`,`version`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -92,8 +94,8 @@ CREATE TABLE `runtime_logs` (
   `detail` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '详情',
   `status_code` int(10) NOT NULL DEFAULT '0' COMMENT '错误码 0:OK',
   `error` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '错误信息',
-  `created_at` int(20) NOT NULL DEFAULT '0',
-  `updated_at` int(20) NOT NULL DEFAULT '0',
+  `created_at` bigint(20) NOT NULL DEFAULT '0',
+  `updated_at` bigint(20) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
@@ -107,8 +109,8 @@ CREATE TABLE `warn_logs` (
   `container_name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '容器ID',
   `detail` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '详情',
   `have_read` tinyint(1) NOT NULL DEFAULT '0' COMMENT '0:未读 1:已读',
-  `created_at` int(20) NOT NULL DEFAULT '0',
-  `updated_at` int(20) NOT NULL DEFAULT '0',
+  `created_at` bigint(20) NOT NULL DEFAULT '0',
+  `updated_at` bigint(20) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
@@ -117,8 +119,8 @@ CREATE TABLE `container_templates` (
   `name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '容器名',
   `node_id` bigint(20) NOT NULL DEFAULT '0' COMMENT '节点ID',
   `config_json` text COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '配置参数 以JSON形式存储',
-  `created_at` int(20) NOT NULL DEFAULT '0',
-  `updated_at` int(20) NOT NULL DEFAULT '0',
+  `created_at` bigint(20) NOT NULL DEFAULT '0',
+  `updated_at` bigint(20) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -126,8 +128,8 @@ CREATE TABLE `container_templates` (
 CREATE TABLE IF NOT EXISTS `security_switches` (
   `id` BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
   `is_on` TINYINT NOT NULL UNIQUE DEFAULT 0 COMMENT '安全开关状态 0:关 1:开',
-  `created_at` INT(20) NOT NULL DEFAULT 0,
-  `updated_at` INT(20) NOT NULL DEFAULT 0
+  `created_at` bigint(20) NOT NULL DEFAULT 0,
+  `updated_at` bigint(20) NOT NULL DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS `api_tokens` (

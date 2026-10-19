@@ -12,6 +12,7 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/metadata"
 
+	"scmc/common/aes"
 	pb "scmc/rpc/pb/user"
 )
 
@@ -60,6 +61,31 @@ func listUser(cli pb.UserClient, args string) {
 func createUser(cli pb.UserClient, args string) {
 	var req pb.CreateUserRequest
 	parseRequest(args, &req)
+
+	if req.UserInfo.RoleInfo == nil {
+		log.Fatalf("角色信息错误")
+	}
+	role := req.UserInfo.RoleInfo.Name
+
+	makeCall(func(ctx context.Context) {
+		rep, err := cli.ListRole(ctx, &pb.ListRoleRequest{})
+		if err != nil {
+			log.Fatalf("查询角色列表错误: %v", err)
+		}
+		for _, r := range rep.Roles {
+			if r.Name == role {
+				req.UserInfo.RoleId = r.Id
+				return
+			}
+		}
+		log.Fatalf("角色%s不存在", role)
+	})
+
+	pw, err := aes.Decrypt(req.UserInfo.Password)
+	if err != nil {
+		log.Fatal(err)
+	}
+	req.UserInfo.Password = string(pw)
 
 	makeCall(func(ctx context.Context) {
 		rep, err := cli.CreateUser(ctx, &req)
@@ -148,56 +174,6 @@ func removeRole(cli pb.UserClient, args string) {
 	})
 }
 
-func createUserWithRole(cli pb.UserClient, username, role string) {
-	var roleID int64
-	makeCall(func(ctx context.Context) {
-		rep, err := cli.ListRole(ctx, &pb.ListRoleRequest{})
-		if err != nil {
-			log.Fatalf("查询角色列表错误: %v", err)
-		}
-		for _, r := range rep.Roles {
-			if r.Name == role {
-				roleID = r.Id
-				return
-			}
-		}
-		log.Fatalf("角色%s不存在", role)
-	})
-
-	makeCall(func(ctx context.Context) {
-		_, err := cli.CreateUser(ctx, &pb.CreateUserRequest{
-			UserInfo: &pb.UserInfo{
-				LoginName:  username,
-				Password:   "12345678",
-				IsActive:   true,
-				IsEditable: false,
-				RoleId:     roleID,
-			},
-		})
-		if err != nil {
-			log.Fatalf("创建用户%s 角色%s 错误: %v", username, role, err)
-		}
-	})
-}
-
-func createAdmin(cli pb.UserClient, args string) {
-	for _, u := range []string{"sysadm", "secadm", "audadm"} {
-		createUserWithRole(cli, u, u+"_r")
-	}
-}
-
-func createSysadm(cli pb.UserClient, username string) {
-	createUserWithRole(cli, username, "sysadm_r")
-}
-
-func createSecadm(cli pb.UserClient, username string) {
-	createUserWithRole(cli, username, "secadm_r")
-}
-
-func createAudadm(cli pb.UserClient, username string) {
-	createUserWithRole(cli, username, "audadm_r")
-}
-
 func handleInput(serverAddr, cmd, args string) {
 	var f func(pb.UserClient, string)
 	switch strings.ToLower(cmd) {
@@ -217,14 +193,6 @@ func handleInput(serverAddr, cmd, args string) {
 		f = updateRole
 	case "remove_role":
 		f = removeRole
-	case "create_admin":
-		f = createAdmin
-	case "create_sysadm":
-		f = createSysadm
-	case "create_secadm":
-		f = createSecadm
-	case "create_audadm":
-		f = createAudadm
 	default:
 		log.Fatalf("unknown cmd[%s]", cmd)
 	}

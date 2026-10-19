@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"time"
+	"unicode"
 
 	"github.com/google/uuid"
 	log "github.com/sirupsen/logrus"
@@ -165,6 +166,36 @@ func (s *UserServer) Signup(ctx context.Context, in *pb.SignupRequest) (*pb.Sign
 	return &pb.SignupReply{}, nil
 }
 
+func isLegalUserPasswd(username, passwd string) error {
+	if len(passwd) < 8 {
+		return status.Error(codes.InvalidArgument, "密码长度不足")
+	} else if username == passwd {
+		return status.Error(codes.InvalidArgument, "密码不能与用户名相同")
+	}
+
+	var hasLower, hasUpper, hasNumber, hasSpecial uint8
+
+	for i := 0; i < len(passwd); i++ {
+		c := rune(passwd[i])
+		if unicode.IsLower(c) {
+			hasLower = 1
+		} else if unicode.IsUpper(c) {
+			hasUpper = 1
+		} else if unicode.IsNumber(c) {
+			hasNumber = 1
+		} else if unicode.IsPunct(c) || unicode.IsSymbol(c) || c == rune(' ') {
+			hasSpecial = 1
+		} else {
+			return status.Errorf(codes.InvalidArgument, "不支持的字符%#U", c)
+		}
+	}
+
+	if hasLower+hasUpper+hasNumber+hasSpecial < 2 {
+		return status.Error(codes.InvalidArgument, "密码复杂度不满足要求")
+	}
+	return nil
+}
+
 func (s *UserServer) UpdatePassword(ctx context.Context, in *pb.UpdatePasswordRequest) (*pb.UpdatePasswordReply, error) {
 	userID, session, ok := auth.UserSessionFromContext(ctx)
 	if !ok {
@@ -181,8 +212,8 @@ func (s *UserServer) UpdatePassword(ctx context.Context, in *pb.UpdatePasswordRe
 		return nil, rpc.ErrInternal
 	}
 
-	if in.OldPassword == "" || len(in.NewPassword) < 8 {
-		return nil, rpc.ErrInvalidArgument
+	if in.OldPassword == "" {
+		return nil, status.Error(codes.InvalidArgument, "未输入原密码")
 	}
 
 	if err := u.CheckPassword(in.OldPassword); err != nil {
@@ -193,6 +224,10 @@ func (s *UserServer) UpdatePassword(ctx context.Context, in *pb.UpdatePasswordRe
 	if in.NewPassword == in.OldPassword {
 		log.Debugf("new password identical to old one")
 		return nil, status.Error(codes.InvalidArgument, "新密码无变化") // rpc.ErrInvalidArgument
+	}
+
+	if isLegalUserPasswd(u.Username, in.NewPassword); err != nil {
+		return nil, err
 	}
 
 	passwordEn, err := generatePassword(in.NewPassword)

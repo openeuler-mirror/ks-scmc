@@ -20,6 +20,8 @@ type UserInfo struct {
 	IsActive   bool
 	IsEditable bool
 	RoleID     int64
+	FailCnt    int32
+	LockUntil  int64
 	CreatedAt  int64 `gorm:"autoCreateTime"`
 	UpdatedAt  int64 `gorm:"autoUpdateTime"`
 }
@@ -39,6 +41,22 @@ func (u *UserInfo) UpdatePassword(newPassword string) error {
 	}
 
 	u.PasswordEn = newPassword
+	result := db.Save(u)
+	return result.Error
+}
+
+func (u *UserInfo) TryLock() error {
+	db, err := getConn()
+	if err != nil {
+		return err
+	}
+
+	u.FailCnt++
+	if u.FailCnt >= 3 {
+		t := time.Now().Add(time.Minute * 5)
+		u.LockUntil = t.Unix()
+		log.Infof("user=%s failcount=%v lock until=%v", u.Username, u.FailCnt, t)
+	}
 	result := db.Save(u)
 	return result.Error
 }
@@ -145,7 +163,6 @@ func QueryUser(ctx context.Context, username string) (*UserInfo, error) {
 		return nil, result.Error
 	}
 
-	log.Debugf("db query user: RowsAffected=%v", result.RowsAffected)
 	if result.RowsAffected == 0 {
 		return nil, nil
 	}
@@ -188,7 +205,7 @@ func QueryUsers(ids []int64) ([]*UserInfo, error) {
 	return users, nil
 }
 
-func CreateSession(userID int64, sessionKey, source string) (old *UserSession, err error) {
+func CreateSession(u *UserInfo, sessionKey, source string) (old *UserSession, err error) {
 	db, err := getConn()
 	if err != nil {
 		return nil, err
@@ -196,10 +213,9 @@ func CreateSession(userID int64, sessionKey, source string) (old *UserSession, e
 
 	err = db.Transaction(func(tx *gorm.DB) error {
 		var o UserSession
-		q0 := tx.Where("user_id = ?", userID).First(&o)
-		if err := q0.Error; err != nil {
+		if err := tx.Where("user_id = ?", u.ID).First(&o).Error; err != nil {
 			if err != gorm.ErrRecordNotFound {
-				log.Warnf("CreateSession find user_id=%v err=%v", userID, err)
+				log.Errorf("query session user_id=%v: %v", u.ID, err)
 				return translateError(err)
 			}
 		} else if o.ExpiredAt > time.Now().Unix() {
@@ -207,17 +223,24 @@ func CreateSession(userID int64, sessionKey, source string) (old *UserSession, e
 		}
 
 		sess := UserSession{
-			UserID:     userID,
+			UserID:     u.ID,
 			SessionKey: sessionKey,
 			Source:     source,
 			ExpiredAt:  time.Now().Add(common.Config.Controller.SessionLiveDuration()).Unix(),
 		}
 
-		q1 := tx.Clauses(clause.OnConflict{
+		u.FailCnt = 0
+		u.LockUntil = 0
+		if err := tx.Save(u).Error; err != nil {
+			log.Errorf("clear user=%v FailCnt/LockUntil: %v", u.ID, err)
+			return err
+		}
+
+		err := tx.Clauses(clause.OnConflict{
 			Columns:   []clause.Column{{Name: "user_id"}},
 			DoUpdates: clause.AssignmentColumns([]string{"session_key", "source", "expired_at"}),
-		}).Create(&sess)
-		if err := q1.Error; err != nil {
+		}).Create(&sess).Error
+		if err != nil {
 			log.Warnf("db create session: %v", err)
 			return err
 		}

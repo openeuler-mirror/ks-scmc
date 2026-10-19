@@ -21,9 +21,9 @@ Source0:        %{name}-%{version}.tar.gz
 Summary:       KylinSec security container magic cube server package
 BuildRequires: pkgconfig(systemd) git golang make coreutils protobuf-compiler systemd
 
-Requires: coreutils bash socat systemd lsyncd rsync xinetd keepalived 
-Requires: docker-ce cadvisor docker-registry influxdb opensnitch 
-Requires: ks-license-client ks-license-gui-client 
+Requires: coreutils bash socat systemd lsyncd rsync xinetd keepalived
+Requires: docker-ce cadvisor influxdb opensnitch
+Requires: ks-license-client ks-license-gui-client
 Requires: kernel-kek-devel kernel-kek
 Requires: mysql-community-server
 

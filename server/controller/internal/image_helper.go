@@ -18,8 +18,9 @@ import (
 	"golang.org/x/crypto/openpgp"
 
 	"scmc/common"
-	"scmc/model/registry"
 )
+
+const ManifestFileName = "manifest.json"
 
 func imageDir() string {
 	return common.Config.Controller.ImageDir
@@ -152,7 +153,7 @@ func (i *ImageFile) parseDockerID() error {
 		}
 
 		fname := h.FileInfo().Name()
-		if fname == registry.ManifestFileName {
+		if fname == ManifestFileName {
 			hasManifest = true
 			continue
 		}

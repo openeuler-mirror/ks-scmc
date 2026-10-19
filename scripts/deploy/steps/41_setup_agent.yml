@@ -52,12 +52,6 @@
         "host": [
             "unix:///var/run/docker.sock"
         ],
-        "insecure-registries": [
-            "127.0.0.1:5000"
-        ],
-        "registry-mirrors": [
-            "http://127.0.0.1:5000"
-        ],
         "data-root": "{{ docker_dir  }}",
         "selinux-enabled": false
     }

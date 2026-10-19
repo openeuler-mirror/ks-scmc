@@ -5,14 +5,12 @@ import (
 	"context"
 	"io"
 	"os"
-	"time"
 
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
 	"scmc/model/db"
-	"scmc/model/registry"
 	"scmc/rpc"
 	pb "scmc/rpc/pb/image"
 	"scmc/server/args"
@@ -56,7 +54,7 @@ type ImageServer struct {
 	pb.UnimplementedImageServer
 }
 
-func (s *ImageServer) noticeAgentSync(toRemove, toPull []string) {
+func (s *ImageServer) noticeAgentSync(removes []string, new *db.ImageInfo) {
 	nodes, err := db.ListNodes()
 	if err != nil {
 		log.Errorf("db.ListNodes err=%v", err)
@@ -65,19 +63,23 @@ func (s *ImageServer) noticeAgentSync(toRemove, toPull []string) {
 
 	// 遍历各节点通过ImagePull拉取镜像
 	for _, n := range nodes {
-		conn, err := getAgentConn(n.Address)
+		conn, err := GetAgentConn(n.Address)
 		if err != nil {
 			continue
 		}
 
 		req := pb.AgentSyncRequest{
-			ToRemove: toRemove,
-			ToPull:   toPull,
+			ToRemove: removes,
+			ToLoad: []*pb.LoadInfo{
+				{
+					ImageId: new.ImageId,
+					Path:    new.FilePath,
+					Tag:     new.Name + ":" + new.Version,
+				},
+			},
 		}
 
-		ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
-		defer cancel()
-		if _, err = pb.NewImageClient(conn).AgentSync(ctx, &req); err != nil {
+		if _, err = pb.NewImageClient(conn).AgentSync(context.Background(), &req); err != nil {
 			log.Warnf("AgentSync req=%+v node=%+v err=%v", &req, n, err)
 		} else {
 			log.Debugf("AgentSync req=%+v node=%+v OK", &req, n)
@@ -88,8 +90,7 @@ func (s *ImageServer) noticeAgentSync(toRemove, toPull []string) {
 func (s *ImageServer) noticeNewImage(i *db.ImageInfo) {
 	if i.VerifyStatus == db.VerifyPass && i.ApprovalStatus == db.ApprovalPass {
 		go func() {
-			registry.PushImage(i)
-			s.noticeAgentSync(nil, []string{i.Name + ":" + i.Version})
+			s.noticeAgentSync(nil, i)
 		}()
 	}
 }
@@ -438,13 +439,9 @@ func (s *ImageServer) Remove(ctx context.Context, in *pb.RemoveRequest) (*pb.Rem
 	}
 
 	go func() {
-		// remove in registry, node agent remove local image
 		var toRemove []string
 		for _, i := range images {
-			v := i.Name + ":" + i.Version
-			if err := registry.RemoveRegistryImage(v); err != nil {
-				log.Infof("registry remove image name=%v version=%v, err=%v", i.Name, i.Version, err)
-			}
+			toRemove = append(toRemove, i.ImageId)
 		}
 		s.noticeAgentSync(toRemove, nil)
 	}()

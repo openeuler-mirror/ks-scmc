@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 )
 
 func testRunner(fn func(context.Context, *grpc.ClientConn)) error {
@@ -24,17 +25,16 @@ func testRunner(fn func(context.Context, *grpc.ClientConn)) error {
 			opts = append(opts, grpc.WithInsecure())
 		}
 	*/
-	opts = append(opts, grpc.WithInsecure())
-	opts = append(opts, grpc.WithTimeout(time.Second*5))
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+	defer cancel()
+	opts = append(opts, grpc.WithTransportCredentials(insecure.NewCredentials()))
 
-	conn, err := grpc.Dial("127.0.0.1:10051", opts...)
+	conn, err := grpc.DialContext(ctx, "127.0.0.1:10051", opts...)
 	if err != nil {
 		log.Printf("grpc.Dial: %v", err)
 		return err
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
-	defer cancel()
 	fn(ctx, conn)
 	return nil
 }

@@ -31,7 +31,6 @@ func (c *Config) loadFile() error {
 	c.fileLock.Lock()
 	defer c.fileLock.Unlock()
 
-	// TODO ignore file not exist
 	content, err := ioutil.ReadFile(c.filePath)
 	if err != nil {
 		if errors.Is(err, os.ErrNotExist) {
@@ -60,10 +59,7 @@ func (c *Config) saveFile() error {
 	}
 
 	// TODO create file if not exists
-	if err := ioutil.WriteFile(c.filePath, content, 0644); err != nil {
-		return nil
-	}
-	return nil
+	return ioutil.WriteFile(c.filePath, content, 0644)
 }
 
 func (c *Config) addSensitiveContainers(ids []string) error {
@@ -74,8 +70,7 @@ func (c *Config) addSensitiveContainers(ids []string) error {
 		c.SensitiveContainers[id] = 1
 	}
 
-	c.saveFile()
-	return nil
+	return c.saveFile()
 }
 
 func (c *Config) delSensitiveContainers(ids []string) error {
@@ -86,8 +81,7 @@ func (c *Config) delSensitiveContainers(ids []string) error {
 		delete(c.SensitiveContainers, id)
 	}
 
-	c.saveFile()
-	return nil
+	return c.saveFile()
 }
 
 func (c *Config) isSensitiveContainers(id string) bool {

@@ -5,7 +5,7 @@
 %global debug_package %{nil}
 
 %global pkg_name ks-scmc
-%global pkg_ver 1.0.4
+%global pkg_ver 1.1.1
 %global pkg_rel 3
 
 Summary:        KylinSec security container magic cube
@@ -37,6 +37,8 @@ KylinSec security container magic cube provides simply, effecient and secure con
 make && cd -
 
 %install
+go env -w GO111MODULE=on
+go env -w GOPROXY=https://goproxy.cn
 make DESTDIR=$RPM_BUILD_ROOT install && cd -
 
 %post
@@ -48,6 +50,13 @@ make DESTDIR=$RPM_BUILD_ROOT install && cd -
 mkdir -p %{_datadir}/ks-scmc
 echo %{version}-%{release} > %{_datadir}/ks-scmc/ks-scmc.version
 chmod 0744 %{_datadir}/ks-scmc/ks-scmc.version > /dev/null || :
+
+# for container temrinal access
+getent group %{name} >/dev/null || groupadd -r %{name}
+getent passwd %{name} >/dev/null || useradd -r -g %{name} %{name}
+cat > /etc/sudoers.d/%{name} << EOF
+ks-scmc ALL=(ALL) NOPASSWD: %{_sysconfdir}/%{name}/access-container-gui
+EOF
 
 %preun
 %systemd_preun %{name}-agent.service
@@ -87,6 +96,13 @@ rm -rf %{_datadir}/ks-scmc
 %{_sysconfdir}/%{name}/init_users.sh
 
 %changelog
+* Fri Nov 17 2023 Haotian Chen <chenhaotian@kylinos.com.cn> - 1.1.1-2.ky3
+- KYOS-F: allow update container envs/mounts. (#21151)
+- KYOS-F: fix loong64 arch building issue.
+
+* Wed Nov 8 2023 Gongping Zheng <zhenggongping@kylinos.com.cn> - 1.1.1-1.ky3
+- KYOS-F: Rebuild for KY3.3-6-PG-ks-scmc-1.1.
+
 * Sat Aug 20 2022 Haotian Chen <chenhaotian@kylinos.com.cn> - 1.0.4-2.ky3
 - KYOS-F: Fix container backup occasionally failure. (#57408)
 

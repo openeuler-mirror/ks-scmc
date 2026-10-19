@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"io"
+	"sort"
 	"strings"
 	"sync"
 	"time"
@@ -95,6 +96,22 @@ func (s *ContainerServer) List(ctx context.Context, in *pb.ListRequest) (*pb.Lis
 	}
 
 	wg.Wait()
+	sort.Slice(reply.Containers, func(i, j int) bool {
+		c0 := reply.Containers[i]
+		c1 := reply.Containers[j]
+		if c0.NodeId != c1.NodeId {
+			return c0.NodeId < c1.NodeId
+		}
+
+		var n0, n1 string
+		if c0.Info != nil {
+			n0 = c0.Info.Name
+		}
+		if c1.Info != nil {
+			n1 = c1.Info.Name
+		}
+		return strings.Compare(n0, n1) < 0
+	})
 	return &reply, nil
 }
 

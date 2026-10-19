@@ -25,7 +25,12 @@ import (
 )
 
 func Server() (*grpc.Server, error) {
-	opts := []grpc.ServerOption{
+	tlsCredentials, err := common.LoadTLSCredentials()
+	if err != nil {
+		return nil, fmt.Errorf("cannot load TLS credentials: %w", err)
+	}
+
+	s := grpc.NewServer(
 		grpc.ChainUnaryInterceptor(debug.UnaryInterceptor(), auth.UnaryInterceptor(), audit.UnaryInterceptor()),
 		grpc.ChainStreamInterceptor(debug.StreamInterceptor(), auth.StreamInterceptor(), audit.StreamInterceptor()),
 		grpc.KeepaliveEnforcementPolicy(keepalive.EnforcementPolicy{
@@ -39,16 +44,8 @@ func Server() (*grpc.Server, error) {
 			Time:                  20 * time.Second, // Ping the client if it is idle for 20 seconds to ensure the connection is still active
 			Timeout:               5 * time.Second,  // Wait 5 second for the ping ack before assuming the connection is dead
 		}),
-	}
-
-	tlsCredentials, err := common.LoadTLSCredentials()
-	if err != nil {
-		return nil, fmt.Errorf("cannot load TLS credentials: %w", err)
-	}
-
-	opts = append(opts, grpc.Creds(tlsCredentials))
-
-	s := grpc.NewServer(opts...)
+		grpc.Creds(tlsCredentials),
+	)
 
 	container.RegisterContainerServer(s, &internal.ContainerServer{})
 	image.RegisterImageServer(s, &internal.ImageServer{})
@@ -63,7 +60,6 @@ func Server() (*grpc.Server, error) {
 	tasks.AddTask(
 		&tasks.SyncImages{},
 		&tasks.IllegalContainer{},
-		&tasks.PushImage{},
 		&tasks.NodeStatus{},
 	)
 

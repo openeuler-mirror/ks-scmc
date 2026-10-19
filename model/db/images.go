@@ -218,16 +218,16 @@ func GetImageStats() (*ImageStat, error) {
 	return &data, nil
 }
 
-func GetImageMap() (map[string]bool, error) {
+func GetImageMap() (map[string]*ImageInfo, error) {
 	dbImages, err := QueryImageByStatus()
 	if err != nil {
 		log.Warnf("query db images err=%v", err)
 		return nil, err
 	}
 
-	data := make(map[string]bool, len(dbImages))
+	data := make(map[string]*ImageInfo, len(dbImages))
 	for _, i := range dbImages {
-		data[i.Name+":"+i.Version] = true
+		data[i.Name+":"+i.Version] = i
 	}
 
 	return data, nil

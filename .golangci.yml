@@ -1,0 +1,75 @@
+run:
+  # default concurrency is a available CPU number
+  concurrency: 4
+
+  # 设置分析超时
+  timeout: 1m
+
+  # exit code when at least one issue was found, default is 1
+  issues-exit-code: 1
+
+  # 是否扫描测试代码
+  tests: false
+
+  # 设置忽略的扫描路径
+  skip-dirs:
+    - vendor$
+    - server/controller/test
+    - server/agent/test
+
+  # 默认忽略以下路径:
+  #   vendor$, third_party$, testdata$, examples$, Godeps$, builtin$
+  skip-dirs-use-default: true
+
+  # 设置忽略的文件
+  # skip-files:
+  #   - ".*\\.my\\.go$"
+  #   - lib/bad.go
+
+  modules-download-mode: readonly
+
+linters:
+  disable-all: true
+  enable:
+    - errcheck
+    - gosimple
+    - govet
+    - ineffassign
+    - staticcheck
+    - typecheck
+    - unused
+    - gocyclo
+    - gofmt
+    - goimports
+    - deadcode
+    - varcheck
+    - structcheck
+    # - godot
+    - godox
+    - gocognit
+    # - gosec
+    # - dupl
+    - revive
+  fast: true
+
+linters-settings:
+  gocyclo:
+    # Minimal code complexity to report.
+    # Default: 30 (but we recommend 10-20)
+    min-complexity: 20
+  gocognit:
+    # Minimal code complexity to report.
+    # Default: 30 (but we recommend 10-20)
+    min-complexity: 30
+  revive:
+    max-open-files: 2048
+    ignore-generated-header: true
+    severity: error
+    # Enable all available rules.
+    # Default: false
+    enable-all-rules: false
+    confidence: 0.1
+    rules:
+      - name: var-declaration
+        severity: error
+        disabled: false

@@ -456,7 +456,7 @@ func (s *ContainerServer) Kill(ctx context.Context, in *pb.KillRequest) (*pb.Kil
 
 	var reply pb.KillReply
 	for _, id := range in.Ids[0].ContainerIds {
-		if err := cli.ContainerKill(context.Background(), id, ""); err != nil { // TODO signal
+		if err := cli.ContainerKill(context.Background(), id, ""); err != nil {
 			log.Warnf("ContainerKill: id=%v %v", id, err)
 			var faileReason string
 			if s, _ := status.FromError(err); s != nil {

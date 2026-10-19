@@ -1,9 +1,11 @@
 {
     "user_info": {
         "login_name": "audadm",
-        "password": "12345678",
+        "password": "WNOQo2vcm/fN+vuSTsgUgAl5L87kwulWy06FC/EMujI8p23/",
         "is_active": true,
         "is_editable": true,
-        "role_id": 3
+        "role_info": {
+            "name": "audadm_r"
+        }
     }
 }

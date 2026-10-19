@@ -110,16 +110,6 @@ func containerIsRunning(ctx context.Context, cli *client.Client, containerID str
 	return ins.State.Running
 }
 
-func containerIsRunningWithCli(ctx context.Context, cli *client.Client, containerID string) bool {
-	cli, err := docker.Client()
-	if err != nil {
-		log.Infof("docker.Client err:%s", err)
-		return false
-	}
-
-	return containerIsRunning(ctx, cli, containerID)
-}
-
 func containerStartedTime(ctx context.Context, cli *client.Client, c *types.Container) int64 {
 	if c.State == "created" {
 		return 0

@@ -1,9 +1,11 @@
 {
     "user_info": {
         "login_name": "sysadm",
-        "password": "12345678",
+        "password": "v8/Z/CWH+blHM+IHBD3W9AerVcZzguluHb+wQhXXNHLOV7fh",
         "is_active": true,
         "is_editable": true,
-        "role_id": 1
+        "role_info" : {
+            "name": "sysadm_r"
+        }
     }
 }

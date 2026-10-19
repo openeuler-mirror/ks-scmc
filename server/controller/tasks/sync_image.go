@@ -9,7 +9,6 @@ import (
 
 	"scmc/model/db"
 	pb "scmc/rpc/pb/image"
-	"scmc/server"
 	"scmc/server/controller/internal"
 )
 
@@ -82,14 +81,14 @@ func SyncNodeImages() {
 	}
 }
 
-func syncNodeImages(dbImages map[string]bool, addr string) {
+func syncNodeImages(dbImages map[string]*db.ImageInfo, addr string) {
 	conn, err := internal.GetAgentConn(addr)
 	if err != nil {
 		log.Warnf("Failed to connect to agent service, addr=%v", addr)
 		return
 	}
 
-	backupImages, err := server.ListBackupImage(conn)
+	backupImages, err := internal.ListBackupImage(conn)
 	if err != nil {
 		log.Warnf("ListBackupImage err=%v", err)
 		return
@@ -106,19 +105,23 @@ func syncNodeImages(dbImages map[string]bool, addr string) {
 	// 优化备份创建数据维护，防止备份镜像不会被错误地删除后取消下面的注释
 	// 节点存在的镜像，上传和备份中都没有，需要删除
 	for i := range nodeImages {
-		if !dbImages[i] && !backupImages[i] {
+		if dbImages[i] == nil && !backupImages[i] {
 			req.ToRemove = append(req.ToRemove, i)
 		}
 	}
 
 	// 上传且审批通过的镜像，节点中不存在，需要同步
-	for i := range dbImages {
-		if !nodeImages[i] {
-			req.ToPull = append(req.ToPull, i)
+	for tag, info := range dbImages {
+		if !nodeImages[tag] {
+			req.ToLoad = append(req.ToLoad, &pb.LoadInfo{
+				ImageId: info.ImageId,
+				Path:    info.FilePath,
+				Tag:     tag,
+			})
 		}
 	}
 
-	if len(req.ToRemove) == 0 && len(req.ToPull) == 0 {
+	if len(req.ToRemove) == 0 && len(req.ToLoad) == 0 {
 		return // no changes
 	}
 

@@ -1,9 +1,11 @@
 {
     "user_info": {
         "login_name": "secadm",
-        "password": "12345678",
+        "password": "9uBQ0tOBVLYAxyynR2RVFnlxhNchUICIqV5TQ6bcmwl7054G",
         "is_active": true,
         "is_editable": true,
-        "role_id": 2
+        "role_info": {
+            "name": "secadm_r"
+        }
     }
 }

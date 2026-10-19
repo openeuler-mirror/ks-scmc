@@ -27,7 +27,9 @@
     ${BIN} -s ${SERVER_ADDR} -c create_role "$(cat create_audadm_r.json)"
 
     # 创建管理员用户
-    ${BIN} -s ${SERVER_ADDR} -c create_admin "{}"
+    ${BIN} -s ${SERVER_ADDR} -c create_user "$(cat create_sysadm.json)"
+    ${BIN} -s ${SERVER_ADDR} -c create_user "$(cat create_secadm.json)"
+    ${BIN} -s ${SERVER_ADDR} -c create_user "$(cat create_audadm.json)"
 - name: CONTROLLER 复制镜像签名公钥
   when: image_verify_pubkey|length > 0
   run_once: true

@@ -24,8 +24,12 @@ BuildRequires: pkgconfig(systemd) git golang make coreutils protobuf-compiler sy
 Requires: coreutils bash socat systemd lsyncd rsync xinetd keepalived
 Requires: docker-ce cadvisor influxdb opensnitch
 Requires: ks-license-client ks-license-gui-client
+%if "%{kylin_version}" == "3.3"
 Requires: kernel-kek-devel kernel-kek
 Requires: mysql-community-server
+%else
+Requires: mysql5-server
+%endif
 
 %description
 KylinSec security container magic cube provides simply, effecient and secure container management.
@@ -48,7 +52,11 @@ make DESTDIR=$RPM_BUILD_ROOT install && cd -
 
 getent group %{name} >/dev/null || groupadd -r %{name}
 mkdir -p /home/%{name}
+%if "%{kylin_version}" == "3.3"
 getent passwd %{name} >/dev/null || useradd -r -R /home/%{name} -g %{name} -c "container terminal connect user" %{name}
+%else
+getent passwd %{name} >/dev/null || useradd -r -d /home/%{name} -g %{name} -c "container terminal connect user" %{name}
+%endif
 chown %{name}:%{name} /home/%{name}
 echo "kylin.2023" | passwd --stdin %{name}
 

@@ -1,7 +1,7 @@
 #/bin/bash
 export KS_PATH="$1"
 export PROJECK_NAME="$2"
-export KS_ALLOW_OS="$3"
+export ALLOWED_OS_VERSION=($3)
 
 if [ "$KS_PATH" == "" ]; then
         echo "please check projeck tar is it correct!"
@@ -24,11 +24,17 @@ fi
 
 # find os version
 OS_VERSION=`cat /etc/.kyinfo | grep ^milestone | awk -F ' ' '{ print $3 }'`
-echo "OS version:${OS_VERSION}"
+echo "OS version:${OS_VERSION}, Allowed os version: ${ALLOWED_OS_VERSION[@]}"
 
-ALLOWED_OS_VERSION="$KS_ALLOW_OS"
-if [[ ! "$OS_VERSION" == "$ALLOWED_OS_VERSION"* ]];then
-    echo "OS version mismatched, Allowed OS Version:$ALLOWED_OS_VERSION"
+for KS_OS_NAME in ${ALLOWED_OS_VERSION[@]}
+do
+    if [[ "$OS_VERSION" == "$KS_OS_NAME"* ]];then
+        break
+    fi
+done
+# not find
+if [[ "$OS_VERSION" != "$KS_OS_NAME"* ]];then
+    echo "OS version mismatched, exit"
     exit 1
 fi
 

@@ -79,7 +79,7 @@ sed -i "s/KS_ALLOW_OS/\"${KS_ALLOW_OS[*]}\"/g" $CURR_PATH/ks-run.sh
 tar cvf $CURR_PATH/ks-run-tmp.tar.gz -C $CURR_PATH ks-run-tmp
 cat $CURR_PATH/ks-run.sh $CURR_PATH/ks-run-tmp.tar.gz > $RUN_PATH.run
 chmod +x $RUN_PATH.run
-md5sum $RUN_PATH.run > $RUN_PATH.md5
+md5sum $RUN_PATH.run > $RUN_PATH.md5.txt
 sed -i "s/$KS_PROJECK_NAME/KS_PROJECK_NAME/g" $CURR_PATH/ks-run.sh
 sed -i "s/\"${KS_ALLOW_OS[*]}\"/KS_ALLOW_OS/g" $CURR_PATH/ks-run.sh
 rm -rf $CURR_PATH/ks-run-tmp.tar.gz $CURR_PATH/ks-run-tmp

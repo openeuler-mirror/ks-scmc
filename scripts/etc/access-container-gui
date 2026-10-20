@@ -17,7 +17,8 @@ DISPLAY_NUMBER=$(echo $DISPLAY | cut -d. -f1 | cut -d: -f2)
 AUTH_FILE=${BASE_DIR}/${CONTAINER_NAME}/xauth/${DISPLAY_NUMBER}/Xauthority
 
 # X11 auth permission
-AUTH_COOKIE=$(xauth list | grep "^$(hostname)/unix:${DISPLAY_NUMBER} " | awk '{print $3}')
+SUDOER_HOME=$(getent passwd ${SUDO_USER} | cut -d: -f6)
+AUTH_COOKIE=$(HOME=${SUDOER_HOME} xauth list | grep "^$(hostname)/unix:${DISPLAY_NUMBER} " | awk '{print $3}')
 if [[ ! -d "${AUTH_FILE}" ]]; then
     mkdir ${BASE_DIR}/${CONTAINER_NAME}/xauth/${DISPLAY_NUMBER}/ -p
 fi

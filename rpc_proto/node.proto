@@ -44,7 +44,7 @@ message CreateReply {
 
 message RemoveRequest {
     repeated int64 ids  = 1;
-    string         uuid = 2;    // 内部RPC使用
+    string         uuid = 2;  // 内部RPC使用
 }
 
 message RemoveReply {}

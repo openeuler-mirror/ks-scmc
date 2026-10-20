@@ -102,15 +102,15 @@ message ListAppEntryReply {
 }
 
 message AddAppEntryRequest {
-    int64    node_id      = 1;
-    AppEntry app          = 2;
+    int64    node_id = 1;
+    AppEntry app     = 2;
 }
 
 message AddAppEntryReply {}
 
 message UpdateAppEntryRequest {
-    int64    node_id      = 1;
-    AppEntry app          = 2;
+    int64    node_id = 1;
+    AppEntry app     = 2;
 }
 
 message UpdateAppEntryReply {}
@@ -271,6 +271,7 @@ message UpdateRequest {
     SecurityConfig         security_config = 6;
     repeated Mount         mounts          = 7;  // 共享目录
     map<string, string>    envs            = 8;  // 环境变量
+    string                 cmd             = 9;
 }
 
 message UpdateReply {}
@@ -500,12 +501,12 @@ message ContainerConfigs {
     string desc           = 5;  // 描述信息 支持中文 对应LABELS[KS_SCMC_DESC]
     string image          = 6;  // 必填 镜像
     bool   enable_graphic = 7;  // 开启图形化 对应LABELS[KS_SCMC_GRAPHIC]
+    string cmd            = 8;
     // hostname
     // domain_name
     // user
     // working_dir
     // entrypoint
-    // cmd
 
     repeated Mount         mounts         = 21;  // 共享目录
     repeated NetworkConfig networks       = 22;  // 网络信息

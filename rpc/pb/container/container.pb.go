@@ -4806,6 +4806,13 @@ func (x *ContainerConfigs) GetEnableGraphic() bool {
 	return false
 }
 
+func (x *ContainerConfigs) GetCmd() string {
+	if x != nil {
+		return x.Cmd
+	}
+	return ""
+}
+
 func (x *ContainerConfigs) GetMounts() []*Mount {
 	if x != nil {
 		return x.Mounts

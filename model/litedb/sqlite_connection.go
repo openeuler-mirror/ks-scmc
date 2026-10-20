@@ -49,16 +49,16 @@ func getConn() (*gorm.DB, error) {
 
 	m := _db.Migrator()
 	if !m.HasTable(&ContainerConfig{}) {
-		m.CreateTable(&ContainerConfig{})
+		_ = m.CreateTable(&ContainerConfig{})
 	}
 	if !m.HasTable(&ContainerBackup{}) {
-		m.CreateTable(&ContainerBackup{})
+		_ = m.CreateTable(&ContainerBackup{})
 	}
 	if !m.HasTable(&AppEntry{}) {
-		m.CreateTable(&AppEntry{})
+		_ = m.CreateTable(&AppEntry{})
 	}
 	if !m.HasTable(&NodeInfo{}) {
-		m.CreateTable(&NodeInfo{})
+		_ = m.CreateTable(&NodeInfo{})
 	}
 
 	conn, err := _db.DB()

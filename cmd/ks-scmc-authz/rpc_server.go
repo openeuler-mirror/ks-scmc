@@ -18,15 +18,19 @@ type AuthzServer struct {
 }
 
 func (s *AuthzServer) UpdateConfig(ctx context.Context, in *pb.UpdateConfigRequest) (*pb.UpdateConfigReply, error) {
+	var err error
 	switch in.Action {
 	case int64(pb.AUTHZ_ACTION_ADD_SENSITIVE_CONTAINER):
-		globalConfig.addSensitiveContainers(in.ContainerIds)
+		err = globalConfig.addSensitiveContainers(in.ContainerIds)
 	case int64(pb.AUTHZ_ACTION_DEL_SENSITIVE_CONTAINER):
-		globalConfig.delSensitiveContainers(in.ContainerIds)
+		err = globalConfig.delSensitiveContainers(in.ContainerIds)
 	default:
-		status.Error(codes.InvalidArgument, "Invalid argument")
+		return nil, status.Error(codes.InvalidArgument, "Invalid argument")
 	}
 
+	if err != nil {
+		log.Print("[authz] handle sensitive containers: ", err)
+	}
 	return &pb.UpdateConfigReply{}, nil
 }
 

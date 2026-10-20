@@ -18,6 +18,7 @@ import (
 	"github.com/docker/docker/client"
 	"github.com/google/uuid"
 	"github.com/shirou/gopsutil/mem"
+	"github.com/docker/docker/api/types/strslice"
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -219,6 +220,12 @@ func (s *ContainerServer) create(configs *pb.ContainerConfigs) (string, error) {
 		AttachStdin: true, // AttachStdin, Tty: make sure container like OS(ubuntu, centos) will not exit after start
 		Tty:         true,
 	}
+
+	if configs.Cmd != "" {
+		var cmdSlice strslice.StrSlice = strings.Fields(configs.Cmd)
+		config.Cmd=cmdSlice
+	}
+
 	hostConfig := container.HostConfig{
 		Privileged: false, // force non-privileged
 	}
@@ -800,6 +807,10 @@ func (s *ContainerServer) inspect(id string, backup bool) (*pb.ContainerConfigs,
 
 	if info.NetworkSettings != nil {
 		s.inspectNetwork(info.ID, backup, info.NetworkSettings, configs)
+	}
+
+	if info.Config.Cmd != nil {
+		configs.Cmd = strings.Join(info.Config.Cmd, " ")
 	}
 
 	return configs, pid, nil

@@ -1,6 +1,8 @@
 package rpc
 
 import (
+	"strings"
+	
 	"github.com/docker/go-units"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -49,4 +51,14 @@ var (
 
 func ErrImageSize(size float64) error {
 	return status.Errorf(codes.InvalidArgument, "镜像大小超过上限（%s）", units.BytesSize(size))
+}
+
+func ErrInvalidArgumentWrapper(err error) error {
+	errSlice := strings.Split(err.Error(), ":")
+	if len(errSlice) >= 1 {
+		errString := errSlice[1]
+		return status.Errorf(codes.InvalidArgument,"参数错误 %s",errString)
+	} else {
+		return status.Errorf(codes.InvalidArgument,"参数错误 %s",err.Error())
+	}
 }

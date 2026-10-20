@@ -2,8 +2,11 @@ package internal
 
 import (
 	"context"
+	"fmt"
+	"io/ioutil"
 	"net"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -508,6 +511,28 @@ func (s *NetworkServer) RemoveIPtables(ctx context.Context, in *pb.RemoveIPtable
 	return &pb.RemoveIPtablesReply{}, nil
 }
 
+func callShell(arg string) ([]byte, error) {
+	log.Debugf("shell param: %v", arg)
+	cmd := exec.Command("/bin/bash", "-c", arg)
+	stdout, _ := cmd.StdoutPipe()
+	if err := cmd.Start(); err != nil {
+		log.Errorf("Execute failed when Start %v", err)
+		return nil, err
+	}
+
+	out_bytes, _ := ioutil.ReadAll(stdout)
+	stdout.Close()
+
+	if err := cmd.Wait(); err != nil {
+		log.Errorf("Execute failed when Wait: %v", err)
+		return nil, err
+	}
+
+	log.Debugf("Execute finished: %v", string(out_bytes))
+
+	return out_bytes, nil
+}
+
 func (s *NetworkServer) createNetwork(name, subnet, gateway, parent string) error {
 	driver := "bridge"
 	if parent != "" {
@@ -539,6 +564,21 @@ func (s *NetworkServer) createNetwork(name, subnet, gateway, parent string) erro
 	if err != nil {
 		log.Warnf("NetworkCreate name=%v err=%v", name, err)
 		return err
+	}
+
+	if parent != "" {
+		path := "/etc/sysconfig/network-scripts/ifcfg-" + parent
+		host_name := name + "-host"
+		del := fmt.Sprintf("sed -i -e '/promisc on/,+d' %s; sed -i -e '/type macvlan mode bridge/,+d' %s; sed -i -e '/ip link set dev/,+d' %s; sed -i -e '/ip route add/,+d' %s",
+			path, path, path, path)
+		add := fmt.Sprintf("echo -e 'ip link set %s promisc on\nip link add link %s %s type macvlan mode bridge\nip link set dev %s up\nip route add %s dev %s' >> %s",
+			parent, parent, host_name, host_name, subnet, host_name, path)
+		cmd := fmt.Sprintf("ls %s.bak >/dev/null 2>&1 || cp %s %s.bak; %s; %s; systemctl restart network", path, path, path, del, add)
+		log.Debugf("NetworkCreate parent=%v name=%v host_name=%v gateway=%v subnet=%v cmd=%v", parent, name, host_name, gateway, subnet, cmd)
+		if _, err := callShell(cmd); err != nil {
+			log.Warnf("NetworkCreate cmd=%v err=%v", cmd, err)
+			return err
+		}
 	}
 	return nil
 }

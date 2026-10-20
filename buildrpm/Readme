@@ -3,9 +3,16 @@ script to build rpm
 
 first make build env ready:
 
+For KY3.3-6:
 1 yum install http://192.168.120.17/kojifiles/packages/mock/1.4.2/1.ky3/noarch/mock-1.4.2-1.ky3.noarch.rpm
 
 2 sed 's/%(uid)s/99/g' /usr/lib/python2.7/site-packages/mockbuild/util.py -i
+
+For KY3.4-4-PG:
+1 yum install mock
+
+2 sed -i 's/-n /-N /' /usr/lib/python3.7/site-packages/mockbuild/util.py
+3 sed -i 's/{{chrootuid}}/99/' /usr/lib/python3.7/site-packages/mockbuild/util.py
 
 then:
 

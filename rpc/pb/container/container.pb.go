@@ -2380,6 +2380,7 @@ type UpdateRequest struct {
 	SecurityConfig *SecurityConfig   `protobuf:"bytes,6,opt,name=security_config,json=securityConfig,proto3" json:"security_config,omitempty"`
 	Mounts         []*Mount          `protobuf:"bytes,7,rep,name=mounts,proto3" json:"mounts,omitempty"`                                                                                     // 共享目录
 	Envs           map[string]string `protobuf:"bytes,8,rep,name=envs,proto3" json:"envs,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"` // 环境变量
+	Cmd            string            `protobuf:"bytes,9,opt,name=cmd,proto3" json:"cmd,omitempty"`
 }
 
 func (x *UpdateRequest) Reset() {

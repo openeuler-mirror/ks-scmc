@@ -23,7 +23,7 @@ if [ "$VER_PROJECK_NAME" == "" ]; then
 fi
 
 # find os version
-OS_VERSION=`cat /etc/.kyinfo | grep ^milestone | awk -F ' ' '{ print $3 }'`
+OS_VERSION=`cat /etc/.kyinfo |  sed 's/ //g'| grep ^milestone | awk -F= '{ print $2 }'`
 echo "OS version:${OS_VERSION}, Allowed os version: ${ALLOWED_OS_VERSION[@]}"
 
 for KS_OS_NAME in ${ALLOWED_OS_VERSION[@]}

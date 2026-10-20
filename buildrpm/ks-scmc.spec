@@ -6,7 +6,7 @@
 
 %global pkg_name ks-scmc
 %global pkg_ver 1.1.1
-%global pkg_rel 4
+%global pkg_rel 5
 
 Summary:        KylinSec security container magic cube
 License:        No License
@@ -52,11 +52,7 @@ make DESTDIR=$RPM_BUILD_ROOT install && cd -
 
 getent group %{name} >/dev/null || groupadd -r %{name}
 mkdir -p /home/%{name}
-%if "%{kylin_version}" == "3.3"
-getent passwd %{name} >/dev/null || useradd -r -R /home/%{name} -g %{name} -c "container terminal connect user" %{name}
-%else
 getent passwd %{name} >/dev/null || useradd -r -d /home/%{name} -g %{name} -c "container terminal connect user" %{name}
-%endif
 chown %{name}:%{name} /home/%{name}
 echo "kylin.2023" | passwd --stdin %{name}
 

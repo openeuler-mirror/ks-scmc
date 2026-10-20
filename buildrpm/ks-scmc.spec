@@ -6,7 +6,7 @@
 
 %global pkg_name ks-scmc
 %global pkg_ver 1.1.1
-%global pkg_rel 3
+%global pkg_rel 4
 
 Summary:        KylinSec security container magic cube
 License:        No License
@@ -46,17 +46,16 @@ make DESTDIR=$RPM_BUILD_ROOT install && cd -
 %systemd_post %{name}-controller.service
 %systemd_post %{name}-authz.service
 
+getent group %{name} >/dev/null || groupadd -r %{name}
+mkdir -p /home/%{name}
+getent passwd %{name} >/dev/null || useradd -r -R /home/%{name} -g %{name} -c "container terminal connect user" %{name}
+chown %{name}:%{name} /home/%{name}
+echo "kylin.2023" | passwd --stdin %{name}
+
 # write version info
 mkdir -p %{_datadir}/ks-scmc
 echo %{version}-%{release} > %{_datadir}/ks-scmc/ks-scmc.version
 chmod 0744 %{_datadir}/ks-scmc/ks-scmc.version > /dev/null || :
-
-# for container temrinal access
-getent group %{name} >/dev/null || groupadd -r %{name}
-getent passwd %{name} >/dev/null || useradd -r -g %{name} %{name}
-cat > /etc/sudoers.d/%{name} << EOF
-ks-scmc ALL=(ALL) NOPASSWD: %{_sysconfdir}/%{name}/access-container-gui
-EOF
 
 %preun
 %systemd_preun %{name}-agent.service
@@ -94,6 +93,7 @@ rm -rf %{_datadir}/ks-scmc
 %{_sysconfdir}/%{name}/create_secadm_r.json
 %{_sysconfdir}/%{name}/create_sysadm_r.json
 %{_sysconfdir}/%{name}/init_users.sh
+%{_sysconfdir}/sudoers.d/ks-scmc-sudoers
 
 %changelog
 * Fri Nov 17 2023 Haotian Chen <chenhaotian@kylinos.com.cn> - 1.1.1-2.ky3

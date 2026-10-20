@@ -3,13 +3,13 @@ package internal
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
 	"net"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"strconv"
 	"strings"
+	"bufio"
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/network"

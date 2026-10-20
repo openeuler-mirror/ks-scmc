@@ -61,6 +61,15 @@ func (s *ImageServer) noticeAgentSync(removes []string, new *db.ImageInfo) {
 		return
 	}
 
+	loads := []*pb.LoadInfo{}
+	if new != nil {
+		loads = append(loads, &pb.LoadInfo{
+			ImageId: new.ImageId,
+			Path:    new.FilePath,
+			Tag:     new.Name + ":" + new.Version,
+		})
+	}
+
 	// 遍历各节点通过ImagePull拉取镜像
 	for _, n := range nodes {
 		conn, err := GetAgentConn(n.Address)
@@ -70,13 +79,7 @@ func (s *ImageServer) noticeAgentSync(removes []string, new *db.ImageInfo) {
 
 		req := pb.AgentSyncRequest{
 			ToRemove: removes,
-			ToLoad: []*pb.LoadInfo{
-				{
-					ImageId: new.ImageId,
-					Path:    new.FilePath,
-					Tag:     new.Name + ":" + new.Version,
-				},
-			},
+			ToLoad:   loads,
 		}
 
 		if _, err = pb.NewImageClient(conn).AgentSync(context.Background(), &req); err != nil {

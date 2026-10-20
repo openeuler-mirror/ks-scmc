@@ -24,6 +24,8 @@
   shell:
     influx -execute 'CREATE DATABASE "cadvisor"; CREATE RETENTION POLICY "cadvisor_retention" ON "cadvisor" DURATION 7d REPLICATION 1 DEFAULT;'
 # 容器网络进程白名单功能依赖opensnitch
+- name: AGENT 启动opensnitch
+  service: name=opensnitch state=restarted enabled=true
 - name: AGENT opensnitch配置系统规则
   copy:
     dest: /etc/opensnitchd/system-fw.json

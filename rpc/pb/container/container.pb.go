@@ -4713,9 +4713,10 @@ type ContainerConfigs struct {
 	Uuid           string            `protobuf:"bytes,2,opt,name=uuid,proto3" json:"uuid,omitempty"`                                  // 内部使用 labels[KS_SCMC_UUID]
 	Name           string            `protobuf:"bytes,3,opt,name=name,proto3" json:"name,omitempty"`                                  // 容器名 必填 不支持中文字符
 	Status         string            `protobuf:"bytes,4,opt,name=status,proto3" json:"status,omitempty"`
-	Desc           string            `protobuf:"bytes,5,opt,name=desc,proto3" json:"desc,omitempty"`                                                                                          // 描述信息 支持中文 对应LABELS[KS_SCMC_DESC]
-	Image          string            `protobuf:"bytes,6,opt,name=image,proto3" json:"image,omitempty"`                                                                                        // 必填 镜像
-	EnableGraphic  bool              `protobuf:"varint,7,opt,name=enable_graphic,json=enableGraphic,proto3" json:"enable_graphic,omitempty"`                                                  // 开启图形化 对应LABELS[KS_SCMC_GRAPHIC]
+	Desc           string            `protobuf:"bytes,5,opt,name=desc,proto3" json:"desc,omitempty"`                                         // 描述信息 支持中文 对应LABELS[KS_SCMC_DESC]
+	Image          string            `protobuf:"bytes,6,opt,name=image,proto3" json:"image,omitempty"`                                       // 必填 镜像
+	EnableGraphic  bool              `protobuf:"varint,7,opt,name=enable_graphic,json=enableGraphic,proto3" json:"enable_graphic,omitempty"` // 开启图形化 对应LABELS[KS_SCMC_GRAPHIC]
+	Cmd            string            `protobuf:"bytes,8,opt,name=cmd,proto3" json:"cmd,omitempty"`
 	Mounts         []*Mount          `protobuf:"bytes,21,rep,name=mounts,proto3" json:"mounts,omitempty"`                                                                                     // 共享目录
 	Networks       []*NetworkConfig  `protobuf:"bytes,22,rep,name=networks,proto3" json:"networks,omitempty"`                                                                                 // 网络信息
 	Envs           map[string]string `protobuf:"bytes,23,rep,name=envs,proto3" json:"envs,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"` // 环境变量

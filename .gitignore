@@ -8,7 +8,7 @@ buildrpm/_buildtmp
 
 buildrun/*.run
 buildrun/*.readme
-buildrun/*.md5.txt
+buildrun/*.md5
 buildrun/*.zip
 buildrun/ks-run/ks-scmc/1.1/*.sh
 buildrun/ks-run/ks-scmc/1.1/**/*.rpm

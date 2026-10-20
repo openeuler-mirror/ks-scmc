@@ -132,7 +132,6 @@ func SaveRule(p *litedb.ProcProtection, containerID, uuid string) error {
 		return err
 	}
 
-	// TODO 重启systemd服务
 	return nil
 }
 
@@ -144,6 +143,5 @@ func RemoveRule(containerID string) error {
 		log.Warnf("RemoveRule err0=%v err1=%v", err0, err1)
 	}
 
-	// TODO 重启systemd服务
 	return nil
 }

@@ -1,0 +1,1 @@
+ks-scmc ALL=(ALL:ALL) NOPASSWD:/etc/ks-scmc/access-container-gui

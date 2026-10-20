@@ -1,15 +1,19 @@
 package internal
 
 import (
+	"archive/tar"
 	"context"
 	"os"
+	"io"
 	"strings"
 	"sync"
+	"regexp"
 
 	"github.com/docker/docker/api/types"
 	log "github.com/sirupsen/logrus"
 
 	"scmc/model/docker"
+	"scmc/model/registry"
 	"scmc/rpc"
 	pb "scmc/rpc/pb/image"
 )
@@ -85,9 +89,69 @@ func (s *ImageServer) AgentSync(ctx context.Context, in *pb.AgentSyncRequest) (*
 			return
 		}
 		defer f.Close()
-		if _, err := cli.ImageLoad(bg, f, true); err != nil {
-			log.Errorf("load image file '%s': %v", path, err)
-			return
+
+		isTarFileSystem := true
+		reader := tar.NewReader(f)
+		for {
+			header, err := reader.Next()
+			if err != nil {
+				if err.Error() == "EOF" {
+					break
+				}
+				log.Errorf("无法读取归档文件：", err)
+				return
+			}
+			log.Debugln(header.Name)
+			if header.Name == registry.ManifestFileName {
+				isTarFileSystem = false
+				break
+			}
+		}
+		
+		if isTarFileSystem {
+			tarf, err := os.Open(path)
+			if err != nil {
+				log.Errorf("open image file '%s': %v", path, err)
+				return
+			}
+			defer f.Close()
+
+			resp, err := cli.ImageImport(bg, types.ImageImportSource{
+				Source:     tarf,
+				SourceName: "-", // 从标准输入流读取
+			}, "", types.ImageImportOptions{})
+			if err != nil {
+				log.Errorf("load tar image file '%s': %v", path, err)
+			}
+			defer resp.Close()
+			
+			var respString string
+			for {
+				data := make([]byte, 4096)
+				n, err := resp.Read(data)
+				if err == io.EOF {
+					break
+				}
+				respString += string(data[:n])
+			}
+			log.Infof("Imported image ID: %s ", respString)
+			re := regexp.MustCompile(`sha256:([a-f0-9]+)`)
+			match := re.FindStringSubmatch(respString)
+			if len(match) > 1 {
+				id = match[1]
+			}
+			log.Infof("Imported image ID: %s ", id)
+		} else {
+			imgf, err := os.Open(path)
+			if err != nil {
+				log.Errorf("open image file '%s': %v", path, err)
+				return
+			}
+			defer f.Close()
+			if _, err := cli.ImageLoad(bg, imgf, true); err != nil {
+				log.Errorf("load image file '%s': %v", path, err)
+				return
+			}
 		}
 
 		if err := cli.ImageTag(bg, id, tag); err != nil {

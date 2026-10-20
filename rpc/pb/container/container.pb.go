@@ -2471,6 +2471,13 @@ func (x *UpdateRequest) GetEnvs() map[string]string {
 	return nil
 }
 
+func (x *UpdateRequest) GetCmd() string {
+	if x != nil {
+		return x.Cmd
+	}
+	return ""
+}
+
 type UpdateReply struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache

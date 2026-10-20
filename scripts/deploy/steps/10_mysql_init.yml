@@ -9,13 +9,24 @@
       echo "找不到 mysqld"
       exit 1
     fi
+    firewall-cmd --permanent --add-service=mysql >/dev/null 2>&1 || true
+    firewall-cmd --reload >/dev/null 2>&1 || true
     rm -rf /var/lib/mysql/*
-    ${MYSQLD} --initialize-insecure --user=mysql
+    cat > /etc/my-kylin.cnf << EOF
+    [mysqld]
+    datadir=/var/lib/mysql
+    socket=/var/lib/mysql/mysql.sock
+
+    log-error=/var/log/mysqld.log
+    pid-file=/var/run/mysqld/mysqld.pid
+    EOF
+    systemctl set-environment MYSQLD_OPTS='--defaults-file=/etc/my-kylin.cnf --basedir=/usr --pid-file=/run/mysqld/mysqld.pid'
+    ${MYSQLD} --defaults-file=/etc/my-kylin.cnf --initialize-insecure --user=mysql
 - name: MYSQL 启动服务
   service: name=mysqld state=restarted enabled=true
 - name: MYSQL 配置用户
   shell: |
-    mysql -uroot << EOF
+    mysql -S /var/lib/mysql/mysql.sock -uroot << EOF
     ALTER USER 'root'@'localhost' IDENTIFIED BY '{{ mysql.root_password }}';
     CREATE USER 'root'@'%' IDENTIFIED BY '{{ mysql.root_password }}';
     GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' WITH GRANT OPTION;

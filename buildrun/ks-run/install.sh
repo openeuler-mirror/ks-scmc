@@ -1,6 +1,7 @@
 #/bin/bash
 export KS_PATH="$1"
 export PROJECK_NAME="$2"
+export WITHOUT_KERNEL="$3"
 
 if [ "$KS_PATH" == "" ]; then
         echo "please check projeck tar is it correct!"
@@ -23,9 +24,9 @@ fi
 
 DEST_DIR="$VER_PROJECK_NAME"
 if [ -d ${KS_PATH}/${PROJECK_NAME}/${DEST_DIR} ]; then
-	chmod +x ${KS_PATH}/${PROJECK_NAME}/${DEST_DIR}/install-${PROJECK_NAME}.sh && ${KS_PATH}/${PROJECK_NAME}/${DEST_DIR}/install-${PROJECK_NAME}.sh ${KS_PATH}/${PROJECK_NAME}/${DEST_DIR}
+	chmod +x ${KS_PATH}/${PROJECK_NAME}/${DEST_DIR}/install-${PROJECK_NAME}.sh && ${KS_PATH}/${PROJECK_NAME}/${DEST_DIR}/install-${PROJECK_NAME}.sh ${KS_PATH}/${PROJECK_NAME}/${DEST_DIR} $WITHOUT_KERNEL
 
-	chmod +x ${KS_PATH}/${PROJECK_NAME}/${DEST_DIR}/uninstall-${PROJECK_NAME}.sh && mv -f ${KS_PATH}/${PROJECK_NAME}/${DEST_DIR}/uninstall-${PROJECK_NAME}.sh /usr/bin/${PROJECK_NAME}-uninstall
+	chmod +x ${KS_PATH}/${PROJECK_NAME}/${DEST_DIR}/uninstall-${PROJECK_NAME}.sh && mv -f ${KS_PATH}/${PROJECK_NAME}/${DEST_DIR}/uninstall-${PROJECK_NAME}.sh /usr/bin/${PROJECK_NAME}-uninstall 
 
 else
        	echo "Cannot find path:${KS_PATH}/${PROJECK_NAME}/${DEST_DIR}"

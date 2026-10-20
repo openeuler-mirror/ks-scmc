@@ -3,8 +3,8 @@
   run_once: true
   shell: |
     set -e
-    mysql -uroot -p'{{ mysql.root_password }}' < {{ script_dir }}/database.sql
-    mysql -uroot -p'{{ mysql.root_password }}' << EOF
+    mysql -S /var/lib/mysql/mysql.sock -uroot -p'{{ mysql.root_password }}' < {{ script_dir }}/database.sql
+    mysql -S /var/lib/mysql/mysql.sock -uroot -p'{{ mysql.root_password }}' << EOF
     CREATE USER 'ks-scmc'@'%' IDENTIFIED BY '{{ mysql.scmc_password }}';
     GRANT ALL PRIVILEGES ON \`ks-scmc\`.* TO 'ks-scmc'@'%';
     FLUSH PRIVILEGES;

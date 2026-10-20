@@ -21,9 +21,10 @@ fi
 builddir="${SHELL_FOLDER}/_buildtmp"
 resultdir="${SHELL_FOLDER}/_buildres"
 arch=$(uname -i)
+allow_os=("3.3-6" "3.4-4")
 
 mock_build() {
-	mock_cfg=mock-ky3.3-${arch}.cfg
+	mock_cfg=mock-${ky_version}-${arch}.cfg
 	if [[ ! -e $builddir/$mock_cfg ]];then
 		echo "unsupport platform, only x86_64 and aarch64: $arch"
 		return
@@ -43,14 +44,14 @@ mock_build() {
 	\cp -rf ${builddir}/$mock_cfg /etc/mock
 
 	cd $builddir
-	mock -r mock-ky3.3-${arch} --buildsrpm --spec ./${pkgname}.spec --sources ./${pkgname}-${version}.tar.gz --resultdir "$resultdir"
+	mock -r mock-${ky_version}-${arch} --buildsrpm --spec ./${pkgname}.spec --sources ./${pkgname}-${version}.tar.gz --resultdir "$resultdir"
 	if [[ $? -ne 0 ]];then
 		echo "mock build srpm failed"
 		exit 1
 	fi
 
 	srpmpath=$(ls $resultdir/${pkgname}-${version}-${release}*.src.rpm)
-	mock -r mock-ky3.3-${arch} --rebuild "$srpmpath" --resultdir "$resultdir"
+	mock -r mock-${ky_version}-${arch} --rebuild "$srpmpath" --resultdir "$resultdir"
 	if [[ $? -ne 0 ]];then
 		echo "mock build rpm failed"
 		exit
@@ -126,18 +127,30 @@ clean() {
 }
 
 init() {
+	os=$1
+	if [[ -z "$os" ]]; then
+		os=`cat /etc/.kyinfo | grep milestone | awk -F= '{print $2}' | tr -d ' ' | cut -c1-6`
+		[[ ${os: -1} =~ [0-9] ]] || os=${os:0:-1}
+	fi
+
+	if [[ ! ${allow_os[@]} =~ ${os} ]];then
+		echo "not support ${os}, support list: ${allow_os[@]}"
+		exit 1
+	fi
+	ky_version="ky${os:0:3}"
+
 	echo "mkdir -p $builddir $resultdir"
 	mkdir -p $builddir $resultdir
 
 	pushd $SHELL_FOLDER
-	\cp mock-temp-ky3.3.cfg $builddir/mock-ky3.3-${arch}.cfg
-	sed "s/{arch}/$arch/g" $builddir/mock-ky3.3-${arch}.cfg -i
+	\cp mock-temp-${ky_version}.cfg $builddir/mock-${ky_version}-${arch}.cfg
+	sed "s/{arch}/$arch/g" $builddir/mock-${ky_version}-${arch}.cfg -i
 	popd
 }
 
 usage() {
 	echo "Usage:"
-	echo "    $0 [--clean|--help|-h|\$pkgversion]"
+	echo "    $0 [--clean|--help|-h|\$pkgversion] [\$ky_version]"
 }
 
 if [[ $1 == "--help" || $1 == "-h" ]];then
@@ -146,7 +159,7 @@ elif [[ $1 == "--clean" ]];then
 	clean
 else
 	clean
-	init
+	init $2
 
 	do_build $1
 fi

@@ -10,6 +10,7 @@ import (
 	"google.golang.org/grpc/status"
 
 	"scmc/model/db"
+	"scmc/model/warnlog"
 	"scmc/rpc/pb/logging"
 	pb "scmc/rpc/pb/node"
 	"scmc/server/controller/internal"
@@ -94,7 +95,7 @@ func getAllNodeData(needStatus bool) (r []*pb.NodeInfo) {
 	return
 }
 
-func writeNodeWatchLogs(n *pb.NodeInfo) []*db.WarnLog {
+func writeNodeWatchLogs(n *pb.NodeInfo) {
 	var r []*db.WarnLog
 
 	newWarnLog := func(n *pb.NodeInfo, et logging.EVENT_TYPE, detail string) {
@@ -135,6 +136,5 @@ func writeNodeWatchLogs(n *pb.NodeInfo) []*db.WarnLog {
 		}
 	}
 
-	db.CreateWarnLog(r)
-	return r
+	warnlog.Create(r)
 }

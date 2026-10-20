@@ -2,6 +2,10 @@ package warnlog
 
 import (
 	"sync"
+
+	log "github.com/sirupsen/logrus"
+
+	"scmc/model/db"
 )
 
 var instance = &Publisher{
@@ -57,8 +61,12 @@ func Subscribe() chan interface{} {
 	return instance.Subscribe()
 }
 
-func Publish(msg interface{}) {
-	instance.Publish(msg)
+func Create(data []*db.WarnLog) {
+	if err := db.CreateWarnLog(data); err != nil {
+		log.Error("db insert war log: ", err)
+		return
+	}
+	instance.Publish(data)
 }
 
 func Evict(ch chan interface{}) {

@@ -3,6 +3,6 @@ variables:
   PROEJCT_EXCLUSIONS: 'vendor/**,**/*.pb.go,**/*_test.go'
 
 include:
-  - project: 'os/gitlab-ci'
-    ref: golang
-    file: '/makefile/go.gitlab-ci.yml'
+  - project: 'os/ks-devops'
+    ref: main
+    file: '/entrypoint/develop/go.yml'

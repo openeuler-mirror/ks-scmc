@@ -570,13 +570,17 @@ func (s *NetworkServer) checkRemoveNetwork(name string) error {
 		return rpc.ErrInternal
 	}
 
-	_, err = cli.NetworkInspect(context.Background(), name, types.NetworkInspectOptions{})
+	nw, err := cli.NetworkInspect(context.Background(), name, types.NetworkInspectOptions{})
 	if err != nil {
 		log.Warnf("NetworkInspect err=%v", err)
 		if client.IsErrNotFound(err) {
-			return rpc.ErrNotFound
+			return status.Error(codes.FailedPrecondition, "网卡不存在")
 		}
 		return rpc.ErrInternal
+	}
+
+	if len(nw.Containers) > 0 {
+		return status.Error(codes.FailedPrecondition, "容器正在使用该网络，建议断开容器网络后再删除/更新")
 	}
 
 	return nil

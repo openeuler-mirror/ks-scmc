@@ -13,6 +13,7 @@ import (
 	"io/ioutil"
 	"os"
 	"strings"
+	"encoding/json"
 
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/crypto/openpgp"
@@ -143,8 +144,6 @@ func (i *ImageFile) parseDockerID() error {
 		return err
 	}
 
-	var hasManifest, hasImageID bool
-
 	r := tar.NewReader(i.f)
 	for h, err := r.Next(); err != io.EOF; h, err = r.Next() {
 		if err != nil {
@@ -154,27 +153,30 @@ func (i *ImageFile) parseDockerID() error {
 
 		fname := h.FileInfo().Name()
 		if fname == ManifestFileName {
-			hasManifest = true
-			continue
-		}
+			var manifest []map[string]interface{}
+			decoder := json.NewDecoder(r)
+			err := decoder.Decode(&manifest)
+			if err != nil {
+				fmt.Println("Error decoding manifest.json:", err)
+				return errors.New("无法解析manifest.json")
+			}
 
-		if index := strings.Index(fname, ".json"); index == -1 {
-			continue
-		} else {
-			i.dockerID = fname[0:index]
-			hasImageID = true
-		}
-
-		if hasManifest && hasImageID {
-			return nil
+			// 输出 Docker 镜像的 ID
+			manifestConfig := manifest[0]["Config"].(string)
+			if index := strings.Index(manifestConfig, ".json"); index == -1 {
+				parts := strings.Split(manifestConfig, "/")
+				if len(parts) > 2 {
+					i.dockerID = parts[2]
+				} else {
+					log.Warnf("Invalid path format")
+					return errors.New("无法解析镜像ID")
+				}
+			} else {
+				i.dockerID = manifestConfig[0:index]
+			}
 		}
 	}
 
-	if !hasManifest {
-		return errors.New("镜像缺少manifest.json")
-	} else if !hasImageID {
-		return errors.New("无法解析镜像ID")
-	}
 	return nil
 }
 

@@ -20,7 +20,9 @@
     log-error=/var/log/mysqld.log
     pid-file=/var/run/mysqld/mysqld.pid
     EOF
-    systemctl set-environment MYSQLD_OPTS='--defaults-file=/etc/my-kylin.cnf --basedir=/usr --pid-file=/run/mysqld/mysqld.pid'
+    sed -i 's#$MYSQLD_OPTS#--defaults-file=/etc/my-kylin.cnf --basedir=/usr --pid-file=/run/mysqld/mysqld.pid#g' /usr/lib/systemd/system/mysqld.service
+    sed -i 's#ExecStart=/usr/libexec/mysqld --daemonize.*#ExecStart=/usr/libexec/mysqld --defaults-file=/etc/my-kylin.cnf --daemonize --basedir=/usr --pid-file=/run/mysqld/mysqld.pid#g' /usr/lib/systemd/system/mysqld.service
+    systemctl daemon-reload
     ${MYSQLD} --defaults-file=/etc/my-kylin.cnf --initialize-insecure --user=mysql
 - name: MYSQL 启动服务
   service: name=mysqld state=restarted enabled=true

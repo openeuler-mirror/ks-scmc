@@ -97,7 +97,10 @@ func (s *UserServer) Login(ctx context.Context, in *pb.LoginRequest) (*pb.LoginR
 	authKey := fmt.Sprintf("%d%c%s", u.ID, common.UserSessionySeprator, sessionKey)
 
 	// set authorizatio key in headers, for client interceptors' convenience
-	grpc.SetHeader(ctx, metadata.Pairs("authorization", authKey))
+	if err := grpc.SetHeader(ctx, metadata.Pairs("authorization", authKey)); err != nil {
+		log.Warnf("set rpc header 'authorization': %v", err)
+		return nil, rpc.ErrInternal
+	}
 
 	return &pb.LoginReply{
 		UserId:  u.ID,

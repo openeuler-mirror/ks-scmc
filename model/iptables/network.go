@@ -317,7 +317,6 @@ func parseRule(rule string) RuleInfo {
 			info.Policy = split[j+1]
 		default:
 			match = false
-			break
 		}
 		if match {
 			j++
@@ -647,10 +646,10 @@ func EnableNode(linkifs string) error {
 func ruleToCmd(filePath, fileName string, isOn bool, rules []*litedb.NetworkRule) string {
 	var chainCmd string
 	if isOn {
-		chainCmd = fmt.Sprintf("echo '*filter\n:INPUT DROP [0:0]\n:FORWARD ACCEPT [0:0]\n:OUTPUT ACCEPT [0:0]\n")
+		chainCmd = "echo '*filter\n:INPUT DROP [0:0]\n:FORWARD ACCEPT [0:0]\n:OUTPUT ACCEPT [0:0]\n"
 		updateJSON(fileName, true)
 	} else {
-		chainCmd = fmt.Sprintf("echo '*filter\n:INPUT ACCEPT [0:0]\n:FORWARD ACCEPT [0:0]\n:OUTPUT ACCEPT [0:0]\n")
+		chainCmd = "echo '*filter\n:INPUT ACCEPT [0:0]\n:FORWARD ACCEPT [0:0]\n:OUTPUT ACCEPT [0:0]\n"
 		updateJSON(fileName, false)
 	}
 
@@ -658,9 +657,9 @@ func ruleToCmd(filePath, fileName string, isOn bool, rules []*litedb.NetworkRule
 	// TODO refactor to type function
 	for _, rule := range rules {
 		var curRule string
-		var prestr string = "-A INPUT "
-		var sufstr string = " -j ACCEPT"
 		var addrstr string
+		prestr := "-A INPUT "
+		sufstr := " -j ACCEPT"
 		if rule.Addr != "" {
 			addrstr = "-s " + rule.Addr
 			if net.ParseIP(rule.Addr) != nil {

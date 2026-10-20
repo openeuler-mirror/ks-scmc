@@ -84,7 +84,7 @@ func (i *IllegalContainer) ScanNodeContainers(images map[string]*db.ImageInfo, n
 				log.Infof("StopContainer %v err=%v", c.Info.Id, err)
 			}
 
-			data := []*db.WarnLog{
+			warnlog.Create([]*db.WarnLog{
 				{
 					NodeId:        n.ID,
 					NodeInfo:      fmt.Sprintf("%s (%s)", n.Name, n.Address),
@@ -93,10 +93,7 @@ func (i *IllegalContainer) ScanNodeContainers(images map[string]*db.ImageInfo, n
 					ContainerName: c.Info.Name,
 					Detail:        "容器镜像非法",
 				},
-			}
-
-			db.CreateWarnLog(data)
-			warnlog.Publish(data)
+			})
 		}
 	}
 }

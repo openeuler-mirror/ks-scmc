@@ -27,6 +27,8 @@ install:
 	install -m 755 ./etc/setup_agent.sh $(DESTDIR)$(ETC)/$(PROJECT)
 	install -m 755 ./ha/keepalived.sh $(DESTDIR)$(ETC)/$(PROJECT)
 	install -m 755 ./ha/mysql_double_master.sh $(DESTDIR)$(ETC)/$(PROJECT)
+	install -m 755 -d $(DESTDIR)$(ETC)/sudoers.d
+	install -m 644 ./etc/ks-scmc-sudoers $(DESTDIR)$(ETC)/sudoers.d
 	install -m 755 -d $(DESTDIR)$(SYSTEMD)/
 	install -m 644 ./systemd/$(PROJECT)-agent.service $(DESTDIR)$(SYSTEMD)/
 	install -m 644 ./systemd/$(PROJECT)-controller.service $(DESTDIR)$(SYSTEMD)/

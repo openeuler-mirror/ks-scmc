@@ -81,9 +81,9 @@ message RemoveReply {
 }
 
 message AgentSyncRequest {
-    repeated string to_remove = 1;  // 需要删除的镜像
-    repeated string to_pull   = 2;  // 需要从镜像服务器同步的镜像
-    repeated LoadInfo to_load = 3;
+    repeated string   to_remove = 1;  // 需要删除的镜像
+    repeated string   to_pull   = 2;  // 需要从镜像服务器同步的镜像
+    repeated LoadInfo to_load   = 3;
 }
 
 message AgentSyncReply {}
@@ -127,6 +127,6 @@ message SignInfo {
 
 message LoadInfo {
     string image_id = 1;
-    string path = 2;
-    string tag = 3;
+    string path     = 2;
+    string tag      = 3;
 }

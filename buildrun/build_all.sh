@@ -26,8 +26,8 @@ function process_install_shell()
 # has checked in ks-run/install.sh
 
 # check arch type
-ARCH_TYPE=\$(cat /etc/.kyinfo | grep "arch =" | awk -F ' ' '{ print \$3 }')
-OS_VERSION="\$(cat /etc/.kyinfo | grep milestone | awk -F= '{print \$2}' | tr -d ' ')"
+ARCH_TYPE=\$(cat /etc/.kyinfo | sed 's/ //g' | grep ^arch= | awk -F= '{ print \$2 }')
+OS_VERSION="\$(cat /etc/.kyinfo | sed 's/ //g' | grep ^milestone | awk -F= '{print \$2}')"
 
 if [ -d "\$1" ]; then
     CURR_PATH=\$1

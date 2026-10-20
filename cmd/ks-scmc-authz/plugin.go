@@ -12,10 +12,6 @@ type AuthZPlugin struct {
 	magicUser string
 }
 
-func NewAuthZPlugin(magicUser string) *AuthZPlugin {
-	return &AuthZPlugin{magicUser}
-}
-
 func (p *AuthZPlugin) containerNeedCheck(id string) bool {
 	return globalConfig.isSensitiveContainers(id)
 }

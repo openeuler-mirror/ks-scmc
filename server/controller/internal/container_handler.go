@@ -745,10 +745,13 @@ func (*ContainerServer) exportBackupImageToClient(r pb.Container_ExportBackupCli
 			if err == io.EOF {
 				return nil // read internal stream finished
 			}
-			log.Infof("ExportBackup read from internal stream err=%v", err)
+			log.Error("ExportBackup read from internal stream: ", err)
 			return rpc.ErrInternal
 		} else {
-			w.Send(m)
+			if err := w.Send(m); err != nil {
+				log.Error("ExportBackup send data to client: ", err)
+				return rpc.ErrInternal
+			}
 		}
 	}
 }

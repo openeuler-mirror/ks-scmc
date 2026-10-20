@@ -1,0 +1,13 @@
+[log]
+basedir = "/var/log/ks-scmc"
+level   = "debug"
+stdout  = false
+
+[tls]
+ca = "/root/tsh-code-test/safe-docker/kylin/cmd/server/root.pem"
+server_cert = "/root/tsh-code-test/safe-docker/kylin/cmd/server/server.pem"
+server_key = "/root/tsh-code-test/safe-docker/kylin/cmd/server/server.key"
+
+[controller]
+host = "0.0.0.0"
+port = 19090 

@@ -44,6 +44,8 @@ else
     CURR_PATH=\$(pwd)
 fi
 
+WITHOUT_KERNEL=\$2
+
 if [[ "\${OS_VERSION}" && "\${ARCH_TYPE}" ]]; then
     echo "Current os is \${OS_VERSION}, arch is \${ARCH_TYPE}"
     KS_ALLOW_OS=(\$(cd \${CURR_PATH}; find . -maxdepth 1 -mindepth 1 -type d -not -empty -printf '%f\n'))
@@ -71,6 +73,11 @@ fi
 cd \$RPM_PATH
 
 deppgs=\$(ls | grep -v '^$g_software_name')
+# task 46273
+if [[ \$WITHOUT_KERNEL == "1" ]];then
+    deppgs=\$(ls | grep -v '^$g_software_name' | grep -v '^kernel-')
+fi
+
 kspkgs=\$(ls | grep -E "^$g_software_name")
 if [[ ! \$deppgs == "" ]];then
     yumoption="--nogpgcheck --disablerepo=*"

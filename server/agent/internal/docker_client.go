@@ -10,7 +10,7 @@ import (
 func transDockerError(err error) error {
 	log.Debugf("docker error %#v", err)
 	if errdefs.IsInvalidParameter(err) {
-		return rpc.ErrInvalidArgumentWrapper(err)
+		return rpc.ErrInvalidArgument
 	} else if errdefs.IsNotFound(err) {
 		return rpc.ErrNotFound
 	} else if errdefs.IsConflict(err) {

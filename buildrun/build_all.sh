@@ -28,6 +28,15 @@ function process_install_shell()
 # check arch type
 ARCH_TYPE=\$(cat /etc/.kyinfo | sed 's/ //g' | grep ^arch= | awk -F= '{ print \$2 }')
 OS_VERSION="\$(cat /etc/.kyinfo | sed 's/ //g' | grep ^milestone | awk -F= '{print \$2}')"
+# task 46273, support new version format
+if [[ "\${OS_VERSION:0:2}" == "3-" ]];then
+    TMP_VERSION="\$(cat /etc/.kyinfo | sed 's/ //g' | grep dist_id | tr '-' '\n' | tail -n 2 | head -n 1)"
+    if [[ "\$TMP_VERSION" == "44"* ]];then
+        OS_VERSION="3.4-4"
+    elif [[ "\$TMP_VERSION" == "36"* ]];then
+	OS_VERSION="3.3-6"
+    fi
+fi
 
 if [ -d "\$1" ]; then
     CURR_PATH=\$1

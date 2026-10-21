@@ -73,32 +73,32 @@ func (p *DockerStatsDataClient) GetAllContainers(ctx context.Context, node_name 
   return _result1.GetSuccess(), nil
 }
 
-type TestProcessor struct {
+type DockerStatsDataProcessor struct {
   processorMap map[string]thrift.TProcessorFunction
-  handler Test
+  handler DockerStatsData
 }
 
-func (p *TestProcessor) AddToProcessorMap(key string, processor thrift.TProcessorFunction) {
+func (p *DockerStatsDataProcessor) AddToProcessorMap(key string, processor thrift.TProcessorFunction) {
   p.processorMap[key] = processor
 }
 
-func (p *TestProcessor) GetProcessorFunction(key string) (processor thrift.TProcessorFunction, ok bool) {
+func (p *DockerStatsDataProcessor) GetProcessorFunction(key string) (processor thrift.TProcessorFunction, ok bool) {
   processor, ok = p.processorMap[key]
   return processor, ok
 }
 
-func (p *TestProcessor) ProcessorMap() map[string]thrift.TProcessorFunction {
+func (p *DockerStatsDataProcessor) ProcessorMap() map[string]thrift.TProcessorFunction {
   return p.processorMap
 }
 
-func NewTestProcessor(handler Test) *TestProcessor {
+func NewDockerStatsDataProcessor(handler DockerStatsData) *DockerStatsDataProcessor {
 
-  self2 := &TestProcessor{handler:handler, processorMap:make(map[string]thrift.TProcessorFunction)}
-  self2.processorMap["GetAllContainers"] = &testProcessorGetAllContainers{handler:handler}
+  self2 := &DockerStatsDataProcessor{handler:handler, processorMap:make(map[string]thrift.TProcessorFunction)}
+  self2.processorMap["GetAllContainers"] = &dockerStatsDataProcessorGetAllContainers{handler:handler}
 return self2
 }
 
-func (p *TestProcessor) Process(ctx context.Context, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
+func (p *DockerStatsDataProcessor) Process(ctx context.Context, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
   name, _, seqId, err2 := iprot.ReadMessageBegin(ctx)
   if err2 != nil { return false, thrift.WrapTException(err2) }
   if processor, ok := p.GetProcessorFunction(name); ok {
@@ -115,12 +115,12 @@ func (p *TestProcessor) Process(ctx context.Context, iprot, oprot thrift.TProtoc
 
 }
 
-type testProcessorGetAllContainers struct {
-  handler Test
+type dockerStatsDataProcessorGetAllContainers struct {
+  handler DockerStatsData
 }
 
-func (p *testProcessorGetAllContainers) Process(ctx context.Context, seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
-  args := TestGetAllContainersArgs{}
+func (p *dockerStatsDataProcessorGetAllContainers) Process(ctx context.Context, seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
+  args := DockerStatsDataGetAllContainersArgs{}
   var err2 error
   if err2 = args.Read(ctx, iprot); err2 != nil {
     iprot.ReadMessageEnd(ctx)
@@ -159,7 +159,7 @@ func (p *testProcessorGetAllContainers) Process(ctx context.Context, seqId int32
     }(tickerCtx, cancel)
   }
 
-  result := TestGetAllContainersResult{}
+  result := DockerStatsDataGetAllContainersResult{}
   var retval string
   if retval, err2 = p.handler.GetAllContainers(ctx, args.NodeName); err2 != nil {
     tickerCancel()
@@ -199,19 +199,19 @@ func (p *testProcessorGetAllContainers) Process(ctx context.Context, seqId int32
 
 // Attributes:
 //  - NodeName
-type TestGetAllContainersArgs struct {
+type DockerStatsDataGetAllContainersArgs struct {
   NodeName string `thrift:"node_name,1" db:"node_name" json:"node_name"`
 }
 
-func NewTestGetAllContainersArgs() *TestGetAllContainersArgs {
-  return &TestGetAllContainersArgs{}
+func NewDockerStatsDataGetAllContainersArgs() *DockerStatsDataGetAllContainersArgs {
+  return &DockerStatsDataGetAllContainersArgs{}
 }
 
 
-func (p *TestGetAllContainersArgs) GetNodeName() string {
+func (p *DockerStatsDataGetAllContainersArgs) GetNodeName() string {
   return p.NodeName
 }
-func (p *TestGetAllContainersArgs) Read(ctx context.Context, iprot thrift.TProtocol) error {
+func (p *DockerStatsDataGetAllContainersArgs) Read(ctx context.Context, iprot thrift.TProtocol) error {
   if _, err := iprot.ReadStructBegin(ctx); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
   }
@@ -249,7 +249,7 @@ func (p *TestGetAllContainersArgs) Read(ctx context.Context, iprot thrift.TProto
   return nil
 }
 
-func (p *TestGetAllContainersArgs)  ReadField1(ctx context.Context, iprot thrift.TProtocol) error {
+func (p *DockerStatsDataGetAllContainersArgs)  ReadField1(ctx context.Context, iprot thrift.TProtocol) error {
   if v, err := iprot.ReadString(ctx); err != nil {
   return thrift.PrependError("error reading field 1: ", err)
 } else {
@@ -258,7 +258,7 @@ func (p *TestGetAllContainersArgs)  ReadField1(ctx context.Context, iprot thrift
   return nil
 }
 
-func (p *TestGetAllContainersArgs) Write(ctx context.Context, oprot thrift.TProtocol) error {
+func (p *DockerStatsDataGetAllContainersArgs) Write(ctx context.Context, oprot thrift.TProtocol) error {
   if err := oprot.WriteStructBegin(ctx, "GetAllContainers_args"); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err) }
   if p != nil {
@@ -271,7 +271,7 @@ func (p *TestGetAllContainersArgs) Write(ctx context.Context, oprot thrift.TProt
   return nil
 }
 
-func (p *TestGetAllContainersArgs) writeField1(ctx context.Context, oprot thrift.TProtocol) (err error) {
+func (p *DockerStatsDataGetAllContainersArgs) writeField1(ctx context.Context, oprot thrift.TProtocol) (err error) {
   if err := oprot.WriteFieldBegin(ctx, "node_name", thrift.STRING, 1); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field begin error 1:node_name: ", p), err) }
   if err := oprot.WriteString(ctx, string(p.NodeName)); err != nil {
@@ -281,35 +281,35 @@ func (p *TestGetAllContainersArgs) writeField1(ctx context.Context, oprot thrift
   return err
 }
 
-func (p *TestGetAllContainersArgs) String() string {
+func (p *DockerStatsDataGetAllContainersArgs) String() string {
   if p == nil {
     return "<nil>"
   }
-  return fmt.Sprintf("TestGetAllContainersArgs(%+v)", *p)
+  return fmt.Sprintf("DockerStatsDataGetAllContainersArgs(%+v)", *p)
 }
 
 // Attributes:
 //  - Success
-type TestGetAllContainersResult struct {
+type DockerStatsDataGetAllContainersResult struct {
   Success *string `thrift:"success,0" db:"success" json:"success,omitempty"`
 }
 
-func NewTestGetAllContainersResult() *TestGetAllContainersResult {
-  return &TestGetAllContainersResult{}
+func NewDockerStatsDataGetAllContainersResult() *DockerStatsDataGetAllContainersResult {
+  return &DockerStatsDataGetAllContainersResult{}
 }
 
-var TestGetAllContainersResult_Success_DEFAULT string
-func (p *TestGetAllContainersResult) GetSuccess() string {
+var DockerStatsDataGetAllContainersResult_Success_DEFAULT string
+func (p *DockerStatsDataGetAllContainersResult) GetSuccess() string {
   if !p.IsSetSuccess() {
-    return TestGetAllContainersResult_Success_DEFAULT
+    return DockerStatsDataGetAllContainersResult_Success_DEFAULT
   }
 return *p.Success
 }
-func (p *TestGetAllContainersResult) IsSetSuccess() bool {
+func (p *DockerStatsDataGetAllContainersResult) IsSetSuccess() bool {
   return p.Success != nil
 }
 
-func (p *TestGetAllContainersResult) Read(ctx context.Context, iprot thrift.TProtocol) error {
+func (p *DockerStatsDataGetAllContainersResult) Read(ctx context.Context, iprot thrift.TProtocol) error {
   if _, err := iprot.ReadStructBegin(ctx); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
   }
@@ -347,7 +347,7 @@ func (p *TestGetAllContainersResult) Read(ctx context.Context, iprot thrift.TPro
   return nil
 }
 
-func (p *TestGetAllContainersResult)  ReadField0(ctx context.Context, iprot thrift.TProtocol) error {
+func (p *DockerStatsDataGetAllContainersResult)  ReadField0(ctx context.Context, iprot thrift.TProtocol) error {
   if v, err := iprot.ReadString(ctx); err != nil {
   return thrift.PrependError("error reading field 0: ", err)
 } else {
@@ -356,7 +356,7 @@ func (p *TestGetAllContainersResult)  ReadField0(ctx context.Context, iprot thri
   return nil
 }
 
-func (p *TestGetAllContainersResult) Write(ctx context.Context, oprot thrift.TProtocol) error {
+func (p *DockerStatsDataGetAllContainersResult) Write(ctx context.Context, oprot thrift.TProtocol) error {
   if err := oprot.WriteStructBegin(ctx, "GetAllContainers_result"); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err) }
   if p != nil {
@@ -369,7 +369,7 @@ func (p *TestGetAllContainersResult) Write(ctx context.Context, oprot thrift.TPr
   return nil
 }
 
-func (p *TestGetAllContainersResult) writeField0(ctx context.Context, oprot thrift.TProtocol) (err error) {
+func (p *DockerStatsDataGetAllContainersResult) writeField0(ctx context.Context, oprot thrift.TProtocol) (err error) {
   if p.IsSetSuccess() {
     if err := oprot.WriteFieldBegin(ctx, "success", thrift.STRING, 0); err != nil {
       return thrift.PrependError(fmt.Sprintf("%T write field begin error 0:success: ", p), err) }
@@ -381,11 +381,11 @@ func (p *TestGetAllContainersResult) writeField0(ctx context.Context, oprot thri
   return err
 }
 
-func (p *TestGetAllContainersResult) String() string {
+func (p *DockerStatsDataGetAllContainersResult) String() string {
   if p == nil {
     return "<nil>"
   }
-  return fmt.Sprintf("TestGetAllContainersResult(%+v)", *p)
+  return fmt.Sprintf("DockerStatsDataGetAllContainersResult(%+v)", *p)
 }
 
 

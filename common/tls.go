@@ -42,3 +42,34 @@ func LoadTLSCredentials() (credentials.TransportCredentials, error) {
 		ClientCAs:    certPool,
 	}), nil
 }
+
+/*
+ * thrift 走证书双向认证的时候需要用到的 
+ */
+func LoadTLSConfig() (*tls.Config, error) {
+	if Config.TLS.CA == "" || Config.TLS.ServerCert == "" || Config.TLS.ServerKey == "" {
+		return nil, fmt.Errorf("not find ca, serverCert, serverCert!")
+	}
+
+	caCert, err := ioutil.ReadFile(Config.TLS.CA)
+	if err != nil {
+		return nil, err
+	}
+
+	certPool := x509.NewCertPool()
+	if !certPool.AppendCertsFromPEM(caCert) {
+		return nil, fmt.Errorf("failed to add CA certificate")
+	}
+
+	serverCert, err := tls.LoadX509KeyPair(Config.TLS.ServerCert, Config.TLS.ServerKey)
+	if err != nil {
+		return nil, err
+	}
+
+        // 验证 客户端证书， 强制性质的 
+	return &tls.Config{
+		Certificates: []tls.Certificate{serverCert},
+		ClientAuth:   tls.RequireAndVerifyClientCert,
+		ClientCAs:    certPool,
+	}, nil
+}

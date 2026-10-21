@@ -11,7 +11,6 @@ all: access-container-gui \
 	$(PROJECT)-agent.service \
 	$(PROJECT)-controller.service \
 	$(PROJECT)-authz.service \
-	$(PROJECT)-dstats.service \
 
 .PHONY: install
 install:
@@ -19,7 +18,6 @@ install:
 	install -m 755 -d $(DESTDIR)$(VAR)/lib/$(PROJECT)/{containers,images}
 	install -m 755 -d $(DESTDIR)$(VAR)/log/$(PROJECT)
 	install -m 644 ./etc/server.toml $(DESTDIR)$(ETC)/$(PROJECT)
-	install -m 644 ./etc/dstats.toml $(DESTDIR)$(ETC)/$(PROJECT)
 	install -m 755 ./etc/setup_db.sh $(DESTDIR)$(ETC)/$(PROJECT)
 	install -m 644 ./etc/database.sql $(DESTDIR)$(ETC)/$(PROJECT)
 	install -m 755 ./etc/graphic_rc $(DESTDIR)$(ETC)/$(PROJECT)
@@ -35,5 +33,3 @@ install:
 	install -m 644 ./systemd/$(PROJECT)-agent.service $(DESTDIR)$(SYSTEMD)/
 	install -m 644 ./systemd/$(PROJECT)-controller.service $(DESTDIR)$(SYSTEMD)/
 	install -m 644 ./systemd/$(PROJECT)-authz.service $(DESTDIR)$(SYSTEMD)/
-	install -m 644 ./systemd/$(PROJECT)-dstats.service $(DESTDIR)$(SYSTEMD)/
-

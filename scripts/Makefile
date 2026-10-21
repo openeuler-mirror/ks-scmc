@@ -11,6 +11,7 @@ all: access-container-gui \
 	$(PROJECT)-agent.service \
 	$(PROJECT)-controller.service \
 	$(PROJECT)-authz.service \
+	$(PROJECT)-dstats.service \
 
 .PHONY: install
 install:

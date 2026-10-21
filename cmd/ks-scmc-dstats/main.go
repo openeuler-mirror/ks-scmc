@@ -17,7 +17,7 @@ import (
 	"scmc/common"
 )
 
-type EchoServer struct {
+type DockerStatsServer struct {
 }
 
 /*
@@ -62,7 +62,7 @@ func nodeStatus() {
 }
 */
 
-func (e *EchoServer) GetAllContainers(ctx context.Context, node_name string) (r string, err error) {
+func (e *DockerStatsServer) GetAllContainers(ctx context.Context, node_name string) (r string, err error) {
 	logrus.Infof("GetAllContainers node_name: %s", node_name)
 
 	json_str, err := docker.HandleStatsRequest()
@@ -106,8 +106,8 @@ func main() {
 
 	//fmt.Printf("%T\n", transport);
 
-        handler := &EchoServer{}
-        processor := node.NewTestProcessor(handler)
+        handler := &DockerStatsServer{}
+        processor := node.NewDockerStatsDataProcessor(handler)
 
         transportFactory := thrift.NewTBufferedTransportFactory(8192)
         //也可以选择Framed传输协议，但是必须确保服务端和客户端的传输协议一致

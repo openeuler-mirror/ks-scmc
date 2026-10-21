@@ -76,6 +76,7 @@ rm -rf %{_datadir}/ks-scmc
 %{_bindir}/%{name}-authz
 %{_bindir}/%{name}-user
 %{_bindir}/%{name}-encrypt
+%{_bindir}/%{name}-dstats
 %{_unitdir}/%{name}-agent.service
 %{_unitdir}/%{name}-controller.service
 %{_unitdir}/%{name}-authz.service

@@ -1,0 +1,13 @@
+[log]
+basedir = "/var/log/ks-scmc"
+level   = "debug"
+stdout  = false
+
+[tls]
+ca = "./root.pem"
+server_cert = "./server.pem"
+server_key = "./server.key"
+
+[controller]
+host = "0.0.0.0"
+port = 19090 

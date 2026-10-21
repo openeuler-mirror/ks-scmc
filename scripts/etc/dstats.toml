@@ -4,9 +4,9 @@ level   = "debug"
 stdout  = false
 
 [tls]
-ca = "./root.pem"
-server_cert = "./server.pem"
-server_key = "./server.key"
+ca = "/etc/ks-scmc/tls/root.pem"
+server_cert = "/etc/ks-scmc/tls/server.pem"
+server_key = "/etc/ks-scmc/tls/server.key"
 
 [controller]
 host = "0.0.0.0"

@@ -48,7 +48,7 @@ func LoadTLSCredentials() (credentials.TransportCredentials, error) {
  */
 func LoadTLSConfig() (*tls.Config, error) {
 	if Config.TLS.CA == "" || Config.TLS.ServerCert == "" || Config.TLS.ServerKey == "" {
-		return nil, nil
+		return nil, fmt.Errorf("not find ca, serverCert, serverCert!")
 	}
 
 	caCert, err := ioutil.ReadFile(Config.TLS.CA)

@@ -9,6 +9,9 @@ import (
 	"google.golang.org/grpc/credentials"
 )
 
+/*
+ * gRPC 走 https 需要用到的
+ */
 func LoadTLSCredentials() (credentials.TransportCredentials, error) {
 	if !Config.TLS.Enable {
 		return nil, nil

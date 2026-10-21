@@ -5,6 +5,7 @@ go 1.15
 require (
 	github.com/BurntSushi/toml v0.4.1 // indirect
 	github.com/Microsoft/hcsshim v0.8.23-rc0 // indirect
+	github.com/apache/thrift/lib/go/thrift v0.0.1-do-not-use
 	github.com/containerd/containerd v1.5.7 // indirect
 	github.com/docker/cli v20.10.14+incompatible
 	github.com/docker/distribution v2.7.1+incompatible

@@ -17,53 +17,53 @@ var _ = context.Background
 var _ = time.Now
 var _ = bytes.Equal
 
-type Test interface {
+type DockerStatsData interface {
   // Parameters:
   //  - NodeName
   GetAllContainers(ctx context.Context, node_name string) (r string, err error)
 }
 
-type TestClient struct {
+type DockerStatsDataClient struct {
   c thrift.TClient
   meta thrift.ResponseMeta
 }
 
-func NewTestClientFactory(t thrift.TTransport, f thrift.TProtocolFactory) *TestClient {
-  return &TestClient{
+func NewDockerStatsDataClientFactory(t thrift.TTransport, f thrift.TProtocolFactory) *DockerStatsDataClient {
+  return &DockerStatsDataClient{
     c: thrift.NewTStandardClient(f.GetProtocol(t), f.GetProtocol(t)),
   }
 }
 
-func NewTestClientProtocol(t thrift.TTransport, iprot thrift.TProtocol, oprot thrift.TProtocol) *TestClient {
-  return &TestClient{
+func NewDockerStatsDataClientProtocol(t thrift.TTransport, iprot thrift.TProtocol, oprot thrift.TProtocol) *DockerStatsDataClient {
+  return &DockerStatsDataClient{
     c: thrift.NewTStandardClient(iprot, oprot),
   }
 }
 
-func NewTestClient(c thrift.TClient) *TestClient {
-  return &TestClient{
+func NewDockerStatsDataClient(c thrift.TClient) *DockerStatsDataClient {
+  return &DockerStatsDataClient{
     c: c,
   }
 }
 
-func (p *TestClient) Client_() thrift.TClient {
+func (p *DockerStatsDataClient) Client_() thrift.TClient {
   return p.c
 }
 
-func (p *TestClient) LastResponseMeta_() thrift.ResponseMeta {
+func (p *DockerStatsDataClient) LastResponseMeta_() thrift.ResponseMeta {
   return p.meta
 }
 
-func (p *TestClient) SetLastResponseMeta_(meta thrift.ResponseMeta) {
+func (p *DockerStatsDataClient) SetLastResponseMeta_(meta thrift.ResponseMeta) {
   p.meta = meta
 }
 
 // Parameters:
 //  - NodeName
-func (p *TestClient) GetAllContainers(ctx context.Context, node_name string) (r string, err error) {
-  var _args0 TestGetAllContainersArgs
+func (p *DockerStatsDataClient) GetAllContainers(ctx context.Context, node_name string) (r string, err error) {
+  var _args0 DockerStatsDataGetAllContainersArgs
   _args0.NodeName = node_name
-  var _result1 TestGetAllContainersResult
+  var _result1 DockerStatsDataGetAllContainersResult
   var meta thrift.ResponseMeta
   meta, err = p.Client_().Call(ctx, "GetAllContainers", &_args0, &_result1)
   p.SetLastResponseMeta_(meta)

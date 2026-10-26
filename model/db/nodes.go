@@ -124,25 +124,3 @@ func QueryNodeByAddr(addr string) (*NodeInfo, error) {
 
 	return &nodeInfo, nil
 }
-
-/*
-通过node name查找node
-by zhouming
- */
-func QueryNodeByName(name string)(*NodeInfo, error){
-	db, err := getConn()
-	if err != nil {
-		return nil, err
-	}
-	var nodeInfo NodeInfo
-	result := db.Where("name = ?", name).First(&nodeInfo)
-	if result.Error != nil {
-		log.Warnf("query node name=%v: %v", name, err)
-		return nil, translateError(result.Error)
-	} else if result.RowsAffected == 0 {
-		log.Infof("query node name=%v not found", name)
-		return nil, ErrRecordNotFound
-	}
-
-	return &nodeInfo, nil
-}

@@ -86,6 +86,18 @@ func getContainerStats() (map[string]*pb.ResourceStat, error) {
 				p.CpuStat = &pb.CpuStat{
 					CoreUsed: cpuPercent,
 				}
+
+				// 获取最新两个统计点（用于计算网络速率）
+		        prevStat := info.Stats[len(info.Stats)-2]
+		        currStat := info.Stats[len(info.Stats)-1]
+		        rxRate, txRate := calculateNetworkSpeed(prevStat, currStat)
+		        p.NetStat = &pb.NetworkStats{
+		        	Rx: rxRate,
+		        	Tx: txRate,
+		        }
+
+		        // log.Warnf("cadvisor get Rx: %v Tx: %v (B/s)", rxRate, txRate)
+
 			}
 			m[info.Id] = p
 		}

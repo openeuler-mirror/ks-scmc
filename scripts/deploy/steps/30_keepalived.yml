@@ -8,7 +8,7 @@
     mode: '0644'
     backup: true
 
-- name: 创建 Keepalived 脚本目录
+- name: KEEPALIVED 创建脚本目录
   file:
     path: /etc/keepalived/scripts
     state: directory
@@ -16,7 +16,7 @@
     group: root
     mode: '0755'
 
-- name: 部署服务检测脚本
+- name: KEEPALIVED 部署服务检测脚本
   template:
     src: template/check_service.sh.j2
     dest: /etc/keepalived/scripts/check_service.sh
@@ -24,7 +24,7 @@
     group: root
     mode: '0755'
 
-- name: 部署 MySQL Master 脚本 
+- name: KEEPALIVED 部署 MySQL Master 脚本 
   template:
     src: template/mysql_master.sh.j2
     dest: /etc/keepalived/scripts/mysql_master.sh
@@ -32,7 +32,7 @@
     group: root
     mode: '0755'
 
-- name: 部署 MySQL Backup 脚本
+- name: KEEPALIVED 部署 MySQL Backup 脚本
   template:
     src: template/mysql_slave.sh.j2
     dest: /etc/keepalived/scripts/mysql_slave.sh

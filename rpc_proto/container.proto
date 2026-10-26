@@ -477,11 +477,10 @@ message NetworkConfig {
 
 message ResourceLimit {
     double cpu_limit         = 1;   // CPU使用核心数限制; NanoCPUs = cpus * 1e9
-    int64  cpu_prio          = 2;   // CPU优先级(0-5)
+    int64  cpu_prio          = 2;   // CPU优先级(0-10)
     double memory_limit      = 11;  // 内存限制 单位MB
     double memory_soft_limit = 12;  // 内存软限制 单位MB 数值低于memory_limit
     double disk_limit        = 21;  // 磁盘使用限制 单位MB
-    int64  disk_prio          = 22;   // 磁盘优先级(0-5)
 }
 
 message SecurityConfig {

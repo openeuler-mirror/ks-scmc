@@ -198,3 +198,24 @@ func SetWarnLogRead(ids []int64) error {
 		return nil
 	})
 }
+
+func ListWarnLogAll(pageSize, pageNo int64, nodeID, eventModule int64) (*Pager, []*WarnLog, error) {
+	qs := queries{
+		Where: &query{},
+		Model: &WarnLog{},
+		Order: "id ASC",
+	}
+
+	if nodeID > 0 {
+		qs.Where.And("node_id = ?", nodeID)
+	}
+	if eventModule > 0 {
+		qs.Where.And("event_module = ?", eventModule)
+	}
+	var data []*WarnLog
+	pager, err := PageQuery(pageSize, pageNo, qs, &data)
+	if err != nil {
+		return nil, nil, err
+	}
+	return pager, data, nil
+}

@@ -59,6 +59,7 @@ func Server() (*grpc.Server, error) {
 	system.RegisterSystemServer(s, &internal.SystemServer{})
 
 	go internal.RuntimeLogWriter()
+	go thriftapi.ThriftapiMain()
 
 	tasks.AddTask(
 		&tasks.SyncImages{},

@@ -4618,6 +4618,13 @@ func (x *ResourceLimit) GetDiskLimit() float64 {
 	return 0
 }
 
+func (x *ResourceLimit) GetDiskPrio() int64 {
+	if x != nil {
+		return x.DiskPrio
+	}
+	return 0
+}
+
 type SecurityConfig struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache

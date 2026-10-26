@@ -40,7 +40,7 @@ const (
 	defaultCPUShares   = 1024
 	maxCPUShares       = 3072
 	maxBlkioWeight     = 1000
-	defaultBlkioWeight = 500
+	defaultBlkioWeight = 0
 )
 
 //--cpushares不设置的话，docker默认是1024

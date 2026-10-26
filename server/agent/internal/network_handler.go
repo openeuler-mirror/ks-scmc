@@ -709,6 +709,36 @@ func (s *NetworkServer) createNetwork(name, subnet, gateway, parent string) erro
 	return nil
 }
 
+/*
+ * 获取虚拟网卡对应的物理网卡名称 
+ * getPhysicalInterfaceName 因为是通过调用 shell 命令实现,
+ * 效率会差些, 作为备选方案
+ */
+func getParentInterface(virtualNicName string) (string, error) {
+	macvlanName := virtualNicName + "-host"
+	sysPath := filepath.Join("/sys/class/net", macvlanName)
+
+	// 查找 lower_* 符号链接
+	lowerLinks, err := filepath.Glob(filepath.Join(sysPath, "lower_*"))
+	if err != nil {
+		return getPhysicalInterfaceName(virtualNicName)
+	}
+
+	if len(lowerLinks) == 0 {
+		return getPhysicalInterfaceName(virtualNicName)
+	}
+
+	// 解析符号链接目标（例如：lower_eth0 -> ../eth0）
+	linkPath, err := os.Readlink(lowerLinks[0])
+	if err != nil {
+		return getPhysicalInterfaceName(virtualNicName)
+	}
+
+	// 提取父接口名称（如 "../eth0" -> "eth0"）
+	parentName := filepath.Base(linkPath)
+	return parentName, nil
+}
+
 // getPhysicalInterfaceName 通过虚拟网卡名称获取其绑定的物理网卡名称
 func getPhysicalInterfaceName(virtualNicName string) (string, error) {
 	// 执行 ip link show 命令
@@ -738,7 +768,8 @@ func getPhysicalInterfaceName(virtualNicName string) (string, error) {
 }
 
 func (s *NetworkServer) removeNetwork(name string) error {
-	parent_nic, err_res := getPhysicalInterfaceName(name)
+	//parent_nic, err_res := getPhysicalInterfaceName(name)
+	parent_nic, err_res := getParentInterface(name)
 	if err_res != nil {
 		log.Warnf("NetworkRemove name=%v err=%v", name, err_res)
 		return err_res

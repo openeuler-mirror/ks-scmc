@@ -680,11 +680,11 @@ func (s *NetworkServer) createNetwork(name, subnet, gateway, parent string) erro
 	add = fmt.Sprintf("ip link set dev %s up", host_name)
 	newlines = append(newlines, add)
 
-    /*
-     * #74606 修复并且验证创建 macvlan 的时候没有设置子网掩码的问题！
-     * https://ones.kylinsec.com.cn:5080/project/#/team/6B7ew4b7/task/X6NeBChCU3lw1DK8
-     */
-     _, masklen, _ := parseSubnet(subnet)
+	/*
+	* #74606 修复并且验证创建 macvlan 的时候没有设置子网掩码的问题！
+	* https://ones.kylinsec.com.cn:5080/project/#/team/6B7ew4b7/task/X6NeBChCU3lw1DK8
+	*/
+	_, masklen, _ := parseSubnet(subnet)
 
 	add = fmt.Sprintf("ip addr add %s/%d dev %s", firstip, masklen, host_name)
 	newlines = append(newlines, add)
@@ -711,49 +711,49 @@ func (s *NetworkServer) createNetwork(name, subnet, gateway, parent string) erro
 
 // getPhysicalInterfaceName 通过虚拟网卡名称获取其绑定的物理网卡名称
 func getPhysicalInterfaceName(virtualNicName string) (string, error) {
-        // 执行 ip link show 命令
-        cmd := exec.Command("ip", "link", "show", virtualNicName + "-host")
-        output, err := cmd.CombinedOutput()
-        if err != nil {
+	// 执行 ip link show 命令
+	cmd := exec.Command("ip", "link", "show", virtualNicName + "-host")
+	output, err := cmd.CombinedOutput()
+	if err != nil {
 		return "", fmt.Errorf("failed to execute command: %v", cmd)
-        }
+	}
 
-        // 解析输出，查找物理接口名称
-        scanner := bufio.NewScanner(strings.NewReader(string(output)))
-        for scanner.Scan() {
-                line := scanner.Text()
-                if strings.Contains(line, "@") {
-                        // 提取物理接口名称
-                        physicalNicName := strings.Split(line, "@")[1]
-                        if strings.Contains(physicalNicName, ":") {
-                                physicalNicName = strings.Split(physicalNicName, ":")[0]
-                        }
-                        // 去除物理接口名称前后的空白字符和冒号
-                        physicalNicName = strings.TrimSpace(physicalNicName)
-                        return physicalNicName, nil
-                }
-        }
+	// 解析输出，查找物理接口名称
+	scanner := bufio.NewScanner(strings.NewReader(string(output)))
+	for scanner.Scan() {
+		line := scanner.Text()
+		if strings.Contains(line, "@") {
+			// 提取物理接口名称
+			physicalNicName := strings.Split(line, "@")[1]
+			if strings.Contains(physicalNicName, ":") {
+				physicalNicName = strings.Split(physicalNicName, ":")[0]
+			}
+			// 去除物理接口名称前后的空白字符和冒号
+			physicalNicName = strings.TrimSpace(physicalNicName)
+			return physicalNicName, nil
+		}
+	}
 
-        return "", nil
+	return "", nil
 }
 
 func (s *NetworkServer) removeNetwork(name string) error {
 	parent_nic, err_res := getPhysicalInterfaceName(name)
 	if err_res != nil {
 		log.Warnf("NetworkRemove name=%v err=%v", name, err_res)
-                return err_res
+		return err_res
 	}
 
 	if parent_nic != "" {
 		path := "/etc/sysconfig/network-scripts/ifcfg-" + parent_nic
-	        begin_flag := "# ks-scmc config begin, donot modify"
+		begin_flag := "# ks-scmc config begin, donot modify"
 		end_flag := "# ks-scmc config end, donot modify"
-	        newlines := []string{}
+		newlines := []string{}
 
-	        err_res = insertAndDeleteLines(path, begin_flag, end_flag, newlines)
+		err_res = insertAndDeleteLines(path, begin_flag, end_flag, newlines)
 		if err_res != nil {
 			log.Warnf("NetworkCreate name=%v err=%v", name, err_res)
-	                return err_res
+			return err_res
 		}
 
 		cmd := exec.Command("ip", "link", "del", "link", parent_nic, name + "-host")

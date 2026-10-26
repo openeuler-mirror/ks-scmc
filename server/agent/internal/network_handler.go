@@ -511,7 +511,33 @@ func (s *NetworkServer) RemoveIPtables(ctx context.Context, in *pb.RemoveIPtable
 	return &pb.RemoveIPtablesReply{}, nil
 }
 
-func insertAndDeleteLines(filePath string, startStr, endStr string, newContents []string) error {
+/* 删除 iptables 相关信息 */
+func deleteIptablesInfo(routeInfo , parent_nic string) {
+    if len(routeInfo) == 0 {
+        return
+    }
+
+    var iptbInfo string
+    parts := strings.Fields(routeInfo)
+    for _, part := range parts {
+         _, _, err := net.ParseCIDR(part)
+        if err == nil {
+            iptbInfo = "iptables -t nat -D POSTROUTING -s " + part  + " -o " + parent_nic + " -j MASQUERADE"
+        }
+    }
+
+    /* 执行命令 */
+    if len(iptbInfo) > 0 {
+	    cmd := exec.Command(iptbInfo)
+        err := cmd.Run()
+        if err != nil {
+            log.Warnf("Run Command=%s, err=%v", iptbInfo, err)
+        }
+    }
+}
+
+
+func insertAndDeleteLines(parent_nic string, filePath string, startStr, endStr string, newContents []string) error {
 	// 打开文件
 	file, err := os.Open(filePath)
 	if err != nil {
@@ -525,6 +551,7 @@ func insertAndDeleteLines(filePath string, startStr, endStr string, newContents 
 		return fmt.Errorf("failed to read file: %v", filePath)
 	}
 
+    var routeInfo string
 	// 查找开始和结束的行索引
 	startIndex, endIndex := -1, -1
 	for i, line := range lines {
@@ -535,7 +562,16 @@ func insertAndDeleteLines(filePath string, startStr, endStr string, newContents 
 			endIndex = i
 			break // 找到结束索引后退出循环
 		}
+        if strings.Contains(line, "ip route add") {
+            routeInfo = line
+        }
 	}
+
+    // 删除添加的 Iptables 信息
+    if len(routeInfo) > 0 {
+        deleteIptablesInfo(routeInfo, parent_nic)
+    }
+
 
 	// 检查是否找到了开始和结束的行
 	if startIndex == -1 || endIndex == -1 {
@@ -697,9 +733,14 @@ func (s *NetworkServer) createNetwork(name, subnet, gateway, parent string) erro
 
 	add = fmt.Sprintf("ip route add %s dev %s", subnet, host_name)
 	newlines = append(newlines, add)
+
+    // 添加一条 iptables 信息
+    add = fmt.Sprintf(" iptables -t nat -A POSTROUTING -s %s -o %s -j MASQUERADE", subnet, parent)
+	newlines = append(newlines, add)
+
 	newlines = append(newlines, end_flag)
 
-	err = insertAndDeleteLines(path, begin_flag, end_flag, newlines)
+	err = insertAndDeleteLines(parent, path, begin_flag, end_flag, newlines)
 	if err != nil {
 		log.Warnf("NetworkCreate name=%v err=%v", name, err)
 		return err
@@ -787,7 +828,7 @@ func (s *NetworkServer) removeNetwork(name string) error {
 		end_flag := "# ks-scmc config end, donot modify"
 		newlines := []string{}
 
-		err_res = insertAndDeleteLines(path, begin_flag, end_flag, newlines)
+		err_res = insertAndDeleteLines(parent_nic, path, begin_flag, end_flag, newlines)
 		if err_res != nil {
 			log.Warnf("NetworkCreate name=%v err=%v", name, err_res)
 			return err_res

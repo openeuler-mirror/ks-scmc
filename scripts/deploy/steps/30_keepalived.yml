@@ -1,4 +1,8 @@
 ---
+- name: KEEPALIVED 设置权重值
+  set_fact:
+    keepalived_priority: "{{ (ansible_play_hosts.index(inventory_hostname) == 0) | ternary('100', '90') }}"
+
 - name: KEEPALIVED 配置虚拟IP(高可用)
   template:
     src: template/keepalived.conf.j2

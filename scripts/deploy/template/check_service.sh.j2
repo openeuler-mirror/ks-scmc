@@ -1,0 +1,9 @@
+#!/bin/bash
+
+if systemctl is-active ks-scmc-controller && systemctl is-active mysqld; then
+	exit 0
+else
+	echo "$(date) - check service error!" >> /var/log/keepalived_mysql.log
+	exit 1
+fi
+

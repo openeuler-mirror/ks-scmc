@@ -123,6 +123,7 @@ func dockerResourceConfig(in *pb.ResourceLimit) container.Resources {
 			r.NanoCPUs = int64(numCPU()) * 1e9
 		}
 		r.CPUShares = toCPUShares(in.CpuPrio)
+		r.BlkioWeight = toBlkioWeight(in.DiskPrio)
 		r.Memory = int64(in.MemoryLimit * megaBytes)
 		r.MemoryReservation = int64(in.MemorySoftLimit * megaBytes)
 		r.MemorySwap = -1 // prevent contaienr start error

@@ -6,7 +6,7 @@
 
 %global pkg_name ks-scmc
 %global pkg_ver 1.1.1
-%global pkg_rel 6
+%global pkg_rel 9
 
 Summary:        KylinSec security container magic cube
 License:        No License
@@ -25,7 +25,6 @@ Requires: coreutils bash socat systemd lsyncd rsync xinetd keepalived
 Requires: docker-ce cadvisor influxdb opensnitch
 Requires: ks-license-client ks-license-gui-client
 %if "%{kylin_version}" == "3.3"
-Requires: kernel-kek-devel kernel-kek
 Requires: mysql-community-server
 %else
 Requires: mysql5-server

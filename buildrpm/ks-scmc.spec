@@ -6,7 +6,7 @@
 
 %global pkg_name ks-scmc
 %global pkg_ver 1.1.1
-%global pkg_rel 9
+%global pkg_rel 10 
 
 Summary:        KylinSec security container magic cube
 License:        No License
@@ -104,7 +104,7 @@ rm -rf %{_datadir}/ks-scmc
 %{_sysconfdir}/sudoers.d/ks-scmc-sudoers
 
 %changelog
-* Tue Feb 18 2025 Shenghong Tang <tangshenghong@kylinos.com.cn> - 1.1.1-6.ky3
+* Tue Feb 18 2025 Shenghong Tang <tangshenghong@kylinos.com.cn> - 1.1.1-10.ky3
 - KYOS-F: add ks-scmc-dstats code. (#54966)
 
 * Fri Nov 17 2023 Haotian Chen <chenhaotian@kylinos.com.cn> - 1.1.1-2.ky3

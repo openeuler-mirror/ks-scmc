@@ -208,9 +208,12 @@ func (parser) CreateContainer(r *container.CreateRequest) *db.RuntimeLog {
 }
 
 func (parser) RemoveContainer(r *container.RemoveRequest) *db.RuntimeLog {
-	containerNum := len(r.Ids)
-	if containerNum > 0 {
-		containerNum = len(r.Ids[0].ContainerIds)
+	idsNum := len(r.Ids)
+	containerNum := 0
+	if idsNum > 0 {
+		for i := 0; i < idsNum; i++ {
+			containerNum = containerNum + len(r.Ids[i].ContainerIds)
+		}
 	}
 
 	return &db.RuntimeLog{
@@ -222,9 +225,12 @@ func (parser) RemoveContainer(r *container.RemoveRequest) *db.RuntimeLog {
 }
 
 func (parser) StartContainer(r *container.StartRequest) *db.RuntimeLog {
-	containerNum := len(r.Ids)
-	if containerNum > 0 {
-		containerNum = len(r.Ids[0].ContainerIds)
+	idsNum := len(r.Ids)
+	containerNum := 0
+	if idsNum > 0 {
+		for i := 0; i < idsNum; i++ {
+			containerNum = containerNum + len(r.Ids[i].ContainerIds)
+		}
 	}
 
 	return &db.RuntimeLog{
@@ -236,9 +242,12 @@ func (parser) StartContainer(r *container.StartRequest) *db.RuntimeLog {
 }
 
 func (parser) StopContainer(r *container.StopRequest) *db.RuntimeLog {
-	containerNum := len(r.Ids)
-	if containerNum > 0 {
-		containerNum = len(r.Ids[0].ContainerIds)
+	idsNum := len(r.Ids)
+	containerNum := 0
+	if idsNum > 0 {
+		for i := 0; i < idsNum; i++ {
+			containerNum = containerNum + len(r.Ids[i].ContainerIds)
+		}
 	}
 
 	return &db.RuntimeLog{
@@ -250,9 +259,12 @@ func (parser) StopContainer(r *container.StopRequest) *db.RuntimeLog {
 }
 
 func (parser) RestartContainer(r *container.RestartRequest) *db.RuntimeLog {
-	containerNum := len(r.Ids)
-	if containerNum > 0 {
-		containerNum = len(r.Ids[0].ContainerIds)
+	idsNum := len(r.Ids)
+	containerNum := 0
+	if idsNum > 0 {
+		for i := 0; i < idsNum; i++ {
+			containerNum = containerNum + len(r.Ids[i].ContainerIds)
+		}
 	}
 
 	return &db.RuntimeLog{

@@ -2,16 +2,15 @@
 all:
   hosts:
     192.168.56.108:
-      ansible_password: Kylin.2025
+      ansible_password: kylin.2022
       other_host: 192.168.56.109  # 双节点集群另一个节点的IP
       server_id: 1
     192.168.56.109:
-      ansible_password: Kylin.2025
+      ansible_password: kylin.2022
       other_host: 192.168.56.108  # 双节点集群另一个节点的IP
       server_id: 2
   vars:
     ansible_user: root
-    ansible_port: 2222
     ansible_connection: paramiko
     cluster:                      # 集群高可用配置
       enabled: false              # true: 开启双节点集群同步

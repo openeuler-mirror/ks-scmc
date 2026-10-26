@@ -640,7 +640,7 @@ func (s *NetworkServer) createNetwork(name, subnet, gateway, parent string) erro
 			Config: []network.IPAMConfig{
 				{
 					Subnet:  subnet,
-					Gateway: gateway,
+					Gateway: macvlan_ip,
 				},
 			},
 		},

@@ -27,7 +27,7 @@
 - name: MYSQL 主从复制(高可用)
   shell: |
     set -e
-    MASTER_STATUS=$(mysql -S /var/lib/mysql/mysql.sock -h{{ other_host }} -uroot -p'{{ mysql.root_password }}' -e 'SHOW MASTER STATUS' | sed '1d')
+    MASTER_STATUS=$(mysql -S /var/lib/mysql/mysql.sock -h{{ other_host }} -uroot -P3306 -p'{{ mysql.root_password }}' -e 'SHOW MASTER STATUS' | sed '1d')
     MASTER_LOG_FILE=$(echo ${MASTER_STATUS} | awk '{print $1}')
     MASTER_LOG_POS=$(echo ${MASTER_STATUS} | awk '{print $2}')
 

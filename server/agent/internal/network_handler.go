@@ -733,20 +733,26 @@ func (s *NetworkServer) createNetwork(name, subnet, gateway, parent string) erro
 
 	add = fmt.Sprintf("ip route add %s dev %s", subnet, host_name)
 	newlines = append(newlines, add)
-
-    // 添加一条 iptables 信息
-    add = fmt.Sprintf(" iptables -t nat -A POSTROUTING -s %s -o %s -j MASQUERADE", subnet, parent)
-	newlines = append(newlines, add)
-
 	newlines = append(newlines, end_flag)
 
+    /*
+    // 添加一条 iptables 信息, 不能写入文件，会导致执行很多次
+    // add = fmt.Sprintf("iptables -t nat -A POSTROUTING -s %s -o %s -j MASQUERADE", subnet, parent)
+	// newlines = append(newlines, add)
+    */
 	err = insertAndDeleteLines(parent, path, begin_flag, end_flag, newlines)
 	if err != nil {
 		log.Warnf("NetworkCreate name=%v err=%v", name, err)
 		return err
 	}
 
-	cmd := exec.Command("systemctl", "restart", "network")
+    /* 添加规则 */
+    iptbInfo := fmt.Sprintf("iptables -t nat -A POSTROUTING -s %s -o %s -j MASQUERADE", subnet, parent)
+    cmd := exec.Command(iptbInfo)
+    cmd.Run() // 不关心执行是否出错
+    /* 添加规则 */
+
+	cmd = exec.Command("systemctl", "restart", "network")
 	err = cmd.Run()
 	if err != nil {
 		return fmt.Errorf("failed to execute command: %v", cmd)

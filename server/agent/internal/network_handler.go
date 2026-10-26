@@ -518,17 +518,27 @@ func deleteIptablesInfo(routeInfo , parent_nic string) {
     }
 
     var iptbInfo string
+    var cird string
     parts := strings.Fields(routeInfo)
     for _, part := range parts {
          _, _, err := net.ParseCIDR(part)
         if err == nil {
             iptbInfo = "iptables -t nat -D POSTROUTING -s " + part  + " -o " + parent_nic + " -j MASQUERADE"
+            cird = part
         }
     }
 
     /* 执行命令 */
     if len(iptbInfo) > 0 {
-	    cmd := exec.Command(iptbInfo)
+	    cmd := exec.Command(
+            "iptables",
+            "-t", "nat",
+            "-D", "POSTROUTING",
+            "-s", cird,
+            "-o", parent_nic,
+            "-j", "MASQUERADE",
+        )
+
         err := cmd.Run()
         if err != nil {
             log.Warnf("Run Command=%s, err=%v", iptbInfo, err)
@@ -748,8 +758,18 @@ func (s *NetworkServer) createNetwork(name, subnet, gateway, parent string) erro
 
     /* 添加规则 */
     iptbInfo := fmt.Sprintf("iptables -t nat -A POSTROUTING -s %s -o %s -j MASQUERADE", subnet, parent)
-    cmd := exec.Command(iptbInfo)
-    cmd.Run() // 不关心执行是否出错
+    cmd := exec.Command(
+        "iptables",
+        "-t", "nat",
+        "-A", "POSTROUTING",
+        "-s", subnet,
+        "-o", parent,
+        "-j", "MASQUERADE",
+    )
+    err = cmd.Run()
+    if err != nil {
+        log.Warnf("Run Command: %s, err= %v", iptbInfo, err)
+    }
     /* 添加规则 */
 
 	cmd = exec.Command("systemctl", "restart", "network")

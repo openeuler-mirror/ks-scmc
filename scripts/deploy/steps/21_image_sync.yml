@@ -57,6 +57,7 @@
         statusFile = "/var/log/lsyncd/lsyncd.stat",
         statusInterval = 15,
         maxProcesses = 5,
+        insist = true,
       }
 
       sync {

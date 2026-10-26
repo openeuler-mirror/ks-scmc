@@ -111,6 +111,10 @@ type RegistryConfig struct {
 	Password string `mapstructure:"password"`
 }
 
+type NetlinkConfig struct {
+	Protocol uint `mapstructure:"protocol"`
+}
+
 var Config struct {
 	Log        LogConfig        `mapstructure:"log"`
 	TLS        TLSConfig        `mapstructure:"tls"`
@@ -122,6 +126,7 @@ var Config struct {
 	InfluxDB   ServiceConfig    `mapstructure:"influxdb"`
 	Network    NetworkConfig    `mapstructure:"network"`
 	Registry   RegistryConfig   `mapstructure:"registry"`
+	Netlink	   NetlinkConfig    `mapstructure:"netlink"`
 }
 
 func setDefault() {
@@ -167,6 +172,8 @@ func setDefault() {
 	viper.SetDefault("registry.addr", "127.0.0.1:5000")
 	viper.SetDefault("registry.username", "")
 	viper.SetDefault("registry.password", "")
+
+	viper.SetDefault("netlink.protocol", 30)
 
 }
 

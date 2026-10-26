@@ -680,7 +680,13 @@ func (s *NetworkServer) createNetwork(name, subnet, gateway, parent string) erro
 	add = fmt.Sprintf("ip link set dev %s up", host_name)
 	newlines = append(newlines, add)
 
-	add = fmt.Sprintf("ip addr add %s dev %s", firstip, host_name)
+    /*
+     * #74606 修复并且验证创建 macvlan 的时候没有设置子网掩码的问题！
+     * https://ones.kylinsec.com.cn:5080/project/#/team/6B7ew4b7/task/X6NeBChCU3lw1DK8
+     */
+     _, masklen, _ := parseSubnet(subnet)
+
+	add = fmt.Sprintf("ip addr add %s/%d dev %s", firstip, masklen, host_name)
 	newlines = append(newlines, add)
 
 	add = fmt.Sprintf("ip route add %s dev %s", subnet, host_name)

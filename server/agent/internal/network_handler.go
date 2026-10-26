@@ -813,11 +813,20 @@ func getParentInterface(virtualNicName string) (string, error) {
 }
 
 // getPhysicalInterfaceName 通过虚拟网卡名称获取其绑定的物理网卡名称
+// 绑定物理网卡的 <virtualNicName>-host
+// 没有绑定物理网卡的   scmc-<virtualNicName>
 func getPhysicalInterfaceName(virtualNicName string) (string, error) {
 	// 执行 ip link show 命令
 	cmd := exec.Command("ip", "link", "show", virtualNicName + "-host")
 	output, err := cmd.CombinedOutput()
 	if err != nil {
+		//return "", fmt.Errorf("failed to execute command: %v", cmd)
+		// 测试没有绑定物理网卡的情况
+		cmd = exec.Command("ip", "link", "show", "scmc-" + virtualNicName)
+		output, err = cmd.CombinedOutput()
+		if err == nil {
+			return "", nil
+		}
 		return "", fmt.Errorf("failed to execute command: %v", cmd)
 	}
 
@@ -879,6 +888,12 @@ func (s *NetworkServer) removeNetwork(name string) error {
 		}
 		log.Warnf("NetworkRemove name=%v err=%v", name, err)
 		return err
+	}
+
+	// 没有绑定物理网卡的情况
+	if parent_nic == "" {
+		cmd := exec.Command("ip", "link", "del", "link", "scmc-" + name)
+		_ = cmd.Run()
 	}
 
 	return nil

@@ -4544,10 +4544,11 @@ type ResourceLimit struct {
 	unknownFields protoimpl.UnknownFields
 
 	CpuLimit        float64 `protobuf:"fixed64,1,opt,name=cpu_limit,json=cpuLimit,proto3" json:"cpu_limit,omitempty"`                         // CPU使用核心数限制; NanoCPUs = cpus * 1e9
-	CpuPrio         int64   `protobuf:"varint,2,opt,name=cpu_prio,json=cpuPrio,proto3" json:"cpu_prio,omitempty"`                             // CPU优先级(0-10)
+	CpuPrio         int64   `protobuf:"varint,2,opt,name=cpu_prio,json=cpuPrio,proto3" json:"cpu_prio,omitempty"`                             // CPU优先级(0-5)
 	MemoryLimit     float64 `protobuf:"fixed64,11,opt,name=memory_limit,json=memoryLimit,proto3" json:"memory_limit,omitempty"`               // 内存限制 单位MB
 	MemorySoftLimit float64 `protobuf:"fixed64,12,opt,name=memory_soft_limit,json=memorySoftLimit,proto3" json:"memory_soft_limit,omitempty"` // 内存软限制 单位MB 数值低于memory_limit
 	DiskLimit       float64 `protobuf:"fixed64,21,opt,name=disk_limit,json=diskLimit,proto3" json:"disk_limit,omitempty"`                     // 磁盘使用限制 单位MB
+	DiskPrio        int64   `protobuf:"varint,22,opt,name=disk_prio,json=diskPrio,proto3" json:"disk_prio,omitempty"`                         // 磁盘优先级(0-5)
 }
 
 func (x *ResourceLimit) Reset() {

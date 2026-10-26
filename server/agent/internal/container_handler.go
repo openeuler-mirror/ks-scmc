@@ -562,6 +562,8 @@ func (s *ContainerServer) Restart(ctx context.Context, in *pb.RestartRequest) (*
 func (s *ContainerServer) Update(ctx context.Context, in *pb.UpdateRequest) (*pb.UpdateReply, error) {
 	var reply pb.UpdateReply
 
+	log.Warnf("---------- container update")
+
 	if in.ContainerId == "" || (in.ResourceLimit == nil && in.RestartPolicy == nil && in.Networks == nil && in.SecurityConfig == nil) {
 		return nil, rpc.ErrInvalidArgument
 	}

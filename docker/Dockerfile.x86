@@ -1,0 +1,19 @@
+FROM 192.168.120.44/library/kylinos:KY3.4-scmc 
+
+RUN rm /etc/yum.repos.d/* -fr ;\
+    echo "[base]" >/etc/yum.repos.d/kylin.repo ;\
+    echo "name=KylinSec-3.4-4 - Base" >>/etc/yum.repos.d/kylin.repo ;\
+    echo "gpgcheck=0" >>/etc/yum.repos.d/kylin.repo ;\
+    echo "baseurl=http://192.168.120.71/kojifiles/repos/KY3.4-4-PG-ks-scmc-1.1-build/latest/x86_64/" >>/etc/yum.repos.d/kylin.repo ;\
+    echo "gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-kylin-release" >>/etc/yum.repos.d/kylin.repo
+RUN yum install -y cadvisor docker-ce influxdb keepalived ks-license-client ks-license-gui-client lsyncd mysql5-server opensnitch socat xinetd openssh-clients openssh-server passwd vi ;\
+    yum clean all	
+WORKDIR /root
+COPY ./.kyinfo /etc/.kyinfo
+COPY  ./*.rpm  .
+COPY ./deploy/  ./deploy
+RUN  rpm -Uvh /root/*.rpm ;\
+     echo "root:Kylin.2025" | chpasswd  ;\
+     echo "Port 2222" >> /etc/ssh/sshd_config ;\
+     pip3 install /root/deploy/deps/*
+ENTRYPOINT ["/bin/bash", "-c", "/usr/sbin/init"] 

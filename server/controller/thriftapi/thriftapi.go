@@ -1,35 +1,36 @@
 package thriftapi
 
 import (
+	"context"
+	"fmt"
 	"log"
+	"net"
+	"os"
+	"scmc/server/args"
+	"sort"
 	"strconv"
-        "context"
-        "time"
-        "sync"
-        "sort"
-        "strings"
-        "net"
-        "fmt"
-        "os"
+	"strings"
+	"sync"
+	"time"
 
-        "scmc/thrift/gen-go/ksscmc"
-	"scmc/model/db"
 	"scmc/common"
+	"scmc/model/db"
+	containerPB "scmc/rpc/pb/container"
 	networkPB "scmc/rpc/pb/network"
 	nodePB "scmc/rpc/pb/node"
-	containerPB "scmc/rpc/pb/container"
 	securityPB "scmc/rpc/pb/security"
 	"scmc/server/controller/internal"
+	"scmc/thrift/gen-go/ksscmc"
 
-	"github.com/sirupsen/logrus"
 	"github.com/apache/thrift/lib/go/thrift"
+	"github.com/sirupsen/logrus"
 )
 
-type KsScmcHandler struct{
+type KsScmcHandler struct {
 }
 
 func (h *KsScmcHandler) InstallContainer(ctx context.Context, node_nameorip string, image_name string, image_ver string, container_name string) (int32, error) {
-	
+
 	//通过node_nameorip查找node的ID
 	nodeInfo, err := GetNodeId(node_nameorip)
 	if err != nil {
@@ -50,7 +51,7 @@ func (h *KsScmcHandler) InstallContainer(ctx context.Context, node_nameorip stri
 		return 3, nil
 	}
 	networkInterfaceName := r.VirtualIfs[0].Name
-	
+
 	//组装PB数据
 	containerConfig := &containerPB.ContainerConfigs{
 		Name:  container_name,
@@ -62,7 +63,7 @@ func (h *KsScmcHandler) InstallContainer(ctx context.Context, node_nameorip stri
 			Name: "no",
 		},
 		ResouceLimit: &containerPB.ResourceLimit{
-			CpuPrio:         1,
+			CpuPrio:         0,
 			MemoryLimit:     31528,
 			MemorySoftLimit: 31528,
 		},
@@ -97,7 +98,7 @@ func (h *KsScmcHandler) InstallContainer(ctx context.Context, node_nameorip stri
 }
 
 func (h *KsScmcHandler) StartContainer(ctx context.Context, node_nameorip string, container_name string) (int32, error) {
-	
+
 	nodeInfo, err := GetNodeId(node_nameorip)
 	if err != nil {
 		logrus.Error(err)
@@ -137,8 +138,8 @@ func (h *KsScmcHandler) StartContainer(ctx context.Context, node_nameorip string
 	return 0, nil
 }
 
-func (h *KsScmcHandler) StopContainer(ctx context.Context, node_nameorip string , container_name string ) (int32, error) {
-	
+func (h *KsScmcHandler) StopContainer(ctx context.Context, node_nameorip string, container_name string) (int32, error) {
+
 	nodeInfo, err := GetNodeId(node_nameorip)
 	if err != nil {
 		logrus.Error(err)
@@ -216,7 +217,7 @@ func (h *KsScmcHandler) UninstallContainer(ctx context.Context, node_nameorip st
 		logrus.Error(err)
 		return 4, nil
 	}
-	
+
 	removeRequest := &containerPB.RemoveRequest{
 		Ids: []*containerPB.ContainerIdList{
 			{
@@ -235,7 +236,7 @@ func (h *KsScmcHandler) UninstallContainer(ctx context.Context, node_nameorip st
 }
 
 func (h *KsScmcHandler) GetContainerStatus(ctx context.Context, node_nameorip string, container_name string) (int32, error) {
-	
+
 	nodeInfo, err := GetNodeId(node_nameorip)
 	if err != nil {
 		logrus.Error(err)
@@ -278,7 +279,7 @@ func (h *KsScmcHandler) GetContainerStatus(ctx context.Context, node_nameorip st
 }
 
 func (h *KsScmcHandler) GetContainerMetrics(ctx context.Context, node_nameorip string, container_name string) (*ksscmc.GetContainerMetricsResponse, error) {
-	
+
 	containerMetricResponse := &ksscmc.ContainerMetric{}
 	response := &ksscmc.GetContainerMetricsResponse{
 		ContainerMetric: containerMetricResponse,
@@ -352,7 +353,7 @@ func (h *KsScmcHandler) GetContainerMetrics(ctx context.Context, node_nameorip s
 }
 
 func (h *KsScmcHandler) GetImageVer4Container(ctx context.Context, node_nameorip string, container_name string) (*ksscmc.GetImageVer4ContainerResponse, error) {
-	
+
 	response := &ksscmc.GetImageVer4ContainerResponse{
 		ContainerImage: &ksscmc.ContainerImage{},
 		RetCode:        1, // 成功码
@@ -403,7 +404,7 @@ func (h *KsScmcHandler) GetImageVer4Container(ctx context.Context, node_nameorip
 }
 
 func (h *KsScmcHandler) GetContainer(ctx context.Context, node_name string, container_name string) (int32, error) {
-	
+
 	nodeInfo, err := GetNodeId(node_name)
 	if err != nil {
 		logrus.Error(err)
@@ -441,7 +442,7 @@ func (h *KsScmcHandler) GetContainer(ctx context.Context, node_name string, cont
 }
 
 func (h *KsScmcHandler) UpdateContainer(ctx context.Context, node_name string, container_name string, new_ver string) (int32, error) {
-	
+
 	nodeInfo, err := GetNodeId(node_name)
 	if err != nil {
 		logrus.Error(err)
@@ -517,7 +518,7 @@ func (h *KsScmcHandler) UpdateContainer(ctx context.Context, node_name string, c
 
 	//create container
 	oldImage := inspectReply.Configs.Image
-	imageArr := strings.Split(oldImage,":")
+	imageArr := strings.Split(oldImage, ":")
 	inspectReply.Configs.Image = imageArr[0] + ":" + new_ver
 	createRequest := &containerPB.CreateRequest{
 		NodeId:  nodeInfo.ID,
@@ -535,7 +536,7 @@ func (h *KsScmcHandler) UpdateContainer(ctx context.Context, node_name string, c
 }
 
 func (h *KsScmcHandler) GetAlarmList(ctx context.Context, node_name string) (*ksscmc.GetAlarmListResponse, error) {
-	
+
 	response := &ksscmc.GetAlarmListResponse{
 		Alarmlist: []*ksscmc.ContainerAlarm{},
 		RetCode:   1, // 成功码
@@ -572,10 +573,10 @@ func (h *KsScmcHandler) GetAlarmList(ctx context.Context, node_name string) (*ks
 }
 
 func (h *KsScmcHandler) GetAllNodeList(ctx context.Context) (*ksscmc.GetAllNodeListResponse, error) {
-	
-	response := &ksscmc.GetAllNodeListResponse {
+
+	response := &ksscmc.GetAllNodeListResponse{
 		Nodelist: []*ksscmc.NodeStatus{},
-		RetCode: 1, // 成功码
+		RetCode:  1, // 成功码
 	}
 
 	nodes, err := db.ListNodes()
@@ -586,17 +587,17 @@ func (h *KsScmcHandler) GetAllNodeList(ctx context.Context) (*ksscmc.GetAllNodeL
 
 	for _, n := range nodes {
 		nodestatus := ksscmc.NodeStatusType_NODE_OFFLINE
-		item := &ksscmc.NodeStatus {
-			NodeName: n.Name,
-			NodeID: strconv.FormatInt(n.ID, 10),
-			IPAddr: n.Address,
-			Status: nodestatus,
-			CPUUsage: 0,
-			CPUTotal: 0,
-			MemUsage: 0,
-			MemTotal: 0,
-			DiskUsage: 0,
-			ContainerNums: 0,
+		item := &ksscmc.NodeStatus{
+			NodeName:         n.Name,
+			NodeID:           strconv.FormatInt(n.ID, 10),
+			IPAddr:           n.Address,
+			Status:           nodestatus,
+			CPUUsage:         0,
+			CPUTotal:         0,
+			MemUsage:         0,
+			MemTotal:         0,
+			DiskUsage:        0,
+			ContainerNums:    0,
 			ContainerMaxNums: 0,
 		}
 
@@ -625,15 +626,15 @@ func (h *KsScmcHandler) GetAllNodeList(ctx context.Context) (*ksscmc.GetAllNodeL
 	}
 
 	logrus.Debugf("get node list: %v", response.Nodelist)
-	response.RetCode = 0;
+	response.RetCode = 0
 	return response, nil
 }
 
 func (h *KsScmcHandler) GetAllContainerList(ctx context.Context) (*ksscmc.GetAllContainerListResponse, error) {
 
-	response := &ksscmc.GetAllContainerListResponse {
+	response := &ksscmc.GetAllContainerListResponse{
 		Containerlist: []*ksscmc.ContainerMetric{},
-		RetCode: 1, // 成功码
+		RetCode:       1, // 成功码
 	}
 
 	nodes, err := db.ListNodes()
@@ -648,9 +649,9 @@ func (h *KsScmcHandler) GetAllContainerList(ctx context.Context) (*ksscmc.GetAll
 	}
 
 	var (
-		mtx     sync.Mutex
-		wg      sync.WaitGroup
-		reply   containerPB.ListReply
+		mtx   sync.Mutex
+		wg    sync.WaitGroup
+		reply containerPB.ListReply
 	)
 
 	for _, n := range nodes {
@@ -711,16 +712,16 @@ func (h *KsScmcHandler) GetAllContainerList(ctx context.Context) (*ksscmc.GetAll
 	logrus.Infof("get all containers: %v", reply.Containers)
 
 	for _, tmpcontainer := range reply.Containers {
-		item := &ksscmc.ContainerMetric {
-			ContainerName: tmpcontainer.Info.Name,
-			ContainerID: tmpcontainer.Info.Id,
-			NodeName: idNodeMap[tmpcontainer.NodeId].Name,
+		item := &ksscmc.ContainerMetric{
+			ContainerName:   tmpcontainer.Info.Name,
+			ContainerID:     tmpcontainer.Info.Id,
+			NodeName:        idNodeMap[tmpcontainer.NodeId].Name,
 			ContainerStatus: ksscmc.ContainerStatus_OFFLINE,
-			CPUUsage: 0,
-			MemUsage: 0,
-			DiskUsage: 0,
-			NetUpload: 0,
-			NetDownload: 0,
+			CPUUsage:        0,
+			MemUsage:        0,
+			DiskUsage:       0,
+			NetUpload:       0,
+			NetDownload:     0,
 		}
 		if tmpcontainer.Info.State == "running" {
 			logrus.Infof("tmpcontainer.Info.ResourceStat: %+v", tmpcontainer.Info.ResourceStat)
@@ -741,7 +742,7 @@ func (h *KsScmcHandler) GetAllContainerList(ctx context.Context) (*ksscmc.GetAll
 }
 
 func (h *KsScmcHandler) GetContainerNetwork(ctx context.Context, node_nameorip string, container_name string) (*ksscmc.GetContainerNetworkResponse, error) {
-	
+
 	response := &ksscmc.GetContainerNetworkResponse{
 		ContainerNetInfo: &ksscmc.ContainerNetInfo{},
 		RetCode:          1, // 成功码
@@ -795,7 +796,7 @@ func (h *KsScmcHandler) GetContainerNetwork(ctx context.Context, node_nameorip s
 }
 
 func (h *KsScmcHandler) GetContainerNetRules(ctx context.Context, node_name string, container_name string) (*ksscmc.GetContainerNetRulesResponse, error) {
-	
+
 	response := &ksscmc.GetContainerNetRulesResponse{
 		ContainerNetRules: []*ksscmc.ContainerNetRule{},
 		RetCode:           1, // 成功码
@@ -903,8 +904,8 @@ func (h *KsScmcHandler) AddContainerIpPort(ctx context.Context, node_nameorip st
 }
 
 func (h *KsScmcHandler) AddContainerReqIpPort(ctx context.Context, node_name string, container_name string, ip_addr string, port int32, net_proto string) (int32, error) {
-	
-nodeInfo, err := GetNodeId(node_name)
+
+	nodeInfo, err := GetNodeId(node_name)
 	if err != nil {
 		logrus.Error(err)
 		return 1, nil
@@ -1041,8 +1042,8 @@ func (h *KsScmcHandler) AddContainerEnv(ctx context.Context, node_nameorip strin
 	return 0, nil
 }
 
-func (h *KsScmcHandler) AddContainerLocalVolume(ctx context.Context, node_nameorip string , container_name string , in_dir string , out_dir string , access_auth ksscmc.AccessAuth ) (int32, error) {
-	
+func (h *KsScmcHandler) AddContainerLocalVolume(ctx context.Context, node_nameorip string, container_name string, in_dir string, out_dir string, access_auth ksscmc.AccessAuth) (int32, error) {
+
 	nodeInfo, err := GetNodeId(node_nameorip)
 	if err != nil {
 		logrus.Error(err)
@@ -1085,14 +1086,14 @@ func (h *KsScmcHandler) AddContainerLocalVolume(ctx context.Context, node_nameor
 			logrus.Warnf("create dir: %v faied", out_dir)
 			return 5, nil
 		}
-	} else if ! fileInfo.IsDir() {
+	} else if !fileInfo.IsDir() {
 		logrus.Warnf("%v exist and is not dir", out_dir)
 		return 6, nil
 	}
 
 	updateReq := containerPB.UpdateRequest{
-		NodeId:      nodeInfo.ID,
-		ContainerId: containerId,
+		NodeId:         nodeInfo.ID,
+		ContainerId:    containerId,
 		ResourceLimit:  inspect.Configs.ResouceLimit,
 		RestartPolicy:  inspect.Configs.RestartPolicy,
 		Networks:       inspect.Configs.Networks,
@@ -1103,9 +1104,9 @@ func (h *KsScmcHandler) AddContainerLocalVolume(ctx context.Context, node_nameor
 	}
 	mountSettings := inspect.Configs.Mounts
 	mountSettings = append(mountSettings, &containerPB.Mount{
-		Type: "bind",
-		Source: out_dir,
-		Target: in_dir,
+		Type:     "bind",
+		Source:   out_dir,
+		Target:   in_dir,
 		ReadOnly: access_auth == ksscmc.AccessAuth_READ_ONLY,
 	})
 
@@ -1121,7 +1122,7 @@ func (h *KsScmcHandler) AddContainerLocalVolume(ctx context.Context, node_nameor
 	return 0, nil
 }
 
-func (h *KsScmcHandler) SetContainerDisplayV2(ctx context.Context, node_name string , container_name string , enabled bool , display string ) (int32, error) {
+func (h *KsScmcHandler) SetContainerDisplayV2(ctx context.Context, node_name string, container_name string, enabled bool, display string) (int32, error) {
 	return 0, nil
 }
 
@@ -1163,24 +1164,37 @@ func (h *KsScmcHandler) SetContainerQuota(ctx context.Context, node_name string,
 		return 4, nil
 	}
 
-	logrus.Error(rep.Configs)
+	//logrus.Error(rep.Configs)
+	if !args.Float64Resource.Check(containerLimit.DiskRbw, containerLimit.DiskWbw) {
+		logrus.Error("disk_rbw or disk_wbw arg error")
+		return 6, nil
+	}
+	if !args.Int32Argument.Check(containerLimit.DiskRio, containerLimit.DiskWio) {
+		logrus.Error("disk_rio or disk_wio arg error")
+		return 6, nil
+	}
+	envs := rep.Configs.Envs
+	envs["disk_rbw"] = fmt.Sprintf("%v", containerLimit.DiskRbw)
+	envs["disk_wbw"] = fmt.Sprintf("%v", containerLimit.DiskWbw)
+	envs["disk_rio"] = fmt.Sprintf("%v", containerLimit.DiskRio)
+	envs["disk_wio"] = fmt.Sprintf("%v", containerLimit.DiskWio)
 
 	// 更新配置的请求数据
 	up := &containerPB.UpdateRequest{
 		NodeId:      nodeInfo.ID,
 		ContainerId: containerId,
-		ResourceLimit: &containerPB.ResourceLimit{ // 主要是下面的 4 项
+		ResourceLimit: &containerPB.ResourceLimit{
 			CpuLimit:        containerLimit.CPU,
 			CpuPrio:         int64(containerLimit.CPUPrio),
 			MemoryLimit:     float64(containerLimit.MemHard),
 			MemorySoftLimit: float64(containerLimit.MemSoft),
-			//DiskLimit:
+			DiskPrio:        int64(containerLimit.DiskPrio),
 		},
 		RestartPolicy:  rep.Configs.RestartPolicy,
 		Networks:       rep.Configs.Networks,
 		SecurityConfig: rep.Configs.SecurityConfig,
 		Mounts:         rep.Configs.Mounts,
-		Envs:           rep.Configs.Envs,
+		Envs:           envs,
 		Cmd:            rep.Configs.Cmd,
 	}
 
@@ -1204,8 +1218,8 @@ func ThriftapiMain() {
 	logrus.Infof("serverCert: %s", common.Config.ApiTLS.ServerCert)
 	logrus.Infof("serverKey: %s", common.Config.ApiTLS.ServerKey)
 
-	cfg, err:= common.LoadApiTLSConfig()
-	if (err != nil) {
+	cfg, err := common.LoadApiTLSConfig()
+	if err != nil {
 		logrus.Errorf("loadTLSConfig failed! %v", err)
 		log.Fatalf("loadTLSConfig failed! %v", err)
 	}
@@ -1214,47 +1228,47 @@ func ThriftapiMain() {
 	logrus.Infof("addr: %s", addr)
 
 	transport, err := thrift.NewTSSLServerSocket(addr, cfg)
-        if err != nil {
-                panic(err)
-        }
-        //fmt.Printf("%T\n", transport);
+	if err != nil {
+		panic(err)
+	}
+	//fmt.Printf("%T\n", transport);
 
-        ksscmchandler := &KsScmcHandler{}
+	ksscmchandler := &KsScmcHandler{}
 	processor := ksscmc.NewKsScmcClientProcessor(ksscmchandler)
-	
+
 	/*multiplexedProcessor := thrift.NewTMultiplexedProcessor()
 
-        dshandler := &DockerStatsServer{}
-	multiplexedProcessor.RegisterProcessor(
-		"DockerStatsData", // 服务名（必须和生成代码中的一致）
-		node.NewDockerStatsDataProcessor(dshandler),
+	        dshandler := &DockerStatsServer{}
+		multiplexedProcessor.RegisterProcessor(
+			"DockerStatsData", // 服务名（必须和生成代码中的一致）
+			node.NewDockerStatsDataProcessor(dshandler),
+		)
+
+	        ksscmchandler := &KsScmcHandler{}
+		multiplexedProcessor.RegisterProcessor(
+			"KsScmcClient", // 服务名（必须和生成代码中的一致）
+			ksscmc.NewKsScmcClientProcessor(ksscmchandler),
+		)*/
+
+	transportFactory := thrift.NewTBufferedTransportFactory(8192)
+	//也可以选择Framed传输协议，但是必须确保服务端和客户端的传输协议一致
+	//transportFactory := thrift.NewTBufferedTransportFactory(8192)
+	//framedtransportFactory := thrift.NewTFramedTransportFactory(transportFactory)
+
+	//可以选择任意一种编码协议，但是必须确保服务端和客户端的编码协议一致
+	protocolFactory := thrift.NewTBinaryProtocolFactory(true, true) //布尔参数strictRead, strictWrite，读和写时是否加入版本校验。
+	//protocolFactory := thrift.NewTCompactProtocolFactory()
+	//protocolFactory := thrift.NewTJSONProtocolFactory()
+
+	server := thrift.NewTSimpleServer4(
+		// multiplexedProcessor,
+		processor,
+		transport,
+		transportFactory,
+		protocolFactory,
 	)
 
-        ksscmchandler := &KsScmcHandler{}
-	multiplexedProcessor.RegisterProcessor(
-		"KsScmcClient", // 服务名（必须和生成代码中的一致）
-		ksscmc.NewKsScmcClientProcessor(ksscmchandler),
-	)*/
-
-        transportFactory := thrift.NewTBufferedTransportFactory(8192)
-        //也可以选择Framed传输协议，但是必须确保服务端和客户端的传输协议一致
-        //transportFactory := thrift.NewTBufferedTransportFactory(8192)
-        //framedtransportFactory := thrift.NewTFramedTransportFactory(transportFactory)
-
-        //可以选择任意一种编码协议，但是必须确保服务端和客户端的编码协议一致
-        protocolFactory := thrift.NewTBinaryProtocolFactory(true, true) //布尔参数strictRead, strictWrite，读和写时是否加入版本校验。
-        //protocolFactory := thrift.NewTCompactProtocolFactory()
-        //protocolFactory := thrift.NewTJSONProtocolFactory()
-
-        server := thrift.NewTSimpleServer4(
-                // multiplexedProcessor,
-		processor,
-                transport,
-                transportFactory,
-                protocolFactory,
-        )
-
-        if err := server.Serve(); err != nil {
-                panic(err)
-        }
+	if err := server.Serve(); err != nil {
+		panic(err)
+	}
 }

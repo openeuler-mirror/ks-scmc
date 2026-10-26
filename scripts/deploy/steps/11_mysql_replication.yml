@@ -2,7 +2,7 @@
 - name: MYSQL 上传配置文件(高可用)
   template:
     src: template/mysql-server.conf.j2
-    dest: /etc/my.cnf
+    dest: /etc/my-kylin.cnf
     owner: root
     group: root
     mode: '0644'
@@ -12,14 +12,14 @@
     MYSQLD=$(whereis -b mysqld | awk '{print $NF}')
     if ! ${MYSQLD} --verbose --help | grep "replica-parallel-workers"; then
       echo "unknown vairable replica-parallel-workers"
-      sed -i '/^replica-parallel-workers/d' /etc/my.cnf
+      sed -i '/^replica-parallel-workers/d' /etc/my-kylin.cnf
     fi
 - name: MYSQL 重启服务(高可用)
   service: name=mysqld state=restarted
 - name: MYSQL 权限配置(高可用)
   shell: |
     set -e
-    mysql -uroot -p'{{ mysql.root_password }}' << EOF
+    mysql -S /var/lib/mysql/mysql.sock -uroot -p'{{ mysql.root_password }}' << EOF
     CREATE USER 'replacation'@'{{ other_host }}' IDENTIFIED BY 'replacation.2023';
     GRANT REPLICATION SLAVE ON *.* TO replacation@'{{ other_host }}';
     FLUSH PRIVILEGES;
@@ -27,11 +27,11 @@
 - name: MYSQL 主从复制(高可用)
   shell: |
     set -e
-    MASTER_STATUS=$(mysql -h{{ other_host }} -uroot -p'{{ mysql.root_password }}' -e 'SHOW MASTER STATUS' | sed '1d')
+    MASTER_STATUS=$(mysql -S /var/lib/mysql/mysql.sock -h{{ other_host }} -uroot -p'{{ mysql.root_password }}' -e 'SHOW MASTER STATUS' | sed '1d')
     MASTER_LOG_FILE=$(echo ${MASTER_STATUS} | awk '{print $1}')
     MASTER_LOG_POS=$(echo ${MASTER_STATUS} | awk '{print $2}')
 
-    mysql -uroot -p'{{ mysql.root_password }}' << EOF
+    mysql -S /var/lib/mysql/mysql.sock -uroot -p'{{ mysql.root_password }}' << EOF
     CHANGE MASTER TO MASTER_HOST='{{ other_host }}',
       MASTER_USER='replacation',
       MASTER_PASSWORD='replacation.2023',
@@ -41,7 +41,7 @@
     FLUSH PRIVILEGES;
     EOF
 - name: MYSQL 检查主从复制状态（高可用）
-  shell: mysql -uroot -p'{{ mysql.root_password }}' -e "SHOW SLAVE STATUS \G"
+  shell: mysql -S /var/lib/mysql/mysql.sock -uroot -p'{{ mysql.root_password }}' -e "SHOW SLAVE STATUS \G"
   register: replication_status
   until: "replication_status.stdout.find('Slave_IO_Running: Yes') != -1"
   retries: 30

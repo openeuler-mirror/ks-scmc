@@ -36,20 +36,82 @@ import (
 	"scmc/server/args"
 )
 
-const defaultCPUShares = 1024
+const (
+	defaultCPUShares   = 1024
+	maxCPUShares       = 3072
+	maxBlkioWeight     = 1000
+	defaultBlkioWeight = 500
+)
+
+//--cpushares不设置的话，docker默认是1024
+//优先级为1,设置为默认值的1.25倍
+//优先级为2,设置为默认值的1.5倍
+//优先级为3,设置为默认值的2倍
+//优先级为4,设置为默认值的2.5倍
+//优先级为5,设置为默认值的3倍
+var cpuShareMap = map[int64]int64{
+	1: 1280,
+	2: 1536,
+	3: 2048,
+	4: 2560,
+	5: maxCPUShares,
+}
+
+var blkioWeightMap = map[int64]int64{
+	1: 600,
+	2: 700,
+	3: 800,
+	4: 900,
+	5: maxBlkioWeight,
+}
+
+//磁盘优先级=>blkioWeigh
+func toBlkioWeight(diskPrio int64) int64 {
+	if diskPrio <= 0 {
+		return defaultBlkioWeight
+	}
+	if v, ok := blkioWeightMap[diskPrio]; ok {
+		return v
+	}
+	return defaultBlkioWeight
+}
+
+//blkioWeight => 磁盘优先级
+func fromBlkioWeight(blkioWeight int64) int64 {
+
+	if blkioWeight <= defaultBlkioWeight {
+		return 0
+	}
+	for k, v := range blkioWeightMap {
+		if v == blkioWeight {
+			return k
+		}
+	}
+	return 0
+}
 
 func toCPUShares(cpuPrio int64) int64 {
+	//小于等于0,或大于5都返回defaultCPUShares
 	if cpuPrio <= 0 {
 		return defaultCPUShares
 	}
-	return cpuPrio + defaultCPUShares // default cpu shares 1024
+	if v, ok := cpuShareMap[cpuPrio]; ok {
+		return v
+	}
+	return defaultCPUShares
 }
 
 func fromCPUShares(cpuShares int64) int64 {
+
 	if cpuShares <= defaultCPUShares {
 		return 0
 	}
-	return cpuShares - defaultCPUShares
+	for k, v := range cpuShareMap {
+		if v == cpuShares {
+			return k
+		}
+	}
+	return 0
 }
 
 func dockerResourceConfig(in *pb.ResourceLimit) container.Resources {

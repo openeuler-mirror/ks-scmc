@@ -620,6 +620,8 @@ func incrementIP(ip net.IP) {
 }
 
 func (s *NetworkServer) createNetwork(name, subnet, gateway, parent string) error {
+	log.Warnf("==> name: %v, subnet: %v, gateway: %v, parent: %v", name, subnet, gateway, parent)
+
 	driver := "bridge"
 	if parent != "" {
 		driver = "macvlan"
@@ -629,6 +631,10 @@ func (s *NetworkServer) createNetwork(name, subnet, gateway, parent string) erro
 	if err != nil {
 		return rpc.ErrInternal
 	}
+
+	macvlan_ip, masklen, _ := parseSubnet(subnet)
+	_, sb, _ := net.ParseCIDR(subnet)
+	subnet = sb.String()
 
 	data := types.NetworkCreate{
 		Driver: driver,
@@ -655,12 +661,13 @@ func (s *NetworkServer) createNetwork(name, subnet, gateway, parent string) erro
 	if parent == "" {
 		return nil
 	}
-
+/*
 	firstip, err_ip := firstUsableIP(subnet)
 	if err_ip != nil {
 		log.Warnf("NetworkCreate name=%v err=%v", name, err_ip)
 		return err_ip
 	}
+*/
 
 	path := "/etc/sysconfig/network-scripts/ifcfg-" + parent
 	begin_flag := "# ks-scmc config begin, donot modify"
@@ -684,9 +691,10 @@ func (s *NetworkServer) createNetwork(name, subnet, gateway, parent string) erro
 	* #74606 修复并且验证创建 macvlan 的时候没有设置子网掩码的问题！
 	* https://ones.kylinsec.com.cn:5080/project/#/team/6B7ew4b7/task/X6NeBChCU3lw1DK8
 	*/
-	_, masklen, _ := parseSubnet(subnet)
+	// _, masklen, _ := parseSubnet(subnet)
 
-	add = fmt.Sprintf("ip addr add %s/%d dev %s", firstip, masklen, host_name)
+	//add = fmt.Sprintf("ip addr add %s/%d dev %s", firstip, masklen, host_name)
+	add = fmt.Sprintf("ip addr add %s/%d dev %s", macvlan_ip, masklen, host_name)
 	newlines = append(newlines, add)
 
 	add = fmt.Sprintf("ip route add %s dev %s", subnet, host_name)
@@ -695,7 +703,7 @@ func (s *NetworkServer) createNetwork(name, subnet, gateway, parent string) erro
 
 	err = insertAndDeleteLines(path, begin_flag, end_flag, newlines)
 	if err != nil {
-		log.Warnf("NetworkCreate name=%v err=%v", name, err_ip)
+		log.Warnf("NetworkCreate name=%v err=%v", name, err)
 		return err
 	}
 

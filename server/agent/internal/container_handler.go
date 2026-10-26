@@ -580,6 +580,7 @@ func (s *ContainerServer) Update(ctx context.Context, in *pb.UpdateRequest) (*pb
 		log.Debugf("%v mounts change", inspectConfigs.ContainerId)
 	}
 
+	log.Warnf("---------- 1, change: %v docker.NoneBit: %v", change, docker.NoneBit)
 	if change != docker.NoneBit {
 		if err = docker.ModifyContainerConfig(inspectConfigs.ContainerId, change, envs, mountMap); err != nil {
 			log.Infof("UpdateContainerConfig err=%v", err)

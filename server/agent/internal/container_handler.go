@@ -285,7 +285,7 @@ func (s *ContainerServer) create(configs *pb.ContainerConfigs) (string, error) {
 
 	if configs.Cmd != "" {
 		var cmdSlice strslice.StrSlice = strings.Fields(configs.Cmd)
-		config.Cmd=cmdSlice
+		config.Cmd = cmdSlice
 	}
 
 	hostConfig := container.HostConfig{

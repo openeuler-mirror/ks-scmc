@@ -620,6 +620,8 @@ func incrementIP(ip net.IP) {
 }
 
 func (s *NetworkServer) createNetwork(name, subnet, gateway, parent string) error {
+	log.Warnf("==> name: %v, subnet: %v, gateway: %v, parent: %v", name, subnet, gateway, parent)
+
 	driver := "bridge"
 	if parent != "" {
 		driver = "macvlan"

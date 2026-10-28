@@ -63,6 +63,32 @@ service Container {
     // 监控历史数据查询
     rpc MonitorHistory(MonitorHistoryRequest) returns (MonitorHistoryReply) {}
 }
+message LoadRequest{
+string tar_path = 1;
+int64 node_id = 2;
+}
+message LoadProgress {
+  oneof update {
+    float percent = 1;       // 进度百分比 (0~100)
+    string message = 2;      // 状态消息
+    LoadResult result = 3;   // 最终结果
+  }
+}
+message LoadResult {
+  bool success = 1;
+  string detail = 2;
+}
+message UnpauseRequest{
+    int64  node_id      = 1;
+    string container_id = 2;
+}
+message UnpauseReply {}
+
+message PauseRequest{
+    int64  node_id      = 1;
+    string container_id = 2;
+}
+message PauseReply {}
 
 message ExportBackupRequest {
     int64  node_id     = 1;

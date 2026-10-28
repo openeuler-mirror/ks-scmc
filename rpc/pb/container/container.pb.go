@@ -149,13 +149,13 @@ func (x *SetHostsReply) Reset() {
 	}
 }
 
-func (x *StatsReply) String() string {
+func (x *SetHostsReply) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*StatsReply) ProtoMessage() {}
+func (*SetHostsReply) ProtoMessage() {}
 
-func (x *StatsReply) ProtoReflect() protoreflect.Message {
+func (x *SetHostsReply) ProtoReflect() protoreflect.Message {
 	mi := &file_container_proto_msgTypes[1]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))

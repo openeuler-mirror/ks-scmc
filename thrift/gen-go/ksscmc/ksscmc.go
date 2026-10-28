@@ -3511,6 +3511,169 @@ func (p *GetContainerMetricsResponse) String() string {
 }
 
 // Attributes:
+//  - ImageList
+//  - RetCode
+type GetImagesListResponse struct {
+  ImageList []string `thrift:"imageList,1" db:"imageList" json:"imageList"`
+  RetCode int32 `thrift:"ret_code,2" db:"ret_code" json:"ret_code"`
+}
+
+func NewGetImagesListResponse() *GetImagesListResponse {
+  return &GetImagesListResponse{}
+}
+
+
+func (p *GetImagesListResponse) GetImageList() []string {
+  return p.ImageList
+}
+
+func (p *GetImagesListResponse) GetRetCode() int32 {
+  return p.RetCode
+}
+func (p *GetImagesListResponse) Read(ctx context.Context, iprot thrift.TProtocol) error {
+  if _, err := iprot.ReadStructBegin(ctx); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
+  }
+
+
+  for {
+    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin(ctx)
+    if err != nil {
+      return thrift.PrependError(fmt.Sprintf("%T field %d read error: ", p, fieldId), err)
+    }
+    if fieldTypeId == thrift.STOP { break; }
+    switch fieldId {
+    case 1:
+      if fieldTypeId == thrift.LIST {
+        if err := p.ReadField1(ctx, iprot); err != nil {
+          return err
+        }
+      } else {
+        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
+          return err
+        }
+      }
+    case 2:
+      if fieldTypeId == thrift.I32 {
+        if err := p.ReadField2(ctx, iprot); err != nil {
+          return err
+        }
+      } else {
+        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
+          return err
+        }
+      }
+    default:
+      if err := iprot.Skip(ctx, fieldTypeId); err != nil {
+        return err
+      }
+    }
+    if err := iprot.ReadFieldEnd(ctx); err != nil {
+      return err
+    }
+  }
+  if err := iprot.ReadStructEnd(ctx); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+  }
+  return nil
+}
+
+func (p *GetImagesListResponse)  ReadField1(ctx context.Context, iprot thrift.TProtocol) error {
+  _, size, err := iprot.ReadListBegin(ctx)
+  if err != nil {
+    return thrift.PrependError("error reading list begin: ", err)
+  }
+  tSlice := make([]string, 0, size)
+  p.ImageList =  tSlice
+  for i := 0; i < size; i ++ {
+var _elem8 string
+    if v, err := iprot.ReadString(ctx); err != nil {
+    return thrift.PrependError("error reading field 0: ", err)
+} else {
+    _elem8 = v
+}
+    p.ImageList = append(p.ImageList, _elem8)
+  }
+  if err := iprot.ReadListEnd(ctx); err != nil {
+    return thrift.PrependError("error reading list end: ", err)
+  }
+  return nil
+}
+
+func (p *GetImagesListResponse)  ReadField2(ctx context.Context, iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadI32(ctx); err != nil {
+  return thrift.PrependError("error reading field 2: ", err)
+} else {
+  p.RetCode = v
+}
+  return nil
+}
+
+func (p *GetImagesListResponse) Write(ctx context.Context, oprot thrift.TProtocol) error {
+  if err := oprot.WriteStructBegin(ctx, "GetImagesListResponse"); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err) }
+  if p != nil {
+    if err := p.writeField1(ctx, oprot); err != nil { return err }
+    if err := p.writeField2(ctx, oprot); err != nil { return err }
+  }
+  if err := oprot.WriteFieldStop(ctx); err != nil {
+    return thrift.PrependError("write field stop error: ", err) }
+  if err := oprot.WriteStructEnd(ctx); err != nil {
+    return thrift.PrependError("write struct stop error: ", err) }
+  return nil
+}
+
+func (p *GetImagesListResponse) writeField1(ctx context.Context, oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin(ctx, "imageList", thrift.LIST, 1); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write field begin error 1:imageList: ", p), err) }
+  if err := oprot.WriteListBegin(ctx, thrift.STRING, len(p.ImageList)); err != nil {
+    return thrift.PrependError("error writing list begin: ", err)
+  }
+  for _, v := range p.ImageList {
+    if err := oprot.WriteString(ctx, string(v)); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T. (0) field write error: ", p), err) }
+  }
+  if err := oprot.WriteListEnd(ctx); err != nil {
+    return thrift.PrependError("error writing list end: ", err)
+  }
+  if err := oprot.WriteFieldEnd(ctx); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write field end error 1:imageList: ", p), err) }
+  return err
+}
+
+func (p *GetImagesListResponse) writeField2(ctx context.Context, oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin(ctx, "ret_code", thrift.I32, 2); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write field begin error 2:ret_code: ", p), err) }
+  if err := oprot.WriteI32(ctx, int32(p.RetCode)); err != nil {
+  return thrift.PrependError(fmt.Sprintf("%T.ret_code (2) field write error: ", p), err) }
+  if err := oprot.WriteFieldEnd(ctx); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write field end error 2:ret_code: ", p), err) }
+  return err
+}
+
+func (p *GetImagesListResponse) Equals(other *GetImagesListResponse) bool {
+  if p == other {
+    return true
+  } else if p == nil || other == nil {
+    return false
+  }
+  if len(p.ImageList) != len(other.ImageList) { return false }
+  for i, _tgt := range p.ImageList {
+    _src9 := other.ImageList[i]
+    if _tgt != _src9 { return false }
+  }
+  if p.RetCode != other.RetCode { return false }
+  return true
+}
+
+func (p *GetImagesListResponse) String() string {
+  if p == nil {
+    return "<nil>"
+  }
+  return fmt.Sprintf("GetImagesListResponse(%+v)", *p)
+}
+
+// Attributes:
 //  - ErrorCode
 //  - Reason
 type OperationFailed struct {

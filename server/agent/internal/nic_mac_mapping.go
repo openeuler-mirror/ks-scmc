@@ -72,7 +72,22 @@ func updateJSON(who string, address string) error {
 		info = make(EthMac)
 	}
 
-	info[who] = address
+	cleanMAC := strings.TrimSpace(address)
+
+	if len(cleanMAC) != 17 {
+		return nil
+	}
+
+	hwAddr, err := net.ParseMAC(cleanMAC)
+	if err != nil {
+		return nil
+	}
+
+	if len(hwAddr) != 6 {
+		return nil
+	}
+
+	info[who] = cleanMAC
 	return writeJSON(info)
 }
 
@@ -89,6 +104,7 @@ func delJSON(who string) error {
 
 func getMacJSON(who string) string {
 	info, _ := readJSON()
+	who = strings.TrimSpace(who)
 	if info != nil {
 		if _, ok := info[who]; ok {
 			return info[who]
@@ -119,7 +135,7 @@ func UpdataVirtualNicMAC() {
 		if strings.HasPrefix(iface.Name, "scmc-") || strings.HasSuffix(iface.Name, "-host") {
 			nicMAC1 := getMacJSON(iface.Name)
 			nicMAC2 := getMacAddr(iface.Name)
-			if nicMAC1 != nicMAC2 {
+			if (nicMAC1 != "") && (nicMAC1 != nicMAC2) {
 				cmd := exec.Command("ifconfig", iface.Name, "hw", "ether", nicMAC1)
 				cmd.Run()
 			}

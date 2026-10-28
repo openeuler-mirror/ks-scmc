@@ -154,6 +154,56 @@ func (c *containerClient) Update(ctx context.Context, in *UpdateRequest, opts ..
 	return out, nil
 }
 
+func (c *containerClient) Pause(ctx context.Context, in *PauseRequest, opts ...grpc.CallOption) (*PauseReply, error) {
+	out := new(PauseReply)
+	err := c.cc.Invoke(ctx, "/container.Container/Pause", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *containerClient) Unpause(ctx context.Context, in *UnpauseRequest, opts ...grpc.CallOption) (*UnpauseReply, error) {
+	out := new(UnpauseReply)
+	err := c.cc.Invoke(ctx, "/container.Container/Unpause", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *containerClient) LoadImage(ctx context.Context, in *LoadRequest, opts ...grpc.CallOption) (Container_LoadImageClient, error) {
+	stream, err := c.cc.NewStream(ctx, &Container_ServiceDesc.Streams[0], "/container.Container/LoadImage", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &containerLoadImageClient{stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+type Container_LoadImageClient interface {
+	Recv() (*LoadProgress, error)
+	grpc.ClientStream
+}
+
+type containerLoadImageClient struct {
+	grpc.ClientStream
+}
+
+func (x *containerLoadImageClient) Recv() (*LoadProgress, error) {
+	m := new(LoadProgress)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 func (c *containerClient) CreateBackup(ctx context.Context, in *CreateBackupRequest, opts ...grpc.CallOption) (*CreateBackupReply, error) {
 	out := new(CreateBackupReply)
 	err := c.cc.Invoke(ctx, "/container.Container/CreateBackup", in, out, opts...)

@@ -665,6 +665,17 @@ func incrementIP(ip net.IP) {
 	}
 }
 
+// 设置虚拟网卡的 MAC 地址	
+func setVirtualNicMac(nicName string) {
+	nicMAC := getMacJSON(nicName)
+	if nicMAC == "" {
+		updateJSON(nicName, getMacAddr(nicName))
+	} else {
+		setMACcmd := exec.Command("ifconfig", nicName, "hw", "ether", nicMAC)
+		setMACcmd.Run()
+	}
+}
+
 func (s *NetworkServer) createNetwork(name, subnet, gateway, parent string) error {
 	driver := "bridge"
 	if parent != "" {
@@ -703,15 +714,18 @@ func (s *NetworkServer) createNetwork(name, subnet, gateway, parent string) erro
 	}
 
 	if parent == "" {
+		brgName := "scmc-" + name
+		setVirtualNicMac(brgName)
 		return nil
 	}
-/*
+
+	/*
 	firstip, err_ip := firstUsableIP(subnet)
 	if err_ip != nil {
 		log.Warnf("NetworkCreate name=%v err=%v", name, err_ip)
 		return err_ip
 	}
-*/
+	*/
 
 	path := "/etc/sysconfig/network-scripts/ifcfg-" + parent
 	begin_flag := "# ks-scmc config begin, donot modify"
@@ -745,38 +759,40 @@ func (s *NetworkServer) createNetwork(name, subnet, gateway, parent string) erro
 	newlines = append(newlines, add)
 	newlines = append(newlines, end_flag)
 
-    /*
-    // 添加一条 iptables 信息, 不能写入文件，会导致执行很多次
-    // add = fmt.Sprintf("iptables -t nat -A POSTROUTING -s %s -o %s -j MASQUERADE", subnet, parent)
+	/*
+	// 添加一条 iptables 信息, 不能写入文件，会导致执行很多次
+	// add = fmt.Sprintf("iptables -t nat -A POSTROUTING -s %s -o %s -j MASQUERADE", subnet, parent)
 	// newlines = append(newlines, add)
-    */
+	*/
 	err = insertAndDeleteLines(parent, path, begin_flag, end_flag, newlines)
 	if err != nil {
 		log.Warnf("NetworkCreate name=%v err=%v", name, err)
 		return err
 	}
 
-    /* 添加规则 */
-    iptbInfo := fmt.Sprintf("iptables -t nat -A POSTROUTING -s %s -o %s -j MASQUERADE", subnet, parent)
-    cmd := exec.Command(
-        "iptables",
-        "-t", "nat",
-        "-A", "POSTROUTING",
-        "-s", subnet,
-        "-o", parent,
-        "-j", "MASQUERADE",
-    )
-    err = cmd.Run()
-    if err != nil {
-        log.Warnf("Run Command: %s, err= %v", iptbInfo, err)
-    }
-    /* 添加规则 */
+	/* 添加规则 */
+	iptbInfo := fmt.Sprintf("iptables -t nat -A POSTROUTING -s %s -o %s -j MASQUERADE", subnet, parent)
+	cmd := exec.Command(
+		"iptables",
+		"-t", "nat",
+		"-A", "POSTROUTING",
+		"-s", subnet,
+		"-o", parent,
+		"-j", "MASQUERADE",
+	)
+	err = cmd.Run()
+	if err != nil {
+		log.Warnf("Run Command: %s, err= %v", iptbInfo, err)
+	}
+	/* 添加规则 */
 
 	cmd = exec.Command("systemctl", "restart", "network")
 	err = cmd.Run()
 	if err != nil {
 		return fmt.Errorf("failed to execute command: %v", cmd)
 	}
+
+	setVirtualNicMac(host_name)
 
 	log.Debugf("NetworkCreate parent=%v name=%v host_name=%v gateway=%v subnet=%v", parent, name, host_name, gateway, subnet)
 	return nil

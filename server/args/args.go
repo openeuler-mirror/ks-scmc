@@ -59,6 +59,15 @@ func (r *Int64Argument) Check(in ...int64) bool {
 	}
 	return true
 }
+func (r *Int32Argument) Check(in ...int32) bool {
+	for _, i := range in {
+		if r.valid(i) {
+			continue
+		}
+		return false
+	}
+	return true
+}
 
 func lengthChecker(min, max uint32) func(string) bool {
 	return func(s string) bool {

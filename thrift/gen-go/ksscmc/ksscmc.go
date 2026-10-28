@@ -3987,12 +3987,6 @@ type KsScmcClient interface {
   //  - NodeIP
   //  - ContainerName
   UnpauseContainer(ctx context.Context, node_ip string, container_name string) (r int32, err error)
-  // 获取 容器的状态信息，参考 docker stats 的输出
-  // 返回值为 json 格式
-  // 
-  // Parameters:
-  //  - NodeName
-  GetAllContainers(ctx context.Context, node_name string) (r string, err error)
 }
 
 type KsScmcClientClient struct {

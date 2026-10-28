@@ -8792,30 +8792,20 @@ func (p *KsScmcClientGetAlarmListArgs) Read(ctx context.Context, iprot thrift.TP
   return nil
 }
 
-func (p *KsScmcClientStartContainerArgs)  ReadField1(ctx context.Context, iprot thrift.TProtocol) error {
+func (p *KsScmcClientGetAlarmListArgs)  ReadField1(ctx context.Context, iprot thrift.TProtocol) error {
   if v, err := iprot.ReadString(ctx); err != nil {
   return thrift.PrependError("error reading field 1: ", err)
 } else {
-  p.NodeNameorip = v
+  p.NodeName = v
 }
   return nil
 }
 
-func (p *KsScmcClientStartContainerArgs)  ReadField2(ctx context.Context, iprot thrift.TProtocol) error {
-  if v, err := iprot.ReadString(ctx); err != nil {
-  return thrift.PrependError("error reading field 2: ", err)
-} else {
-  p.ContainerName = v
-}
-  return nil
-}
-
-func (p *KsScmcClientStartContainerArgs) Write(ctx context.Context, oprot thrift.TProtocol) error {
-  if err := oprot.WriteStructBegin(ctx, "startContainer_args"); err != nil {
+func (p *KsScmcClientGetAlarmListArgs) Write(ctx context.Context, oprot thrift.TProtocol) error {
+  if err := oprot.WriteStructBegin(ctx, "getAlarmList_args"); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err) }
   if p != nil {
     if err := p.writeField1(ctx, oprot); err != nil { return err }
-    if err := p.writeField2(ctx, oprot); err != nil { return err }
   }
   if err := oprot.WriteFieldStop(ctx); err != nil {
     return thrift.PrependError("write field stop error: ", err) }

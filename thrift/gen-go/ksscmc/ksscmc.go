@@ -8721,7 +8721,7 @@ func (p *KsScmcClientUpdateContainerResult) Write(ctx context.Context, oprot thr
   return nil
 }
 
-func (p *KsScmcClientInstallContainerResult) writeField0(ctx context.Context, oprot thrift.TProtocol) (err error) {
+func (p *KsScmcClientUpdateContainerResult) writeField0(ctx context.Context, oprot thrift.TProtocol) (err error) {
   if p.IsSetSuccess() {
     if err := oprot.WriteFieldBegin(ctx, "success", thrift.I32, 0); err != nil {
       return thrift.PrependError(fmt.Sprintf("%T write field begin error 0:success: ", p), err) }

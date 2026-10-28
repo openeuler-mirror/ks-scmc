@@ -22,6 +22,7 @@ func Usage() {
   fmt.Fprintln(os.Stderr, "Usage of ", os.Args[0], " [-h host:port] [-u url] [-f[ramed]] function [arg1 [arg2...]]:")
   flag.PrintDefaults()
   fmt.Fprintln(os.Stderr, "\nFunctions:")
+  fmt.Fprintln(os.Stderr, "  string LoginV3(string user, string passwd, string node_ip)")
   fmt.Fprintln(os.Stderr, "  i32 installContainer(string node_nameorip, string image_name, string image_ver, string container_name)")
   fmt.Fprintln(os.Stderr, "  i32 startContainer(string node_nameorip, string container_name)")
   fmt.Fprintln(os.Stderr, "  i32 stopContainer(string node_nameorip, string container_name)")

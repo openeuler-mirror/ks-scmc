@@ -108,28 +108,40 @@ func (x *SetHostsRequest) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use StatsRequest.ProtoReflect.Descriptor instead.
-func (*StatsRequest) Descriptor() ([]byte, []int) {
+// Deprecated: Use SetHostsRequest.ProtoReflect.Descriptor instead.
+func (*SetHostsRequest) Descriptor() ([]byte, []int) {
 	return file_container_proto_rawDescGZIP(), []int{0}
 }
 
-func (x *StatsRequest) GetHostId() string {
+func (x *SetHostsRequest) GetNodeId() int64 {
 	if x != nil {
-		return x.HostId
+		return x.NodeId
+	}
+	return 0
+}
+
+func (x *SetHostsRequest) GetContainerId() string {
+	if x != nil {
+		return x.ContainerId
 	}
 	return ""
 }
 
-type StatsReply struct {
+func (x *SetHostsRequest) GetContainerExtrahosts() []string {
+	if x != nil {
+		return x.ContainerExtrahosts
+	}
+	return nil
+}
+
+type SetHostsReply struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
-
-	StatsData string `protobuf:"bytes,1,opt,name=stats_data,json=statsData,proto3" json:"stats_data,omitempty"`
 }
 
-func (x *StatsReply) Reset() {
-	*x = StatsReply{}
+func (x *SetHostsReply) Reset() {
+	*x = SetHostsReply{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_container_proto_msgTypes[1]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))

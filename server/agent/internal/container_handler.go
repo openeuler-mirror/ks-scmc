@@ -15,10 +15,10 @@ import (
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/mount"
 	"github.com/docker/docker/api/types/network"
-	"github.com/docker/docker/api/types/strslice"
 	"github.com/docker/docker/client"
 	"github.com/google/uuid"
 	"github.com/shirou/gopsutil/mem"
+	"github.com/docker/docker/api/types/strslice"
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -36,82 +36,20 @@ import (
 	"scmc/server/args"
 )
 
-const (
-	defaultCPUShares   = 1024
-	maxCPUShares       = 3072
-	maxBlkioWeight     = 1000
-	defaultBlkioWeight = 0
-)
-
-//--cpushares不设置的话，docker默认是1024
-//优先级为1,设置为默认值的1.25倍
-//优先级为2,设置为默认值的1.5倍
-//优先级为3,设置为默认值的2倍
-//优先级为4,设置为默认值的2.5倍
-//优先级为5,设置为默认值的3倍
-var cpuShareMap = map[int64]int64{
-	1: 1280,
-	2: 1536,
-	3: 2048,
-	4: 2560,
-	5: maxCPUShares,
-}
-
-var blkioWeightMap = map[int64]uint16{
-	1: 600,
-	2: 700,
-	3: 800,
-	4: 900,
-	5: maxBlkioWeight,
-}
-
-//磁盘优先级=>blkioWeigh
-func toBlkioWeight(diskPrio int64) uint16 {
-	if diskPrio <= 0 {
-		return defaultBlkioWeight
-	}
-	if v, ok := blkioWeightMap[diskPrio]; ok {
-		return uint16(v)
-	}
-	return defaultBlkioWeight
-}
-
-//blkioWeight => 磁盘优先级
-func fromBlkioWeight(blkioWeight uint16) int64 {
-
-	if blkioWeight <= defaultBlkioWeight {
-		return 0
-	}
-	for k, v := range blkioWeightMap {
-		if v == blkioWeight {
-			return k
-		}
-	}
-	return 0
-}
+const defaultCPUShares = 1024
 
 func toCPUShares(cpuPrio int64) int64 {
-	//小于等于0,或大于5都返回defaultCPUShares
 	if cpuPrio <= 0 {
 		return defaultCPUShares
 	}
-	if v, ok := cpuShareMap[cpuPrio]; ok {
-		return v
-	}
-	return defaultCPUShares
+	return cpuPrio + defaultCPUShares // default cpu shares 1024
 }
 
 func fromCPUShares(cpuShares int64) int64 {
-
 	if cpuShares <= defaultCPUShares {
 		return 0
 	}
-	for k, v := range cpuShareMap {
-		if v == cpuShares {
-			return k
-		}
-	}
-	return 0
+	return cpuShares - defaultCPUShares
 }
 
 func dockerResourceConfig(in *pb.ResourceLimit) container.Resources {
@@ -123,7 +61,6 @@ func dockerResourceConfig(in *pb.ResourceLimit) container.Resources {
 			r.NanoCPUs = int64(numCPU()) * 1e9
 		}
 		r.CPUShares = toCPUShares(in.CpuPrio)
-		r.BlkioWeight = toBlkioWeight(in.DiskPrio)
 		r.Memory = int64(in.MemoryLimit * megaBytes)
 		r.MemoryReservation = int64(in.MemorySoftLimit * megaBytes)
 		r.MemorySwap = -1 // prevent contaienr start error
@@ -286,7 +223,7 @@ func (s *ContainerServer) create(configs *pb.ContainerConfigs) (string, error) {
 
 	if configs.Cmd != "" {
 		var cmdSlice strslice.StrSlice = strings.Fields(configs.Cmd)
-		config.Cmd = cmdSlice
+		config.Cmd=cmdSlice
 	}
 
 	hostConfig := container.HostConfig{
@@ -564,7 +501,7 @@ func (s *ContainerServer) Update(ctx context.Context, in *pb.UpdateRequest) (*pb
 	var reply pb.UpdateReply
 
 	log.Warnf("---------- container update")
-
+	
 	if in.ContainerId == "" || (in.ResourceLimit == nil && in.RestartPolicy == nil && in.Networks == nil && in.SecurityConfig == nil) {
 		return nil, rpc.ErrInvalidArgument
 	}
@@ -633,12 +570,6 @@ func (s *ContainerServer) Update(ctx context.Context, in *pb.UpdateRequest) (*pb
 		change |= docker.EnvBit
 		for k, v := range in.Envs {
 			envs = append(envs, k+"="+v)
-			//磁盘读写速度、磁盘读写频率
-			if k == "disk_wio" || k == "disk_rio" || k == "disk_rbw" || k == "disk_wbw" {
-				if err := docker.SetContainerDiskLimit(k, in.ContainerId, v); err != nil {
-					return nil, err
-				}
-			}
 		}
 		log.Debugf("%v envs change, %+v, %+v", inspectConfigs.ContainerId, in.Envs, envs)
 	}
@@ -868,7 +799,6 @@ func (s *ContainerServer) inspect(id string, backup bool) (*pb.ContainerConfigs,
 		configs.ResouceLimit = &pb.ResourceLimit{
 			CpuLimit:        float64(info.HostConfig.Resources.NanoCPUs) / 1e9,
 			CpuPrio:         fromCPUShares(info.HostConfig.Resources.CPUShares),
-			DiskPrio:        fromBlkioWeight(info.HostConfig.Resources.BlkioWeight),
 			MemoryLimit:     float64(info.HostConfig.Resources.Memory) / megaBytes,
 			MemorySoftLimit: float64(info.HostConfig.Resources.MemoryReservation) / megaBytes,
 		}

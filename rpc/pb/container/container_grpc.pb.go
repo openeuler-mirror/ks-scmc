@@ -406,6 +406,8 @@ type ContainerServer interface {
 	KillAppEntry(context.Context, *KillAppEntryRequest) (*KillAppEntryReply, error)
 	// 监控历史数据查询
 	MonitorHistory(context.Context, *MonitorHistoryRequest) (*MonitorHistoryReply, error)
+	// 容器状态数据查询
+	GetContainerStats(context.Context, *StatsRequest) (*StatsReply, error)
 	mustEmbedUnimplementedContainerServer()
 }
 

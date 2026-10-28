@@ -49,7 +49,6 @@ func Usage() {
   fmt.Fprintln(os.Stderr, "  i32 loadImage(string node_ip, string tarPath)")
   fmt.Fprintln(os.Stderr, "  i32 pauseContainer(string node_ip, string container_name)")
   fmt.Fprintln(os.Stderr, "  i32 unpauseContainer(string node_ip, string container_name)")
-  fmt.Fprintln(os.Stderr, "  string GetAllContainers(string node_name)")
   fmt.Fprintln(os.Stderr)
   os.Exit(0)
 }
@@ -346,8 +345,8 @@ func main() {
     value1 := argvalue1
     argvalue2 := flag.Arg(3)
     value2 := argvalue2
-    tmp3, err97 := (strconv.Atoi(flag.Arg(4)))
-    if err97 != nil {
+    tmp3, err95 := (strconv.Atoi(flag.Arg(4)))
+    if err95 != nil {
       Usage()
       return
     }
@@ -369,8 +368,8 @@ func main() {
     value1 := argvalue1
     argvalue2 := flag.Arg(3)
     value2 := argvalue2
-    tmp3, err102 := (strconv.Atoi(flag.Arg(4)))
-    if err102 != nil {
+    tmp3, err100 := (strconv.Atoi(flag.Arg(4)))
+    if err100 != nil {
       Usage()
       return
     }
@@ -445,19 +444,19 @@ func main() {
     value0 := argvalue0
     argvalue1 := flag.Arg(2)
     value1 := argvalue1
-    arg118 := flag.Arg(3)
-    mbTrans119 := thrift.NewTMemoryBufferLen(len(arg118))
-    defer mbTrans119.Close()
-    _, err120 := mbTrans119.WriteString(arg118)
-    if err120 != nil {
+    arg116 := flag.Arg(3)
+    mbTrans117 := thrift.NewTMemoryBufferLen(len(arg116))
+    defer mbTrans117.Close()
+    _, err118 := mbTrans117.WriteString(arg116)
+    if err118 != nil {
       Usage()
       return
     }
-    factory121 := thrift.NewTJSONProtocolFactory()
-    jsProt122 := factory121.GetProtocol(mbTrans119)
+    factory119 := thrift.NewTJSONProtocolFactory()
+    jsProt120 := factory119.GetProtocol(mbTrans117)
     argvalue2 := ksscmc.NewContainerLimit()
-    err123 := argvalue2.Read(context.Background(), jsProt122)
-    if err123 != nil {
+    err121 := argvalue2.Read(context.Background(), jsProt120)
+    if err121 != nil {
       Usage()
       return
     }
@@ -504,19 +503,19 @@ func main() {
     value0 := argvalue0
     argvalue1 := flag.Arg(2)
     value1 := argvalue1
-    arg133 := flag.Arg(3)
-    mbTrans134 := thrift.NewTMemoryBufferLen(len(arg133))
-    defer mbTrans134.Close()
-    _, err135 := mbTrans134.WriteString(arg133)
-    if err135 != nil { 
+    arg131 := flag.Arg(3)
+    mbTrans132 := thrift.NewTMemoryBufferLen(len(arg131))
+    defer mbTrans132.Close()
+    _, err133 := mbTrans132.WriteString(arg131)
+    if err133 != nil { 
       Usage()
       return
     }
-    factory136 := thrift.NewTJSONProtocolFactory()
-    jsProt137 := factory136.GetProtocol(mbTrans134)
+    factory134 := thrift.NewTJSONProtocolFactory()
+    jsProt135 := factory134.GetProtocol(mbTrans132)
     containerStruct2 := ksscmc.NewKsScmcClientSetContainerExtraHostsArgs()
-    err138 := containerStruct2.ReadField3(context.Background(), jsProt137)
-    if err138 != nil {
+    err136 := containerStruct2.ReadField3(context.Background(), jsProt135)
+    if err136 != nil {
       Usage()
       return
     }
@@ -532,19 +531,19 @@ func main() {
     }
     argvalue0 := flag.Arg(1)
     value0 := argvalue0
-    arg140 := flag.Arg(2)
-    mbTrans141 := thrift.NewTMemoryBufferLen(len(arg140))
-    defer mbTrans141.Close()
-    _, err142 := mbTrans141.WriteString(arg140)
-    if err142 != nil { 
+    arg138 := flag.Arg(2)
+    mbTrans139 := thrift.NewTMemoryBufferLen(len(arg138))
+    defer mbTrans139.Close()
+    _, err140 := mbTrans139.WriteString(arg138)
+    if err140 != nil { 
       Usage()
       return
     }
-    factory143 := thrift.NewTJSONProtocolFactory()
-    jsProt144 := factory143.GetProtocol(mbTrans141)
+    factory141 := thrift.NewTJSONProtocolFactory()
+    jsProt142 := factory141.GetProtocol(mbTrans139)
     containerStruct1 := ksscmc.NewKsScmcClientGetImagesListArgs()
-    err145 := containerStruct1.ReadField2(context.Background(), jsProt144)
-    if err145 != nil {
+    err143 := containerStruct1.ReadField2(context.Background(), jsProt142)
+    if err143 != nil {
       Usage()
       return
     }
@@ -587,16 +586,6 @@ func main() {
     argvalue1 := flag.Arg(2)
     value1 := argvalue1
     fmt.Print(client.UnpauseContainer(context.Background(), value0, value1))
-    fmt.Print("\n")
-    break
-  case "GetAllContainers":
-    if flag.NArg() - 1 != 1 {
-      fmt.Fprintln(os.Stderr, "GetAllContainers requires 1 args")
-      flag.Usage()
-    }
-    argvalue0 := flag.Arg(1)
-    value0 := argvalue0
-    fmt.Print(client.GetAllContainers(context.Background(), value0))
     fmt.Print("\n")
     break
   case "":

@@ -66,18 +66,18 @@ var blkioWeightMap = map[int64]uint16{
 }
 
 //磁盘优先级=>blkioWeigh
-func toBlkioWeight(diskPrio int64) int64 {
+func toBlkioWeight(diskPrio int64) uint16 {
 	if diskPrio <= 0 {
 		return defaultBlkioWeight
 	}
 	if v, ok := blkioWeightMap[diskPrio]; ok {
-		return v
+		return uint16(v)
 	}
 	return defaultBlkioWeight
 }
 
 //blkioWeight => 磁盘优先级
-func fromBlkioWeight(blkioWeight int64) int64 {
+func fromBlkioWeight(blkioWeight uint16) int64 {
 
 	if blkioWeight <= defaultBlkioWeight {
 		return 0

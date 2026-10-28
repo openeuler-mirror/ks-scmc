@@ -665,17 +665,6 @@ func incrementIP(ip net.IP) {
 	}
 }
 
-// 设置虚拟网卡的 MAC 地址	
-func setVirtualNicMac(nicName string) {
-	nicMAC := getMacJSON(nicName)
-	if nicMAC == "" {
-		updateJSON(nicName, getMacAddr(nicName))
-	} else {
-		setMACcmd := exec.Command("ifconfig", nicName, "hw", "ether", nicMAC)
-		setMACcmd.Run()
-	}
-}
-
 func (s *NetworkServer) createNetwork(name, subnet, gateway, parent string) error {
 	driver := "bridge"
 	if parent != "" {

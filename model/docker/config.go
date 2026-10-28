@@ -26,6 +26,13 @@ const (
 	MountBit = 2
 )
 
+var setters = map[string]string{
+	"disk_wio": "blkio.throttle.write_iops_device",
+	"disk_rio": "blkio.throttle.read_iops_device",
+	"disk_rbw": "blkio.throttle.read_bps_device",
+	"disk_wbw": "blkio.throttle.write_bps_device",
+}
+
 func getDockerRootDir() (string, error) {
 	if dockerRootDir != "" {
 		return dockerRootDir, nil

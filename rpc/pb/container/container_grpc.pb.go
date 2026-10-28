@@ -1155,6 +1155,10 @@ var Container_ServiceDesc = grpc.ServiceDesc{
 			MethodName: "MonitorHistory",
 			Handler:    _Container_MonitorHistory_Handler,
 		},
+		{
+			MethodName: "GetContainerStats",
+			Handler:    _Container_GetContainerStats_Handler,
+		},
 	},
 	Streams: []grpc.StreamDesc{
 		{

@@ -13,8 +13,9 @@ import (
 	"github.com/sirupsen/logrus"
 	//"github.com/KyleBanks/dockerstats"
         "scmc/thrift/gen-go/node"
-	"scmc/model/docker"
+	_ "scmc/model/docker"
 	"scmc/common"
+	"scmc/server/controller/thriftapi"
 )
 
 type DockerStatsServer struct {

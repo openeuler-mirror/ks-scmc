@@ -152,31 +152,6 @@ func (s *NodeServer) Status(ctx context.Context, in *pb.StatusRequest) (*pb.Stat
 	return nil, rpc.ErrUnimplemented
 }
 
-func (s *NodeServer) UpdateFileProtect(ctx context.Context, in *pb.UpdateFileProtectRequest) (*pb.UpdateFileProtectReply, error) {
-    log.Debugf("UpdateFileProtect called: node_id=%v  at server ", in.NodeId)
-    
-	n, err := db.QueryNodeByID(in.NodeId)
-	if err != nil {
-		if err == db.ErrRecordNotFound {
-			return nil, rpc.ErrNotFound
-		}
-		return nil, rpc.ErrDatabaseFail
-	}
-	conn, err := getAgentConn(n.Address)
-	if err != nil {
-		return nil, rpc.ErrInternal
-	}
-
-	cli := pb.NewNodeClient(conn)
-	_, err = cli.UpdateFileProtect(ctx, in)
-	if err != nil {
-		log.Warnf("Update node: %v", err)
-		return nil, err
-	}
-	
-    return &pb.UpdateFileProtectReply{}, nil
-}
-
 func (s *NodeServer) Update(ctx context.Context, in *pb.UpdateRequest) (*pb.UpdateReply, error) {
 	if utf8.RuneCountInString(in.Name) < 1 || utf8.RuneCountInString(in.Name) > 50 {
 		return nil, status.Errorf(codes.InvalidArgument, "节点名长度限制1-50")

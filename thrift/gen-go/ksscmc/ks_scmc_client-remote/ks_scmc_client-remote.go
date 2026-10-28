@@ -345,8 +345,8 @@ func main() {
     value1 := argvalue1
     argvalue2 := flag.Arg(3)
     value2 := argvalue2
-    tmp3, err79 := (strconv.Atoi(flag.Arg(4)))
-    if err79 != nil {
+    tmp3, err95 := (strconv.Atoi(flag.Arg(4)))
+    if err95 != nil {
       Usage()
       return
     }
@@ -368,8 +368,8 @@ func main() {
     value1 := argvalue1
     argvalue2 := flag.Arg(3)
     value2 := argvalue2
-    tmp3, err84 := (strconv.Atoi(flag.Arg(4)))
-    if err84 != nil {
+    tmp3, err100 := (strconv.Atoi(flag.Arg(4)))
+    if err100 != nil {
       Usage()
       return
     }
@@ -444,24 +444,148 @@ func main() {
     value0 := argvalue0
     argvalue1 := flag.Arg(2)
     value1 := argvalue1
-    arg100 := flag.Arg(3)
-    mbTrans101 := thrift.NewTMemoryBufferLen(len(arg100))
-    defer mbTrans101.Close()
-    _, err102 := mbTrans101.WriteString(arg100)
-    if err102 != nil {
+    arg116 := flag.Arg(3)
+    mbTrans117 := thrift.NewTMemoryBufferLen(len(arg116))
+    defer mbTrans117.Close()
+    _, err118 := mbTrans117.WriteString(arg116)
+    if err118 != nil {
       Usage()
       return
     }
-    factory103 := thrift.NewTJSONProtocolFactory()
-    jsProt104 := factory103.GetProtocol(mbTrans101)
+    factory119 := thrift.NewTJSONProtocolFactory()
+    jsProt120 := factory119.GetProtocol(mbTrans117)
     argvalue2 := ksscmc.NewContainerLimit()
-    err105 := argvalue2.Read(context.Background(), jsProt104)
-    if err105 != nil {
+    err121 := argvalue2.Read(context.Background(), jsProt120)
+    if err121 != nil {
       Usage()
       return
     }
     value2 := argvalue2
     fmt.Print(client.SetContainerQuota(context.Background(), value0, value1, value2))
+    fmt.Print("\n")
+    break
+  case "setContainerPrivileged":
+    if flag.NArg() - 1 != 3 {
+      fmt.Fprintln(os.Stderr, "SetContainerPrivileged requires 3 args")
+      flag.Usage()
+    }
+    argvalue0 := flag.Arg(1)
+    value0 := argvalue0
+    argvalue1 := flag.Arg(2)
+    value1 := argvalue1
+    argvalue2 := flag.Arg(3) == "true"
+    value2 := argvalue2
+    fmt.Print(client.SetContainerPrivileged(context.Background(), value0, value1, value2))
+    fmt.Print("\n")
+    break
+  case "setContainerSysctls":
+    if flag.NArg() - 1 != 4 {
+      fmt.Fprintln(os.Stderr, "SetContainerSysctls requires 4 args")
+      flag.Usage()
+    }
+    argvalue0 := flag.Arg(1)
+    value0 := argvalue0
+    argvalue1 := flag.Arg(2)
+    value1 := argvalue1
+    argvalue2 := flag.Arg(3)
+    value2 := argvalue2
+    argvalue3 := flag.Arg(4)
+    value3 := argvalue3
+    fmt.Print(client.SetContainerSysctls(context.Background(), value0, value1, value2, value3))
+    fmt.Print("\n")
+    break
+  case "setContainerExtraHosts":
+    if flag.NArg() - 1 != 3 {
+      fmt.Fprintln(os.Stderr, "SetContainerExtraHosts requires 3 args")
+      flag.Usage()
+    }
+    argvalue0 := flag.Arg(1)
+    value0 := argvalue0
+    argvalue1 := flag.Arg(2)
+    value1 := argvalue1
+    arg131 := flag.Arg(3)
+    mbTrans132 := thrift.NewTMemoryBufferLen(len(arg131))
+    defer mbTrans132.Close()
+    _, err133 := mbTrans132.WriteString(arg131)
+    if err133 != nil { 
+      Usage()
+      return
+    }
+    factory134 := thrift.NewTJSONProtocolFactory()
+    jsProt135 := factory134.GetProtocol(mbTrans132)
+    containerStruct2 := ksscmc.NewKsScmcClientSetContainerExtraHostsArgs()
+    err136 := containerStruct2.ReadField3(context.Background(), jsProt135)
+    if err136 != nil {
+      Usage()
+      return
+    }
+    argvalue2 := containerStruct2.ContainerExtrahosts
+    value2 := argvalue2
+    fmt.Print(client.SetContainerExtraHosts(context.Background(), value0, value1, value2))
+    fmt.Print("\n")
+    break
+  case "getImagesList":
+    if flag.NArg() - 1 != 2 {
+      fmt.Fprintln(os.Stderr, "GetImagesList requires 2 args")
+      flag.Usage()
+    }
+    argvalue0 := flag.Arg(1)
+    value0 := argvalue0
+    arg138 := flag.Arg(2)
+    mbTrans139 := thrift.NewTMemoryBufferLen(len(arg138))
+    defer mbTrans139.Close()
+    _, err140 := mbTrans139.WriteString(arg138)
+    if err140 != nil { 
+      Usage()
+      return
+    }
+    factory141 := thrift.NewTJSONProtocolFactory()
+    jsProt142 := factory141.GetProtocol(mbTrans139)
+    containerStruct1 := ksscmc.NewKsScmcClientGetImagesListArgs()
+    err143 := containerStruct1.ReadField2(context.Background(), jsProt142)
+    if err143 != nil {
+      Usage()
+      return
+    }
+    argvalue1 := containerStruct1.ImageList
+    value1 := argvalue1
+    fmt.Print(client.GetImagesList(context.Background(), value0, value1))
+    fmt.Print("\n")
+    break
+  case "loadImage":
+    if flag.NArg() - 1 != 2 {
+      fmt.Fprintln(os.Stderr, "LoadImage requires 2 args")
+      flag.Usage()
+    }
+    argvalue0 := flag.Arg(1)
+    value0 := argvalue0
+    argvalue1 := flag.Arg(2)
+    value1 := argvalue1
+    fmt.Print(client.LoadImage(context.Background(), value0, value1))
+    fmt.Print("\n")
+    break
+  case "pauseContainer":
+    if flag.NArg() - 1 != 2 {
+      fmt.Fprintln(os.Stderr, "PauseContainer requires 2 args")
+      flag.Usage()
+    }
+    argvalue0 := flag.Arg(1)
+    value0 := argvalue0
+    argvalue1 := flag.Arg(2)
+    value1 := argvalue1
+    fmt.Print(client.PauseContainer(context.Background(), value0, value1))
+    fmt.Print("\n")
+    break
+  case "unpauseContainer":
+    if flag.NArg() - 1 != 2 {
+      fmt.Fprintln(os.Stderr, "UnpauseContainer requires 2 args")
+      flag.Usage()
+    }
+    argvalue0 := flag.Arg(1)
+    value0 := argvalue0
+    argvalue1 := flag.Arg(2)
+    value1 := argvalue1
+    fmt.Print(client.UnpauseContainer(context.Background(), value0, value1))
     fmt.Print("\n")
     break
   case "":

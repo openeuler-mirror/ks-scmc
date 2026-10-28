@@ -25,9 +25,6 @@ type Float64Argument struct {
 type Int64Argument struct {
 	valid func(int64) bool
 }
-type Int32Argument struct {
-	valid func(int32) bool
-}
 
 func (a *StringArgument) Check(s string) bool {
 	if !a.length(s) {

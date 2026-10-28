@@ -12,586 +12,582 @@ import (
 	"os"
 	"strconv"
 	"strings"
-	"github.com/apache/thrift/lib/go/thrift"
+	thrift "github.com/apache/thrift/lib/go/thrift"
 	"ksscmc"
 )
 
 var _ = ksscmc.GoUnusedProtection__
 
 func Usage() {
-  fmt.Fprintln(os.Stderr, "Usage of ", os.Args[0], " [-h host:port] [-u url] [-f[ramed]] function [arg1 [arg2...]]:")
-  flag.PrintDefaults()
-  fmt.Fprintln(os.Stderr, "\nFunctions:")
-  fmt.Fprintln(os.Stderr, "  i32 installContainer(string node_nameorip, string image_name, string image_ver, string container_name)")
-  fmt.Fprintln(os.Stderr, "  i32 startContainer(string node_nameorip, string container_name)")
-  fmt.Fprintln(os.Stderr, "  i32 stopContainer(string node_nameorip, string container_name)")
-  fmt.Fprintln(os.Stderr, "  i32 uninstallContainer(string node_nameorip, string container_name)")
-  fmt.Fprintln(os.Stderr, "  i32 getContainerStatus(string node_nameorip, string container_name)")
-  fmt.Fprintln(os.Stderr, "  GetContainerMetricsResponse getContainerMetrics(string node_nameorip, string container_name)")
-  fmt.Fprintln(os.Stderr, "  GetImageVer4ContainerResponse getImageVer4Container(string node_nameorip, string container_name)")
-  fmt.Fprintln(os.Stderr, "  i32 getContainer(string node_name, string container_name)")
-  fmt.Fprintln(os.Stderr, "  i32 updateContainer(string node_name, string container_name, string new_ver)")
-  fmt.Fprintln(os.Stderr, "  GetAlarmListResponse getAlarmList(string node_name)")
-  fmt.Fprintln(os.Stderr, "  GetAllNodeListResponse getAllNodeList()")
-  fmt.Fprintln(os.Stderr, "  GetAllContainerListResponse getAllContainerList()")
-  fmt.Fprintln(os.Stderr, "  GetContainerNetworkResponse getContainerNetwork(string node_nameorip, string container_name)")
-  fmt.Fprintln(os.Stderr, "  GetContainerNetRulesResponse getContainerNetRules(string node_name, string container_name)")
-  fmt.Fprintln(os.Stderr, "  i32 addContainerIpPort(string node_nameorip, string container_name, string ip_addr, i32 port, string net_proto)")
-  fmt.Fprintln(os.Stderr, "  i32 addContainerReqIpPort(string node_name, string container_name, string ip_addr, i32 port, string net_proto)")
-  fmt.Fprintln(os.Stderr, "  i32 addContainerEnv(string node_nameorip, string container_name, string env_name, string env_value)")
-  fmt.Fprintln(os.Stderr, "  i32 addContainerLocalVolume(string node_nameorip, string container_name, string in_dir, string out_dir, AccessAuth access_auth)")
-  fmt.Fprintln(os.Stderr, "  i32 setContainerDisplayV2(string node_name, string container_name, bool enabled, string display)")
-  fmt.Fprintln(os.Stderr, "  i32 setContainerQuota(string node_name, string container_name, ContainerLimit containerLimit)")
-  fmt.Fprintln(os.Stderr, "  i32 setContainerPrivileged(string node_ip, string container_name, bool isPrivileged)")
-  fmt.Fprintln(os.Stderr, "  i32 setContainerSysctls(string node_ip, string container_name, string sysctl_name, string sysctl_value)")
-  fmt.Fprintln(os.Stderr, "  i32 setContainerExtraHosts(string node_ip, string container_name,  container_extrahosts)")
-  fmt.Fprintln(os.Stderr, "  i32 getImagesList(string node_ip,  image_list)")
-  fmt.Fprintln(os.Stderr, "  i32 loadImage(string node_ip, string tarPath)")
-  fmt.Fprintln(os.Stderr, "  i32 pauseContainer(string node_ip, string container_name)")
-  fmt.Fprintln(os.Stderr, "  i32 unpauseContainer(string node_ip, string container_name)")
-  fmt.Fprintln(os.Stderr)
-  os.Exit(0)
+	fmt.Fprintln(os.Stderr, "Usage of ", os.Args[0], " [-h host:port] [-u url] [-f[ramed]] function [arg1 [arg2...]]:")
+	flag.PrintDefaults()
+	fmt.Fprintln(os.Stderr, "\nFunctions:")
+	fmt.Fprintln(os.Stderr, "  i32 installContainer(string node_nameorip, string image_name, string image_ver, string container_name)")
+	fmt.Fprintln(os.Stderr, "  i32 startContainer(string node_nameorip, string container_name)")
+	fmt.Fprintln(os.Stderr, "  i32 stopContainer(string node_nameorip, string container_name)")
+	fmt.Fprintln(os.Stderr, "  i32 uninstallContainer(string node_nameorip, string container_name)")
+	fmt.Fprintln(os.Stderr, "  i32 getContainerStatus(string node_nameorip, string container_name)")
+	fmt.Fprintln(os.Stderr, "  GetContainerMetricsResponse getContainerMetrics(string node_nameorip, string container_name)")
+	fmt.Fprintln(os.Stderr, "  GetImageVer4ContainerResponse getImageVer4Container(string node_nameorip, string container_name)")
+	fmt.Fprintln(os.Stderr, "  i32 getContainer(string node_name, string container_name)")
+	fmt.Fprintln(os.Stderr, "  i32 updateContainer(string node_name, string container_name, string new_ver)")
+	fmt.Fprintln(os.Stderr, "  GetAlarmListResponse getAlarmList(string node_name)")
+	fmt.Fprintln(os.Stderr, "  GetAllNodeListResponse getAllNodeList()")
+	fmt.Fprintln(os.Stderr, "  GetAllContainerListResponse getAllContainerList()")
+	fmt.Fprintln(os.Stderr, "  GetContainerNetworkResponse getContainerNetwork(string node_nameorip, string container_name)")
+	fmt.Fprintln(os.Stderr, "  GetContainerNetRulesResponse getContainerNetRules(string node_name, string container_name)")
+	fmt.Fprintln(os.Stderr, "  i32 addContainerIpPort(string node_nameorip, string container_name, string ip_addr, i32 port, string net_proto)")
+	fmt.Fprintln(os.Stderr, "  i32 addContainerReqIpPort(string node_name, string container_name, string ip_addr, i32 port, string net_proto)")
+	fmt.Fprintln(os.Stderr, "  i32 addContainerEnv(string node_nameorip, string container_name, string env_name, string env_value)")
+	fmt.Fprintln(os.Stderr, "  i32 addContainerLocalVolume(string node_nameorip, string container_name, string in_dir, string out_dir, AccessAuth access_auth)")
+	fmt.Fprintln(os.Stderr, "  i32 setContainerDisplayV2(string node_name, string container_name, bool enabled, string display)")
+	fmt.Fprintln(os.Stderr, "  i32 setContainerQuota(string node_name, string container_name, ContainerLimit containerLimit)")
+	fmt.Fprintln(os.Stderr, "  i32 setContainerPrivileged(string node_ip, string container_name, bool isPrivileged)")
+	fmt.Fprintln(os.Stderr, "  i32 setContainerSysctls(string node_ip, string container_name, string sysctl_name, string sysctl_value)")
+	fmt.Fprintln(os.Stderr, "  i32 setContainerExtraHosts(string node_ip, string container_name,  container_extrahosts)")
+	fmt.Fprintln(os.Stderr, "  i32 getImagesList(string node_ip,  image_list)")
+	fmt.Fprintln(os.Stderr, "  i32 loadImage(string node_ip, string tarPath)")
+	fmt.Fprintln(os.Stderr, "  i32 pauseContainer(string node_ip, string container_name)")
+	fmt.Fprintln(os.Stderr, "  i32 unpauseContainer(string node_ip, string container_name)")
+	fmt.Fprintln(os.Stderr)
+	os.Exit(0)
 }
 
 type httpHeaders map[string]string
 
 func (h httpHeaders) String() string {
-  var m map[string]string = h
-  return fmt.Sprintf("%s", m)
+	var m map[string]string = h
+	return fmt.Sprintf("%s", m)
 }
 
 func (h httpHeaders) Set(value string) error {
-  parts := strings.Split(value, ": ")
-  if len(parts) != 2 {
-    return fmt.Errorf("header should be of format 'Key: Value'")
-  }
-  h[parts[0]] = parts[1]
-  return nil
+	parts := strings.Split(value, ": ")
+	if len(parts) != 2 {
+		return fmt.Errorf("header should be of format 'Key: Value'")
+	}
+	h[parts[0]] = parts[1]
+	return nil
 }
 
 func main() {
-  flag.Usage = Usage
-  var host string
-  var port int
-  var protocol string
-  var urlString string
-  var framed bool
-  var useHttp bool
-  headers := make(httpHeaders)
-  var parsedUrl *url.URL
-  var trans thrift.TTransport
-  _ = strconv.Atoi
-  _ = math.Abs
-  flag.Usage = Usage
-  flag.StringVar(&host, "h", "localhost", "Specify host and port")
-  flag.IntVar(&port, "p", 9090, "Specify port")
-  flag.StringVar(&protocol, "P", "binary", "Specify the protocol (binary, compact, simplejson, json)")
-  flag.StringVar(&urlString, "u", "", "Specify the url")
-  flag.BoolVar(&framed, "framed", false, "Use framed transport")
-  flag.BoolVar(&useHttp, "http", false, "Use http")
-  flag.Var(headers, "H", "Headers to set on the http(s) request (e.g. -H \"Key: Value\")")
-  flag.Parse()
-  
-  if len(urlString) > 0 {
-    var err error
-    parsedUrl, err = url.Parse(urlString)
-    if err != nil {
-      fmt.Fprintln(os.Stderr, "Error parsing URL: ", err)
-      flag.Usage()
-    }
-    host = parsedUrl.Host
-    useHttp = len(parsedUrl.Scheme) <= 0 || parsedUrl.Scheme == "http" || parsedUrl.Scheme == "https"
-  } else if useHttp {
-    _, err := url.Parse(fmt.Sprint("http://", host, ":", port))
-    if err != nil {
-      fmt.Fprintln(os.Stderr, "Error parsing URL: ", err)
-      flag.Usage()
-    }
-  }
-  
-  cmd := flag.Arg(0)
-  var err error
-  if useHttp {
-    trans, err = thrift.NewTHttpClient(parsedUrl.String())
-    if len(headers) > 0 {
-      httptrans := trans.(*thrift.THttpClient)
-      for key, value := range headers {
-        httptrans.SetHeader(key, value)
-      }
-    }
-  } else {
-    portStr := fmt.Sprint(port)
-    if strings.Contains(host, ":") {
-           host, portStr, err = net.SplitHostPort(host)
-           if err != nil {
-                   fmt.Fprintln(os.Stderr, "error with host:", err)
-                   os.Exit(1)
-           }
-    }
-    trans, err = thrift.NewTSocket(net.JoinHostPort(host, portStr))
-    if err != nil {
-      fmt.Fprintln(os.Stderr, "error resolving address:", err)
-      os.Exit(1)
-    }
-    if framed {
-      trans = thrift.NewTFramedTransport(trans)
-    }
-  }
-  if err != nil {
-    fmt.Fprintln(os.Stderr, "Error creating transport", err)
-    os.Exit(1)
-  }
-  defer trans.Close()
-  var protocolFactory thrift.TProtocolFactory
-  switch protocol {
-  case "compact":
-    protocolFactory = thrift.NewTCompactProtocolFactory()
-    break
-  case "simplejson":
-    protocolFactory = thrift.NewTSimpleJSONProtocolFactory()
-    break
-  case "json":
-    protocolFactory = thrift.NewTJSONProtocolFactory()
-    break
-  case "binary", "":
-    protocolFactory = thrift.NewTBinaryProtocolFactoryDefault()
-    break
-  default:
-    fmt.Fprintln(os.Stderr, "Invalid protocol specified: ", protocol)
-    Usage()
-    os.Exit(1)
-  }
-  iprot := protocolFactory.GetProtocol(trans)
-  oprot := protocolFactory.GetProtocol(trans)
-  client := ksscmc.NewKsScmcClientClient(thrift.NewTStandardClient(iprot, oprot))
-  if err := trans.Open(); err != nil {
-    fmt.Fprintln(os.Stderr, "Error opening socket to ", host, ":", port, " ", err)
-    os.Exit(1)
-  }
-  
-  switch cmd {
-  case "installContainer":
-    if flag.NArg() - 1 != 4 {
-      fmt.Fprintln(os.Stderr, "InstallContainer requires 4 args")
-      flag.Usage()
-    }
-    argvalue0 := flag.Arg(1)
-    value0 := argvalue0
-    argvalue1 := flag.Arg(2)
-    value1 := argvalue1
-    argvalue2 := flag.Arg(3)
-    value2 := argvalue2
-    argvalue3 := flag.Arg(4)
-    value3 := argvalue3
-    fmt.Print(client.InstallContainer(context.Background(), value0, value1, value2, value3))
-    fmt.Print("\n")
-    break
-  case "startContainer":
-    if flag.NArg() - 1 != 2 {
-      fmt.Fprintln(os.Stderr, "StartContainer requires 2 args")
-      flag.Usage()
-    }
-    argvalue0 := flag.Arg(1)
-    value0 := argvalue0
-    argvalue1 := flag.Arg(2)
-    value1 := argvalue1
-    fmt.Print(client.StartContainer(context.Background(), value0, value1))
-    fmt.Print("\n")
-    break
-  case "stopContainer":
-    if flag.NArg() - 1 != 2 {
-      fmt.Fprintln(os.Stderr, "StopContainer requires 2 args")
-      flag.Usage()
-    }
-    argvalue0 := flag.Arg(1)
-    value0 := argvalue0
-    argvalue1 := flag.Arg(2)
-    value1 := argvalue1
-    fmt.Print(client.StopContainer(context.Background(), value0, value1))
-    fmt.Print("\n")
-    break
-  case "uninstallContainer":
-    if flag.NArg() - 1 != 2 {
-      fmt.Fprintln(os.Stderr, "UninstallContainer requires 2 args")
-      flag.Usage()
-    }
-    argvalue0 := flag.Arg(1)
-    value0 := argvalue0
-    argvalue1 := flag.Arg(2)
-    value1 := argvalue1
-    fmt.Print(client.UninstallContainer(context.Background(), value0, value1))
-    fmt.Print("\n")
-    break
-  case "getContainerStatus":
-    if flag.NArg() - 1 != 2 {
-      fmt.Fprintln(os.Stderr, "GetContainerStatus requires 2 args")
-      flag.Usage()
-    }
-    argvalue0 := flag.Arg(1)
-    value0 := argvalue0
-    argvalue1 := flag.Arg(2)
-    value1 := argvalue1
-    fmt.Print(client.GetContainerStatus(context.Background(), value0, value1))
-    fmt.Print("\n")
-    break
-  case "getContainerMetrics":
-    if flag.NArg() - 1 != 2 {
-      fmt.Fprintln(os.Stderr, "GetContainerMetrics requires 2 args")
-      flag.Usage()
-    }
-    argvalue0 := flag.Arg(1)
-    value0 := argvalue0
-    argvalue1 := flag.Arg(2)
-    value1 := argvalue1
-    fmt.Print(client.GetContainerMetrics(context.Background(), value0, value1))
-    fmt.Print("\n")
-    break
-  case "getImageVer4Container":
-    if flag.NArg() - 1 != 2 {
-      fmt.Fprintln(os.Stderr, "GetImageVer4Container requires 2 args")
-      flag.Usage()
-    }
-    argvalue0 := flag.Arg(1)
-    value0 := argvalue0
-    argvalue1 := flag.Arg(2)
-    value1 := argvalue1
-    fmt.Print(client.GetImageVer4Container(context.Background(), value0, value1))
-    fmt.Print("\n")
-    break
-  case "getContainer":
-    if flag.NArg() - 1 != 2 {
-      fmt.Fprintln(os.Stderr, "GetContainer requires 2 args")
-      flag.Usage()
-    }
-    argvalue0 := flag.Arg(1)
-    value0 := argvalue0
-    argvalue1 := flag.Arg(2)
-    value1 := argvalue1
-    fmt.Print(client.GetContainer(context.Background(), value0, value1))
-    fmt.Print("\n")
-    break
-  case "updateContainer":
-    if flag.NArg() - 1 != 3 {
-      fmt.Fprintln(os.Stderr, "UpdateContainer requires 3 args")
-      flag.Usage()
-    }
-    argvalue0 := flag.Arg(1)
-    value0 := argvalue0
-    argvalue1 := flag.Arg(2)
-    value1 := argvalue1
-    argvalue2 := flag.Arg(3)
-    value2 := argvalue2
-    fmt.Print(client.UpdateContainer(context.Background(), value0, value1, value2))
-    fmt.Print("\n")
-    break
-  case "getAlarmList":
-    if flag.NArg() - 1 != 1 {
-      fmt.Fprintln(os.Stderr, "GetAlarmList requires 1 args")
-      flag.Usage()
-    }
-    argvalue0 := flag.Arg(1)
-    value0 := argvalue0
-    fmt.Print(client.GetAlarmList(context.Background(), value0))
-    fmt.Print("\n")
-    break
-  case "getAllNodeList":
-    if flag.NArg() - 1 != 0 {
-      fmt.Fprintln(os.Stderr, "GetAllNodeList requires 0 args")
-      flag.Usage()
-    }
-    fmt.Print(client.GetAllNodeList(context.Background()))
-    fmt.Print("\n")
-    break
-  case "getAllContainerList":
-    if flag.NArg() - 1 != 0 {
-      fmt.Fprintln(os.Stderr, "GetAllContainerList requires 0 args")
-      flag.Usage()
-    }
-    fmt.Print(client.GetAllContainerList(context.Background()))
-    fmt.Print("\n")
-    break
-  case "getContainerNetwork":
-    if flag.NArg() - 1 != 2 {
-      fmt.Fprintln(os.Stderr, "GetContainerNetwork requires 2 args")
-      flag.Usage()
-    }
-    argvalue0 := flag.Arg(1)
-    value0 := argvalue0
-    argvalue1 := flag.Arg(2)
-    value1 := argvalue1
-    fmt.Print(client.GetContainerNetwork(context.Background(), value0, value1))
-    fmt.Print("\n")
-    break
-  case "getContainerNetRules":
-    if flag.NArg() - 1 != 2 {
-      fmt.Fprintln(os.Stderr, "GetContainerNetRules requires 2 args")
-      flag.Usage()
-    }
-    argvalue0 := flag.Arg(1)
-    value0 := argvalue0
-    argvalue1 := flag.Arg(2)
-    value1 := argvalue1
-    fmt.Print(client.GetContainerNetRules(context.Background(), value0, value1))
-    fmt.Print("\n")
-    break
-  case "addContainerIpPort":
-    if flag.NArg() - 1 != 5 {
-      fmt.Fprintln(os.Stderr, "AddContainerIpPort requires 5 args")
-      flag.Usage()
-    }
-    argvalue0 := flag.Arg(1)
-    value0 := argvalue0
-    argvalue1 := flag.Arg(2)
-    value1 := argvalue1
-    argvalue2 := flag.Arg(3)
-    value2 := argvalue2
-    tmp3, err95 := (strconv.Atoi(flag.Arg(4)))
-    if err95 != nil {
-      Usage()
-      return
-    }
-    argvalue3 := int32(tmp3)
-    value3 := argvalue3
-    argvalue4 := flag.Arg(5)
-    value4 := argvalue4
-    fmt.Print(client.AddContainerIpPort(context.Background(), value0, value1, value2, value3, value4))
-    fmt.Print("\n")
-    break
-  case "addContainerReqIpPort":
-    if flag.NArg() - 1 != 5 {
-      fmt.Fprintln(os.Stderr, "AddContainerReqIpPort requires 5 args")
-      flag.Usage()
-    }
-    argvalue0 := flag.Arg(1)
-    value0 := argvalue0
-    argvalue1 := flag.Arg(2)
-    value1 := argvalue1
-    argvalue2 := flag.Arg(3)
-    value2 := argvalue2
-    tmp3, err100 := (strconv.Atoi(flag.Arg(4)))
-    if err100 != nil {
-      Usage()
-      return
-    }
-    argvalue3 := int32(tmp3)
-    value3 := argvalue3
-    argvalue4 := flag.Arg(5)
-    value4 := argvalue4
-    fmt.Print(client.AddContainerReqIpPort(context.Background(), value0, value1, value2, value3, value4))
-    fmt.Print("\n")
-    break
-  case "addContainerEnv":
-    if flag.NArg() - 1 != 4 {
-      fmt.Fprintln(os.Stderr, "AddContainerEnv requires 4 args")
-      flag.Usage()
-    }
-    argvalue0 := flag.Arg(1)
-    value0 := argvalue0
-    argvalue1 := flag.Arg(2)
-    value1 := argvalue1
-    argvalue2 := flag.Arg(3)
-    value2 := argvalue2
-    argvalue3 := flag.Arg(4)
-    value3 := argvalue3
-    fmt.Print(client.AddContainerEnv(context.Background(), value0, value1, value2, value3))
-    fmt.Print("\n")
-    break
-  case "addContainerLocalVolume":
-    if flag.NArg() - 1 != 5 {
-      fmt.Fprintln(os.Stderr, "AddContainerLocalVolume requires 5 args")
-      flag.Usage()
-    }
-    argvalue0 := flag.Arg(1)
-    value0 := argvalue0
-    argvalue1 := flag.Arg(2)
-    value1 := argvalue1
-    argvalue2 := flag.Arg(3)
-    value2 := argvalue2
-    argvalue3 := flag.Arg(4)
-    value3 := argvalue3
-    tmp4, err := (strconv.Atoi(flag.Arg(5)))
-    if err != nil {
-      Usage()
-     return
-    }
-    argvalue4 := ksscmc.AccessAuth(tmp4)
-    value4 := argvalue4
-    fmt.Print(client.AddContainerLocalVolume(context.Background(), value0, value1, value2, value3, value4))
-    fmt.Print("\n")
-    break
-  case "setContainerDisplayV2":
-    if flag.NArg() - 1 != 4 {
-      fmt.Fprintln(os.Stderr, "SetContainerDisplayV2 requires 4 args")
-      flag.Usage()
-    }
-    argvalue0 := flag.Arg(1)
-    value0 := argvalue0
-    argvalue1 := flag.Arg(2)
-    value1 := argvalue1
-    argvalue2 := flag.Arg(3) == "true"
-    value2 := argvalue2
-    argvalue3 := flag.Arg(4)
-    value3 := argvalue3
-    fmt.Print(client.SetContainerDisplayV2(context.Background(), value0, value1, value2, value3))
-    fmt.Print("\n")
-    break
-  case "setContainerQuota":
-    if flag.NArg() - 1 != 3 {
-      fmt.Fprintln(os.Stderr, "SetContainerQuota requires 3 args")
-      flag.Usage()
-    }
-    argvalue0 := flag.Arg(1)
-    value0 := argvalue0
-    argvalue1 := flag.Arg(2)
-    value1 := argvalue1
-    arg116 := flag.Arg(3)
-    mbTrans117 := thrift.NewTMemoryBufferLen(len(arg116))
-    defer mbTrans117.Close()
-    _, err118 := mbTrans117.WriteString(arg116)
-    if err118 != nil {
-      Usage()
-      return
-    }
-    factory119 := thrift.NewTJSONProtocolFactory()
-    jsProt120 := factory119.GetProtocol(mbTrans117)
-    argvalue2 := ksscmc.NewContainerLimit()
-    err121 := argvalue2.Read(context.Background(), jsProt120)
-    if err121 != nil {
-      Usage()
-      return
-    }
-    value2 := argvalue2
-    fmt.Print(client.SetContainerQuota(context.Background(), value0, value1, value2))
-    fmt.Print("\n")
-    break
-  case "setContainerPrivileged":
-    if flag.NArg() - 1 != 3 {
-      fmt.Fprintln(os.Stderr, "SetContainerPrivileged requires 3 args")
-      flag.Usage()
-    }
-    argvalue0 := flag.Arg(1)
-    value0 := argvalue0
-    argvalue1 := flag.Arg(2)
-    value1 := argvalue1
-    argvalue2 := flag.Arg(3) == "true"
-    value2 := argvalue2
-    fmt.Print(client.SetContainerPrivileged(context.Background(), value0, value1, value2))
-    fmt.Print("\n")
-    break
-  case "setContainerSysctls":
-    if flag.NArg() - 1 != 4 {
-      fmt.Fprintln(os.Stderr, "SetContainerSysctls requires 4 args")
-      flag.Usage()
-    }
-    argvalue0 := flag.Arg(1)
-    value0 := argvalue0
-    argvalue1 := flag.Arg(2)
-    value1 := argvalue1
-    argvalue2 := flag.Arg(3)
-    value2 := argvalue2
-    argvalue3 := flag.Arg(4)
-    value3 := argvalue3
-    fmt.Print(client.SetContainerSysctls(context.Background(), value0, value1, value2, value3))
-    fmt.Print("\n")
-    break
-  case "setContainerExtraHosts":
-    if flag.NArg() - 1 != 3 {
-      fmt.Fprintln(os.Stderr, "SetContainerExtraHosts requires 3 args")
-      flag.Usage()
-    }
-    argvalue0 := flag.Arg(1)
-    value0 := argvalue0
-    argvalue1 := flag.Arg(2)
-    value1 := argvalue1
-    arg131 := flag.Arg(3)
-    mbTrans132 := thrift.NewTMemoryBufferLen(len(arg131))
-    defer mbTrans132.Close()
-    _, err133 := mbTrans132.WriteString(arg131)
-    if err133 != nil { 
-      Usage()
-      return
-    }
-    factory134 := thrift.NewTJSONProtocolFactory()
-    jsProt135 := factory134.GetProtocol(mbTrans132)
-    containerStruct2 := ksscmc.NewKsScmcClientSetContainerExtraHostsArgs()
-    err136 := containerStruct2.ReadField3(context.Background(), jsProt135)
-    if err136 != nil {
-      Usage()
-      return
-    }
-    argvalue2 := containerStruct2.ContainerExtrahosts
-    value2 := argvalue2
-    fmt.Print(client.SetContainerExtraHosts(context.Background(), value0, value1, value2))
-    fmt.Print("\n")
-    break
-  case "getImagesList":
-    if flag.NArg() - 1 != 2 {
-      fmt.Fprintln(os.Stderr, "GetImagesList requires 2 args")
-      flag.Usage()
-    }
-    argvalue0 := flag.Arg(1)
-    value0 := argvalue0
-    arg138 := flag.Arg(2)
-    mbTrans139 := thrift.NewTMemoryBufferLen(len(arg138))
-    defer mbTrans139.Close()
-    _, err140 := mbTrans139.WriteString(arg138)
-    if err140 != nil { 
-      Usage()
-      return
-    }
-    factory141 := thrift.NewTJSONProtocolFactory()
-    jsProt142 := factory141.GetProtocol(mbTrans139)
-    containerStruct1 := ksscmc.NewKsScmcClientGetImagesListArgs()
-    err143 := containerStruct1.ReadField2(context.Background(), jsProt142)
-    if err143 != nil {
-      Usage()
-      return
-    }
-    argvalue1 := containerStruct1.ImageList
-    value1 := argvalue1
-    fmt.Print(client.GetImagesList(context.Background(), value0, value1))
-    fmt.Print("\n")
-    break
-  case "loadImage":
-    if flag.NArg() - 1 != 2 {
-      fmt.Fprintln(os.Stderr, "LoadImage requires 2 args")
-      flag.Usage()
-    }
-    argvalue0 := flag.Arg(1)
-    value0 := argvalue0
-    argvalue1 := flag.Arg(2)
-    value1 := argvalue1
-    fmt.Print(client.LoadImage(context.Background(), value0, value1))
-    fmt.Print("\n")
-    break
-  case "pauseContainer":
-    if flag.NArg() - 1 != 2 {
-      fmt.Fprintln(os.Stderr, "PauseContainer requires 2 args")
-      flag.Usage()
-    }
-    argvalue0 := flag.Arg(1)
-    value0 := argvalue0
-    argvalue1 := flag.Arg(2)
-    value1 := argvalue1
-    fmt.Print(client.PauseContainer(context.Background(), value0, value1))
-    fmt.Print("\n")
-    break
-  case "unpauseContainer":
-    if flag.NArg() - 1 != 2 {
-      fmt.Fprintln(os.Stderr, "UnpauseContainer requires 2 args")
-      flag.Usage()
-    }
-    argvalue0 := flag.Arg(1)
-    value0 := argvalue0
-    argvalue1 := flag.Arg(2)
-    value1 := argvalue1
-    fmt.Print(client.UnpauseContainer(context.Background(), value0, value1))
-    fmt.Print("\n")
-    break
-  case "":
-    Usage()
-    break
-  default:
-    fmt.Fprintln(os.Stderr, "Invalid function ", cmd)
-  }
+	flag.Usage = Usage
+	var host string
+	var port int
+	var protocol string
+	var urlString string
+	var framed bool
+	var useHttp bool
+	headers := make(httpHeaders)
+	var parsedUrl *url.URL
+	var trans thrift.TTransport
+	_ = strconv.Atoi
+	_ = math.Abs
+	flag.Usage = Usage
+	flag.StringVar(&host, "h", "localhost", "Specify host and port")
+	flag.IntVar(&port, "p", 9090, "Specify port")
+	flag.StringVar(&protocol, "P", "binary", "Specify the protocol (binary, compact, simplejson, json)")
+	flag.StringVar(&urlString, "u", "", "Specify the url")
+	flag.BoolVar(&framed, "framed", false, "Use framed transport")
+	flag.BoolVar(&useHttp, "http", false, "Use http")
+	flag.Var(headers, "H", "Headers to set on the http(s) request (e.g. -H \"Key: Value\")")
+	flag.Parse()
+	
+	if len(urlString) > 0 {
+		var err error
+		parsedUrl, err = url.Parse(urlString)
+		if err != nil {
+			fmt.Fprintln(os.Stderr, "Error parsing URL: ", err)
+			flag.Usage()
+		}
+		host = parsedUrl.Host
+		useHttp = len(parsedUrl.Scheme) <= 0 || parsedUrl.Scheme == "http" || parsedUrl.Scheme == "https"
+	} else if useHttp {
+		_, err := url.Parse(fmt.Sprint("http://", host, ":", port))
+		if err != nil {
+			fmt.Fprintln(os.Stderr, "Error parsing URL: ", err)
+			flag.Usage()
+		}
+	}
+	
+	cmd := flag.Arg(0)
+	var err error
+	var cfg *thrift.TConfiguration = nil
+	if useHttp {
+		trans, err = thrift.NewTHttpClient(parsedUrl.String())
+		if len(headers) > 0 {
+			httptrans := trans.(*thrift.THttpClient)
+			for key, value := range headers {
+				httptrans.SetHeader(key, value)
+			}
+		}
+	} else {
+		portStr := fmt.Sprint(port)
+		if strings.Contains(host, ":") {
+			host, portStr, err = net.SplitHostPort(host)
+			if err != nil {
+				fmt.Fprintln(os.Stderr, "error with host:", err)
+				os.Exit(1)
+			}
+		}
+		trans = thrift.NewTSocketConf(net.JoinHostPort(host, portStr), cfg)
+		if err != nil {
+			fmt.Fprintln(os.Stderr, "error resolving address:", err)
+			os.Exit(1)
+		}
+		if framed {
+			trans = thrift.NewTFramedTransportConf(trans, cfg)
+		}
+	}
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "Error creating transport", err)
+		os.Exit(1)
+	}
+	defer trans.Close()
+	var protocolFactory thrift.TProtocolFactory
+	switch protocol {
+	case "compact":
+		protocolFactory = thrift.NewTCompactProtocolFactoryConf(cfg)
+	case "simplejson":
+		protocolFactory = thrift.NewTSimpleJSONProtocolFactoryConf(cfg)
+	case "json":
+		protocolFactory = thrift.NewTJSONProtocolFactory()
+	case "binary", "":
+		protocolFactory = thrift.NewTBinaryProtocolFactoryConf(cfg)
+	default:
+		fmt.Fprintln(os.Stderr, "Invalid protocol specified: ", protocol)
+		Usage()
+		os.Exit(1)
+	}
+	iprot := protocolFactory.GetProtocol(trans)
+	oprot := protocolFactory.GetProtocol(trans)
+	client := ksscmc.NewKsScmcClientClient(thrift.NewTStandardClient(iprot, oprot))
+	if err := trans.Open(); err != nil {
+		fmt.Fprintln(os.Stderr, "Error opening socket to ", host, ":", port, " ", err)
+		os.Exit(1)
+	}
+	
+	switch cmd {
+	case "installContainer":
+		if flag.NArg() - 1 != 4 {
+			fmt.Fprintln(os.Stderr, "InstallContainer requires 4 args")
+			flag.Usage()
+		}
+		argvalue0 := flag.Arg(1)
+		value0 := argvalue0
+		argvalue1 := flag.Arg(2)
+		value1 := argvalue1
+		argvalue2 := flag.Arg(3)
+		value2 := argvalue2
+		argvalue3 := flag.Arg(4)
+		value3 := argvalue3
+		fmt.Print(client.InstallContainer(context.Background(), value0, value1, value2, value3))
+		fmt.Print("\n")
+		break
+	case "startContainer":
+		if flag.NArg() - 1 != 2 {
+			fmt.Fprintln(os.Stderr, "StartContainer requires 2 args")
+			flag.Usage()
+		}
+		argvalue0 := flag.Arg(1)
+		value0 := argvalue0
+		argvalue1 := flag.Arg(2)
+		value1 := argvalue1
+		fmt.Print(client.StartContainer(context.Background(), value0, value1))
+		fmt.Print("\n")
+		break
+	case "stopContainer":
+		if flag.NArg() - 1 != 2 {
+			fmt.Fprintln(os.Stderr, "StopContainer requires 2 args")
+			flag.Usage()
+		}
+		argvalue0 := flag.Arg(1)
+		value0 := argvalue0
+		argvalue1 := flag.Arg(2)
+		value1 := argvalue1
+		fmt.Print(client.StopContainer(context.Background(), value0, value1))
+		fmt.Print("\n")
+		break
+	case "uninstallContainer":
+		if flag.NArg() - 1 != 2 {
+			fmt.Fprintln(os.Stderr, "UninstallContainer requires 2 args")
+			flag.Usage()
+		}
+		argvalue0 := flag.Arg(1)
+		value0 := argvalue0
+		argvalue1 := flag.Arg(2)
+		value1 := argvalue1
+		fmt.Print(client.UninstallContainer(context.Background(), value0, value1))
+		fmt.Print("\n")
+		break
+	case "getContainerStatus":
+		if flag.NArg() - 1 != 2 {
+			fmt.Fprintln(os.Stderr, "GetContainerStatus requires 2 args")
+			flag.Usage()
+		}
+		argvalue0 := flag.Arg(1)
+		value0 := argvalue0
+		argvalue1 := flag.Arg(2)
+		value1 := argvalue1
+		fmt.Print(client.GetContainerStatus(context.Background(), value0, value1))
+		fmt.Print("\n")
+		break
+	case "getContainerMetrics":
+		if flag.NArg() - 1 != 2 {
+			fmt.Fprintln(os.Stderr, "GetContainerMetrics requires 2 args")
+			flag.Usage()
+		}
+		argvalue0 := flag.Arg(1)
+		value0 := argvalue0
+		argvalue1 := flag.Arg(2)
+		value1 := argvalue1
+		fmt.Print(client.GetContainerMetrics(context.Background(), value0, value1))
+		fmt.Print("\n")
+		break
+	case "getImageVer4Container":
+		if flag.NArg() - 1 != 2 {
+			fmt.Fprintln(os.Stderr, "GetImageVer4Container requires 2 args")
+			flag.Usage()
+		}
+		argvalue0 := flag.Arg(1)
+		value0 := argvalue0
+		argvalue1 := flag.Arg(2)
+		value1 := argvalue1
+		fmt.Print(client.GetImageVer4Container(context.Background(), value0, value1))
+		fmt.Print("\n")
+		break
+	case "getContainer":
+		if flag.NArg() - 1 != 2 {
+			fmt.Fprintln(os.Stderr, "GetContainer requires 2 args")
+			flag.Usage()
+		}
+		argvalue0 := flag.Arg(1)
+		value0 := argvalue0
+		argvalue1 := flag.Arg(2)
+		value1 := argvalue1
+		fmt.Print(client.GetContainer(context.Background(), value0, value1))
+		fmt.Print("\n")
+		break
+	case "updateContainer":
+		if flag.NArg() - 1 != 3 {
+			fmt.Fprintln(os.Stderr, "UpdateContainer requires 3 args")
+			flag.Usage()
+		}
+		argvalue0 := flag.Arg(1)
+		value0 := argvalue0
+		argvalue1 := flag.Arg(2)
+		value1 := argvalue1
+		argvalue2 := flag.Arg(3)
+		value2 := argvalue2
+		fmt.Print(client.UpdateContainer(context.Background(), value0, value1, value2))
+		fmt.Print("\n")
+		break
+	case "getAlarmList":
+		if flag.NArg() - 1 != 1 {
+			fmt.Fprintln(os.Stderr, "GetAlarmList requires 1 args")
+			flag.Usage()
+		}
+		argvalue0 := flag.Arg(1)
+		value0 := argvalue0
+		fmt.Print(client.GetAlarmList(context.Background(), value0))
+		fmt.Print("\n")
+		break
+	case "getAllNodeList":
+		if flag.NArg() - 1 != 0 {
+			fmt.Fprintln(os.Stderr, "GetAllNodeList requires 0 args")
+			flag.Usage()
+		}
+		fmt.Print(client.GetAllNodeList(context.Background()))
+		fmt.Print("\n")
+		break
+	case "getAllContainerList":
+		if flag.NArg() - 1 != 0 {
+			fmt.Fprintln(os.Stderr, "GetAllContainerList requires 0 args")
+			flag.Usage()
+		}
+		fmt.Print(client.GetAllContainerList(context.Background()))
+		fmt.Print("\n")
+		break
+	case "getContainerNetwork":
+		if flag.NArg() - 1 != 2 {
+			fmt.Fprintln(os.Stderr, "GetContainerNetwork requires 2 args")
+			flag.Usage()
+		}
+		argvalue0 := flag.Arg(1)
+		value0 := argvalue0
+		argvalue1 := flag.Arg(2)
+		value1 := argvalue1
+		fmt.Print(client.GetContainerNetwork(context.Background(), value0, value1))
+		fmt.Print("\n")
+		break
+	case "getContainerNetRules":
+		if flag.NArg() - 1 != 2 {
+			fmt.Fprintln(os.Stderr, "GetContainerNetRules requires 2 args")
+			flag.Usage()
+		}
+		argvalue0 := flag.Arg(1)
+		value0 := argvalue0
+		argvalue1 := flag.Arg(2)
+		value1 := argvalue1
+		fmt.Print(client.GetContainerNetRules(context.Background(), value0, value1))
+		fmt.Print("\n")
+		break
+	case "addContainerIpPort":
+		if flag.NArg() - 1 != 5 {
+			fmt.Fprintln(os.Stderr, "AddContainerIpPort requires 5 args")
+			flag.Usage()
+		}
+		argvalue0 := flag.Arg(1)
+		value0 := argvalue0
+		argvalue1 := flag.Arg(2)
+		value1 := argvalue1
+		argvalue2 := flag.Arg(3)
+		value2 := argvalue2
+		tmp3, err183 := (strconv.Atoi(flag.Arg(4)))
+		if err183 != nil {
+			Usage()
+			return
+		}
+		argvalue3 := int32(tmp3)
+		value3 := argvalue3
+		argvalue4 := flag.Arg(5)
+		value4 := argvalue4
+		fmt.Print(client.AddContainerIpPort(context.Background(), value0, value1, value2, value3, value4))
+		fmt.Print("\n")
+		break
+	case "addContainerReqIpPort":
+		if flag.NArg() - 1 != 5 {
+			fmt.Fprintln(os.Stderr, "AddContainerReqIpPort requires 5 args")
+			flag.Usage()
+		}
+		argvalue0 := flag.Arg(1)
+		value0 := argvalue0
+		argvalue1 := flag.Arg(2)
+		value1 := argvalue1
+		argvalue2 := flag.Arg(3)
+		value2 := argvalue2
+		tmp3, err188 := (strconv.Atoi(flag.Arg(4)))
+		if err188 != nil {
+			Usage()
+			return
+		}
+		argvalue3 := int32(tmp3)
+		value3 := argvalue3
+		argvalue4 := flag.Arg(5)
+		value4 := argvalue4
+		fmt.Print(client.AddContainerReqIpPort(context.Background(), value0, value1, value2, value3, value4))
+		fmt.Print("\n")
+		break
+	case "addContainerEnv":
+		if flag.NArg() - 1 != 4 {
+			fmt.Fprintln(os.Stderr, "AddContainerEnv requires 4 args")
+			flag.Usage()
+		}
+		argvalue0 := flag.Arg(1)
+		value0 := argvalue0
+		argvalue1 := flag.Arg(2)
+		value1 := argvalue1
+		argvalue2 := flag.Arg(3)
+		value2 := argvalue2
+		argvalue3 := flag.Arg(4)
+		value3 := argvalue3
+		fmt.Print(client.AddContainerEnv(context.Background(), value0, value1, value2, value3))
+		fmt.Print("\n")
+		break
+	case "addContainerLocalVolume":
+		if flag.NArg() - 1 != 5 {
+			fmt.Fprintln(os.Stderr, "AddContainerLocalVolume requires 5 args")
+			flag.Usage()
+		}
+		argvalue0 := flag.Arg(1)
+		value0 := argvalue0
+		argvalue1 := flag.Arg(2)
+		value1 := argvalue1
+		argvalue2 := flag.Arg(3)
+		value2 := argvalue2
+		argvalue3 := flag.Arg(4)
+		value3 := argvalue3
+		tmp4, err := (strconv.Atoi(flag.Arg(5)))
+		if err != nil {
+			Usage()
+			return
+		}
+		argvalue4 := ksscmc.AccessAuth(tmp4)
+		value4 := argvalue4
+		fmt.Print(client.AddContainerLocalVolume(context.Background(), value0, value1, value2, value3, value4))
+		fmt.Print("\n")
+		break
+	case "setContainerDisplayV2":
+		if flag.NArg() - 1 != 4 {
+			fmt.Fprintln(os.Stderr, "SetContainerDisplayV2 requires 4 args")
+			flag.Usage()
+		}
+		argvalue0 := flag.Arg(1)
+		value0 := argvalue0
+		argvalue1 := flag.Arg(2)
+		value1 := argvalue1
+		argvalue2 := flag.Arg(3) == "true"
+		value2 := argvalue2
+		argvalue3 := flag.Arg(4)
+		value3 := argvalue3
+		fmt.Print(client.SetContainerDisplayV2(context.Background(), value0, value1, value2, value3))
+		fmt.Print("\n")
+		break
+	case "setContainerQuota":
+		if flag.NArg() - 1 != 3 {
+			fmt.Fprintln(os.Stderr, "SetContainerQuota requires 3 args")
+			flag.Usage()
+		}
+		argvalue0 := flag.Arg(1)
+		value0 := argvalue0
+		argvalue1 := flag.Arg(2)
+		value1 := argvalue1
+		arg204 := flag.Arg(3)
+		mbTrans205 := thrift.NewTMemoryBufferLen(len(arg204))
+		defer mbTrans205.Close()
+		_, err206 := mbTrans205.WriteString(arg204)
+		if err206 != nil {
+			Usage()
+			return
+		}
+		factory207 := thrift.NewTJSONProtocolFactory()
+		jsProt208 := factory207.GetProtocol(mbTrans205)
+		argvalue2 := ksscmc.NewContainerLimit()
+		err209 := argvalue2.Read(context.Background(), jsProt208)
+		if err209 != nil {
+			Usage()
+			return
+		}
+		value2 := argvalue2
+		fmt.Print(client.SetContainerQuota(context.Background(), value0, value1, value2))
+		fmt.Print("\n")
+		break
+	case "setContainerPrivileged":
+		if flag.NArg() - 1 != 3 {
+			fmt.Fprintln(os.Stderr, "SetContainerPrivileged requires 3 args")
+			flag.Usage()
+		}
+		argvalue0 := flag.Arg(1)
+		value0 := argvalue0
+		argvalue1 := flag.Arg(2)
+		value1 := argvalue1
+		argvalue2 := flag.Arg(3) == "true"
+		value2 := argvalue2
+		fmt.Print(client.SetContainerPrivileged(context.Background(), value0, value1, value2))
+		fmt.Print("\n")
+		break
+	case "setContainerSysctls":
+		if flag.NArg() - 1 != 4 {
+			fmt.Fprintln(os.Stderr, "SetContainerSysctls requires 4 args")
+			flag.Usage()
+		}
+		argvalue0 := flag.Arg(1)
+		value0 := argvalue0
+		argvalue1 := flag.Arg(2)
+		value1 := argvalue1
+		argvalue2 := flag.Arg(3)
+		value2 := argvalue2
+		argvalue3 := flag.Arg(4)
+		value3 := argvalue3
+		fmt.Print(client.SetContainerSysctls(context.Background(), value0, value1, value2, value3))
+		fmt.Print("\n")
+		break
+	case "setContainerExtraHosts":
+		if flag.NArg() - 1 != 3 {
+			fmt.Fprintln(os.Stderr, "SetContainerExtraHosts requires 3 args")
+			flag.Usage()
+		}
+		argvalue0 := flag.Arg(1)
+		value0 := argvalue0
+		argvalue1 := flag.Arg(2)
+		value1 := argvalue1
+		arg219 := flag.Arg(3)
+		mbTrans220 := thrift.NewTMemoryBufferLen(len(arg219))
+		defer mbTrans220.Close()
+		_, err221 := mbTrans220.WriteString(arg219)
+		if err221 != nil {
+			Usage()
+			return
+		}
+		factory222 := thrift.NewTJSONProtocolFactory()
+		jsProt223 := factory222.GetProtocol(mbTrans220)
+		containerStruct2 := ksscmc.NewKsScmcClientSetContainerExtraHostsArgs()
+		err224 := containerStruct2.ReadField3(context.Background(), jsProt223)
+		if err224 != nil {
+			Usage()
+			return
+		}
+		argvalue2 := containerStruct2.ContainerExtrahosts
+		value2 := argvalue2
+		fmt.Print(client.SetContainerExtraHosts(context.Background(), value0, value1, value2))
+		fmt.Print("\n")
+		break
+	case "getImagesList":
+		if flag.NArg() - 1 != 2 {
+			fmt.Fprintln(os.Stderr, "GetImagesList requires 2 args")
+			flag.Usage()
+		}
+		argvalue0 := flag.Arg(1)
+		value0 := argvalue0
+		arg226 := flag.Arg(2)
+		mbTrans227 := thrift.NewTMemoryBufferLen(len(arg226))
+		defer mbTrans227.Close()
+		_, err228 := mbTrans227.WriteString(arg226)
+		if err228 != nil {
+			Usage()
+			return
+		}
+		factory229 := thrift.NewTJSONProtocolFactory()
+		jsProt230 := factory229.GetProtocol(mbTrans227)
+		containerStruct1 := ksscmc.NewKsScmcClientGetImagesListArgs()
+		err231 := containerStruct1.ReadField2(context.Background(), jsProt230)
+		if err231 != nil {
+			Usage()
+			return
+		}
+		argvalue1 := containerStruct1.ImageList
+		value1 := argvalue1
+		fmt.Print(client.GetImagesList(context.Background(), value0, value1))
+		fmt.Print("\n")
+		break
+	case "loadImage":
+		if flag.NArg() - 1 != 2 {
+			fmt.Fprintln(os.Stderr, "LoadImage requires 2 args")
+			flag.Usage()
+		}
+		argvalue0 := flag.Arg(1)
+		value0 := argvalue0
+		argvalue1 := flag.Arg(2)
+		value1 := argvalue1
+		fmt.Print(client.LoadImage(context.Background(), value0, value1))
+		fmt.Print("\n")
+		break
+	case "pauseContainer":
+		if flag.NArg() - 1 != 2 {
+			fmt.Fprintln(os.Stderr, "PauseContainer requires 2 args")
+			flag.Usage()
+		}
+		argvalue0 := flag.Arg(1)
+		value0 := argvalue0
+		argvalue1 := flag.Arg(2)
+		value1 := argvalue1
+		fmt.Print(client.PauseContainer(context.Background(), value0, value1))
+		fmt.Print("\n")
+		break
+	case "unpauseContainer":
+		if flag.NArg() - 1 != 2 {
+			fmt.Fprintln(os.Stderr, "UnpauseContainer requires 2 args")
+			flag.Usage()
+		}
+		argvalue0 := flag.Arg(1)
+		value0 := argvalue0
+		argvalue1 := flag.Arg(2)
+		value1 := argvalue1
+		fmt.Print(client.UnpauseContainer(context.Background(), value0, value1))
+		fmt.Print("\n")
+		break
+	case "":
+		Usage()
+	default:
+		fmt.Fprintln(os.Stderr, "Invalid function ", cmd)
+	}
 }

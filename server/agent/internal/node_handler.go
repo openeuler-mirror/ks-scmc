@@ -130,6 +130,34 @@ func (*NodeServer) Usage(ctx context.Context, in *pb.UsageRequest) (*pb.UsageRep
 	return reply, nil
 }
 
+
+func (s *NodeServer) UpdateFileProtect(ctx context.Context, in *pb.UpdateFileProtectRequest) (*pb.UpdateFileProtectReply, error) {
+    log.Debugf("UpdateFileProtect called: node_id=%v ,paths:%s enabel:%v at agent",
+				in.NodeId,in.SecurityConfig.FileProtection.FileList,in.SecurityConfig.FileProtection.IsOn)
+	if in.SecurityConfig != nil {
+		cfgs, err := litedb.GetNodeConfig("localhost")
+		if err != nil {
+			log.Errorf("GetContainerConfig err=%v", err)
+			return nil, rpc.ErrDatabaseFail
+		}
+		
+		if err := kysec.UpdateFileAccess("localhost", in.SecurityConfig.FileProtection.IsOn, in.SecurityConfig.FileProtection.FileList, nil); err != nil {
+        	log.Errorf("UpdateFileAccess failed: %v", err)
+        	return nil, status.Errorf(codes.Internal, "failed to update file access")
+    	}
+	
+		cfgs.SecurityConfig.FileProtection = in.SecurityConfig.FileProtection
+		
+		if err := litedb.UpdateNodeConfig(cfgs); err != nil {
+			log.Errorf("UpdateContainerConfig err=%v", err)
+			return nil, rpc.ErrDatabaseFail
+		}
+	}	
+	
+    
+    return &pb.UpdateFileProtectReply{}, nil
+}
+
 func (s *NodeServer) Update(ctx context.Context, in *pb.UpdateRequest) (*pb.UpdateReply, error) {
 	if in.RscLimit == nil {
 		return nil, rpc.ErrInvalidArgument
@@ -169,6 +197,81 @@ func (s *NodeServer) Update(ctx context.Context, in *pb.UpdateRequest) (*pb.Upda
 	return &pb.UpdateReply{}, nil
 }
 
+func (s *NodeServer) setSecurityConfig(id string, uuid, name string, pid int, fromUpdate bool, sec *pb.SecurityConfig) error {
+	log.Debugf("NodeServer setSecurityConfig")
+	
+	if sec == nil {
+		return nil
+	}
+
+	if fromUpdate {
+		if err := kysec.CleanAll(id, false); err != nil {
+			log.Warnf("kysec.CleanAll: %v", err)
+			return rpc.ErrContainerFileProtection
+		}
+	}
+
+	if sec.ProcProtection != nil {
+		var hashes []string
+		for _, p := range sec.ProcProtection.ExeList {
+			s, err := docker.ContainerFileMD5(id, p)
+			if err != nil {
+				log.Warnf("ContainerFileMD5 path=%v err=%v", p, err)
+				return rpc.ErrContainerProcProtection
+			}
+			hashes = append(hashes, s)
+		}
+
+		if err := kysec.UpdateWhiteList(id, sec.ProcProtection.IsOn, hashes, []string{}); err != nil {
+			log.Warnf("UpdateWhiteList %v err: %v", id, err)
+			return rpc.ErrContainerProcProtection
+		}
+	}
+
+	if sec.NprocProtection != nil {
+		var inRule = &litedb.ProcProtection{
+			IsOn:    sec.NprocProtection.IsOn,
+			ExeList: sec.NprocProtection.ExeList,
+		}
+
+		if err := opensnitch.SaveRule(inRule, id, uuid); err != nil {
+			log.Warnf("SaveRule id=%v err=%v", id, err)
+			return rpc.ErrContainerNprocProtection
+		}
+	}
+
+	if sec.FileProtection != nil {
+		if err := kysec.UpdateFileAccess(id, sec.FileProtection.IsOn, sec.FileProtection.FileList, []string{}); err != nil {
+			log.Warnf("UpdateFileAccess %v err: %v", id, err)
+			return rpc.ErrContainerFileProtection
+		}
+	}
+
+	if err := authz.HandleSensitiveContainer(sec.DisableCmdOperation, fromUpdate, name, id); err != nil {
+		log.Warnf("HandleSensitiveContainer err=%v", err)
+		return rpc.ErrContainerCmdOperation
+	}
+
+	if sec.NetworkRule != nil {
+		var rules []*litedb.NetworkRule
+		for _, v := range sec.NetworkRule.Rules {
+			rules = append(rules, &litedb.NetworkRule{
+				Protocols: v.Protocols,
+				Addr:      v.Addr,
+				Port:      v.Port,
+			})
+		}
+
+		fileName := id + "-" + name
+		if err := iptables.UpdateContainerIPtablesFile(fileName, sec.NetworkRule.IsOn, rules, pid); err != nil {
+			log.Warnf("UpdateContainerIPtablesFile %v err: %v", fileName, err)
+			return rpc.ErrContainerNetworkRule
+		}
+	}
+
+	return nil
+}
+
 func (s *NodeServer) Create(ctx context.Context, in *pb.CreateRequest) (*pb.CreateReply, error) {
 	if len(in.Uuid) == 0 {
 		return nil, rpc.ErrInvalidArgument
@@ -182,6 +285,20 @@ func (s *NodeServer) Create(ctx context.Context, in *pb.CreateRequest) (*pb.Crea
 		}
 		return nil, rpc.ErrDatabaseFail
 	}
+	
+	cfgs := litedb.NodeConfig{
+		ID			   :1,			// 强制设置id=1，表只能有一条记录
+		UUID           :in.Uuid,
+		NodeID    	   :"localhost",
+		NodeName  	   :in.Name,
+		SecurityConfig :nil,
+	}
+	
+	if err := litedb.CreateNodeConfig(&cfgs); err != nil{
+		log.Infof("CreateNodeConfig err=%v", err)
+		return nil, rpc.ErrDatabaseFail
+	}
+	
 	return &pb.CreateReply{}, nil
 }
 

@@ -42,6 +42,13 @@ func Usage() {
   fmt.Fprintln(os.Stderr, "  i32 addContainerLocalVolume(string node_nameorip, string container_name, string in_dir, string out_dir, AccessAuth access_auth)")
   fmt.Fprintln(os.Stderr, "  i32 setContainerDisplayV2(string node_name, string container_name, bool enabled, string display)")
   fmt.Fprintln(os.Stderr, "  i32 setContainerQuota(string node_name, string container_name, ContainerLimit containerLimit)")
+  fmt.Fprintln(os.Stderr, "  i32 setContainerPrivileged(string node_ip, string container_name, bool isPrivileged)")
+  fmt.Fprintln(os.Stderr, "  i32 setContainerSysctls(string node_ip, string container_name, string sysctl_name, string sysctl_value)")
+  fmt.Fprintln(os.Stderr, "  i32 setContainerExtraHosts(string node_ip, string container_name,  container_extrahosts)")
+  fmt.Fprintln(os.Stderr, "  i32 getImagesList(string node_ip,  image_list)")
+  fmt.Fprintln(os.Stderr, "  i32 loadImage(string node_ip, string tarPath)")
+  fmt.Fprintln(os.Stderr, "  i32 pauseContainer(string node_ip, string container_name)")
+  fmt.Fprintln(os.Stderr, "  i32 unpauseContainer(string node_ip, string container_name)")
   fmt.Fprintln(os.Stderr)
   os.Exit(0)
 }

@@ -71,6 +71,100 @@ func (BACKUP_STATUS) EnumDescriptor() ([]byte, []int) {
 	return file_container_proto_rawDescGZIP(), []int{0}
 }
 
+type StatsRequest struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	HostId string `protobuf:"bytes,1,opt,name=host_id,json=hostId,proto3" json:"host_id,omitempty"` // 主机唯一标识
+}
+
+func (x *StatsRequest) Reset() {
+	*x = StatsRequest{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_container_proto_msgTypes[0]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *StatsRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*StatsRequest) ProtoMessage() {}
+
+func (x *StatsRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_container_proto_msgTypes[0]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use StatsRequest.ProtoReflect.Descriptor instead.
+func (*StatsRequest) Descriptor() ([]byte, []int) {
+	return file_container_proto_rawDescGZIP(), []int{0}
+}
+
+func (x *StatsRequest) GetHostId() string {
+	if x != nil {
+		return x.HostId
+	}
+	return ""
+}
+
+type StatsReply struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	StatsData string `protobuf:"bytes,1,opt,name=stats_data,json=statsData,proto3" json:"stats_data,omitempty"`
+}
+
+func (x *StatsReply) Reset() {
+	*x = StatsReply{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_container_proto_msgTypes[1]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *StatsReply) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*StatsReply) ProtoMessage() {}
+
+func (x *StatsReply) ProtoReflect() protoreflect.Message {
+	mi := &file_container_proto_msgTypes[1]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use StatsReply.ProtoReflect.Descriptor instead.
+func (*StatsReply) Descriptor() ([]byte, []int) {
+	return file_container_proto_rawDescGZIP(), []int{1}
+}
+
+func (x *StatsReply) GetStatsData() string {
+	if x != nil {
+		return x.StatsData
+	}
+	return ""
+}
+
 type ExportBackupRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache

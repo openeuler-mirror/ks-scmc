@@ -2,6 +2,7 @@ package docker
 
 import (
 	"sync"
+	"time"
 
 	"github.com/docker/docker/client"
 )

@@ -15,6 +15,7 @@ buildrun/ks-run/ks-scmc/1.1/*.sh
 buildrun/ks-run/ks-scmc/1.1/**/*.rpm
 
 .vscode/***
+.idea
 
 # comment off when coding, comment on when you need to merge code
 # go.mod

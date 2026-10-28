@@ -3959,8 +3959,7 @@ type KsScmcClient interface {
   // 
   // Parameters:
   //  - NodeIP
-  //  - ImageList
-  GetImagesList(ctx context.Context, node_ip string, image_list []string) (r int32, err error)
+  GetImagesList(ctx context.Context, node_ip string) (r *GetImagesListResponse, err error)
   // 导入镜像到节点
   // @param node_ip 节点ip
   // @param tarPath 镜像tar文件路径

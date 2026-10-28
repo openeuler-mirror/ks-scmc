@@ -116,7 +116,7 @@ func (s *ContainerServer) List(ctx context.Context, in *pb.ListRequest) (*pb.Lis
 }
 
 func (s *ContainerServer) Create(ctx context.Context, in *pb.CreateRequest) (*pb.CreateReply, error) {
-	log.Debugf("container createReply=%v+\n", *in)
+	log.Debugf("container createReply=%v+\n",*in)
 	if in.Configs == nil || in.NodeId <= 0 {
 		return nil, rpc.ErrInvalidArgument
 	} else if !args.ContainerName.Check(in.Configs.Name) {

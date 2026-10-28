@@ -8814,55 +8814,45 @@ func (p *KsScmcClientGetAlarmListArgs) Write(ctx context.Context, oprot thrift.T
   return nil
 }
 
-func (p *KsScmcClientStartContainerArgs) writeField1(ctx context.Context, oprot thrift.TProtocol) (err error) {
-  if err := oprot.WriteFieldBegin(ctx, "node_nameorip", thrift.STRING, 1); err != nil {
-    return thrift.PrependError(fmt.Sprintf("%T write field begin error 1:node_nameorip: ", p), err) }
-  if err := oprot.WriteString(ctx, string(p.NodeNameorip)); err != nil {
-  return thrift.PrependError(fmt.Sprintf("%T.node_nameorip (1) field write error: ", p), err) }
+func (p *KsScmcClientGetAlarmListArgs) writeField1(ctx context.Context, oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin(ctx, "node_name", thrift.STRING, 1); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write field begin error 1:node_name: ", p), err) }
+  if err := oprot.WriteString(ctx, string(p.NodeName)); err != nil {
+  return thrift.PrependError(fmt.Sprintf("%T.node_name (1) field write error: ", p), err) }
   if err := oprot.WriteFieldEnd(ctx); err != nil {
-    return thrift.PrependError(fmt.Sprintf("%T write field end error 1:node_nameorip: ", p), err) }
+    return thrift.PrependError(fmt.Sprintf("%T write field end error 1:node_name: ", p), err) }
   return err
 }
 
-func (p *KsScmcClientStartContainerArgs) writeField2(ctx context.Context, oprot thrift.TProtocol) (err error) {
-  if err := oprot.WriteFieldBegin(ctx, "container_name", thrift.STRING, 2); err != nil {
-    return thrift.PrependError(fmt.Sprintf("%T write field begin error 2:container_name: ", p), err) }
-  if err := oprot.WriteString(ctx, string(p.ContainerName)); err != nil {
-  return thrift.PrependError(fmt.Sprintf("%T.container_name (2) field write error: ", p), err) }
-  if err := oprot.WriteFieldEnd(ctx); err != nil {
-    return thrift.PrependError(fmt.Sprintf("%T write field end error 2:container_name: ", p), err) }
-  return err
-}
-
-func (p *KsScmcClientStartContainerArgs) String() string {
+func (p *KsScmcClientGetAlarmListArgs) String() string {
   if p == nil {
     return "<nil>"
   }
-  return fmt.Sprintf("KsScmcClientStartContainerArgs(%+v)", *p)
+  return fmt.Sprintf("KsScmcClientGetAlarmListArgs(%+v)", *p)
 }
 
 // Attributes:
 //  - Success
-type KsScmcClientStartContainerResult struct {
-  Success *int32 `thrift:"success,0" db:"success" json:"success,omitempty"`
+type KsScmcClientGetAlarmListResult struct {
+  Success *GetAlarmListResponse `thrift:"success,0" db:"success" json:"success,omitempty"`
 }
 
-func NewKsScmcClientStartContainerResult() *KsScmcClientStartContainerResult {
-  return &KsScmcClientStartContainerResult{}
+func NewKsScmcClientGetAlarmListResult() *KsScmcClientGetAlarmListResult {
+  return &KsScmcClientGetAlarmListResult{}
 }
 
-var KsScmcClientStartContainerResult_Success_DEFAULT int32
-func (p *KsScmcClientStartContainerResult) GetSuccess() int32 {
+var KsScmcClientGetAlarmListResult_Success_DEFAULT *GetAlarmListResponse
+func (p *KsScmcClientGetAlarmListResult) GetSuccess() *GetAlarmListResponse {
   if !p.IsSetSuccess() {
-    return KsScmcClientStartContainerResult_Success_DEFAULT
+    return KsScmcClientGetAlarmListResult_Success_DEFAULT
   }
-return *p.Success
+return p.Success
 }
-func (p *KsScmcClientStartContainerResult) IsSetSuccess() bool {
+func (p *KsScmcClientGetAlarmListResult) IsSetSuccess() bool {
   return p.Success != nil
 }
 
-func (p *KsScmcClientStartContainerResult) Read(ctx context.Context, iprot thrift.TProtocol) error {
+func (p *KsScmcClientGetAlarmListResult) Read(ctx context.Context, iprot thrift.TProtocol) error {
   if _, err := iprot.ReadStructBegin(ctx); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
   }

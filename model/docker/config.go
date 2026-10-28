@@ -4,18 +4,11 @@ import (
 	"bufio"
 	"context"
 	"encoding/json"
-	"errors"
-	"fmt"
-	log "github.com/sirupsen/logrus"
-	"io/ioutil"
-	"math"
 	"os"
 	"os/exec"
-	"path/filepath"
 	pb "scmc/rpc/pb/container"
-	"strconv"
-	"strings"
-	"time"
+
+	log "github.com/sirupsen/logrus"
 )
 
 var dockerRootDir string

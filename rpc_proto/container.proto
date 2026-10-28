@@ -56,6 +56,17 @@ service Container {
 
     // 监控历史数据查询
     rpc MonitorHistory(MonitorHistoryRequest) returns (MonitorHistoryReply) {}
+
+    // 容器状态数据查询
+    rpc GetContainerStats(StatsRequest) returns (StatsReply) {}
+}
+
+message StatsRequest {
+	string host_id = 1; // 主机唯一标识
+}
+
+message StatsReply {
+	string stats_data = 1; 
 }
 
 message ExportBackupRequest {

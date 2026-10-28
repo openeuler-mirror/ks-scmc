@@ -250,7 +250,7 @@ func (c *containerClient) ListBackup(ctx context.Context, in *ListBackupRequest,
 }
 
 func (c *containerClient) ExportBackup(ctx context.Context, in *ExportBackupRequest, opts ...grpc.CallOption) (Container_ExportBackupClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Container_ServiceDesc.Streams[0], "/container.Container/ExportBackup", opts...)
+	stream, err := c.cc.NewStream(ctx, &Container_ServiceDesc.Streams[1], "/container.Container/ExportBackup", opts...)
 	if err != nil {
 		return nil, err
 	}

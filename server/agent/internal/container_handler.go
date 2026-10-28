@@ -291,7 +291,7 @@ func (s *ContainerServer) create(configs *pb.ContainerConfigs) (string, error) {
 
 	if configs.Cmd != "" {
 		var cmdSlice strslice.StrSlice = strings.Fields(configs.Cmd)
-		config.Cmd=cmdSlice
+		config.Cmd = cmdSlice
 	}
 
 	hostConfig := container.HostConfig{
@@ -569,7 +569,7 @@ func (s *ContainerServer) Update(ctx context.Context, in *pb.UpdateRequest) (*pb
 	var reply pb.UpdateReply
 
 	log.Warnf("---------- container update")
-	
+
 	if in.ContainerId == "" || (in.ResourceLimit == nil && in.RestartPolicy == nil && in.Networks == nil && in.SecurityConfig == nil) {
 		return nil, rpc.ErrInvalidArgument
 	}
@@ -638,6 +638,12 @@ func (s *ContainerServer) Update(ctx context.Context, in *pb.UpdateRequest) (*pb
 		change |= docker.EnvBit
 		for k, v := range in.Envs {
 			envs = append(envs, k+"="+v)
+			//磁盘读写速度、磁盘读写频率
+			if k == "disk_wio" || k == "disk_rio" || k == "disk_rbw" || k == "disk_wbw" {
+				if err := docker.SetContainerDiskLimit(k, in.ContainerId, v); err != nil {
+					return nil, err
+				}
+			}
 		}
 		log.Debugf("%v envs change, %+v, %+v", inspectConfigs.ContainerId, in.Envs, envs)
 	}
@@ -867,6 +873,7 @@ func (s *ContainerServer) inspect(id string, backup bool) (*pb.ContainerConfigs,
 		configs.ResouceLimit = &pb.ResourceLimit{
 			CpuLimit:        float64(info.HostConfig.Resources.NanoCPUs) / 1e9,
 			CpuPrio:         fromCPUShares(info.HostConfig.Resources.CPUShares),
+			DiskPrio:        fromBlkioWeight(info.HostConfig.Resources.BlkioWeight),
 			MemoryLimit:     float64(info.HostConfig.Resources.Memory) / megaBytes,
 			MemorySoftLimit: float64(info.HostConfig.Resources.MemoryReservation) / megaBytes,
 		}
@@ -1559,4 +1566,137 @@ func (*ContainerServer) KillAppEntry(ctx context.Context, in *pb.KillAppEntryReq
 	}
 
 	return &pb.KillAppEntryReply{}, nil
+}
+func (*ContainerServer) Pause(ctx context.Context, in *pb.PauseRequest) (*pb.PauseReply, error) {
+	if in.ContainerId == "" {
+		return nil, rpc.ErrInvalidArgument
+	}
+	cli, err := docker.Client()
+	if err != nil {
+		return nil, rpc.ErrInternal
+	}
+	if err = cli.ContainerPause(ctx, in.ContainerId); err != nil {
+		log.Errorf("ContainerPause: id=%v %v", in.ContainerId, err)
+		return nil, transDockerError(err)
+	}
+	return &pb.PauseReply{}, nil
+}
+func (*ContainerServer) Unpause(ctx context.Context, in *pb.UnpauseRequest) (*pb.UnpauseReply, error) {
+	if in.ContainerId == "" {
+		return nil, rpc.ErrInvalidArgument
+	}
+	cli, err := docker.Client()
+	if err != nil {
+		return nil, rpc.ErrInternal
+	}
+	if err = cli.ContainerUnpause(ctx, in.ContainerId); err != nil {
+		log.Errorf("ContainerPause: id=%v %v", in.ContainerId, err)
+		return nil, transDockerError(err)
+	}
+	return &pb.UnpauseReply{}, nil
+}
+func (*ContainerServer) LoadImage(in *pb.LoadRequest, stream pb.Container_LoadImageServer) error {
+	if _, err := os.Stat(in.TarPath); err != nil {
+		log.Errorf("file not found err: %v", err)
+		return rpc.ErrInternal
+	}
+	pr, pw := io.Pipe()
+	defer pr.Close()
+	go func() {
+		defer pw.Close()
+		file, err := os.Open(in.TarPath)
+		if err != nil {
+			log.Errorf("open file failed: %v", err)
+			pw.CloseWithError(rpc.ErrNotFound)
+			return
+		}
+		defer file.Close()
+		buf := make([]byte, bufSize)
+		for {
+			n, err := file.Read(buf)
+			if err != nil && err != io.EOF {
+				log.Errorf("read tar file error: %v", err)
+				pw.CloseWithError(err)
+				return
+			}
+			if n > 0 {
+				if _, err := pw.Write(buf[:n]); err != nil {
+					log.Errorf("write to buf error: %v", err)
+					return
+				}
+				if err == io.EOF {
+					log.Infof("write to buf finished.")
+					return
+				}
+			}
+		}
+	}()
+	dockerCli, err := docker.ClientWithTimeout(dockerTimeout)
+	if err != nil {
+		log.Errorf("docker cli init error: %v", err)
+	}
+	defer dockerCli.Close()
+	ctx, cancel := context.WithTimeout(stream.Context(), dockerTimeout)
+	defer cancel()
+	resp, err := dockerCli.ImageLoad(ctx, pr, false)
+	if err != nil {
+		log.Errorf("image loaded error: %v", err)
+	}
+	defer resp.Body.Close()
+	decoder := json.NewDecoder(resp.Body)
+	var lastPercent float32
+	for {
+		var msg jsonmessage.JSONMessage
+		if err = decoder.Decode(&msg); err != nil {
+			if err == io.EOF {
+				return stream.Send(&pb.LoadProgress{
+					Update: &pb.LoadProgress_Result{
+						Result: &pb.LoadResult{
+							Success: true,
+							Detail:  "image load success",
+						},
+					},
+				})
+			}
+			log.Errorf("response resolve failed: %v", err)
+			return rpc.ErrInternal
+		}
+		if msg.Error != nil {
+			return stream.Send(&pb.LoadProgress{
+				Update: &pb.LoadProgress_Result{
+					Result: &pb.LoadResult{
+						Success: false,
+						Detail:  msg.Error.Message,
+					},
+				},
+			})
+		}
+		// 处理进度更新
+		if msg.Progress != nil {
+			currentPercent := calculatePercent(msg.Progress)
+			if currentPercent != lastPercent {
+				lastPercent = currentPercent
+				if err := stream.Send(&pb.LoadProgress{
+					Update: &pb.LoadProgress_Percent{Percent: currentPercent},
+				}); err != nil {
+					log.Error("image load progress update failed: %v", err)
+					return rpc.ErrInternal
+				}
+			}
+		}
+		if msg.Stream != "" {
+			if err := stream.Send(&pb.LoadProgress{
+				Update: &pb.LoadProgress_Message{Message: msg.Stream},
+			}); err != nil {
+				log.Error("image load message update failed: %v", err)
+				return rpc.ErrInternal
+			}
+		}
+	}
+}
+func calculatePercent(p *jsonmessage.JSONProgress) float32 {
+	if p.Total == 0 {
+		return 0
+	}
+	return float32(p.Current) / float32(p.Total) * 100
 }

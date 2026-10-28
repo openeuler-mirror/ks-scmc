@@ -499,6 +499,9 @@ func (UnimplementedContainerServer) KillAppEntry(context.Context, *KillAppEntryR
 func (UnimplementedContainerServer) MonitorHistory(context.Context, *MonitorHistoryRequest) (*MonitorHistoryReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method MonitorHistory not implemented")
 }
+func (UnimplementedContainerServer) GetContainerStats(context.Context, *StatsRequest) (*StatsReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetContainerStats not implemented")
+}
 func (UnimplementedContainerServer) mustEmbedUnimplementedContainerServer() {}
 
 // UnsafeContainerServer may be embedded to opt out of forward compatibility for this service.

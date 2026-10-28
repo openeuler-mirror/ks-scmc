@@ -8699,7 +8699,7 @@ func (p *KsScmcClientUpdateContainerResult) Read(ctx context.Context, iprot thri
   return nil
 }
 
-func (p *KsScmcClientInstallContainerResult)  ReadField0(ctx context.Context, iprot thrift.TProtocol) error {
+func (p *KsScmcClientUpdateContainerResult)  ReadField0(ctx context.Context, iprot thrift.TProtocol) error {
   if v, err := iprot.ReadI32(ctx); err != nil {
   return thrift.PrependError("error reading field 0: ", err)
 } else {

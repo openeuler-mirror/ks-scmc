@@ -57,7 +57,7 @@ var cpuShareMap = map[int64]int64{
 	5: maxCPUShares,
 }
 
-var blkioWeightMap = map[int64]int64{
+var blkioWeightMap = map[int64]uint16{
 	1: 600,
 	2: 700,
 	3: 800,

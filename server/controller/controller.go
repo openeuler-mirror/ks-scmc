@@ -66,6 +66,7 @@ func Server() (*grpc.Server, error) {
 		&tasks.IllegalContainer{},
 		&tasks.NodeStatus{},
 		&tasks.UpdateIptables{},
+		&tasks.CleanLogs{},
 	)
 
 	if os.Getenv("GRPC_REFLECTION") == "1" {

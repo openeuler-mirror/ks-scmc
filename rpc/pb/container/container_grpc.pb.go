@@ -427,6 +427,12 @@ type ContainerServer interface {
 	Restart(context.Context, *RestartRequest) (*RestartReply, error)
 	// 更新容器配置
 	Update(context.Context, *UpdateRequest) (*UpdateReply, error)
+	// 暂停容器
+	Pause(context.Context, *PauseRequest) (*PauseReply, error)
+	// 取消暂停容器
+	Unpause(context.Context, *UnpauseRequest) (*UnpauseReply, error)
+	// 加载镜像 image load
+	LoadImage(*LoadRequest, Container_LoadImageServer) error
 	// 容器备份客户端接口
 	CreateBackup(context.Context, *CreateBackupRequest) (*CreateBackupReply, error)
 	UpdateBackup(context.Context, *UpdateBackupRequest) (*UpdateBackupReply, error)
@@ -485,6 +491,15 @@ func (UnimplementedContainerServer) Restart(context.Context, *RestartRequest) (*
 }
 func (UnimplementedContainerServer) Update(context.Context, *UpdateRequest) (*UpdateReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Update not implemented")
+}
+func (UnimplementedContainerServer) Pause(context.Context, *PauseRequest) (*PauseReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Pause not implemented")
+}
+func (UnimplementedContainerServer) Unpause(context.Context, *UnpauseRequest) (*UnpauseReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Unpause not implemented")
+}
+func (UnimplementedContainerServer) LoadImage(*LoadRequest, Container_LoadImageServer) error {
+	return status.Errorf(codes.Unimplemented, "method LoadImage not implemented")
 }
 func (UnimplementedContainerServer) CreateBackup(context.Context, *CreateBackupRequest) (*CreateBackupReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateBackup not implemented")
@@ -701,6 +716,63 @@ func _Container_Update_Handler(srv interface{}, ctx context.Context, dec func(in
 		return srv.(ContainerServer).Update(ctx, req.(*UpdateRequest))
 	}
 	return interceptor(ctx, in, info, handler)
+}
+
+func _Container_Pause_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(PauseRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ContainerServer).Pause(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/container.Container/Pause",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ContainerServer).Pause(ctx, req.(*PauseRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Container_Unpause_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UnpauseRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ContainerServer).Unpause(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/container.Container/Unpause",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ContainerServer).Unpause(ctx, req.(*UnpauseRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Container_LoadImage_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(LoadRequest)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(ContainerServer).LoadImage(m, &containerLoadImageServer{stream})
+}
+
+type Container_LoadImageServer interface {
+	Send(*LoadProgress) error
+	grpc.ServerStream
+}
+
+type containerLoadImageServer struct {
+	grpc.ServerStream
+}
+
+func (x *containerLoadImageServer) Send(m *LoadProgress) error {
+	return x.ServerStream.SendMsg(m)
 }
 
 func _Container_CreateBackup_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -1106,6 +1178,14 @@ var Container_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Container_Update_Handler,
 		},
 		{
+			MethodName: "Pause",
+			Handler:    _Container_Pause_Handler,
+		},
+		{
+			MethodName: "Unpause",
+			Handler:    _Container_Unpause_Handler,
+		},
+		{
 			MethodName: "CreateBackup",
 			Handler:    _Container_CreateBackup_Handler,
 		},
@@ -1183,6 +1263,11 @@ var Container_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams: []grpc.StreamDesc{
+		{
+			StreamName:    "LoadImage",
+			Handler:       _Container_LoadImage_Handler,
+			ServerStreams: true,
+		},
 		{
 			StreamName:    "ExportBackup",
 			Handler:       _Container_ExportBackup_Handler,

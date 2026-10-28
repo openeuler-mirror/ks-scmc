@@ -292,7 +292,7 @@ func (x *ExportBackupReply) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ExportBackupReply.ProtoReflect.Descriptor instead.
 func (*ExportBackupReply) Descriptor() ([]byte, []int) {
-	return file_container_proto_rawDescGZIP(), []int{1}
+	return file_container_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *ExportBackupReply) GetData() []byte {

@@ -563,7 +563,7 @@ type ExportBackupReply struct {
 func (x *ExportBackupReply) Reset() {
 	*x = ExportBackupReply{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_container_proto_msgTypes[1]
+		mi := &file_container_proto_msgTypes[8]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}

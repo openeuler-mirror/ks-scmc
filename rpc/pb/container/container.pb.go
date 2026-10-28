@@ -335,7 +335,7 @@ type InspectBackupRequest struct {
 func (x *InspectBackupRequest) Reset() {
 	*x = InspectBackupRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_container_proto_msgTypes[2]
+		mi := &file_container_proto_msgTypes[4]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}

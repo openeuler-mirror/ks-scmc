@@ -11,7 +11,7 @@ import (
 func GetContainerStats(hostid string) (string, error) {
 	conn, err := internal.GetAgentConn(hostid)
 	if err != nil {
-		return "", nil
+		return "", err
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second * 5)
 	defer cancel()

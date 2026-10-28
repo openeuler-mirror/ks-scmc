@@ -191,8 +191,7 @@ func calculateCPUPercent(v *types.StatsJSON) float64 {
 	if (v.CPUStats.SystemUsage == v.PreCPUStats.SystemUsage) {
 		return float64(0.00)
 	}
-        // cpuPercent1 := (cpuDelta / systemDelta) * float64(len(v.CPUStats.CPUUsage.PercpuUsage)) * 100.0
-	cpuPercent := (float64(cpuDelta)/float64(systemDelta)) * float64(v.CPUStats.OnlineCPUs) * 100.0
+        cpuPercent := (cpuDelta / systemDelta) * float64(len(v.CPUStats.CPUUsage.PercpuUsage)) * 100.0
         return cpuPercent
 }
 

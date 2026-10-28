@@ -24,12 +24,6 @@ service Container {
     rpc Restart(RestartRequest) returns (RestartReply) {}
     // 更新容器配置
     rpc Update(UpdateRequest) returns (UpdateReply) {}
-    //暂停容器
-    rpc Pause(PauseRequest) returns (PauseReply) {}
-    //取消暂停容器
-    rpc Unpause(UnpauseRequest) returns (UnpauseReply) {}
-    //加载镜像 image load
-    rpc LoadImage(LoadRequest)returns (stream LoadProgress){}
 
     // 容器备份客户端接口
     rpc CreateBackup(CreateBackupRequest) returns (CreateBackupReply) {}         // 创建备份
@@ -63,32 +57,6 @@ service Container {
     // 监控历史数据查询
     rpc MonitorHistory(MonitorHistoryRequest) returns (MonitorHistoryReply) {}
 }
-message LoadRequest{
-string tar_path = 1;
-int64 node_id = 2;
-}
-message LoadProgress {
-  oneof update {
-    float percent = 1;       // 进度百分比 (0~100)
-    string message = 2;      // 状态消息
-    LoadResult result = 3;   // 最终结果
-  }
-}
-message LoadResult {
-  bool success = 1;
-  string detail = 2;
-}
-message UnpauseRequest{
-    int64  node_id      = 1;
-    string container_id = 2;
-}
-message UnpauseReply {}
-
-message PauseRequest{
-    int64  node_id      = 1;
-    string container_id = 2;
-}
-message PauseReply {}
 
 message ExportBackupRequest {
     int64  node_id     = 1;
@@ -509,11 +477,10 @@ message NetworkConfig {
 
 message ResourceLimit {
     double cpu_limit         = 1;   // CPU使用核心数限制; NanoCPUs = cpus * 1e9
-    int64  cpu_prio          = 2;   // CPU优先级(0-5)
+    int64  cpu_prio          = 2;   // CPU优先级(0-10)
     double memory_limit      = 11;  // 内存限制 单位MB
     double memory_soft_limit = 12;  // 内存软限制 单位MB 数值低于memory_limit
     double disk_limit        = 21;  // 磁盘使用限制 单位MB
-    int64  disk_prio          = 22;   // 磁盘优先级(0-5)
 }
 
 message SecurityConfig {

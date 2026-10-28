@@ -24,6 +24,12 @@ service Container {
     rpc Restart(RestartRequest) returns (RestartReply) {}
     // 更新容器配置
     rpc Update(UpdateRequest) returns (UpdateReply) {}
+    //暂停容器
+    rpc Pause(PauseRequest) returns (PauseReply) {}
+    //取消暂停容器
+    rpc Unpause(UnpauseRequest) returns (UnpauseReply) {}
+    //加载镜像 image load
+    rpc LoadImage(LoadRequest)returns (stream LoadProgress){}
 
     // 容器备份客户端接口
     rpc CreateBackup(CreateBackupRequest) returns (CreateBackupReply) {}         // 创建备份

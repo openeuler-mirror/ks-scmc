@@ -349,6 +349,15 @@ func (c *containerClient) MonitorHistory(ctx context.Context, in *MonitorHistory
 	return out, nil
 }
 
+func (c *containerClient) GetContainerStats(ctx context.Context, in *StatsRequest, opts ...grpc.CallOption) (*StatsReply, error) {
+	out := new(StatsReply)
+	err := c.cc.Invoke(ctx, "/container.Container/GetContainerStats", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // ContainerServer is the server API for Container service.
 // All implementations must embed UnimplementedContainerServer
 // for forward compatibility

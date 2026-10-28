@@ -286,7 +286,7 @@ func (s *ContainerServer) create(configs *pb.ContainerConfigs) (string, error) {
 
 	if configs.Cmd != "" {
 		var cmdSlice strslice.StrSlice = strings.Fields(configs.Cmd)
-		config.Cmd=cmdSlice
+		config.Cmd = cmdSlice
 	}
 
 	hostConfig := container.HostConfig{
@@ -564,7 +564,7 @@ func (s *ContainerServer) Update(ctx context.Context, in *pb.UpdateRequest) (*pb
 	var reply pb.UpdateReply
 
 	log.Warnf("---------- container update")
-	
+
 	if in.ContainerId == "" || (in.ResourceLimit == nil && in.RestartPolicy == nil && in.Networks == nil && in.SecurityConfig == nil) {
 		return nil, rpc.ErrInvalidArgument
 	}
@@ -633,6 +633,12 @@ func (s *ContainerServer) Update(ctx context.Context, in *pb.UpdateRequest) (*pb
 		change |= docker.EnvBit
 		for k, v := range in.Envs {
 			envs = append(envs, k+"="+v)
+			//磁盘读写速度、磁盘读写频率
+			if k == "disk_wio" || k == "disk_rio" || k == "disk_rbw" || k == "disk_wbw" {
+				if err := docker.SetContainerDiskLimit(k, in.ContainerId, v); err != nil {
+					return nil, err
+				}
+			}
 		}
 		log.Debugf("%v envs change, %+v, %+v", inspectConfigs.ContainerId, in.Envs, envs)
 	}
@@ -862,6 +868,7 @@ func (s *ContainerServer) inspect(id string, backup bool) (*pb.ContainerConfigs,
 		configs.ResouceLimit = &pb.ResourceLimit{
 			CpuLimit:        float64(info.HostConfig.Resources.NanoCPUs) / 1e9,
 			CpuPrio:         fromCPUShares(info.HostConfig.Resources.CPUShares),
+			DiskPrio:        fromBlkioWeight(info.HostConfig.Resources.BlkioWeight),
 			MemoryLimit:     float64(info.HostConfig.Resources.Memory) / megaBytes,
 			MemorySoftLimit: float64(info.HostConfig.Resources.MemoryReservation) / megaBytes,
 		}

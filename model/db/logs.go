@@ -229,26 +229,19 @@ func ListWarnLogAll(pageSize, pageNo int64, nodeID, eventModule int64) (*Pager, 
 }
 
 func SetLog(settingName, settingValue string) error {
+
 	db, err := getConn()
 	if err != nil {
 		log.Warnf("SetLog failed, err=%v", err)
 		return translateError(err)
 	}
 
-	// 使用 Upsert 方式（存在则更新，不存在则创建）
-	result := db.Model(&LogSettings{}).
-		Where("setting_name = ?", settingName).
-		Updates(map[string]interface{}{
-			"setting_value": settingValue,
-		})
+	// 先查询记录是否存在
+	var existingSetting LogSettings
+	err = db.Where("setting_name = ?", settingName).First(&existingSetting).Error
 
-	// 如果没有记录被更新，则创建新记录
-	if result.Error != nil {
-		log.Warnf("failed to update log settings: %v", result.Error)
-		return translateError(result.Error)
-	}
-
-	if result.RowsAffected == 0 {
+	if err == gorm.ErrRecordNotFound {
+		// 不存在则创建
 		setting := LogSettings{
 			SettingName:  settingName,
 			SettingValue: settingValue,
@@ -256,6 +249,21 @@ func SetLog(settingName, settingValue string) error {
 		if err := db.Create(&setting).Error; err != nil {
 			log.Warnf("failed to create log setting: %v", err)
 			return translateError(err)
+		}
+	} else if err != nil {
+		// 其他查询错误
+		log.Warnf("failed to query log setting: %v", err)
+		return translateError(err)
+	} else {
+		// 存在则更新（仅当值不同时）
+		if existingSetting.SettingValue != settingValue {
+			if err := db.Model(&LogSettings{}).
+				Where("setting_name = ?", settingName).
+				Update("setting_value", settingValue).
+				Error; err != nil {
+				log.Warnf("failed to update log setting: %v", err)
+				return translateError(err)
+			}
 		}
 	}
 

@@ -20,10 +20,10 @@ import (
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/mount"
 	"github.com/docker/docker/api/types/network"
+	"github.com/docker/docker/api/types/strslice"
 	"github.com/docker/docker/client"
 	"github.com/google/uuid"
 	"github.com/shirou/gopsutil/mem"
-	"github.com/docker/docker/api/types/strslice"
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -41,20 +41,85 @@ import (
 	"scmc/server/args"
 )
 
-const defaultCPUShares = 1024
+const (
+	defaultCPUShares   = 1024
+	maxCPUShares       = 3072
+	maxBlkioWeight     = 1000
+	defaultBlkioWeight = 0
+	bufSize            = 4 * 1024 * 1024
+	dockerTimeout      = 10 * time.Minute
+	hostsPath          = "/var/lib/docker/containers"
+)
+
+//--cpushares不设置的话，docker默认是1024
+//优先级为1,设置为默认值的1.25倍
+//优先级为2,设置为默认值的1.5倍
+//优先级为3,设置为默认值的2倍
+//优先级为4,设置为默认值的2.5倍
+//优先级为5,设置为默认值的3倍
+var cpuShareMap = map[int64]int64{
+	1: 1280,
+	2: 1536,
+	3: 2048,
+	4: 2560,
+	5: maxCPUShares,
+}
+
+var blkioWeightMap = map[int64]uint16{
+	1: 600,
+	2: 700,
+	3: 800,
+	4: 900,
+	5: maxBlkioWeight,
+}
+
+//磁盘优先级=>blkioWeigh
+func toBlkioWeight(diskPrio int64) uint16 {
+	if diskPrio <= 0 {
+		return defaultBlkioWeight
+	}
+	if v, ok := blkioWeightMap[diskPrio]; ok {
+		return uint16(v)
+	}
+	return defaultBlkioWeight
+}
+
+//blkioWeight => 磁盘优先级
+func fromBlkioWeight(blkioWeight uint16) int64 {
+
+	if blkioWeight <= defaultBlkioWeight {
+		return 0
+	}
+	for k, v := range blkioWeightMap {
+		if v == blkioWeight {
+			return k
+		}
+	}
+	return 0
+}
 
 func toCPUShares(cpuPrio int64) int64 {
+	//小于等于0,或大于5都返回defaultCPUShares
 	if cpuPrio <= 0 {
 		return defaultCPUShares
 	}
-	return cpuPrio + defaultCPUShares // default cpu shares 1024
+	if v, ok := cpuShareMap[cpuPrio]; ok {
+		return v
+	}
+	return defaultCPUShares
 }
 
 func fromCPUShares(cpuShares int64) int64 {
+
 	if cpuShares <= defaultCPUShares {
 		return 0
 	}
-	return cpuShares - defaultCPUShares
+	for k, v := range cpuShareMap {
+		if v == cpuShares {
+			return k
+		}
+	}
+	return 0
 }
 
 func dockerResourceConfig(in *pb.ResourceLimit) container.Resources {
@@ -66,6 +131,7 @@ func dockerResourceConfig(in *pb.ResourceLimit) container.Resources {
 			r.NanoCPUs = int64(numCPU()) * 1e9
 		}
 		r.CPUShares = toCPUShares(in.CpuPrio)
+		r.BlkioWeight = toBlkioWeight(in.DiskPrio)
 		r.Memory = int64(in.MemoryLimit * megaBytes)
 		r.MemoryReservation = int64(in.MemorySoftLimit * megaBytes)
 		r.MemorySwap = -1 // prevent contaienr start error
@@ -228,7 +294,7 @@ func (s *ContainerServer) create(configs *pb.ContainerConfigs) (string, error) {
 
 	if configs.Cmd != "" {
 		var cmdSlice strslice.StrSlice = strings.Fields(configs.Cmd)
-		config.Cmd=cmdSlice
+		config.Cmd = cmdSlice
 	}
 
 	hostConfig := container.HostConfig{
@@ -506,7 +572,7 @@ func (s *ContainerServer) Update(ctx context.Context, in *pb.UpdateRequest) (*pb
 	var reply pb.UpdateReply
 
 	log.Warnf("---------- container update")
-	
+
 	if in.ContainerId == "" || (in.ResourceLimit == nil && in.RestartPolicy == nil && in.Networks == nil && in.SecurityConfig == nil) {
 		return nil, rpc.ErrInvalidArgument
 	}
@@ -575,6 +641,12 @@ func (s *ContainerServer) Update(ctx context.Context, in *pb.UpdateRequest) (*pb
 		change |= docker.EnvBit
 		for k, v := range in.Envs {
 			envs = append(envs, k+"="+v)
+			//磁盘读写速度、磁盘读写频率
+			if k == "disk_wio" || k == "disk_rio" || k == "disk_rbw" || k == "disk_wbw" {
+				if err := docker.SetContainerDiskLimit(k, in.ContainerId, v); err != nil {
+					return nil, err
+				}
+			}
 		}
 		log.Debugf("%v envs change, %+v, %+v", inspectConfigs.ContainerId, in.Envs, envs)
 	}
@@ -804,6 +876,7 @@ func (s *ContainerServer) inspect(id string, backup bool) (*pb.ContainerConfigs,
 		configs.ResouceLimit = &pb.ResourceLimit{
 			CpuLimit:        float64(info.HostConfig.Resources.NanoCPUs) / 1e9,
 			CpuPrio:         fromCPUShares(info.HostConfig.Resources.CPUShares),
+			DiskPrio:        fromBlkioWeight(info.HostConfig.Resources.BlkioWeight),
 			MemoryLimit:     float64(info.HostConfig.Resources.Memory) / megaBytes,
 			MemorySoftLimit: float64(info.HostConfig.Resources.MemoryReservation) / megaBytes,
 		}
@@ -1497,10 +1570,189 @@ func (*ContainerServer) KillAppEntry(ctx context.Context, in *pb.KillAppEntryReq
 
 	return &pb.KillAppEntryReply{}, nil
 }
-
-
-func (*ContainerServer) GetContainerStats(ctx context.Context, in *pb.StatsRequest) (*pb.StatsReply, error) {
-	// 这里并不关心 StatsRequest.HostId
-	json_str, _ := docker.HandleStatsRequest()
-	return &pb.StatsReply{StatsData: json_str,}, nil
+func (*ContainerServer) Pause(ctx context.Context, in *pb.PauseRequest) (*pb.PauseReply, error) {
+	if in.ContainerId == "" {
+		return nil, rpc.ErrInvalidArgument
+	}
+	cli, err := docker.Client()
+	if err != nil {
+		return nil, rpc.ErrInternal
+	}
+	if err = cli.ContainerPause(ctx, in.ContainerId); err != nil {
+		log.Errorf("ContainerPause: id=%v %v", in.ContainerId, err)
+		return nil, transDockerError(err)
+	}
+	return &pb.PauseReply{}, nil
+}
+func (*ContainerServer) Unpause(ctx context.Context, in *pb.UnpauseRequest) (*pb.UnpauseReply, error) {
+	if in.ContainerId == "" {
+		return nil, rpc.ErrInvalidArgument
+	}
+	cli, err := docker.Client()
+	if err != nil {
+		return nil, rpc.ErrInternal
+	}
+	if err = cli.ContainerUnpause(ctx, in.ContainerId); err != nil {
+		log.Errorf("ContainerPause: id=%v %v", in.ContainerId, err)
+		return nil, transDockerError(err)
+	}
+	return &pb.UnpauseReply{}, nil
+}
+func (*ContainerServer) LoadImage(in *pb.LoadRequest, stream pb.Container_LoadImageServer) error {
+	if _, err := os.Stat(in.TarPath); err != nil {
+		log.Errorf("file not found err: %v", err)
+		return rpc.ErrInternal
+	}
+	pr, pw := io.Pipe()
+	defer pr.Close()
+	go func() {
+		defer pw.Close()
+		file, err := os.Open(in.TarPath)
+		if err != nil {
+			log.Errorf("open file failed: %v", err)
+			pw.CloseWithError(rpc.ErrNotFound)
+			return
+		}
+		defer file.Close()
+		buf := make([]byte, bufSize)
+		for {
+			n, err := file.Read(buf)
+			if err != nil && err != io.EOF {
+				log.Errorf("read tar file error: %v", err)
+				pw.CloseWithError(err)
+				return
+			}
+			if n > 0 {
+				if _, err := pw.Write(buf[:n]); err != nil {
+					log.Errorf("write to buf error: %v", err)
+					return
+				}
+				if err == io.EOF {
+					log.Infof("write to buf finished.")
+					return
+				}
+			}
+		}
+	}()
+	dockerCli, err := docker.ClientWithTimeout(dockerTimeout)
+	if err != nil {
+		log.Errorf("docker cli init error: %v", err)
+	}
+	defer dockerCli.Close()
+	ctx, cancel := context.WithTimeout(stream.Context(), dockerTimeout)
+	defer cancel()
+	resp, err := dockerCli.ImageLoad(ctx, pr, false)
+	if err != nil {
+		log.Errorf("image loaded error: %v", err)
+	}
+	defer resp.Body.Close()
+	decoder := json.NewDecoder(resp.Body)
+	var lastPercent float32
+	for {
+		var msg jsonmessage.JSONMessage
+		if err = decoder.Decode(&msg); err != nil {
+			if err == io.EOF {
+				return stream.Send(&pb.LoadProgress{
+					Update: &pb.LoadProgress_Result{
+						Result: &pb.LoadResult{
+							Success: true,
+							Detail:  "image load success",
+						},
+					},
+				})
+			}
+			log.Errorf("response resolve failed: %v", err)
+			return rpc.ErrInternal
+		}
+		if msg.Error != nil {
+			return stream.Send(&pb.LoadProgress{
+				Update: &pb.LoadProgress_Result{
+					Result: &pb.LoadResult{
+						Success: false,
+						Detail:  msg.Error.Message,
+					},
+				},
+			})
+		}
+		// 处理进度更新
+		if msg.Progress != nil {
+			currentPercent := calculatePercent(msg.Progress)
+			if currentPercent != lastPercent {
+				lastPercent = currentPercent
+				if err := stream.Send(&pb.LoadProgress{
+					Update: &pb.LoadProgress_Percent{Percent: currentPercent},
+				}); err != nil {
+					log.Error("image load progress update failed: %v", err)
+					return rpc.ErrInternal
+				}
+			}
+		}
+		if msg.Stream != "" {
+			if err := stream.Send(&pb.LoadProgress{
+				Update: &pb.LoadProgress_Message{Message: msg.Stream},
+			}); err != nil {
+				log.Error("image load message update failed: %v", err)
+				return rpc.ErrInternal
+			}
+		}
+	}
+}
+func calculatePercent(p *jsonmessage.JSONProgress) float32 {
+	if p.Total == 0 {
+		return 0
+	}
+	return float32(p.Current) / float32(p.Total) * 100
+}
+func (s *ContainerServer) SetContainerExtraHosts(ctx context.Context, in *pb.SetHostsRequest) (reply *pb.SetHostsReply, err error) {
+	hostsFile := path.Join(hostsPath, in.ContainerId, "hosts")
+	content, err := ioutil.ReadFile(hostsFile)
+	if err != nil {
+		log.Errorf("read container hosts file failed: %v", err)
+		return nil, rpc.ErrInternal
+	}
+	trimmedContent := strings.TrimRight(string(content), "\n")
+	var processedLines []string
+	for _, line := range in.ContainerExtrahosts {
+		processedLine := strings.ReplaceAll(line, ":", " ")
+		processedLines = append(processedLines, processedLine)
+	}
+	fullContent := trimmedContent + "\n" + strings.Join(processedLines, "\n") + "\n"
+	newHostsFilePath := path.Join(hostsPath, in.ContainerId, "new_hosts")
+	if err := ioutil.WriteFile(newHostsFilePath, []byte(fullContent), 0644); err != nil {
+		log.Errorf("write to new container hosts failed: %v", err)
+		return nil, rpc.ErrInternal
+	}
+	ctx_, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	inspectReq := &pb.InspectRequest{
+		NodeId:      in.NodeId,
+		ContainerId: in.ContainerId,
+	}
+	inspectResp, err := s.Inspect(ctx_, inspectReq)
+	if err != nil {
+		log.Errorf("inspect container id=%v  error: %v", in.ContainerId, err)
+	}
+	containerConfigs := inspectResp.Configs
+	hostsMount := &pb.Mount{
+		Type:        "bind",
+		Source:      newHostsFilePath,
+		Target:      "/etc/hosts",
+		ReadOnly:    false,
+		Consistency: "consistent",
+	}
+	containerConfigs.Mounts = append(containerConfigs.Mounts, hostsMount)
+	updateRequest := &pb.UpdateRequest{
+		NodeId:        in.NodeId,
+		ContainerId:   in.ContainerId,
+		ResourceLimit: containerConfigs.ResouceLimit,
+		RestartPolicy: containerConfigs.RestartPolicy,
+		Networks:      containerConfigs.Networks,
+		Mounts:        containerConfigs.Mounts,
+	}
+	_, err = s.Update(ctx_, updateRequest)
+	if err != nil {
+		log.Errorf("update container id=%v hosts failed: %v", in.ContainerId, err)
+		return nil, rpc.ErrInternal
+	}
+	return reply, nil
 }

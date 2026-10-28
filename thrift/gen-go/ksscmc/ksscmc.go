@@ -4025,36 +4025,17 @@ func (p *KsScmcClientClient) SetLastResponseMeta_(meta thrift.ResponseMeta) {
 }
 
 // Parameters:
-//  - NodeNameorip
-//  - ImageName
-//  - ImageVer
-//  - ContainerName
-func (p *KsScmcClientClient) InstallContainer(ctx context.Context, node_nameorip string, image_name string, image_ver string, container_name string) (r int32, err error) {
-  var _args8 KsScmcClientInstallContainerArgs
-  _args8.NodeNameorip = node_nameorip
-  _args8.ImageName = image_name
-  _args8.ImageVer = image_ver
-  _args8.ContainerName = container_name
-  var _result9 KsScmcClientInstallContainerResult
+//  - User
+//  - Passwd
+//  - NodeIP
+func (p *KsScmcClientClient) LoginV3(ctx context.Context, user string, passwd string, node_ip string) (r string, err error) {
+  var _args10 KsScmcClientLoginV3Args
+  _args10.User = user
+  _args10.Passwd = passwd
+  _args10.NodeIP = node_ip
+  var _result11 KsScmcClientLoginV3Result
   var meta thrift.ResponseMeta
-  meta, err = p.Client_().Call(ctx, "installContainer", &_args8, &_result9)
-  p.SetLastResponseMeta_(meta)
-  if err != nil {
-    return
-  }
-  return _result9.GetSuccess(), nil
-}
-
-// Parameters:
-//  - NodeNameorip
-//  - ContainerName
-func (p *KsScmcClientClient) StartContainer(ctx context.Context, node_nameorip string, container_name string) (r int32, err error) {
-  var _args10 KsScmcClientStartContainerArgs
-  _args10.NodeNameorip = node_nameorip
-  _args10.ContainerName = container_name
-  var _result11 KsScmcClientStartContainerResult
-  var meta thrift.ResponseMeta
-  meta, err = p.Client_().Call(ctx, "startContainer", &_args10, &_result11)
+  meta, err = p.Client_().Call(ctx, "LoginV3", &_args10, &_result11)
   p.SetLastResponseMeta_(meta)
   if err != nil {
     return
@@ -4064,14 +4045,18 @@ func (p *KsScmcClientClient) StartContainer(ctx context.Context, node_nameorip s
 
 // Parameters:
 //  - NodeNameorip
+//  - ImageName
+//  - ImageVer
 //  - ContainerName
-func (p *KsScmcClientClient) StopContainer(ctx context.Context, node_nameorip string, container_name string) (r int32, err error) {
-  var _args12 KsScmcClientStopContainerArgs
+func (p *KsScmcClientClient) InstallContainer(ctx context.Context, node_nameorip string, image_name string, image_ver string, container_name string) (r int32, err error) {
+  var _args12 KsScmcClientInstallContainerArgs
   _args12.NodeNameorip = node_nameorip
+  _args12.ImageName = image_name
+  _args12.ImageVer = image_ver
   _args12.ContainerName = container_name
-  var _result13 KsScmcClientStopContainerResult
+  var _result13 KsScmcClientInstallContainerResult
   var meta thrift.ResponseMeta
-  meta, err = p.Client_().Call(ctx, "stopContainer", &_args12, &_result13)
+  meta, err = p.Client_().Call(ctx, "installContainer", &_args12, &_result13)
   p.SetLastResponseMeta_(meta)
   if err != nil {
     return
@@ -4082,13 +4067,13 @@ func (p *KsScmcClientClient) StopContainer(ctx context.Context, node_nameorip st
 // Parameters:
 //  - NodeNameorip
 //  - ContainerName
-func (p *KsScmcClientClient) UninstallContainer(ctx context.Context, node_nameorip string, container_name string) (r int32, err error) {
-  var _args14 KsScmcClientUninstallContainerArgs
+func (p *KsScmcClientClient) StartContainer(ctx context.Context, node_nameorip string, container_name string) (r int32, err error) {
+  var _args14 KsScmcClientStartContainerArgs
   _args14.NodeNameorip = node_nameorip
   _args14.ContainerName = container_name
-  var _result15 KsScmcClientUninstallContainerResult
+  var _result15 KsScmcClientStartContainerResult
   var meta thrift.ResponseMeta
-  meta, err = p.Client_().Call(ctx, "uninstallContainer", &_args14, &_result15)
+  meta, err = p.Client_().Call(ctx, "startContainer", &_args14, &_result15)
   p.SetLastResponseMeta_(meta)
   if err != nil {
     return
@@ -4099,13 +4084,13 @@ func (p *KsScmcClientClient) UninstallContainer(ctx context.Context, node_nameor
 // Parameters:
 //  - NodeNameorip
 //  - ContainerName
-func (p *KsScmcClientClient) GetContainerStatus(ctx context.Context, node_nameorip string, container_name string) (r int32, err error) {
-  var _args16 KsScmcClientGetContainerStatusArgs
+func (p *KsScmcClientClient) StopContainer(ctx context.Context, node_nameorip string, container_name string) (r int32, err error) {
+  var _args16 KsScmcClientStopContainerArgs
   _args16.NodeNameorip = node_nameorip
   _args16.ContainerName = container_name
-  var _result17 KsScmcClientGetContainerStatusResult
+  var _result17 KsScmcClientStopContainerResult
   var meta thrift.ResponseMeta
-  meta, err = p.Client_().Call(ctx, "getContainerStatus", &_args16, &_result17)
+  meta, err = p.Client_().Call(ctx, "stopContainer", &_args16, &_result17)
   p.SetLastResponseMeta_(meta)
   if err != nil {
     return
@@ -4116,13 +4101,13 @@ func (p *KsScmcClientClient) GetContainerStatus(ctx context.Context, node_nameor
 // Parameters:
 //  - NodeNameorip
 //  - ContainerName
-func (p *KsScmcClientClient) GetContainerMetrics(ctx context.Context, node_nameorip string, container_name string) (r *GetContainerMetricsResponse, err error) {
-  var _args18 KsScmcClientGetContainerMetricsArgs
+func (p *KsScmcClientClient) UninstallContainer(ctx context.Context, node_nameorip string, container_name string) (r int32, err error) {
+  var _args18 KsScmcClientUninstallContainerArgs
   _args18.NodeNameorip = node_nameorip
   _args18.ContainerName = container_name
-  var _result19 KsScmcClientGetContainerMetricsResult
+  var _result19 KsScmcClientUninstallContainerResult
   var meta thrift.ResponseMeta
-  meta, err = p.Client_().Call(ctx, "getContainerMetrics", &_args18, &_result19)
+  meta, err = p.Client_().Call(ctx, "uninstallContainer", &_args18, &_result19)
   p.SetLastResponseMeta_(meta)
   if err != nil {
     return
@@ -4133,13 +4118,13 @@ func (p *KsScmcClientClient) GetContainerMetrics(ctx context.Context, node_nameo
 // Parameters:
 //  - NodeNameorip
 //  - ContainerName
-func (p *KsScmcClientClient) GetImageVer4Container(ctx context.Context, node_nameorip string, container_name string) (r *GetImageVer4ContainerResponse, err error) {
-  var _args20 KsScmcClientGetImageVer4ContainerArgs
+func (p *KsScmcClientClient) GetContainerStatus(ctx context.Context, node_nameorip string, container_name string) (r int32, err error) {
+  var _args20 KsScmcClientGetContainerStatusArgs
   _args20.NodeNameorip = node_nameorip
   _args20.ContainerName = container_name
-  var _result21 KsScmcClientGetImageVer4ContainerResult
+  var _result21 KsScmcClientGetContainerStatusResult
   var meta thrift.ResponseMeta
-  meta, err = p.Client_().Call(ctx, "getImageVer4Container", &_args20, &_result21)
+  meta, err = p.Client_().Call(ctx, "getContainerStatus", &_args20, &_result21)
   p.SetLastResponseMeta_(meta)
   if err != nil {
     return
@@ -4148,15 +4133,15 @@ func (p *KsScmcClientClient) GetImageVer4Container(ctx context.Context, node_nam
 }
 
 // Parameters:
-//  - NodeName
+//  - NodeNameorip
 //  - ContainerName
-func (p *KsScmcClientClient) GetContainer(ctx context.Context, node_name string, container_name string) (r int32, err error) {
-  var _args22 KsScmcClientGetContainerArgs
-  _args22.NodeName = node_name
+func (p *KsScmcClientClient) GetContainerMetrics(ctx context.Context, node_nameorip string, container_name string) (r *GetContainerMetricsResponse, err error) {
+  var _args22 KsScmcClientGetContainerMetricsArgs
+  _args22.NodeNameorip = node_nameorip
   _args22.ContainerName = container_name
-  var _result23 KsScmcClientGetContainerResult
+  var _result23 KsScmcClientGetContainerMetricsResult
   var meta thrift.ResponseMeta
-  meta, err = p.Client_().Call(ctx, "getContainer", &_args22, &_result23)
+  meta, err = p.Client_().Call(ctx, "getContainerMetrics", &_args22, &_result23)
   p.SetLastResponseMeta_(meta)
   if err != nil {
     return
@@ -4165,17 +4150,15 @@ func (p *KsScmcClientClient) GetContainer(ctx context.Context, node_name string,
 }
 
 // Parameters:
-//  - NodeName
+//  - NodeNameorip
 //  - ContainerName
-//  - NewVer_
-func (p *KsScmcClientClient) UpdateContainer(ctx context.Context, node_name string, container_name string, new_ver string) (r int32, err error) {
-  var _args24 KsScmcClientUpdateContainerArgs
-  _args24.NodeName = node_name
+func (p *KsScmcClientClient) GetImageVer4Container(ctx context.Context, node_nameorip string, container_name string) (r *GetImageVer4ContainerResponse, err error) {
+  var _args24 KsScmcClientGetImageVer4ContainerArgs
+  _args24.NodeNameorip = node_nameorip
   _args24.ContainerName = container_name
-  _args24.NewVer_ = new_ver
-  var _result25 KsScmcClientUpdateContainerResult
+  var _result25 KsScmcClientGetImageVer4ContainerResult
   var meta thrift.ResponseMeta
-  meta, err = p.Client_().Call(ctx, "updateContainer", &_args24, &_result25)
+  meta, err = p.Client_().Call(ctx, "getImageVer4Container", &_args24, &_result25)
   p.SetLastResponseMeta_(meta)
   if err != nil {
     return
@@ -4185,12 +4168,14 @@ func (p *KsScmcClientClient) UpdateContainer(ctx context.Context, node_name stri
 
 // Parameters:
 //  - NodeName
-func (p *KsScmcClientClient) GetAlarmList(ctx context.Context, node_name string) (r *GetAlarmListResponse, err error) {
-  var _args26 KsScmcClientGetAlarmListArgs
+//  - ContainerName
+func (p *KsScmcClientClient) GetContainer(ctx context.Context, node_name string, container_name string) (r int32, err error) {
+  var _args26 KsScmcClientGetContainerArgs
   _args26.NodeName = node_name
-  var _result27 KsScmcClientGetAlarmListResult
+  _args26.ContainerName = container_name
+  var _result27 KsScmcClientGetContainerResult
   var meta thrift.ResponseMeta
-  meta, err = p.Client_().Call(ctx, "getAlarmList", &_args26, &_result27)
+  meta, err = p.Client_().Call(ctx, "getContainer", &_args26, &_result27)
   p.SetLastResponseMeta_(meta)
   if err != nil {
     return
@@ -4198,11 +4183,18 @@ func (p *KsScmcClientClient) GetAlarmList(ctx context.Context, node_name string)
   return _result27.GetSuccess(), nil
 }
 
-func (p *KsScmcClientClient) GetAllNodeList(ctx context.Context) (r *GetAllNodeListResponse, err error) {
-  var _args28 KsScmcClientGetAllNodeListArgs
-  var _result29 KsScmcClientGetAllNodeListResult
+// Parameters:
+//  - NodeName
+//  - ContainerName
+//  - NewVer_
+func (p *KsScmcClientClient) UpdateContainer(ctx context.Context, node_name string, container_name string, new_ver string) (r int32, err error) {
+  var _args28 KsScmcClientUpdateContainerArgs
+  _args28.NodeName = node_name
+  _args28.ContainerName = container_name
+  _args28.NewVer_ = new_ver
+  var _result29 KsScmcClientUpdateContainerResult
   var meta thrift.ResponseMeta
-  meta, err = p.Client_().Call(ctx, "getAllNodeList", &_args28, &_result29)
+  meta, err = p.Client_().Call(ctx, "updateContainer", &_args28, &_result29)
   p.SetLastResponseMeta_(meta)
   if err != nil {
     return
@@ -4210,11 +4202,14 @@ func (p *KsScmcClientClient) GetAllNodeList(ctx context.Context) (r *GetAllNodeL
   return _result29.GetSuccess(), nil
 }
 
-func (p *KsScmcClientClient) GetAllContainerList(ctx context.Context) (r *GetAllContainerListResponse, err error) {
-  var _args30 KsScmcClientGetAllContainerListArgs
-  var _result31 KsScmcClientGetAllContainerListResult
+// Parameters:
+//  - NodeName
+func (p *KsScmcClientClient) GetAlarmList(ctx context.Context, node_name string) (r *GetAlarmListResponse, err error) {
+  var _args30 KsScmcClientGetAlarmListArgs
+  _args30.NodeName = node_name
+  var _result31 KsScmcClientGetAlarmListResult
   var meta thrift.ResponseMeta
-  meta, err = p.Client_().Call(ctx, "getAllContainerList", &_args30, &_result31)
+  meta, err = p.Client_().Call(ctx, "getAlarmList", &_args30, &_result31)
   p.SetLastResponseMeta_(meta)
   if err != nil {
     return
@@ -4222,16 +4217,11 @@ func (p *KsScmcClientClient) GetAllContainerList(ctx context.Context) (r *GetAll
   return _result31.GetSuccess(), nil
 }
 
-// Parameters:
-//  - NodeNameorip
-//  - ContainerName
-func (p *KsScmcClientClient) GetContainerNetwork(ctx context.Context, node_nameorip string, container_name string) (r *GetContainerNetworkResponse, err error) {
-  var _args32 KsScmcClientGetContainerNetworkArgs
-  _args32.NodeNameorip = node_nameorip
-  _args32.ContainerName = container_name
-  var _result33 KsScmcClientGetContainerNetworkResult
+func (p *KsScmcClientClient) GetAllNodeList(ctx context.Context) (r *GetAllNodeListResponse, err error) {
+  var _args32 KsScmcClientGetAllNodeListArgs
+  var _result33 KsScmcClientGetAllNodeListResult
   var meta thrift.ResponseMeta
-  meta, err = p.Client_().Call(ctx, "getContainerNetwork", &_args32, &_result33)
+  meta, err = p.Client_().Call(ctx, "getAllNodeList", &_args32, &_result33)
   p.SetLastResponseMeta_(meta)
   if err != nil {
     return
@@ -4239,16 +4229,11 @@ func (p *KsScmcClientClient) GetContainerNetwork(ctx context.Context, node_nameo
   return _result33.GetSuccess(), nil
 }
 
-// Parameters:
-//  - NodeName
-//  - ContainerName
-func (p *KsScmcClientClient) GetContainerNetRules(ctx context.Context, node_name string, container_name string) (r *GetContainerNetRulesResponse, err error) {
-  var _args34 KsScmcClientGetContainerNetRulesArgs
-  _args34.NodeName = node_name
-  _args34.ContainerName = container_name
-  var _result35 KsScmcClientGetContainerNetRulesResult
+func (p *KsScmcClientClient) GetAllContainerList(ctx context.Context) (r *GetAllContainerListResponse, err error) {
+  var _args34 KsScmcClientGetAllContainerListArgs
+  var _result35 KsScmcClientGetAllContainerListResult
   var meta thrift.ResponseMeta
-  meta, err = p.Client_().Call(ctx, "getContainerNetRules", &_args34, &_result35)
+  meta, err = p.Client_().Call(ctx, "getAllContainerList", &_args34, &_result35)
   p.SetLastResponseMeta_(meta)
   if err != nil {
     return
@@ -4259,19 +4244,13 @@ func (p *KsScmcClientClient) GetContainerNetRules(ctx context.Context, node_name
 // Parameters:
 //  - NodeNameorip
 //  - ContainerName
-//  - IPAddr
-//  - Port
-//  - NetProto
-func (p *KsScmcClientClient) AddContainerIpPort(ctx context.Context, node_nameorip string, container_name string, ip_addr string, port int32, net_proto string) (r int32, err error) {
-  var _args36 KsScmcClientAddContainerIpPortArgs
+func (p *KsScmcClientClient) GetContainerNetwork(ctx context.Context, node_nameorip string, container_name string) (r *GetContainerNetworkResponse, err error) {
+  var _args36 KsScmcClientGetContainerNetworkArgs
   _args36.NodeNameorip = node_nameorip
   _args36.ContainerName = container_name
-  _args36.IPAddr = ip_addr
-  _args36.Port = port
-  _args36.NetProto = net_proto
-  var _result37 KsScmcClientAddContainerIpPortResult
+  var _result37 KsScmcClientGetContainerNetworkResult
   var meta thrift.ResponseMeta
-  meta, err = p.Client_().Call(ctx, "addContainerIpPort", &_args36, &_result37)
+  meta, err = p.Client_().Call(ctx, "getContainerNetwork", &_args36, &_result37)
   p.SetLastResponseMeta_(meta)
   if err != nil {
     return
@@ -4282,19 +4261,13 @@ func (p *KsScmcClientClient) AddContainerIpPort(ctx context.Context, node_nameor
 // Parameters:
 //  - NodeName
 //  - ContainerName
-//  - IPAddr
-//  - Port
-//  - NetProto
-func (p *KsScmcClientClient) AddContainerReqIpPort(ctx context.Context, node_name string, container_name string, ip_addr string, port int32, net_proto string) (r int32, err error) {
-  var _args38 KsScmcClientAddContainerReqIpPortArgs
+func (p *KsScmcClientClient) GetContainerNetRules(ctx context.Context, node_name string, container_name string) (r *GetContainerNetRulesResponse, err error) {
+  var _args38 KsScmcClientGetContainerNetRulesArgs
   _args38.NodeName = node_name
   _args38.ContainerName = container_name
-  _args38.IPAddr = ip_addr
-  _args38.Port = port
-  _args38.NetProto = net_proto
-  var _result39 KsScmcClientAddContainerReqIpPortResult
+  var _result39 KsScmcClientGetContainerNetRulesResult
   var meta thrift.ResponseMeta
-  meta, err = p.Client_().Call(ctx, "addContainerReqIpPort", &_args38, &_result39)
+  meta, err = p.Client_().Call(ctx, "getContainerNetRules", &_args38, &_result39)
   p.SetLastResponseMeta_(meta)
   if err != nil {
     return
@@ -4305,22 +4278,68 @@ func (p *KsScmcClientClient) AddContainerReqIpPort(ctx context.Context, node_nam
 // Parameters:
 //  - NodeNameorip
 //  - ContainerName
-//  - EnvName
-//  - EnvValue
-func (p *KsScmcClientClient) AddContainerEnv(ctx context.Context, node_nameorip string, container_name string, env_name string, env_value string) (r int32, err error) {
-  var _args40 KsScmcClientAddContainerEnvArgs
+//  - IPAddr
+//  - Port
+//  - NetProto
+func (p *KsScmcClientClient) AddContainerIpPort(ctx context.Context, node_nameorip string, container_name string, ip_addr string, port int32, net_proto string) (r int32, err error) {
+  var _args40 KsScmcClientAddContainerIpPortArgs
   _args40.NodeNameorip = node_nameorip
   _args40.ContainerName = container_name
-  _args40.EnvName = env_name
-  _args40.EnvValue = env_value
-  var _result41 KsScmcClientAddContainerEnvResult
+  _args40.IPAddr = ip_addr
+  _args40.Port = port
+  _args40.NetProto = net_proto
+  var _result41 KsScmcClientAddContainerIpPortResult
   var meta thrift.ResponseMeta
-  meta, err = p.Client_().Call(ctx, "addContainerEnv", &_args40, &_result41)
+  meta, err = p.Client_().Call(ctx, "addContainerIpPort", &_args40, &_result41)
   p.SetLastResponseMeta_(meta)
   if err != nil {
     return
   }
   return _result41.GetSuccess(), nil
+}
+
+// Parameters:
+//  - NodeName
+//  - ContainerName
+//  - IPAddr
+//  - Port
+//  - NetProto
+func (p *KsScmcClientClient) AddContainerReqIpPort(ctx context.Context, node_name string, container_name string, ip_addr string, port int32, net_proto string) (r int32, err error) {
+  var _args42 KsScmcClientAddContainerReqIpPortArgs
+  _args42.NodeName = node_name
+  _args42.ContainerName = container_name
+  _args42.IPAddr = ip_addr
+  _args42.Port = port
+  _args42.NetProto = net_proto
+  var _result43 KsScmcClientAddContainerReqIpPortResult
+  var meta thrift.ResponseMeta
+  meta, err = p.Client_().Call(ctx, "addContainerReqIpPort", &_args42, &_result43)
+  p.SetLastResponseMeta_(meta)
+  if err != nil {
+    return
+  }
+  return _result43.GetSuccess(), nil
+}
+
+// Parameters:
+//  - NodeNameorip
+//  - ContainerName
+//  - EnvName
+//  - EnvValue
+func (p *KsScmcClientClient) AddContainerEnv(ctx context.Context, node_nameorip string, container_name string, env_name string, env_value string) (r int32, err error) {
+  var _args44 KsScmcClientAddContainerEnvArgs
+  _args44.NodeNameorip = node_nameorip
+  _args44.ContainerName = container_name
+  _args44.EnvName = env_name
+  _args44.EnvValue = env_value
+  var _result45 KsScmcClientAddContainerEnvResult
+  var meta thrift.ResponseMeta
+  meta, err = p.Client_().Call(ctx, "addContainerEnv", &_args44, &_result45)
+  p.SetLastResponseMeta_(meta)
+  if err != nil {
+    return
+  }
+  return _result45.GetSuccess(), nil
 }
 
 // Parameters:
@@ -4330,20 +4349,20 @@ func (p *KsScmcClientClient) AddContainerEnv(ctx context.Context, node_nameorip 
 //  - OutDir
 //  - AccessAuth
 func (p *KsScmcClientClient) AddContainerLocalVolume(ctx context.Context, node_nameorip string, container_name string, in_dir string, out_dir string, access_auth AccessAuth) (r int32, err error) {
-  var _args42 KsScmcClientAddContainerLocalVolumeArgs
-  _args42.NodeNameorip = node_nameorip
-  _args42.ContainerName = container_name
-  _args42.InDir = in_dir
-  _args42.OutDir = out_dir
-  _args42.AccessAuth = access_auth
-  var _result43 KsScmcClientAddContainerLocalVolumeResult
+  var _args46 KsScmcClientAddContainerLocalVolumeArgs
+  _args46.NodeNameorip = node_nameorip
+  _args46.ContainerName = container_name
+  _args46.InDir = in_dir
+  _args46.OutDir = out_dir
+  _args46.AccessAuth = access_auth
+  var _result47 KsScmcClientAddContainerLocalVolumeResult
   var meta thrift.ResponseMeta
-  meta, err = p.Client_().Call(ctx, "addContainerLocalVolume", &_args42, &_result43)
+  meta, err = p.Client_().Call(ctx, "addContainerLocalVolume", &_args46, &_result47)
   p.SetLastResponseMeta_(meta)
   if err != nil {
     return
   }
-  return _result43.GetSuccess(), nil
+  return _result47.GetSuccess(), nil
 }
 
 // Parameters:
@@ -4352,19 +4371,19 @@ func (p *KsScmcClientClient) AddContainerLocalVolume(ctx context.Context, node_n
 //  - Enabled
 //  - Display
 func (p *KsScmcClientClient) SetContainerDisplayV2(ctx context.Context, node_name string, container_name string, enabled bool, display string) (r int32, err error) {
-  var _args44 KsScmcClientSetContainerDisplayV2Args
-  _args44.NodeName = node_name
-  _args44.ContainerName = container_name
-  _args44.Enabled = enabled
-  _args44.Display = display
-  var _result45 KsScmcClientSetContainerDisplayV2Result
+  var _args48 KsScmcClientSetContainerDisplayV2Args
+  _args48.NodeName = node_name
+  _args48.ContainerName = container_name
+  _args48.Enabled = enabled
+  _args48.Display = display
+  var _result49 KsScmcClientSetContainerDisplayV2Result
   var meta thrift.ResponseMeta
-  meta, err = p.Client_().Call(ctx, "setContainerDisplayV2", &_args44, &_result45)
+  meta, err = p.Client_().Call(ctx, "setContainerDisplayV2", &_args48, &_result49)
   p.SetLastResponseMeta_(meta)
   if err != nil {
     return
   }
-  return _result45.GetSuccess(), nil
+  return _result49.GetSuccess(), nil
 }
 
 // Parameters:
@@ -4372,18 +4391,18 @@ func (p *KsScmcClientClient) SetContainerDisplayV2(ctx context.Context, node_nam
 //  - ContainerName
 //  - ContainerLimit
 func (p *KsScmcClientClient) SetContainerQuota(ctx context.Context, node_name string, container_name string, containerLimit *ContainerLimit) (r int32, err error) {
-  var _args46 KsScmcClientSetContainerQuotaArgs
-  _args46.NodeName = node_name
-  _args46.ContainerName = container_name
-  _args46.ContainerLimit = containerLimit
-  var _result47 KsScmcClientSetContainerQuotaResult
+  var _args50 KsScmcClientSetContainerQuotaArgs
+  _args50.NodeName = node_name
+  _args50.ContainerName = container_name
+  _args50.ContainerLimit = containerLimit
+  var _result51 KsScmcClientSetContainerQuotaResult
   var meta thrift.ResponseMeta
-  meta, err = p.Client_().Call(ctx, "setContainerQuota", &_args46, &_result47)
+  meta, err = p.Client_().Call(ctx, "setContainerQuota", &_args50, &_result51)
   p.SetLastResponseMeta_(meta)
   if err != nil {
     return
   }
-  return _result47.GetSuccess(), nil
+  return _result51.GetSuccess(), nil
 }
 
 // 设置容器是否开启特权
@@ -4397,18 +4416,18 @@ func (p *KsScmcClientClient) SetContainerQuota(ctx context.Context, node_name st
 //  - ContainerName
 //  - IsPrivileged
 func (p *KsScmcClientClient) SetContainerPrivileged(ctx context.Context, node_ip string, container_name string, isPrivileged bool) (r int32, err error) {
-  var _args48 KsScmcClientSetContainerPrivilegedArgs
-  _args48.NodeIP = node_ip
-  _args48.ContainerName = container_name
-  _args48.IsPrivileged = isPrivileged
-  var _result49 KsScmcClientSetContainerPrivilegedResult
+  var _args52 KsScmcClientSetContainerPrivilegedArgs
+  _args52.NodeIP = node_ip
+  _args52.ContainerName = container_name
+  _args52.IsPrivileged = isPrivileged
+  var _result53 KsScmcClientSetContainerPrivilegedResult
   var meta thrift.ResponseMeta
-  meta, err = p.Client_().Call(ctx, "setContainerPrivileged", &_args48, &_result49)
+  meta, err = p.Client_().Call(ctx, "setContainerPrivileged", &_args52, &_result53)
   p.SetLastResponseMeta_(meta)
   if err != nil {
     return
   }
-  return _result49.GetSuccess(), nil
+  return _result53.GetSuccess(), nil
 }
 
 // 设置容器内核参数
@@ -4424,19 +4443,19 @@ func (p *KsScmcClientClient) SetContainerPrivileged(ctx context.Context, node_ip
 //  - SysctlName
 //  - SysctlValue
 func (p *KsScmcClientClient) SetContainerSysctls(ctx context.Context, node_ip string, container_name string, sysctl_name string, sysctl_value string) (r int32, err error) {
-  var _args50 KsScmcClientSetContainerSysctlsArgs
-  _args50.NodeIP = node_ip
-  _args50.ContainerName = container_name
-  _args50.SysctlName = sysctl_name
-  _args50.SysctlValue = sysctl_value
-  var _result51 KsScmcClientSetContainerSysctlsResult
+  var _args54 KsScmcClientSetContainerSysctlsArgs
+  _args54.NodeIP = node_ip
+  _args54.ContainerName = container_name
+  _args54.SysctlName = sysctl_name
+  _args54.SysctlValue = sysctl_value
+  var _result55 KsScmcClientSetContainerSysctlsResult
   var meta thrift.ResponseMeta
-  meta, err = p.Client_().Call(ctx, "setContainerSysctls", &_args50, &_result51)
+  meta, err = p.Client_().Call(ctx, "setContainerSysctls", &_args54, &_result55)
   p.SetLastResponseMeta_(meta)
   if err != nil {
     return
   }
-  return _result51.GetSuccess(), nil
+  return _result55.GetSuccess(), nil
 }
 
 // 设置容器/etc/hosts中的host信息
@@ -4450,18 +4469,18 @@ func (p *KsScmcClientClient) SetContainerSysctls(ctx context.Context, node_ip st
 //  - ContainerName
 //  - ContainerExtrahosts
 func (p *KsScmcClientClient) SetContainerExtraHosts(ctx context.Context, node_ip string, container_name string, container_extrahosts []string) (r int32, err error) {
-  var _args52 KsScmcClientSetContainerExtraHostsArgs
-  _args52.NodeIP = node_ip
-  _args52.ContainerName = container_name
-  _args52.ContainerExtrahosts = container_extrahosts
-  var _result53 KsScmcClientSetContainerExtraHostsResult
+  var _args56 KsScmcClientSetContainerExtraHostsArgs
+  _args56.NodeIP = node_ip
+  _args56.ContainerName = container_name
+  _args56.ContainerExtrahosts = container_extrahosts
+  var _result57 KsScmcClientSetContainerExtraHostsResult
   var meta thrift.ResponseMeta
-  meta, err = p.Client_().Call(ctx, "setContainerExtraHosts", &_args52, &_result53)
+  meta, err = p.Client_().Call(ctx, "setContainerExtraHosts", &_args56, &_result57)
   p.SetLastResponseMeta_(meta)
   if err != nil {
     return
   }
-  return _result53.GetSuccess(), nil
+  return _result57.GetSuccess(), nil
 }
 
 // 获取节点上的镜像列表
@@ -4471,19 +4490,17 @@ func (p *KsScmcClientClient) SetContainerExtraHosts(ctx context.Context, node_ip
 // 
 // Parameters:
 //  - NodeIP
-//  - ImageList
-func (p *KsScmcClientClient) GetImagesList(ctx context.Context, node_ip string, image_list []string) (r int32, err error) {
-  var _args54 KsScmcClientGetImagesListArgs
-  _args54.NodeIP = node_ip
-  _args54.ImageList = image_list
-  var _result55 KsScmcClientGetImagesListResult
+func (p *KsScmcClientClient) GetImagesList(ctx context.Context, node_ip string) (r *GetImagesListResponse, err error) {
+  var _args58 KsScmcClientGetImagesListArgs
+  _args58.NodeIP = node_ip
+  var _result59 KsScmcClientGetImagesListResult
   var meta thrift.ResponseMeta
-  meta, err = p.Client_().Call(ctx, "getImagesList", &_args54, &_result55)
+  meta, err = p.Client_().Call(ctx, "getImagesList", &_args58, &_result59)
   p.SetLastResponseMeta_(meta)
   if err != nil {
     return
   }
-  return _result55.GetSuccess(), nil
+  return _result59.GetSuccess(), nil
 }
 
 // 导入镜像到节点
@@ -4495,17 +4512,17 @@ func (p *KsScmcClientClient) GetImagesList(ctx context.Context, node_ip string, 
 //  - NodeIP
 //  - TarPath
 func (p *KsScmcClientClient) LoadImage(ctx context.Context, node_ip string, tarPath string) (r int32, err error) {
-  var _args56 KsScmcClientLoadImageArgs
-  _args56.NodeIP = node_ip
-  _args56.TarPath = tarPath
-  var _result57 KsScmcClientLoadImageResult
+  var _args60 KsScmcClientLoadImageArgs
+  _args60.NodeIP = node_ip
+  _args60.TarPath = tarPath
+  var _result61 KsScmcClientLoadImageResult
   var meta thrift.ResponseMeta
-  meta, err = p.Client_().Call(ctx, "loadImage", &_args56, &_result57)
+  meta, err = p.Client_().Call(ctx, "loadImage", &_args60, &_result61)
   p.SetLastResponseMeta_(meta)
   if err != nil {
     return
   }
-  return _result57.GetSuccess(), nil
+  return _result61.GetSuccess(), nil
 }
 
 // 暂停容器
@@ -4517,17 +4534,17 @@ func (p *KsScmcClientClient) LoadImage(ctx context.Context, node_ip string, tarP
 //  - NodeIP
 //  - ContainerName
 func (p *KsScmcClientClient) PauseContainer(ctx context.Context, node_ip string, container_name string) (r int32, err error) {
-  var _args58 KsScmcClientPauseContainerArgs
-  _args58.NodeIP = node_ip
-  _args58.ContainerName = container_name
-  var _result59 KsScmcClientPauseContainerResult
+  var _args62 KsScmcClientPauseContainerArgs
+  _args62.NodeIP = node_ip
+  _args62.ContainerName = container_name
+  var _result63 KsScmcClientPauseContainerResult
   var meta thrift.ResponseMeta
-  meta, err = p.Client_().Call(ctx, "pauseContainer", &_args58, &_result59)
+  meta, err = p.Client_().Call(ctx, "pauseContainer", &_args62, &_result63)
   p.SetLastResponseMeta_(meta)
   if err != nil {
     return
   }
-  return _result59.GetSuccess(), nil
+  return _result63.GetSuccess(), nil
 }
 
 // 恢复暂停的容器
@@ -4539,35 +4556,17 @@ func (p *KsScmcClientClient) PauseContainer(ctx context.Context, node_ip string,
 //  - NodeIP
 //  - ContainerName
 func (p *KsScmcClientClient) UnpauseContainer(ctx context.Context, node_ip string, container_name string) (r int32, err error) {
-  var _args60 KsScmcClientUnpauseContainerArgs
-  _args60.NodeIP = node_ip
-  _args60.ContainerName = container_name
-  var _result61 KsScmcClientUnpauseContainerResult
+  var _args64 KsScmcClientUnpauseContainerArgs
+  _args64.NodeIP = node_ip
+  _args64.ContainerName = container_name
+  var _result65 KsScmcClientUnpauseContainerResult
   var meta thrift.ResponseMeta
-  meta, err = p.Client_().Call(ctx, "unpauseContainer", &_args60, &_result61)
+  meta, err = p.Client_().Call(ctx, "unpauseContainer", &_args64, &_result65)
   p.SetLastResponseMeta_(meta)
   if err != nil {
     return
   }
-  return _result61.GetSuccess(), nil
-}
-
-// 获取 容器的状态信息，参考 docker stats 的输出
-// 返回值为 json 格式
-// 
-// Parameters:
-//  - NodeName
-func (p *KsScmcClientClient) GetAllContainers(ctx context.Context, node_name string) (r string, err error) {
-  var _args62 KsScmcClientGetAllContainersArgs
-  _args62.NodeName = node_name
-  var _result63 KsScmcClientGetAllContainersResult
-  var meta thrift.ResponseMeta
-  meta, err = p.Client_().Call(ctx, "GetAllContainers", &_args62, &_result63)
-  p.SetLastResponseMeta_(meta)
-  if err != nil {
-    return
-  }
-  return _result63.GetSuccess(), nil
+  return _result65.GetSuccess(), nil
 }
 
 type KsScmcClientProcessor struct {
@@ -4590,36 +4589,36 @@ func (p *KsScmcClientProcessor) ProcessorMap() map[string]thrift.TProcessorFunct
 
 func NewKsScmcClientProcessor(handler KsScmcClient) *KsScmcClientProcessor {
 
-  self64 := &KsScmcClientProcessor{handler:handler, processorMap:make(map[string]thrift.TProcessorFunction)}
-  self64.processorMap["installContainer"] = &ksScmcClientProcessorInstallContainer{handler:handler}
-  self64.processorMap["startContainer"] = &ksScmcClientProcessorStartContainer{handler:handler}
-  self64.processorMap["stopContainer"] = &ksScmcClientProcessorStopContainer{handler:handler}
-  self64.processorMap["uninstallContainer"] = &ksScmcClientProcessorUninstallContainer{handler:handler}
-  self64.processorMap["getContainerStatus"] = &ksScmcClientProcessorGetContainerStatus{handler:handler}
-  self64.processorMap["getContainerMetrics"] = &ksScmcClientProcessorGetContainerMetrics{handler:handler}
-  self64.processorMap["getImageVer4Container"] = &ksScmcClientProcessorGetImageVer4Container{handler:handler}
-  self64.processorMap["getContainer"] = &ksScmcClientProcessorGetContainer{handler:handler}
-  self64.processorMap["updateContainer"] = &ksScmcClientProcessorUpdateContainer{handler:handler}
-  self64.processorMap["getAlarmList"] = &ksScmcClientProcessorGetAlarmList{handler:handler}
-  self64.processorMap["getAllNodeList"] = &ksScmcClientProcessorGetAllNodeList{handler:handler}
-  self64.processorMap["getAllContainerList"] = &ksScmcClientProcessorGetAllContainerList{handler:handler}
-  self64.processorMap["getContainerNetwork"] = &ksScmcClientProcessorGetContainerNetwork{handler:handler}
-  self64.processorMap["getContainerNetRules"] = &ksScmcClientProcessorGetContainerNetRules{handler:handler}
-  self64.processorMap["addContainerIpPort"] = &ksScmcClientProcessorAddContainerIpPort{handler:handler}
-  self64.processorMap["addContainerReqIpPort"] = &ksScmcClientProcessorAddContainerReqIpPort{handler:handler}
-  self64.processorMap["addContainerEnv"] = &ksScmcClientProcessorAddContainerEnv{handler:handler}
-  self64.processorMap["addContainerLocalVolume"] = &ksScmcClientProcessorAddContainerLocalVolume{handler:handler}
-  self64.processorMap["setContainerDisplayV2"] = &ksScmcClientProcessorSetContainerDisplayV2{handler:handler}
-  self64.processorMap["setContainerQuota"] = &ksScmcClientProcessorSetContainerQuota{handler:handler}
-  self64.processorMap["setContainerPrivileged"] = &ksScmcClientProcessorSetContainerPrivileged{handler:handler}
-  self64.processorMap["setContainerSysctls"] = &ksScmcClientProcessorSetContainerSysctls{handler:handler}
-  self64.processorMap["setContainerExtraHosts"] = &ksScmcClientProcessorSetContainerExtraHosts{handler:handler}
-  self64.processorMap["getImagesList"] = &ksScmcClientProcessorGetImagesList{handler:handler}
-  self64.processorMap["loadImage"] = &ksScmcClientProcessorLoadImage{handler:handler}
-  self64.processorMap["pauseContainer"] = &ksScmcClientProcessorPauseContainer{handler:handler}
-  self64.processorMap["unpauseContainer"] = &ksScmcClientProcessorUnpauseContainer{handler:handler}
-  self64.processorMap["GetAllContainers"] = &ksScmcClientProcessorGetAllContainers{handler:handler}
-return self64
+  self66 := &KsScmcClientProcessor{handler:handler, processorMap:make(map[string]thrift.TProcessorFunction)}
+  self66.processorMap["LoginV3"] = &ksScmcClientProcessorLoginV3{handler:handler}
+  self66.processorMap["installContainer"] = &ksScmcClientProcessorInstallContainer{handler:handler}
+  self66.processorMap["startContainer"] = &ksScmcClientProcessorStartContainer{handler:handler}
+  self66.processorMap["stopContainer"] = &ksScmcClientProcessorStopContainer{handler:handler}
+  self66.processorMap["uninstallContainer"] = &ksScmcClientProcessorUninstallContainer{handler:handler}
+  self66.processorMap["getContainerStatus"] = &ksScmcClientProcessorGetContainerStatus{handler:handler}
+  self66.processorMap["getContainerMetrics"] = &ksScmcClientProcessorGetContainerMetrics{handler:handler}
+  self66.processorMap["getImageVer4Container"] = &ksScmcClientProcessorGetImageVer4Container{handler:handler}
+  self66.processorMap["getContainer"] = &ksScmcClientProcessorGetContainer{handler:handler}
+  self66.processorMap["updateContainer"] = &ksScmcClientProcessorUpdateContainer{handler:handler}
+  self66.processorMap["getAlarmList"] = &ksScmcClientProcessorGetAlarmList{handler:handler}
+  self66.processorMap["getAllNodeList"] = &ksScmcClientProcessorGetAllNodeList{handler:handler}
+  self66.processorMap["getAllContainerList"] = &ksScmcClientProcessorGetAllContainerList{handler:handler}
+  self66.processorMap["getContainerNetwork"] = &ksScmcClientProcessorGetContainerNetwork{handler:handler}
+  self66.processorMap["getContainerNetRules"] = &ksScmcClientProcessorGetContainerNetRules{handler:handler}
+  self66.processorMap["addContainerIpPort"] = &ksScmcClientProcessorAddContainerIpPort{handler:handler}
+  self66.processorMap["addContainerReqIpPort"] = &ksScmcClientProcessorAddContainerReqIpPort{handler:handler}
+  self66.processorMap["addContainerEnv"] = &ksScmcClientProcessorAddContainerEnv{handler:handler}
+  self66.processorMap["addContainerLocalVolume"] = &ksScmcClientProcessorAddContainerLocalVolume{handler:handler}
+  self66.processorMap["setContainerDisplayV2"] = &ksScmcClientProcessorSetContainerDisplayV2{handler:handler}
+  self66.processorMap["setContainerQuota"] = &ksScmcClientProcessorSetContainerQuota{handler:handler}
+  self66.processorMap["setContainerPrivileged"] = &ksScmcClientProcessorSetContainerPrivileged{handler:handler}
+  self66.processorMap["setContainerSysctls"] = &ksScmcClientProcessorSetContainerSysctls{handler:handler}
+  self66.processorMap["setContainerExtraHosts"] = &ksScmcClientProcessorSetContainerExtraHosts{handler:handler}
+  self66.processorMap["getImagesList"] = &ksScmcClientProcessorGetImagesList{handler:handler}
+  self66.processorMap["loadImage"] = &ksScmcClientProcessorLoadImage{handler:handler}
+  self66.processorMap["pauseContainer"] = &ksScmcClientProcessorPauseContainer{handler:handler}
+  self66.processorMap["unpauseContainer"] = &ksScmcClientProcessorUnpauseContainer{handler:handler}
+return self66
 }
 
 func (p *KsScmcClientProcessor) Process(ctx context.Context, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
@@ -4630,13 +4629,92 @@ func (p *KsScmcClientProcessor) Process(ctx context.Context, iprot, oprot thrift
   }
   iprot.Skip(ctx, thrift.STRUCT)
   iprot.ReadMessageEnd(ctx)
-  x65 := thrift.NewTApplicationException(thrift.UNKNOWN_METHOD, "Unknown function " + name)
+  x67 := thrift.NewTApplicationException(thrift.UNKNOWN_METHOD, "Unknown function " + name)
   oprot.WriteMessageBegin(ctx, name, thrift.EXCEPTION, seqId)
-  x65.Write(ctx, oprot)
+  x67.Write(ctx, oprot)
   oprot.WriteMessageEnd(ctx)
   oprot.Flush(ctx)
-  return false, x65
+  return false, x67
 
+}
+
+type ksScmcClientProcessorLoginV3 struct {
+  handler KsScmcClient
+}
+
+func (p *ksScmcClientProcessorLoginV3) Process(ctx context.Context, seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
+  args := KsScmcClientLoginV3Args{}
+  var err2 error
+  if err2 = args.Read(ctx, iprot); err2 != nil {
+    iprot.ReadMessageEnd(ctx)
+    x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err2.Error())
+    oprot.WriteMessageBegin(ctx, "LoginV3", thrift.EXCEPTION, seqId)
+    x.Write(ctx, oprot)
+    oprot.WriteMessageEnd(ctx)
+    oprot.Flush(ctx)
+    return false, thrift.WrapTException(err2)
+  }
+  iprot.ReadMessageEnd(ctx)
+
+  tickerCancel := func() {}
+  // Start a goroutine to do server side connectivity check.
+  if thrift.ServerConnectivityCheckInterval > 0 {
+    var cancel context.CancelFunc
+    ctx, cancel = context.WithCancel(ctx)
+    defer cancel()
+    var tickerCtx context.Context
+    tickerCtx, tickerCancel = context.WithCancel(context.Background())
+    defer tickerCancel()
+    go func(ctx context.Context, cancel context.CancelFunc) {
+      ticker := time.NewTicker(thrift.ServerConnectivityCheckInterval)
+      defer ticker.Stop()
+      for {
+        select {
+        case <-ctx.Done():
+          return
+        case <-ticker.C:
+          if !iprot.Transport().IsOpen() {
+            cancel()
+            return
+          }
+        }
+      }
+    }(tickerCtx, cancel)
+  }
+
+  result := KsScmcClientLoginV3Result{}
+  var retval string
+  if retval, err2 = p.handler.LoginV3(ctx, args.User, args.Passwd, args.NodeIP); err2 != nil {
+    tickerCancel()
+    if err2 == thrift.ErrAbandonRequest {
+      return false, thrift.WrapTException(err2)
+    }
+    x := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing LoginV3: " + err2.Error())
+    oprot.WriteMessageBegin(ctx, "LoginV3", thrift.EXCEPTION, seqId)
+    x.Write(ctx, oprot)
+    oprot.WriteMessageEnd(ctx)
+    oprot.Flush(ctx)
+    return true, thrift.WrapTException(err2)
+  } else {
+    result.Success = &retval
+  }
+  tickerCancel()
+  if err2 = oprot.WriteMessageBegin(ctx, "LoginV3", thrift.REPLY, seqId); err2 != nil {
+    err = thrift.WrapTException(err2)
+  }
+  if err2 = result.Write(ctx, oprot); err == nil && err2 != nil {
+    err = thrift.WrapTException(err2)
+  }
+  if err2 = oprot.WriteMessageEnd(ctx); err == nil && err2 != nil {
+    err = thrift.WrapTException(err2)
+  }
+  if err2 = oprot.Flush(ctx); err == nil && err2 != nil {
+    err = thrift.WrapTException(err2)
+  }
+  if err != nil {
+    return
+  }
+  return true, err
 }
 
 type ksScmcClientProcessorInstallContainer struct {
@@ -6501,8 +6579,8 @@ func (p *ksScmcClientProcessorGetImagesList) Process(ctx context.Context, seqId 
   }
 
   result := KsScmcClientGetImagesListResult{}
-  var retval int32
-  if retval, err2 = p.handler.GetImagesList(ctx, args.NodeIP, args.ImageList); err2 != nil {
+  var retval *GetImagesListResponse
+  if retval, err2 = p.handler.GetImagesList(ctx, args.NodeIP); err2 != nil {
     tickerCancel()
     if err2 == thrift.ErrAbandonRequest {
       return false, thrift.WrapTException(err2)
@@ -6514,7 +6592,7 @@ func (p *ksScmcClientProcessorGetImagesList) Process(ctx context.Context, seqId 
     oprot.Flush(ctx)
     return true, thrift.WrapTException(err2)
   } else {
-    result.Success = &retval
+    result.Success = retval
   }
   tickerCancel()
   if err2 = oprot.WriteMessageBegin(ctx, "getImagesList", thrift.REPLY, seqId); err2 != nil {
@@ -6772,87 +6850,271 @@ func (p *ksScmcClientProcessorUnpauseContainer) Process(ctx context.Context, seq
   return true, err
 }
 
-type ksScmcClientProcessorGetAllContainers struct {
-  handler KsScmcClient
-}
-
-func (p *ksScmcClientProcessorGetAllContainers) Process(ctx context.Context, seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
-  args := KsScmcClientGetAllContainersArgs{}
-  var err2 error
-  if err2 = args.Read(ctx, iprot); err2 != nil {
-    iprot.ReadMessageEnd(ctx)
-    x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err2.Error())
-    oprot.WriteMessageBegin(ctx, "GetAllContainers", thrift.EXCEPTION, seqId)
-    x.Write(ctx, oprot)
-    oprot.WriteMessageEnd(ctx)
-    oprot.Flush(ctx)
-    return false, thrift.WrapTException(err2)
-  }
-  iprot.ReadMessageEnd(ctx)
-
-  tickerCancel := func() {}
-  // Start a goroutine to do server side connectivity check.
-  if thrift.ServerConnectivityCheckInterval > 0 {
-    var cancel context.CancelFunc
-    ctx, cancel = context.WithCancel(ctx)
-    defer cancel()
-    var tickerCtx context.Context
-    tickerCtx, tickerCancel = context.WithCancel(context.Background())
-    defer tickerCancel()
-    go func(ctx context.Context, cancel context.CancelFunc) {
-      ticker := time.NewTicker(thrift.ServerConnectivityCheckInterval)
-      defer ticker.Stop()
-      for {
-        select {
-        case <-ctx.Done():
-          return
-        case <-ticker.C:
-          if !iprot.Transport().IsOpen() {
-            cancel()
-            return
-          }
-        }
-      }
-    }(tickerCtx, cancel)
-  }
-
-  result := KsScmcClientGetAllContainersResult{}
-  var retval string
-  if retval, err2 = p.handler.GetAllContainers(ctx, args.NodeName); err2 != nil {
-    tickerCancel()
-    if err2 == thrift.ErrAbandonRequest {
-      return false, thrift.WrapTException(err2)
-    }
-    x := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing GetAllContainers: " + err2.Error())
-    oprot.WriteMessageBegin(ctx, "GetAllContainers", thrift.EXCEPTION, seqId)
-    x.Write(ctx, oprot)
-    oprot.WriteMessageEnd(ctx)
-    oprot.Flush(ctx)
-    return true, thrift.WrapTException(err2)
-  } else {
-    result.Success = &retval
-  }
-  tickerCancel()
-  if err2 = oprot.WriteMessageBegin(ctx, "GetAllContainers", thrift.REPLY, seqId); err2 != nil {
-    err = thrift.WrapTException(err2)
-  }
-  if err2 = result.Write(ctx, oprot); err == nil && err2 != nil {
-    err = thrift.WrapTException(err2)
-  }
-  if err2 = oprot.WriteMessageEnd(ctx); err == nil && err2 != nil {
-    err = thrift.WrapTException(err2)
-  }
-  if err2 = oprot.Flush(ctx); err == nil && err2 != nil {
-    err = thrift.WrapTException(err2)
-  }
-  if err != nil {
-    return
-  }
-  return true, err
-}
-
 
 // HELPER FUNCTIONS AND STRUCTURES
+
+// Attributes:
+//  - User
+//  - Passwd
+//  - NodeIP
+type KsScmcClientLoginV3Args struct {
+  User string `thrift:"user,1" db:"user" json:"user"`
+  Passwd string `thrift:"passwd,2" db:"passwd" json:"passwd"`
+  NodeIP string `thrift:"node_ip,3" db:"node_ip" json:"node_ip"`
+}
+
+func NewKsScmcClientLoginV3Args() *KsScmcClientLoginV3Args {
+  return &KsScmcClientLoginV3Args{}
+}
+
+
+func (p *KsScmcClientLoginV3Args) GetUser() string {
+  return p.User
+}
+
+func (p *KsScmcClientLoginV3Args) GetPasswd() string {
+  return p.Passwd
+}
+
+func (p *KsScmcClientLoginV3Args) GetNodeIP() string {
+  return p.NodeIP
+}
+func (p *KsScmcClientLoginV3Args) Read(ctx context.Context, iprot thrift.TProtocol) error {
+  if _, err := iprot.ReadStructBegin(ctx); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
+  }
+
+
+  for {
+    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin(ctx)
+    if err != nil {
+      return thrift.PrependError(fmt.Sprintf("%T field %d read error: ", p, fieldId), err)
+    }
+    if fieldTypeId == thrift.STOP { break; }
+    switch fieldId {
+    case 1:
+      if fieldTypeId == thrift.STRING {
+        if err := p.ReadField1(ctx, iprot); err != nil {
+          return err
+        }
+      } else {
+        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
+          return err
+        }
+      }
+    case 2:
+      if fieldTypeId == thrift.STRING {
+        if err := p.ReadField2(ctx, iprot); err != nil {
+          return err
+        }
+      } else {
+        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
+          return err
+        }
+      }
+    case 3:
+      if fieldTypeId == thrift.STRING {
+        if err := p.ReadField3(ctx, iprot); err != nil {
+          return err
+        }
+      } else {
+        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
+          return err
+        }
+      }
+    default:
+      if err := iprot.Skip(ctx, fieldTypeId); err != nil {
+        return err
+      }
+    }
+    if err := iprot.ReadFieldEnd(ctx); err != nil {
+      return err
+    }
+  }
+  if err := iprot.ReadStructEnd(ctx); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+  }
+  return nil
+}
+
+func (p *KsScmcClientLoginV3Args)  ReadField1(ctx context.Context, iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadString(ctx); err != nil {
+  return thrift.PrependError("error reading field 1: ", err)
+} else {
+  p.User = v
+}
+  return nil
+}
+
+func (p *KsScmcClientLoginV3Args)  ReadField2(ctx context.Context, iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadString(ctx); err != nil {
+  return thrift.PrependError("error reading field 2: ", err)
+} else {
+  p.Passwd = v
+}
+  return nil
+}
+
+func (p *KsScmcClientLoginV3Args)  ReadField3(ctx context.Context, iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadString(ctx); err != nil {
+  return thrift.PrependError("error reading field 3: ", err)
+} else {
+  p.NodeIP = v
+}
+  return nil
+}
+
+func (p *KsScmcClientLoginV3Args) Write(ctx context.Context, oprot thrift.TProtocol) error {
+  if err := oprot.WriteStructBegin(ctx, "LoginV3_args"); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err) }
+  if p != nil {
+    if err := p.writeField1(ctx, oprot); err != nil { return err }
+    if err := p.writeField2(ctx, oprot); err != nil { return err }
+    if err := p.writeField3(ctx, oprot); err != nil { return err }
+  }
+  if err := oprot.WriteFieldStop(ctx); err != nil {
+    return thrift.PrependError("write field stop error: ", err) }
+  if err := oprot.WriteStructEnd(ctx); err != nil {
+    return thrift.PrependError("write struct stop error: ", err) }
+  return nil
+}
+
+func (p *KsScmcClientLoginV3Args) writeField1(ctx context.Context, oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin(ctx, "user", thrift.STRING, 1); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write field begin error 1:user: ", p), err) }
+  if err := oprot.WriteString(ctx, string(p.User)); err != nil {
+  return thrift.PrependError(fmt.Sprintf("%T.user (1) field write error: ", p), err) }
+  if err := oprot.WriteFieldEnd(ctx); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write field end error 1:user: ", p), err) }
+  return err
+}
+
+func (p *KsScmcClientLoginV3Args) writeField2(ctx context.Context, oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin(ctx, "passwd", thrift.STRING, 2); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write field begin error 2:passwd: ", p), err) }
+  if err := oprot.WriteString(ctx, string(p.Passwd)); err != nil {
+  return thrift.PrependError(fmt.Sprintf("%T.passwd (2) field write error: ", p), err) }
+  if err := oprot.WriteFieldEnd(ctx); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write field end error 2:passwd: ", p), err) }
+  return err
+}
+
+func (p *KsScmcClientLoginV3Args) writeField3(ctx context.Context, oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin(ctx, "node_ip", thrift.STRING, 3); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write field begin error 3:node_ip: ", p), err) }
+  if err := oprot.WriteString(ctx, string(p.NodeIP)); err != nil {
+  return thrift.PrependError(fmt.Sprintf("%T.node_ip (3) field write error: ", p), err) }
+  if err := oprot.WriteFieldEnd(ctx); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write field end error 3:node_ip: ", p), err) }
+  return err
+}
+
+func (p *KsScmcClientLoginV3Args) String() string {
+  if p == nil {
+    return "<nil>"
+  }
+  return fmt.Sprintf("KsScmcClientLoginV3Args(%+v)", *p)
+}
+
+// Attributes:
+//  - Success
+type KsScmcClientLoginV3Result struct {
+  Success *string `thrift:"success,0" db:"success" json:"success,omitempty"`
+}
+
+func NewKsScmcClientLoginV3Result() *KsScmcClientLoginV3Result {
+  return &KsScmcClientLoginV3Result{}
+}
+
+var KsScmcClientLoginV3Result_Success_DEFAULT string
+func (p *KsScmcClientLoginV3Result) GetSuccess() string {
+  if !p.IsSetSuccess() {
+    return KsScmcClientLoginV3Result_Success_DEFAULT
+  }
+return *p.Success
+}
+func (p *KsScmcClientLoginV3Result) IsSetSuccess() bool {
+  return p.Success != nil
+}
+
+func (p *KsScmcClientLoginV3Result) Read(ctx context.Context, iprot thrift.TProtocol) error {
+  if _, err := iprot.ReadStructBegin(ctx); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
+  }
+
+
+  for {
+    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin(ctx)
+    if err != nil {
+      return thrift.PrependError(fmt.Sprintf("%T field %d read error: ", p, fieldId), err)
+    }
+    if fieldTypeId == thrift.STOP { break; }
+    switch fieldId {
+    case 0:
+      if fieldTypeId == thrift.STRING {
+        if err := p.ReadField0(ctx, iprot); err != nil {
+          return err
+        }
+      } else {
+        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
+          return err
+        }
+      }
+    default:
+      if err := iprot.Skip(ctx, fieldTypeId); err != nil {
+        return err
+      }
+    }
+    if err := iprot.ReadFieldEnd(ctx); err != nil {
+      return err
+    }
+  }
+  if err := iprot.ReadStructEnd(ctx); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+  }
+  return nil
+}
+
+func (p *KsScmcClientLoginV3Result)  ReadField0(ctx context.Context, iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadString(ctx); err != nil {
+  return thrift.PrependError("error reading field 0: ", err)
+} else {
+  p.Success = &v
+}
+  return nil
+}
+
+func (p *KsScmcClientLoginV3Result) Write(ctx context.Context, oprot thrift.TProtocol) error {
+  if err := oprot.WriteStructBegin(ctx, "LoginV3_result"); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err) }
+  if p != nil {
+    if err := p.writeField0(ctx, oprot); err != nil { return err }
+  }
+  if err := oprot.WriteFieldStop(ctx); err != nil {
+    return thrift.PrependError("write field stop error: ", err) }
+  if err := oprot.WriteStructEnd(ctx); err != nil {
+    return thrift.PrependError("write struct stop error: ", err) }
+  return nil
+}
+
+func (p *KsScmcClientLoginV3Result) writeField0(ctx context.Context, oprot thrift.TProtocol) (err error) {
+  if p.IsSetSuccess() {
+    if err := oprot.WriteFieldBegin(ctx, "success", thrift.STRING, 0); err != nil {
+      return thrift.PrependError(fmt.Sprintf("%T write field begin error 0:success: ", p), err) }
+    if err := oprot.WriteString(ctx, string(*p.Success)); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T.success (0) field write error: ", p), err) }
+    if err := oprot.WriteFieldEnd(ctx); err != nil {
+      return thrift.PrependError(fmt.Sprintf("%T write field end error 0:success: ", p), err) }
+  }
+  return err
+}
+
+func (p *KsScmcClientLoginV3Result) String() string {
+  if p == nil {
+    return "<nil>"
+  }
+  return fmt.Sprintf("KsScmcClientLoginV3Result(%+v)", *p)
+}
 
 // Attributes:
 //  - NodeNameorip
@@ -12498,13 +12760,13 @@ func (p *KsScmcClientSetContainerExtraHostsArgs)  ReadField3(ctx context.Context
   tSlice := make([]string, 0, size)
   p.ContainerExtrahosts =  tSlice
   for i := 0; i < size; i ++ {
-var _elem66 string
+var _elem68 string
     if v, err := iprot.ReadString(ctx); err != nil {
     return thrift.PrependError("error reading field 0: ", err)
 } else {
-    _elem66 = v
+    _elem68 = v
 }
-    p.ContainerExtrahosts = append(p.ContainerExtrahosts, _elem66)
+    p.ContainerExtrahosts = append(p.ContainerExtrahosts, _elem68)
   }
   if err := iprot.ReadListEnd(ctx); err != nil {
     return thrift.PrependError("error reading list end: ", err)
@@ -12674,10 +12936,8 @@ func (p *KsScmcClientSetContainerExtraHostsResult) String() string {
 
 // Attributes:
 //  - NodeIP
-//  - ImageList
 type KsScmcClientGetImagesListArgs struct {
   NodeIP string `thrift:"node_ip,1" db:"node_ip" json:"node_ip"`
-  ImageList []string `thrift:"image_list,2" db:"image_list" json:"image_list"`
 }
 
 func NewKsScmcClientGetImagesListArgs() *KsScmcClientGetImagesListArgs {
@@ -12687,10 +12947,6 @@ func NewKsScmcClientGetImagesListArgs() *KsScmcClientGetImagesListArgs {
 
 func (p *KsScmcClientGetImagesListArgs) GetNodeIP() string {
   return p.NodeIP
-}
-
-func (p *KsScmcClientGetImagesListArgs) GetImageList() []string {
-  return p.ImageList
 }
 func (p *KsScmcClientGetImagesListArgs) Read(ctx context.Context, iprot thrift.TProtocol) error {
   if _, err := iprot.ReadStructBegin(ctx); err != nil {
@@ -12708,16 +12964,6 @@ func (p *KsScmcClientGetImagesListArgs) Read(ctx context.Context, iprot thrift.T
     case 1:
       if fieldTypeId == thrift.STRING {
         if err := p.ReadField1(ctx, iprot); err != nil {
-          return err
-        }
-      } else {
-        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-          return err
-        }
-      }
-    case 2:
-      if fieldTypeId == thrift.LIST {
-        if err := p.ReadField2(ctx, iprot); err != nil {
           return err
         }
       } else {
@@ -12749,34 +12995,11 @@ func (p *KsScmcClientGetImagesListArgs)  ReadField1(ctx context.Context, iprot t
   return nil
 }
 
-func (p *KsScmcClientGetImagesListArgs)  ReadField2(ctx context.Context, iprot thrift.TProtocol) error {
-  _, size, err := iprot.ReadListBegin(ctx)
-  if err != nil {
-    return thrift.PrependError("error reading list begin: ", err)
-  }
-  tSlice := make([]string, 0, size)
-  p.ImageList =  tSlice
-  for i := 0; i < size; i ++ {
-var _elem67 string
-    if v, err := iprot.ReadString(ctx); err != nil {
-    return thrift.PrependError("error reading field 0: ", err)
-} else {
-    _elem67 = v
-}
-    p.ImageList = append(p.ImageList, _elem67)
-  }
-  if err := iprot.ReadListEnd(ctx); err != nil {
-    return thrift.PrependError("error reading list end: ", err)
-  }
-  return nil
-}
-
 func (p *KsScmcClientGetImagesListArgs) Write(ctx context.Context, oprot thrift.TProtocol) error {
   if err := oprot.WriteStructBegin(ctx, "getImagesList_args"); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err) }
   if p != nil {
     if err := p.writeField1(ctx, oprot); err != nil { return err }
-    if err := p.writeField2(ctx, oprot); err != nil { return err }
   }
   if err := oprot.WriteFieldStop(ctx); err != nil {
     return thrift.PrependError("write field stop error: ", err) }
@@ -12795,24 +13018,6 @@ func (p *KsScmcClientGetImagesListArgs) writeField1(ctx context.Context, oprot t
   return err
 }
 
-func (p *KsScmcClientGetImagesListArgs) writeField2(ctx context.Context, oprot thrift.TProtocol) (err error) {
-  if err := oprot.WriteFieldBegin(ctx, "image_list", thrift.LIST, 2); err != nil {
-    return thrift.PrependError(fmt.Sprintf("%T write field begin error 2:image_list: ", p), err) }
-  if err := oprot.WriteListBegin(ctx, thrift.STRING, len(p.ImageList)); err != nil {
-    return thrift.PrependError("error writing list begin: ", err)
-  }
-  for _, v := range p.ImageList {
-    if err := oprot.WriteString(ctx, string(v)); err != nil {
-    return thrift.PrependError(fmt.Sprintf("%T. (0) field write error: ", p), err) }
-  }
-  if err := oprot.WriteListEnd(ctx); err != nil {
-    return thrift.PrependError("error writing list end: ", err)
-  }
-  if err := oprot.WriteFieldEnd(ctx); err != nil {
-    return thrift.PrependError(fmt.Sprintf("%T write field end error 2:image_list: ", p), err) }
-  return err
-}
-
 func (p *KsScmcClientGetImagesListArgs) String() string {
   if p == nil {
     return "<nil>"
@@ -12823,19 +13028,19 @@ func (p *KsScmcClientGetImagesListArgs) String() string {
 // Attributes:
 //  - Success
 type KsScmcClientGetImagesListResult struct {
-  Success *int32 `thrift:"success,0" db:"success" json:"success,omitempty"`
+  Success *GetImagesListResponse `thrift:"success,0" db:"success" json:"success,omitempty"`
 }
 
 func NewKsScmcClientGetImagesListResult() *KsScmcClientGetImagesListResult {
   return &KsScmcClientGetImagesListResult{}
 }
 
-var KsScmcClientGetImagesListResult_Success_DEFAULT int32
-func (p *KsScmcClientGetImagesListResult) GetSuccess() int32 {
+var KsScmcClientGetImagesListResult_Success_DEFAULT *GetImagesListResponse
+func (p *KsScmcClientGetImagesListResult) GetSuccess() *GetImagesListResponse {
   if !p.IsSetSuccess() {
     return KsScmcClientGetImagesListResult_Success_DEFAULT
   }
-return *p.Success
+return p.Success
 }
 func (p *KsScmcClientGetImagesListResult) IsSetSuccess() bool {
   return p.Success != nil
@@ -12855,7 +13060,7 @@ func (p *KsScmcClientGetImagesListResult) Read(ctx context.Context, iprot thrift
     if fieldTypeId == thrift.STOP { break; }
     switch fieldId {
     case 0:
-      if fieldTypeId == thrift.I32 {
+      if fieldTypeId == thrift.STRUCT {
         if err := p.ReadField0(ctx, iprot); err != nil {
           return err
         }
@@ -12880,11 +13085,10 @@ func (p *KsScmcClientGetImagesListResult) Read(ctx context.Context, iprot thrift
 }
 
 func (p *KsScmcClientGetImagesListResult)  ReadField0(ctx context.Context, iprot thrift.TProtocol) error {
-  if v, err := iprot.ReadI32(ctx); err != nil {
-  return thrift.PrependError("error reading field 0: ", err)
-} else {
-  p.Success = &v
-}
+  p.Success = &GetImagesListResponse{}
+  if err := p.Success.Read(ctx, iprot); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", p.Success), err)
+  }
   return nil
 }
 
@@ -12903,10 +13107,11 @@ func (p *KsScmcClientGetImagesListResult) Write(ctx context.Context, oprot thrif
 
 func (p *KsScmcClientGetImagesListResult) writeField0(ctx context.Context, oprot thrift.TProtocol) (err error) {
   if p.IsSetSuccess() {
-    if err := oprot.WriteFieldBegin(ctx, "success", thrift.I32, 0); err != nil {
+    if err := oprot.WriteFieldBegin(ctx, "success", thrift.STRUCT, 0); err != nil {
       return thrift.PrependError(fmt.Sprintf("%T write field begin error 0:success: ", p), err) }
-    if err := oprot.WriteI32(ctx, int32(*p.Success)); err != nil {
-    return thrift.PrependError(fmt.Sprintf("%T.success (0) field write error: ", p), err) }
+    if err := p.Success.Write(ctx, oprot); err != nil {
+      return thrift.PrependError(fmt.Sprintf("%T error writing struct: ", p.Success), err)
+    }
     if err := oprot.WriteFieldEnd(ctx); err != nil {
       return thrift.PrependError(fmt.Sprintf("%T write field end error 0:success: ", p), err) }
   }
@@ -13599,197 +13804,6 @@ func (p *KsScmcClientUnpauseContainerResult) String() string {
     return "<nil>"
   }
   return fmt.Sprintf("KsScmcClientUnpauseContainerResult(%+v)", *p)
-}
-
-// Attributes:
-//  - NodeName
-type KsScmcClientGetAllContainersArgs struct {
-  NodeName string `thrift:"node_name,1" db:"node_name" json:"node_name"`
-}
-
-func NewKsScmcClientGetAllContainersArgs() *KsScmcClientGetAllContainersArgs {
-  return &KsScmcClientGetAllContainersArgs{}
-}
-
-
-func (p *KsScmcClientGetAllContainersArgs) GetNodeName() string {
-  return p.NodeName
-}
-func (p *KsScmcClientGetAllContainersArgs) Read(ctx context.Context, iprot thrift.TProtocol) error {
-  if _, err := iprot.ReadStructBegin(ctx); err != nil {
-    return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
-  }
-
-
-  for {
-    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin(ctx)
-    if err != nil {
-      return thrift.PrependError(fmt.Sprintf("%T field %d read error: ", p, fieldId), err)
-    }
-    if fieldTypeId == thrift.STOP { break; }
-    switch fieldId {
-    case 1:
-      if fieldTypeId == thrift.STRING {
-        if err := p.ReadField1(ctx, iprot); err != nil {
-          return err
-        }
-      } else {
-        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-          return err
-        }
-      }
-    default:
-      if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-        return err
-      }
-    }
-    if err := iprot.ReadFieldEnd(ctx); err != nil {
-      return err
-    }
-  }
-  if err := iprot.ReadStructEnd(ctx); err != nil {
-    return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
-  }
-  return nil
-}
-
-func (p *KsScmcClientGetAllContainersArgs)  ReadField1(ctx context.Context, iprot thrift.TProtocol) error {
-  if v, err := iprot.ReadString(ctx); err != nil {
-  return thrift.PrependError("error reading field 1: ", err)
-} else {
-  p.NodeName = v
-}
-  return nil
-}
-
-func (p *KsScmcClientGetAllContainersArgs) Write(ctx context.Context, oprot thrift.TProtocol) error {
-  if err := oprot.WriteStructBegin(ctx, "GetAllContainers_args"); err != nil {
-    return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err) }
-  if p != nil {
-    if err := p.writeField1(ctx, oprot); err != nil { return err }
-  }
-  if err := oprot.WriteFieldStop(ctx); err != nil {
-    return thrift.PrependError("write field stop error: ", err) }
-  if err := oprot.WriteStructEnd(ctx); err != nil {
-    return thrift.PrependError("write struct stop error: ", err) }
-  return nil
-}
-
-func (p *KsScmcClientGetAllContainersArgs) writeField1(ctx context.Context, oprot thrift.TProtocol) (err error) {
-  if err := oprot.WriteFieldBegin(ctx, "node_name", thrift.STRING, 1); err != nil {
-    return thrift.PrependError(fmt.Sprintf("%T write field begin error 1:node_name: ", p), err) }
-  if err := oprot.WriteString(ctx, string(p.NodeName)); err != nil {
-  return thrift.PrependError(fmt.Sprintf("%T.node_name (1) field write error: ", p), err) }
-  if err := oprot.WriteFieldEnd(ctx); err != nil {
-    return thrift.PrependError(fmt.Sprintf("%T write field end error 1:node_name: ", p), err) }
-  return err
-}
-
-func (p *KsScmcClientGetAllContainersArgs) String() string {
-  if p == nil {
-    return "<nil>"
-  }
-  return fmt.Sprintf("KsScmcClientGetAllContainersArgs(%+v)", *p)
-}
-
-// Attributes:
-//  - Success
-type KsScmcClientGetAllContainersResult struct {
-  Success *string `thrift:"success,0" db:"success" json:"success,omitempty"`
-}
-
-func NewKsScmcClientGetAllContainersResult() *KsScmcClientGetAllContainersResult {
-  return &KsScmcClientGetAllContainersResult{}
-}
-
-var KsScmcClientGetAllContainersResult_Success_DEFAULT string
-func (p *KsScmcClientGetAllContainersResult) GetSuccess() string {
-  if !p.IsSetSuccess() {
-    return KsScmcClientGetAllContainersResult_Success_DEFAULT
-  }
-return *p.Success
-}
-func (p *KsScmcClientGetAllContainersResult) IsSetSuccess() bool {
-  return p.Success != nil
-}
-
-func (p *KsScmcClientGetAllContainersResult) Read(ctx context.Context, iprot thrift.TProtocol) error {
-  if _, err := iprot.ReadStructBegin(ctx); err != nil {
-    return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
-  }
-
-
-  for {
-    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin(ctx)
-    if err != nil {
-      return thrift.PrependError(fmt.Sprintf("%T field %d read error: ", p, fieldId), err)
-    }
-    if fieldTypeId == thrift.STOP { break; }
-    switch fieldId {
-    case 0:
-      if fieldTypeId == thrift.STRING {
-        if err := p.ReadField0(ctx, iprot); err != nil {
-          return err
-        }
-      } else {
-        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-          return err
-        }
-      }
-    default:
-      if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-        return err
-      }
-    }
-    if err := iprot.ReadFieldEnd(ctx); err != nil {
-      return err
-    }
-  }
-  if err := iprot.ReadStructEnd(ctx); err != nil {
-    return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
-  }
-  return nil
-}
-
-func (p *KsScmcClientGetAllContainersResult)  ReadField0(ctx context.Context, iprot thrift.TProtocol) error {
-  if v, err := iprot.ReadString(ctx); err != nil {
-  return thrift.PrependError("error reading field 0: ", err)
-} else {
-  p.Success = &v
-}
-  return nil
-}
-
-func (p *KsScmcClientGetAllContainersResult) Write(ctx context.Context, oprot thrift.TProtocol) error {
-  if err := oprot.WriteStructBegin(ctx, "GetAllContainers_result"); err != nil {
-    return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err) }
-  if p != nil {
-    if err := p.writeField0(ctx, oprot); err != nil { return err }
-  }
-  if err := oprot.WriteFieldStop(ctx); err != nil {
-    return thrift.PrependError("write field stop error: ", err) }
-  if err := oprot.WriteStructEnd(ctx); err != nil {
-    return thrift.PrependError("write struct stop error: ", err) }
-  return nil
-}
-
-func (p *KsScmcClientGetAllContainersResult) writeField0(ctx context.Context, oprot thrift.TProtocol) (err error) {
-  if p.IsSetSuccess() {
-    if err := oprot.WriteFieldBegin(ctx, "success", thrift.STRING, 0); err != nil {
-      return thrift.PrependError(fmt.Sprintf("%T write field begin error 0:success: ", p), err) }
-    if err := oprot.WriteString(ctx, string(*p.Success)); err != nil {
-    return thrift.PrependError(fmt.Sprintf("%T.success (0) field write error: ", p), err) }
-    if err := oprot.WriteFieldEnd(ctx); err != nil {
-      return thrift.PrependError(fmt.Sprintf("%T write field end error 0:success: ", p), err) }
-  }
-  return err
-}
-
-func (p *KsScmcClientGetAllContainersResult) String() string {
-  if p == nil {
-    return "<nil>"
-  }
-  return fmt.Sprintf("KsScmcClientGetAllContainersResult(%+v)", *p)
 }
 
 

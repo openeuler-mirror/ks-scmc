@@ -8777,16 +8777,6 @@ func (p *KsScmcClientGetAlarmListArgs) Read(ctx context.Context, iprot thrift.TP
           return err
         }
       }
-    case 2:
-      if fieldTypeId == thrift.STRING {
-        if err := p.ReadField2(ctx, iprot); err != nil {
-          return err
-        }
-      } else {
-        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-          return err
-        }
-      }
     default:
       if err := iprot.Skip(ctx, fieldTypeId); err != nil {
         return err

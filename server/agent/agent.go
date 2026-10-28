@@ -43,6 +43,13 @@ func resumeContainerConfigs() {
 	}
 }
 
+func updateVirtualNicMacAddr() {
+	for i := 0; i < 5; i++ {
+		internal.UpdataVirtualNicMAC()
+		time.Sleep(time.Second * 30)
+	}
+}
+
 func Server() (*grpc.Server, error) {
 	opts := []grpc.ServerOption{
 		grpc.ChainUnaryInterceptor(debug.UnaryInterceptor()),
@@ -67,6 +74,8 @@ func Server() (*grpc.Server, error) {
 	node.RegisterNodeServer(s, &internal.NodeServer{})
 
 	resumeContainerConfigs()
+
+	go updateVirtualNicMacAddr()
 
 	go internal.NodeWhitelistConfig()
 	go internal.ContainerWhiteConfig()

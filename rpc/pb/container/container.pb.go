@@ -389,7 +389,7 @@ type InspectBackupReply struct {
 func (x *InspectBackupReply) Reset() {
 	*x = InspectBackupReply{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_container_proto_msgTypes[3]
+		mi := &file_container_proto_msgTypes[5]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}

@@ -44,7 +44,10 @@ func resumeContainerConfigs() {
 }
 
 func updateVirtualNicMacAddr() {
-	internal.UpdataVirtualNicMAC()
+	for i := 0; i < 5; i++ {
+		internal.UpdataVirtualNicMAC()
+		time.Sleep(time.Second * 30)
+	}
 }
 
 func Server() (*grpc.Server, error) {
@@ -71,7 +74,8 @@ func Server() (*grpc.Server, error) {
 	node.RegisterNodeServer(s, &internal.NodeServer{})
 
 	resumeContainerConfigs()
-	updateVirtualNicMacAddr()
+
+	go updateVirtualNicMacAddr()
 
 	go internal.NodeWhitelistConfig()
 	go internal.ContainerWhiteConfig()

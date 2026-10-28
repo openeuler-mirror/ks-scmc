@@ -38,6 +38,12 @@ type ContainerClient interface {
 	Restart(ctx context.Context, in *RestartRequest, opts ...grpc.CallOption) (*RestartReply, error)
 	// 更新容器配置
 	Update(ctx context.Context, in *UpdateRequest, opts ...grpc.CallOption) (*UpdateReply, error)
+	// 暂停容器
+	Pause(ctx context.Context, in *PauseRequest, opts ...grpc.CallOption) (*PauseReply, error)
+	// 取消暂停容器
+	Unpause(ctx context.Context, in *UnpauseRequest, opts ...grpc.CallOption) (*UnpauseReply, error)
+	// 加载镜像 image load
+	LoadImage(ctx context.Context, in *LoadRequest, opts ...grpc.CallOption) (Container_LoadImageClient, error)
 	// 容器备份客户端接口
 	CreateBackup(ctx context.Context, in *CreateBackupRequest, opts ...grpc.CallOption) (*CreateBackupReply, error)
 	UpdateBackup(ctx context.Context, in *UpdateBackupRequest, opts ...grpc.CallOption) (*UpdateBackupReply, error)

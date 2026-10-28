@@ -62,6 +62,8 @@ type ContainerClient interface {
 	KillAppEntry(ctx context.Context, in *KillAppEntryRequest, opts ...grpc.CallOption) (*KillAppEntryReply, error)
 	// 监控历史数据查询
 	MonitorHistory(ctx context.Context, in *MonitorHistoryRequest, opts ...grpc.CallOption) (*MonitorHistoryReply, error)
+	// 容器状态数据查询
+	GetContainerStats(ctx context.Context, in *StatsRequest, opts ...grpc.CallOption) (*StatsReply, error)
 }
 
 type containerClient struct {

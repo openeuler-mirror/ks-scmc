@@ -4219,6 +4219,172 @@ func (p *KsScmcClientClient) SetContainerQuota(ctx context.Context, node_name st
   return _result47.GetSuccess(), nil
 }
 
+// 设置容器是否开启特权
+// @param node_ip 节点ip
+// @param container_name 容器名称
+// @param isPrivileged 是否开启特权(true为开启)
+// @return 0成功，1失败
+// 
+// Parameters:
+//  - NodeIP
+//  - ContainerName
+//  - IsPrivileged
+func (p *KsScmcClientClient) SetContainerPrivileged(ctx context.Context, node_ip string, container_name string, isPrivileged bool) (r int32, err error) {
+  var _args48 KsScmcClientSetContainerPrivilegedArgs
+  _args48.NodeIP = node_ip
+  _args48.ContainerName = container_name
+  _args48.IsPrivileged = isPrivileged
+  var _result49 KsScmcClientSetContainerPrivilegedResult
+  var meta thrift.ResponseMeta
+  meta, err = p.Client_().Call(ctx, "setContainerPrivileged", &_args48, &_result49)
+  p.SetLastResponseMeta_(meta)
+  if err != nil {
+    return
+  }
+  return _result49.GetSuccess(), nil
+}
+
+// 设置容器内核参数
+// @param node_ip 节点ip
+// @param container_name 容器名称
+// @param sysctl_name 内核参数名(如"kernel.sem")
+// @param sysctl_value 内核参数值(如"512 32000 100 256")
+// @return 0成功，1失败
+// 
+// Parameters:
+//  - NodeIP
+//  - ContainerName
+//  - SysctlName
+//  - SysctlValue
+func (p *KsScmcClientClient) SetContainerSysctls(ctx context.Context, node_ip string, container_name string, sysctl_name string, sysctl_value string) (r int32, err error) {
+  var _args50 KsScmcClientSetContainerSysctlsArgs
+  _args50.NodeIP = node_ip
+  _args50.ContainerName = container_name
+  _args50.SysctlName = sysctl_name
+  _args50.SysctlValue = sysctl_value
+  var _result51 KsScmcClientSetContainerSysctlsResult
+  var meta thrift.ResponseMeta
+  meta, err = p.Client_().Call(ctx, "setContainerSysctls", &_args50, &_result51)
+  p.SetLastResponseMeta_(meta)
+  if err != nil {
+    return
+  }
+  return _result51.GetSuccess(), nil
+}
+
+// 设置容器/etc/hosts中的host信息
+// @param node_ip 节点ip
+// @param container_name 容器名称
+// @param container_extrahosts host信息数组(如["docker:127.0.0.1","docker:127.0.0.1"])
+// @return 0成功，1失败
+// 
+// Parameters:
+//  - NodeIP
+//  - ContainerName
+//  - ContainerExtrahosts
+func (p *KsScmcClientClient) SetContainerExtraHosts(ctx context.Context, node_ip string, container_name string, container_extrahosts []string) (r int32, err error) {
+  var _args52 KsScmcClientSetContainerExtraHostsArgs
+  _args52.NodeIP = node_ip
+  _args52.ContainerName = container_name
+  _args52.ContainerExtrahosts = container_extrahosts
+  var _result53 KsScmcClientSetContainerExtraHostsResult
+  var meta thrift.ResponseMeta
+  meta, err = p.Client_().Call(ctx, "setContainerExtraHosts", &_args52, &_result53)
+  p.SetLastResponseMeta_(meta)
+  if err != nil {
+    return
+  }
+  return _result53.GetSuccess(), nil
+}
+
+// 获取节点上的镜像列表
+// @param node_ip 节点ip
+// @param image_list 镜像信息列表(输出参数)
+// @return 0成功，1失败
+// 
+// Parameters:
+//  - NodeIP
+//  - ImageList
+func (p *KsScmcClientClient) GetImagesList(ctx context.Context, node_ip string, image_list []string) (r int32, err error) {
+  var _args54 KsScmcClientGetImagesListArgs
+  _args54.NodeIP = node_ip
+  _args54.ImageList = image_list
+  var _result55 KsScmcClientGetImagesListResult
+  var meta thrift.ResponseMeta
+  meta, err = p.Client_().Call(ctx, "getImagesList", &_args54, &_result55)
+  p.SetLastResponseMeta_(meta)
+  if err != nil {
+    return
+  }
+  return _result55.GetSuccess(), nil
+}
+
+// 导入镜像到节点
+// @param node_ip 节点ip
+// @param tarPath 镜像tar文件路径
+// @return 0成功，1失败
+// 
+// Parameters:
+//  - NodeIP
+//  - TarPath
+func (p *KsScmcClientClient) LoadImage(ctx context.Context, node_ip string, tarPath string) (r int32, err error) {
+  var _args56 KsScmcClientLoadImageArgs
+  _args56.NodeIP = node_ip
+  _args56.TarPath = tarPath
+  var _result57 KsScmcClientLoadImageResult
+  var meta thrift.ResponseMeta
+  meta, err = p.Client_().Call(ctx, "loadImage", &_args56, &_result57)
+  p.SetLastResponseMeta_(meta)
+  if err != nil {
+    return
+  }
+  return _result57.GetSuccess(), nil
+}
+
+// 暂停容器
+// @param node_ip 节点ip
+// @param container_name 容器名称
+// @return 0成功，1失败
+// 
+// Parameters:
+//  - NodeIP
+//  - ContainerName
+func (p *KsScmcClientClient) PauseContainer(ctx context.Context, node_ip string, container_name string) (r int32, err error) {
+  var _args58 KsScmcClientPauseContainerArgs
+  _args58.NodeIP = node_ip
+  _args58.ContainerName = container_name
+  var _result59 KsScmcClientPauseContainerResult
+  var meta thrift.ResponseMeta
+  meta, err = p.Client_().Call(ctx, "pauseContainer", &_args58, &_result59)
+  p.SetLastResponseMeta_(meta)
+  if err != nil {
+    return
+  }
+  return _result59.GetSuccess(), nil
+}
+
+// 恢复暂停的容器
+// @param node_ip 节点ip
+// @param container_name 容器名称
+// @return 0成功，1失败
+// 
+// Parameters:
+//  - NodeIP
+//  - ContainerName
+func (p *KsScmcClientClient) UnpauseContainer(ctx context.Context, node_ip string, container_name string) (r int32, err error) {
+  var _args60 KsScmcClientUnpauseContainerArgs
+  _args60.NodeIP = node_ip
+  _args60.ContainerName = container_name
+  var _result61 KsScmcClientUnpauseContainerResult
+  var meta thrift.ResponseMeta
+  meta, err = p.Client_().Call(ctx, "unpauseContainer", &_args60, &_result61)
+  p.SetLastResponseMeta_(meta)
+  if err != nil {
+    return
+  }
+  return _result61.GetSuccess(), nil
+}
+
 type KsScmcClientProcessor struct {
   processorMap map[string]thrift.TProcessorFunction
   handler KsScmcClient

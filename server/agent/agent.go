@@ -17,32 +17,6 @@ import (
 	"scmc/server/agent/internal"
 )
 
-func resumeNodeConfigs() {
-	cfgs, err := litedb.NodeConfigList()
-	if err != nil {
-		log.Warnf("ContainerConfigList err=%v", err)
-		return
-	}
-
-	for _, c := range cfgs {
-		if c.SecurityConfig == nil {
-			continue
-		}
-		if c.SecurityConfig.FileProtection != nil {
-			fp := c.SecurityConfig.FileProtection
-			if err := kysec.UpdateFileAccess(c.NodeID, fp.IsOn, fp.FileList, nil); err != nil {
-				log.Warnf("UpdateFileAccess container=%v err=%v", c.NodeID, err)
-			}
-		}
-		if c.SecurityConfig.ProcProtection != nil {
-			pp := c.SecurityConfig.ProcProtection
-			if err := kysec.UpdateWhiteList(c.NodeID, pp.IsOn, pp.ExeList, nil); err != nil {
-				log.Warnf("UpdateWhiteList container=%v err=%v", c.NodeID, err)
-			}
-		}
-	}
-}
-
 func resumeContainerConfigs() {
 	cfgs, err := litedb.ContainerConfigList()
 	if err != nil {
@@ -66,13 +40,6 @@ func resumeContainerConfigs() {
 				log.Warnf("UpdateWhiteList container=%v err=%v", c.ContainerID, err)
 			}
 		}
-	}
-}
-
-func updateVirtualNicMacAddr() {
-	for i := 0; i < 5; i++ {
-		internal.UpdataVirtualNicMAC()
-		time.Sleep(time.Second * 30)
 	}
 }
 
@@ -100,9 +67,6 @@ func Server() (*grpc.Server, error) {
 	node.RegisterNodeServer(s, &internal.NodeServer{})
 
 	resumeContainerConfigs()
-	resumeNodeConfigs()
-
-	go updateVirtualNicMacAddr()
 
 	go internal.NodeWhitelistConfig()
 	go internal.ContainerWhiteConfig()

@@ -3749,6 +3749,77 @@ type KsScmcClient interface {
   //  - ContainerName
   //  - ContainerLimit
   SetContainerQuota(ctx context.Context, node_name string, container_name string, containerLimit *ContainerLimit) (r int32, err error)
+  // 设置容器是否开启特权
+  // @param node_ip 节点ip
+  // @param container_name 容器名称
+  // @param isPrivileged 是否开启特权(true为开启)
+  // @return 0成功，1失败
+  // 
+  // Parameters:
+  //  - NodeIP
+  //  - ContainerName
+  //  - IsPrivileged
+  SetContainerPrivileged(ctx context.Context, node_ip string, container_name string, isPrivileged bool) (r int32, err error)
+  // 设置容器内核参数
+  // @param node_ip 节点ip
+  // @param container_name 容器名称
+  // @param sysctl_name 内核参数名(如"kernel.sem")
+  // @param sysctl_value 内核参数值(如"512 32000 100 256")
+  // @return 0成功，1失败
+  // 
+  // Parameters:
+  //  - NodeIP
+  //  - ContainerName
+  //  - SysctlName
+  //  - SysctlValue
+  SetContainerSysctls(ctx context.Context, node_ip string, container_name string, sysctl_name string, sysctl_value string) (r int32, err error)
+  // 设置容器/etc/hosts中的host信息
+  // @param node_ip 节点ip
+  // @param container_name 容器名称
+  // @param container_extrahosts host信息数组(如["docker:127.0.0.1","docker:127.0.0.1"])
+  // @return 0成功，1失败
+  // 
+  // Parameters:
+  //  - NodeIP
+  //  - ContainerName
+  //  - ContainerExtrahosts
+  SetContainerExtraHosts(ctx context.Context, node_ip string, container_name string, container_extrahosts []string) (r int32, err error)
+  // 获取节点上的镜像列表
+  // @param node_ip 节点ip
+  // @param image_list 镜像信息列表(输出参数)
+  // @return 0成功，1失败
+  // 
+  // Parameters:
+  //  - NodeIP
+  //  - ImageList
+  GetImagesList(ctx context.Context, node_ip string, image_list []string) (r int32, err error)
+  // 导入镜像到节点
+  // @param node_ip 节点ip
+  // @param tarPath 镜像tar文件路径
+  // @return 0成功，1失败
+  // 
+  // Parameters:
+  //  - NodeIP
+  //  - TarPath
+  LoadImage(ctx context.Context, node_ip string, tarPath string) (r int32, err error)
+  // 暂停容器
+  // @param node_ip 节点ip
+  // @param container_name 容器名称
+  // @return 0成功，1失败
+  // 
+  // Parameters:
+  //  - NodeIP
+  //  - ContainerName
+  PauseContainer(ctx context.Context, node_ip string, container_name string) (r int32, err error)
+  // 恢复暂停的容器
+  // @param node_ip 节点ip
+  // @param container_name 容器名称
+  // @return 0成功，1失败
+  // 
+  // Parameters:
+  //  - NodeIP
+  //  - ContainerName
+  UnpauseContainer(ctx context.Context, node_ip string, container_name string) (r int32, err error)
 }
 
 type KsScmcClientClient struct {

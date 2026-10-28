@@ -30,10 +30,6 @@ type LoggingClient interface {
 	ReadWarn(ctx context.Context, in *ReadWarnRequest, opts ...grpc.CallOption) (*ReadWarnReply, error)
 	// 实时订阅告警日志
 	SubscribeWarn(ctx context.Context, in *SubscribeWarnRequest, opts ...grpc.CallOption) (Logging_SubscribeWarnClient, error)
-	// 设置日志配置
-	SetLog(ctx context.Context, in *SetLogRequest, opts ...grpc.CallOption) (*SetLogReply, error)
-	// 获取日志配置
-	GetLog(ctx context.Context, in *GetLogRequest, opts ...grpc.CallOption) (*GetLogReply, error)
 }
 
 type loggingClient struct {
@@ -103,24 +99,6 @@ func (x *loggingSubscribeWarnClient) Recv() (*SubscribeWarnReply, error) {
 	return m, nil
 }
 
-func (c *loggingClient) SetLog(ctx context.Context, in *SetLogRequest, opts ...grpc.CallOption) (*SetLogReply, error) {
-	out := new(SetLogReply)
-	err := c.cc.Invoke(ctx, "/logging.Logging/SetLog", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *loggingClient) GetLog(ctx context.Context, in *GetLogRequest, opts ...grpc.CallOption) (*GetLogReply, error) {
-	out := new(GetLogReply)
-	err := c.cc.Invoke(ctx, "/logging.Logging/GetLog", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 // LoggingServer is the server API for Logging service.
 // All implementations must embed UnimplementedLoggingServer
 // for forward compatibility
@@ -133,10 +111,6 @@ type LoggingServer interface {
 	ReadWarn(context.Context, *ReadWarnRequest) (*ReadWarnReply, error)
 	// 实时订阅告警日志
 	SubscribeWarn(*SubscribeWarnRequest, Logging_SubscribeWarnServer) error
-	// 设置日志配置
-	SetLog(context.Context, *SetLogRequest) (*SetLogReply, error)
-	// 获取日志配置
-	GetLog(context.Context, *GetLogRequest) (*GetLogReply, error)
 	mustEmbedUnimplementedLoggingServer()
 }
 
@@ -155,12 +129,6 @@ func (UnimplementedLoggingServer) ReadWarn(context.Context, *ReadWarnRequest) (*
 }
 func (UnimplementedLoggingServer) SubscribeWarn(*SubscribeWarnRequest, Logging_SubscribeWarnServer) error {
 	return status.Errorf(codes.Unimplemented, "method SubscribeWarn not implemented")
-}
-func (UnimplementedLoggingServer) SetLog(context.Context, *SetLogRequest) (*SetLogReply, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method SetLog not implemented")
-}
-func (UnimplementedLoggingServer) GetLog(context.Context, *GetLogRequest) (*GetLogReply, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetLog not implemented")
 }
 func (UnimplementedLoggingServer) mustEmbedUnimplementedLoggingServer() {}
 
@@ -250,42 +218,6 @@ func (x *loggingSubscribeWarnServer) Send(m *SubscribeWarnReply) error {
 	return x.ServerStream.SendMsg(m)
 }
 
-func _Logging_SetLog_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(SetLogRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(LoggingServer).SetLog(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/logging.Logging/SetLog",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(LoggingServer).SetLog(ctx, req.(*SetLogRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Logging_GetLog_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetLogRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(LoggingServer).GetLog(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/logging.Logging/GetLog",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(LoggingServer).GetLog(ctx, req.(*GetLogRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 // Logging_ServiceDesc is the grpc.ServiceDesc for Logging service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -304,14 +236,6 @@ var Logging_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ReadWarn",
 			Handler:    _Logging_ReadWarn_Handler,
-		},
-		{
-			MethodName: "SetLog",
-			Handler:    _Logging_SetLog_Handler,
-		},
-		{
-			MethodName: "GetLog",
-			Handler:    _Logging_GetLog_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{

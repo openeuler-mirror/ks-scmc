@@ -1197,6 +1197,34 @@ func (h *KsScmcHandler) SetContainerQuota(ctx context.Context, node_name string,
 	return 0, nil
 }
 
+func (h *KsScmcHandler) SetContainerPrivileged(ctx context.Context, node_ip string, container_name string, isPrivileged bool) (r int32, err error) {
+	return 0, nil
+}
+
+func (h *KsScmcHandler) SetContainerSysctls(ctx context.Context, node_ip string, container_name string, sysctl_name string, sysctl_value string) (r int32, err error) {
+	return 0, nil
+}
+
+func (h *KsScmcHandler) SetContainerExtraHosts(ctx context.Context, node_ip string, container_name string, container_extrahosts []string) (r int32, err error) {
+	return 0, nil
+}
+
+func (h *KsScmcHandler) GetImagesList(ctx context.Context, node_ip string, image_list []string) (r int32, err error) {
+	return 0, nil
+}
+
+func (h *KsScmcHandler) LoadImage(ctx context.Context, node_ip string, tarPath string) (r int32, err error) {
+	return 0, nil
+}
+
+func (h *KsScmcHandler) PauseContainer(ctx context.Context, node_ip string, container_name string) (r int32, err error) {
+	return 0, nil
+}
+
+func (h *KsScmcHandler) UnpauseContainer(ctx context.Context, node_ip string, container_name string) (r int32, err error) {
+	return 0, nil
+}
+
 func ThriftapiMain() {
 
 	logrus.Infof("thriftapi serv:")

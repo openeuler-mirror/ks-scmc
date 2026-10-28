@@ -3823,6 +3823,11 @@ var _ thrift.TException = (*OperationFailed)(nil)
 
 type KsScmcClient interface {
   // Parameters:
+  //  - User
+  //  - Passwd
+  //  - NodeIP
+  LoginV3(ctx context.Context, user string, passwd string, node_ip string) (r string, err error)
+  // Parameters:
   //  - NodeNameorip
   //  - ImageName
   //  - ImageVer

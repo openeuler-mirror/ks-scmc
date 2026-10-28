@@ -28,6 +28,21 @@ func Client() (*client.Client, error) {
 	})
 	return cli, cliErr
 }
+func ClientWithTimeout(timeout time.Duration) (*client.Client, error) {
+	httpHeaders := map[string]string{
+		"Authz-User": "KS-SCMC-SERVICE", // 通过authz插件检查
+	}
+
+	cliOnce.Do(func() {
+		cli, cliErr = client.NewClientWithOpts(
+			client.FromEnv,
+			client.WithAPIVersionNegotiation(),
+			client.WithHTTPHeaders(httpHeaders),
+			client.WithTimeout(timeout),
+		)
+	})
+	return cli, cliErr
+}
 
 func IsErrNotFound(err error) bool {
 	return client.IsErrNotFound(err)

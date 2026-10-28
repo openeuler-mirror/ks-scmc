@@ -3,7 +3,6 @@ syntax = "proto3";
 option go_package = "scmc/rpc/pb/node";
 
 import "common.proto";
-import "security.proto";
 
 package node;
 
@@ -64,16 +63,6 @@ message UsageRequest {
     int64 end_time   = 3;  // 结束时间 UNIX时间戳
 }
 
-message SecurityConfig {
-    bool disable_external_network = 1;  // 禁止访问外部网络
-    bool disable_cmd_operation    = 2;  // 禁止命令行控制容器(启停控制)
-
-    security.ProcProtection  proc_protection  = 11;  // 进程保护
-    security.ProcProtection  nproc_protection = 12;  // 网络进程保护
-    security.FileProtection  file_protection  = 13;  // 文件防篡改保护
-    security.NetworkRuleList network_rule     = 14;  // 网络访问规则
-}
-
 message UsageReply {
     NodeStatus status = 1;
 }
@@ -89,8 +78,7 @@ message UpdateReply {}
 
 message UpdateFileProtectRequest {
     int64 node_id      = 1;
-    // int64 container_id = 2;
-    SecurityConfig    security_config = 3;   //节点安全配置
+    int64 container_id = 2;
 }
 
 message UpdateFileProtectReply {}

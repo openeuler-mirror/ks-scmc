@@ -8708,8 +8708,8 @@ func (p *KsScmcClientUpdateContainerResult)  ReadField0(ctx context.Context, ipr
   return nil
 }
 
-func (p *KsScmcClientInstallContainerResult) Write(ctx context.Context, oprot thrift.TProtocol) error {
-  if err := oprot.WriteStructBegin(ctx, "installContainer_result"); err != nil {
+func (p *KsScmcClientUpdateContainerResult) Write(ctx context.Context, oprot thrift.TProtocol) error {
+  if err := oprot.WriteStructBegin(ctx, "updateContainer_result"); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err) }
   if p != nil {
     if err := p.writeField0(ctx, oprot); err != nil { return err }

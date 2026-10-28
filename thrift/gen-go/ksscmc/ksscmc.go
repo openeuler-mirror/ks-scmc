@@ -259,392 +259,460 @@ func (p *AccessAuth) Value() (driver.Value, error) {
 //  - DiskUsage
 //  - NetUpload
 //  - NetDownload
+// 
 type ContainerMetric struct {
-  ContainerName string `thrift:"container_name,1" db:"container_name" json:"container_name"`
-  ContainerID string `thrift:"container_id,2" db:"container_id" json:"container_id"`
-  NodeName string `thrift:"node_name,3" db:"node_name" json:"node_name"`
-  ContainerStatus ContainerStatus `thrift:"container_status,4" db:"container_status" json:"container_status"`
-  CPUUsage float64 `thrift:"cpu_usage,5" db:"cpu_usage" json:"cpu_usage"`
-  MemUsage int32 `thrift:"mem_usage,6" db:"mem_usage" json:"mem_usage"`
-  DiskUsage float64 `thrift:"disk_usage,7" db:"disk_usage" json:"disk_usage"`
-  NetUpload float64 `thrift:"net_upload,8" db:"net_upload" json:"net_upload"`
-  NetDownload float64 `thrift:"net_download,9" db:"net_download" json:"net_download"`
+	ContainerName string `thrift:"container_name,1" db:"container_name" json:"container_name"`
+	ContainerID string `thrift:"container_id,2" db:"container_id" json:"container_id"`
+	NodeName string `thrift:"node_name,3" db:"node_name" json:"node_name"`
+	ContainerStatus ContainerStatus `thrift:"container_status,4" db:"container_status" json:"container_status"`
+	CPUUsage float64 `thrift:"cpu_usage,5" db:"cpu_usage" json:"cpu_usage"`
+	MemUsage int32 `thrift:"mem_usage,6" db:"mem_usage" json:"mem_usage"`
+	DiskUsage float64 `thrift:"disk_usage,7" db:"disk_usage" json:"disk_usage"`
+	NetUpload float64 `thrift:"net_upload,8" db:"net_upload" json:"net_upload"`
+	NetDownload float64 `thrift:"net_download,9" db:"net_download" json:"net_download"`
 }
 
 func NewContainerMetric() *ContainerMetric {
-  return &ContainerMetric{}
+	return &ContainerMetric{}
 }
+
 
 
 func (p *ContainerMetric) GetContainerName() string {
-  return p.ContainerName
+	return p.ContainerName
 }
+
+
 
 func (p *ContainerMetric) GetContainerID() string {
-  return p.ContainerID
+	return p.ContainerID
 }
+
+
 
 func (p *ContainerMetric) GetNodeName() string {
-  return p.NodeName
+	return p.NodeName
 }
+
+
 
 func (p *ContainerMetric) GetContainerStatus() ContainerStatus {
-  return p.ContainerStatus
+	return p.ContainerStatus
 }
+
+
 
 func (p *ContainerMetric) GetCPUUsage() float64 {
-  return p.CPUUsage
+	return p.CPUUsage
 }
+
+
 
 func (p *ContainerMetric) GetMemUsage() int32 {
-  return p.MemUsage
+	return p.MemUsage
 }
+
+
 
 func (p *ContainerMetric) GetDiskUsage() float64 {
-  return p.DiskUsage
+	return p.DiskUsage
 }
+
+
 
 func (p *ContainerMetric) GetNetUpload() float64 {
-  return p.NetUpload
+	return p.NetUpload
 }
+
+
 
 func (p *ContainerMetric) GetNetDownload() float64 {
-  return p.NetDownload
+	return p.NetDownload
 }
+
 func (p *ContainerMetric) Read(ctx context.Context, iprot thrift.TProtocol) error {
-  if _, err := iprot.ReadStructBegin(ctx); err != nil {
-    return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
-  }
+	if _, err := iprot.ReadStructBegin(ctx); err != nil {
+		return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
+	}
 
 
-  for {
-    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin(ctx)
-    if err != nil {
-      return thrift.PrependError(fmt.Sprintf("%T field %d read error: ", p, fieldId), err)
-    }
-    if fieldTypeId == thrift.STOP { break; }
-    switch fieldId {
-    case 1:
-      if fieldTypeId == thrift.STRING {
-        if err := p.ReadField1(ctx, iprot); err != nil {
-          return err
-        }
-      } else {
-        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-          return err
-        }
-      }
-    case 2:
-      if fieldTypeId == thrift.STRING {
-        if err := p.ReadField2(ctx, iprot); err != nil {
-          return err
-        }
-      } else {
-        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-          return err
-        }
-      }
-    case 3:
-      if fieldTypeId == thrift.STRING {
-        if err := p.ReadField3(ctx, iprot); err != nil {
-          return err
-        }
-      } else {
-        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-          return err
-        }
-      }
-    case 4:
-      if fieldTypeId == thrift.I32 {
-        if err := p.ReadField4(ctx, iprot); err != nil {
-          return err
-        }
-      } else {
-        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-          return err
-        }
-      }
-    case 5:
-      if fieldTypeId == thrift.DOUBLE {
-        if err := p.ReadField5(ctx, iprot); err != nil {
-          return err
-        }
-      } else {
-        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-          return err
-        }
-      }
-    case 6:
-      if fieldTypeId == thrift.I32 {
-        if err := p.ReadField6(ctx, iprot); err != nil {
-          return err
-        }
-      } else {
-        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-          return err
-        }
-      }
-    case 7:
-      if fieldTypeId == thrift.DOUBLE {
-        if err := p.ReadField7(ctx, iprot); err != nil {
-          return err
-        }
-      } else {
-        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-          return err
-        }
-      }
-    case 8:
-      if fieldTypeId == thrift.DOUBLE {
-        if err := p.ReadField8(ctx, iprot); err != nil {
-          return err
-        }
-      } else {
-        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-          return err
-        }
-      }
-    case 9:
-      if fieldTypeId == thrift.DOUBLE {
-        if err := p.ReadField9(ctx, iprot); err != nil {
-          return err
-        }
-      } else {
-        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-          return err
-        }
-      }
-    default:
-      if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-        return err
-      }
-    }
-    if err := iprot.ReadFieldEnd(ctx); err != nil {
-      return err
-    }
-  }
-  if err := iprot.ReadStructEnd(ctx); err != nil {
-    return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
-  }
-  return nil
+	for {
+		_, fieldTypeId, fieldId, err := iprot.ReadFieldBegin(ctx)
+		if err != nil {
+			return thrift.PrependError(fmt.Sprintf("%T field %d read error: ", p, fieldId), err)
+		}
+		if fieldTypeId == thrift.STOP {
+			break
+		}
+		switch fieldId {
+		case 1:
+			if fieldTypeId == thrift.STRING {
+				if err := p.ReadField1(ctx, iprot); err != nil {
+					return err
+				}
+			} else {
+				if err := iprot.Skip(ctx, fieldTypeId); err != nil {
+					return err
+				}
+			}
+		case 2:
+			if fieldTypeId == thrift.STRING {
+				if err := p.ReadField2(ctx, iprot); err != nil {
+					return err
+				}
+			} else {
+				if err := iprot.Skip(ctx, fieldTypeId); err != nil {
+					return err
+				}
+			}
+		case 3:
+			if fieldTypeId == thrift.STRING {
+				if err := p.ReadField3(ctx, iprot); err != nil {
+					return err
+				}
+			} else {
+				if err := iprot.Skip(ctx, fieldTypeId); err != nil {
+					return err
+				}
+			}
+		case 4:
+			if fieldTypeId == thrift.I32 {
+				if err := p.ReadField4(ctx, iprot); err != nil {
+					return err
+				}
+			} else {
+				if err := iprot.Skip(ctx, fieldTypeId); err != nil {
+					return err
+				}
+			}
+		case 5:
+			if fieldTypeId == thrift.DOUBLE {
+				if err := p.ReadField5(ctx, iprot); err != nil {
+					return err
+				}
+			} else {
+				if err := iprot.Skip(ctx, fieldTypeId); err != nil {
+					return err
+				}
+			}
+		case 6:
+			if fieldTypeId == thrift.I32 {
+				if err := p.ReadField6(ctx, iprot); err != nil {
+					return err
+				}
+			} else {
+				if err := iprot.Skip(ctx, fieldTypeId); err != nil {
+					return err
+				}
+			}
+		case 7:
+			if fieldTypeId == thrift.DOUBLE {
+				if err := p.ReadField7(ctx, iprot); err != nil {
+					return err
+				}
+			} else {
+				if err := iprot.Skip(ctx, fieldTypeId); err != nil {
+					return err
+				}
+			}
+		case 8:
+			if fieldTypeId == thrift.DOUBLE {
+				if err := p.ReadField8(ctx, iprot); err != nil {
+					return err
+				}
+			} else {
+				if err := iprot.Skip(ctx, fieldTypeId); err != nil {
+					return err
+				}
+			}
+		case 9:
+			if fieldTypeId == thrift.DOUBLE {
+				if err := p.ReadField9(ctx, iprot); err != nil {
+					return err
+				}
+			} else {
+				if err := iprot.Skip(ctx, fieldTypeId); err != nil {
+					return err
+				}
+			}
+		default:
+			if err := iprot.Skip(ctx, fieldTypeId); err != nil {
+				return err
+			}
+		}
+		if err := iprot.ReadFieldEnd(ctx); err != nil {
+			return err
+		}
+	}
+	if err := iprot.ReadStructEnd(ctx); err != nil {
+		return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+	}
+	return nil
 }
 
-func (p *ContainerMetric)  ReadField1(ctx context.Context, iprot thrift.TProtocol) error {
-  if v, err := iprot.ReadString(ctx); err != nil {
-  return thrift.PrependError("error reading field 1: ", err)
-} else {
-  p.ContainerName = v
-}
-  return nil
-}
-
-func (p *ContainerMetric)  ReadField2(ctx context.Context, iprot thrift.TProtocol) error {
-  if v, err := iprot.ReadString(ctx); err != nil {
-  return thrift.PrependError("error reading field 2: ", err)
-} else {
-  p.ContainerID = v
-}
-  return nil
+func (p *ContainerMetric) ReadField1(ctx context.Context, iprot thrift.TProtocol) error {
+	if v, err := iprot.ReadString(ctx); err != nil {
+		return thrift.PrependError("error reading field 1: ", err)
+	} else {
+		p.ContainerName = v
+	}
+	return nil
 }
 
-func (p *ContainerMetric)  ReadField3(ctx context.Context, iprot thrift.TProtocol) error {
-  if v, err := iprot.ReadString(ctx); err != nil {
-  return thrift.PrependError("error reading field 3: ", err)
-} else {
-  p.NodeName = v
-}
-  return nil
-}
-
-func (p *ContainerMetric)  ReadField4(ctx context.Context, iprot thrift.TProtocol) error {
-  if v, err := iprot.ReadI32(ctx); err != nil {
-  return thrift.PrependError("error reading field 4: ", err)
-} else {
-  temp := ContainerStatus(v)
-  p.ContainerStatus = temp
-}
-  return nil
+func (p *ContainerMetric) ReadField2(ctx context.Context, iprot thrift.TProtocol) error {
+	if v, err := iprot.ReadString(ctx); err != nil {
+		return thrift.PrependError("error reading field 2: ", err)
+	} else {
+		p.ContainerID = v
+	}
+	return nil
 }
 
-func (p *ContainerMetric)  ReadField5(ctx context.Context, iprot thrift.TProtocol) error {
-  if v, err := iprot.ReadDouble(ctx); err != nil {
-  return thrift.PrependError("error reading field 5: ", err)
-} else {
-  p.CPUUsage = v
-}
-  return nil
-}
-
-func (p *ContainerMetric)  ReadField6(ctx context.Context, iprot thrift.TProtocol) error {
-  if v, err := iprot.ReadI32(ctx); err != nil {
-  return thrift.PrependError("error reading field 6: ", err)
-} else {
-  p.MemUsage = v
-}
-  return nil
+func (p *ContainerMetric) ReadField3(ctx context.Context, iprot thrift.TProtocol) error {
+	if v, err := iprot.ReadString(ctx); err != nil {
+		return thrift.PrependError("error reading field 3: ", err)
+	} else {
+		p.NodeName = v
+	}
+	return nil
 }
 
-func (p *ContainerMetric)  ReadField7(ctx context.Context, iprot thrift.TProtocol) error {
-  if v, err := iprot.ReadDouble(ctx); err != nil {
-  return thrift.PrependError("error reading field 7: ", err)
-} else {
-  p.DiskUsage = v
-}
-  return nil
-}
-
-func (p *ContainerMetric)  ReadField8(ctx context.Context, iprot thrift.TProtocol) error {
-  if v, err := iprot.ReadDouble(ctx); err != nil {
-  return thrift.PrependError("error reading field 8: ", err)
-} else {
-  p.NetUpload = v
-}
-  return nil
+func (p *ContainerMetric) ReadField4(ctx context.Context, iprot thrift.TProtocol) error {
+	if v, err := iprot.ReadI32(ctx); err != nil {
+		return thrift.PrependError("error reading field 4: ", err)
+	} else {
+		temp := ContainerStatus(v)
+		p.ContainerStatus = temp
+	}
+	return nil
 }
 
-func (p *ContainerMetric)  ReadField9(ctx context.Context, iprot thrift.TProtocol) error {
-  if v, err := iprot.ReadDouble(ctx); err != nil {
-  return thrift.PrependError("error reading field 9: ", err)
-} else {
-  p.NetDownload = v
+func (p *ContainerMetric) ReadField5(ctx context.Context, iprot thrift.TProtocol) error {
+	if v, err := iprot.ReadDouble(ctx); err != nil {
+		return thrift.PrependError("error reading field 5: ", err)
+	} else {
+		p.CPUUsage = v
+	}
+	return nil
 }
-  return nil
+
+func (p *ContainerMetric) ReadField6(ctx context.Context, iprot thrift.TProtocol) error {
+	if v, err := iprot.ReadI32(ctx); err != nil {
+		return thrift.PrependError("error reading field 6: ", err)
+	} else {
+		p.MemUsage = v
+	}
+	return nil
+}
+
+func (p *ContainerMetric) ReadField7(ctx context.Context, iprot thrift.TProtocol) error {
+	if v, err := iprot.ReadDouble(ctx); err != nil {
+		return thrift.PrependError("error reading field 7: ", err)
+	} else {
+		p.DiskUsage = v
+	}
+	return nil
+}
+
+func (p *ContainerMetric) ReadField8(ctx context.Context, iprot thrift.TProtocol) error {
+	if v, err := iprot.ReadDouble(ctx); err != nil {
+		return thrift.PrependError("error reading field 8: ", err)
+	} else {
+		p.NetUpload = v
+	}
+	return nil
+}
+
+func (p *ContainerMetric) ReadField9(ctx context.Context, iprot thrift.TProtocol) error {
+	if v, err := iprot.ReadDouble(ctx); err != nil {
+		return thrift.PrependError("error reading field 9: ", err)
+	} else {
+		p.NetDownload = v
+	}
+	return nil
 }
 
 func (p *ContainerMetric) Write(ctx context.Context, oprot thrift.TProtocol) error {
-  if err := oprot.WriteStructBegin(ctx, "ContainerMetric"); err != nil {
-    return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err) }
-  if p != nil {
-    if err := p.writeField1(ctx, oprot); err != nil { return err }
-    if err := p.writeField2(ctx, oprot); err != nil { return err }
-    if err := p.writeField3(ctx, oprot); err != nil { return err }
-    if err := p.writeField4(ctx, oprot); err != nil { return err }
-    if err := p.writeField5(ctx, oprot); err != nil { return err }
-    if err := p.writeField6(ctx, oprot); err != nil { return err }
-    if err := p.writeField7(ctx, oprot); err != nil { return err }
-    if err := p.writeField8(ctx, oprot); err != nil { return err }
-    if err := p.writeField9(ctx, oprot); err != nil { return err }
-  }
-  if err := oprot.WriteFieldStop(ctx); err != nil {
-    return thrift.PrependError("write field stop error: ", err) }
-  if err := oprot.WriteStructEnd(ctx); err != nil {
-    return thrift.PrependError("write struct stop error: ", err) }
-  return nil
+	if err := oprot.WriteStructBegin(ctx, "ContainerMetric"); err != nil {
+		return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
+	}
+	if p != nil {
+		if err := p.writeField1(ctx, oprot); err != nil { return err }
+		if err := p.writeField2(ctx, oprot); err != nil { return err }
+		if err := p.writeField3(ctx, oprot); err != nil { return err }
+		if err := p.writeField4(ctx, oprot); err != nil { return err }
+		if err := p.writeField5(ctx, oprot); err != nil { return err }
+		if err := p.writeField6(ctx, oprot); err != nil { return err }
+		if err := p.writeField7(ctx, oprot); err != nil { return err }
+		if err := p.writeField8(ctx, oprot); err != nil { return err }
+		if err := p.writeField9(ctx, oprot); err != nil { return err }
+	}
+	if err := oprot.WriteFieldStop(ctx); err != nil {
+		return thrift.PrependError("write field stop error: ", err)
+	}
+	if err := oprot.WriteStructEnd(ctx); err != nil {
+		return thrift.PrependError("write struct stop error: ", err)
+	}
+	return nil
 }
 
 func (p *ContainerMetric) writeField1(ctx context.Context, oprot thrift.TProtocol) (err error) {
-  if err := oprot.WriteFieldBegin(ctx, "container_name", thrift.STRING, 1); err != nil {
-    return thrift.PrependError(fmt.Sprintf("%T write field begin error 1:container_name: ", p), err) }
-  if err := oprot.WriteString(ctx, string(p.ContainerName)); err != nil {
-  return thrift.PrependError(fmt.Sprintf("%T.container_name (1) field write error: ", p), err) }
-  if err := oprot.WriteFieldEnd(ctx); err != nil {
-    return thrift.PrependError(fmt.Sprintf("%T write field end error 1:container_name: ", p), err) }
-  return err
+	if err := oprot.WriteFieldBegin(ctx, "container_name", thrift.STRING, 1); err != nil {
+		return thrift.PrependError(fmt.Sprintf("%T write field begin error 1:container_name: ", p), err)
+	}
+	if err := oprot.WriteString(ctx, string(p.ContainerName)); err != nil {
+		return thrift.PrependError(fmt.Sprintf("%T.container_name (1) field write error: ", p), err)
+	}
+	if err := oprot.WriteFieldEnd(ctx); err != nil {
+		return thrift.PrependError(fmt.Sprintf("%T write field end error 1:container_name: ", p), err)
+	}
+	return err
 }
 
 func (p *ContainerMetric) writeField2(ctx context.Context, oprot thrift.TProtocol) (err error) {
-  if err := oprot.WriteFieldBegin(ctx, "container_id", thrift.STRING, 2); err != nil {
-    return thrift.PrependError(fmt.Sprintf("%T write field begin error 2:container_id: ", p), err) }
-  if err := oprot.WriteString(ctx, string(p.ContainerID)); err != nil {
-  return thrift.PrependError(fmt.Sprintf("%T.container_id (2) field write error: ", p), err) }
-  if err := oprot.WriteFieldEnd(ctx); err != nil {
-    return thrift.PrependError(fmt.Sprintf("%T write field end error 2:container_id: ", p), err) }
-  return err
+	if err := oprot.WriteFieldBegin(ctx, "container_id", thrift.STRING, 2); err != nil {
+		return thrift.PrependError(fmt.Sprintf("%T write field begin error 2:container_id: ", p), err)
+	}
+	if err := oprot.WriteString(ctx, string(p.ContainerID)); err != nil {
+		return thrift.PrependError(fmt.Sprintf("%T.container_id (2) field write error: ", p), err)
+	}
+	if err := oprot.WriteFieldEnd(ctx); err != nil {
+		return thrift.PrependError(fmt.Sprintf("%T write field end error 2:container_id: ", p), err)
+	}
+	return err
 }
 
 func (p *ContainerMetric) writeField3(ctx context.Context, oprot thrift.TProtocol) (err error) {
-  if err := oprot.WriteFieldBegin(ctx, "node_name", thrift.STRING, 3); err != nil {
-    return thrift.PrependError(fmt.Sprintf("%T write field begin error 3:node_name: ", p), err) }
-  if err := oprot.WriteString(ctx, string(p.NodeName)); err != nil {
-  return thrift.PrependError(fmt.Sprintf("%T.node_name (3) field write error: ", p), err) }
-  if err := oprot.WriteFieldEnd(ctx); err != nil {
-    return thrift.PrependError(fmt.Sprintf("%T write field end error 3:node_name: ", p), err) }
-  return err
+	if err := oprot.WriteFieldBegin(ctx, "node_name", thrift.STRING, 3); err != nil {
+		return thrift.PrependError(fmt.Sprintf("%T write field begin error 3:node_name: ", p), err)
+	}
+	if err := oprot.WriteString(ctx, string(p.NodeName)); err != nil {
+		return thrift.PrependError(fmt.Sprintf("%T.node_name (3) field write error: ", p), err)
+	}
+	if err := oprot.WriteFieldEnd(ctx); err != nil {
+		return thrift.PrependError(fmt.Sprintf("%T write field end error 3:node_name: ", p), err)
+	}
+	return err
 }
 
 func (p *ContainerMetric) writeField4(ctx context.Context, oprot thrift.TProtocol) (err error) {
-  if err := oprot.WriteFieldBegin(ctx, "container_status", thrift.I32, 4); err != nil {
-    return thrift.PrependError(fmt.Sprintf("%T write field begin error 4:container_status: ", p), err) }
-  if err := oprot.WriteI32(ctx, int32(p.ContainerStatus)); err != nil {
-  return thrift.PrependError(fmt.Sprintf("%T.container_status (4) field write error: ", p), err) }
-  if err := oprot.WriteFieldEnd(ctx); err != nil {
-    return thrift.PrependError(fmt.Sprintf("%T write field end error 4:container_status: ", p), err) }
-  return err
+	if err := oprot.WriteFieldBegin(ctx, "container_status", thrift.I32, 4); err != nil {
+		return thrift.PrependError(fmt.Sprintf("%T write field begin error 4:container_status: ", p), err)
+	}
+	if err := oprot.WriteI32(ctx, int32(p.ContainerStatus)); err != nil {
+		return thrift.PrependError(fmt.Sprintf("%T.container_status (4) field write error: ", p), err)
+	}
+	if err := oprot.WriteFieldEnd(ctx); err != nil {
+		return thrift.PrependError(fmt.Sprintf("%T write field end error 4:container_status: ", p), err)
+	}
+	return err
 }
 
 func (p *ContainerMetric) writeField5(ctx context.Context, oprot thrift.TProtocol) (err error) {
-  if err := oprot.WriteFieldBegin(ctx, "cpu_usage", thrift.DOUBLE, 5); err != nil {
-    return thrift.PrependError(fmt.Sprintf("%T write field begin error 5:cpu_usage: ", p), err) }
-  if err := oprot.WriteDouble(ctx, float64(p.CPUUsage)); err != nil {
-  return thrift.PrependError(fmt.Sprintf("%T.cpu_usage (5) field write error: ", p), err) }
-  if err := oprot.WriteFieldEnd(ctx); err != nil {
-    return thrift.PrependError(fmt.Sprintf("%T write field end error 5:cpu_usage: ", p), err) }
-  return err
+	if err := oprot.WriteFieldBegin(ctx, "cpu_usage", thrift.DOUBLE, 5); err != nil {
+		return thrift.PrependError(fmt.Sprintf("%T write field begin error 5:cpu_usage: ", p), err)
+	}
+	if err := oprot.WriteDouble(ctx, float64(p.CPUUsage)); err != nil {
+		return thrift.PrependError(fmt.Sprintf("%T.cpu_usage (5) field write error: ", p), err)
+	}
+	if err := oprot.WriteFieldEnd(ctx); err != nil {
+		return thrift.PrependError(fmt.Sprintf("%T write field end error 5:cpu_usage: ", p), err)
+	}
+	return err
 }
 
 func (p *ContainerMetric) writeField6(ctx context.Context, oprot thrift.TProtocol) (err error) {
-  if err := oprot.WriteFieldBegin(ctx, "mem_usage", thrift.I32, 6); err != nil {
-    return thrift.PrependError(fmt.Sprintf("%T write field begin error 6:mem_usage: ", p), err) }
-  if err := oprot.WriteI32(ctx, int32(p.MemUsage)); err != nil {
-  return thrift.PrependError(fmt.Sprintf("%T.mem_usage (6) field write error: ", p), err) }
-  if err := oprot.WriteFieldEnd(ctx); err != nil {
-    return thrift.PrependError(fmt.Sprintf("%T write field end error 6:mem_usage: ", p), err) }
-  return err
+	if err := oprot.WriteFieldBegin(ctx, "mem_usage", thrift.I32, 6); err != nil {
+		return thrift.PrependError(fmt.Sprintf("%T write field begin error 6:mem_usage: ", p), err)
+	}
+	if err := oprot.WriteI32(ctx, int32(p.MemUsage)); err != nil {
+		return thrift.PrependError(fmt.Sprintf("%T.mem_usage (6) field write error: ", p), err)
+	}
+	if err := oprot.WriteFieldEnd(ctx); err != nil {
+		return thrift.PrependError(fmt.Sprintf("%T write field end error 6:mem_usage: ", p), err)
+	}
+	return err
 }
 
 func (p *ContainerMetric) writeField7(ctx context.Context, oprot thrift.TProtocol) (err error) {
-  if err := oprot.WriteFieldBegin(ctx, "disk_usage", thrift.DOUBLE, 7); err != nil {
-    return thrift.PrependError(fmt.Sprintf("%T write field begin error 7:disk_usage: ", p), err) }
-  if err := oprot.WriteDouble(ctx, float64(p.DiskUsage)); err != nil {
-  return thrift.PrependError(fmt.Sprintf("%T.disk_usage (7) field write error: ", p), err) }
-  if err := oprot.WriteFieldEnd(ctx); err != nil {
-    return thrift.PrependError(fmt.Sprintf("%T write field end error 7:disk_usage: ", p), err) }
-  return err
+	if err := oprot.WriteFieldBegin(ctx, "disk_usage", thrift.DOUBLE, 7); err != nil {
+		return thrift.PrependError(fmt.Sprintf("%T write field begin error 7:disk_usage: ", p), err)
+	}
+	if err := oprot.WriteDouble(ctx, float64(p.DiskUsage)); err != nil {
+		return thrift.PrependError(fmt.Sprintf("%T.disk_usage (7) field write error: ", p), err)
+	}
+	if err := oprot.WriteFieldEnd(ctx); err != nil {
+		return thrift.PrependError(fmt.Sprintf("%T write field end error 7:disk_usage: ", p), err)
+	}
+	return err
 }
 
 func (p *ContainerMetric) writeField8(ctx context.Context, oprot thrift.TProtocol) (err error) {
-  if err := oprot.WriteFieldBegin(ctx, "net_upload", thrift.DOUBLE, 8); err != nil {
-    return thrift.PrependError(fmt.Sprintf("%T write field begin error 8:net_upload: ", p), err) }
-  if err := oprot.WriteDouble(ctx, float64(p.NetUpload)); err != nil {
-  return thrift.PrependError(fmt.Sprintf("%T.net_upload (8) field write error: ", p), err) }
-  if err := oprot.WriteFieldEnd(ctx); err != nil {
-    return thrift.PrependError(fmt.Sprintf("%T write field end error 8:net_upload: ", p), err) }
-  return err
+	if err := oprot.WriteFieldBegin(ctx, "net_upload", thrift.DOUBLE, 8); err != nil {
+		return thrift.PrependError(fmt.Sprintf("%T write field begin error 8:net_upload: ", p), err)
+	}
+	if err := oprot.WriteDouble(ctx, float64(p.NetUpload)); err != nil {
+		return thrift.PrependError(fmt.Sprintf("%T.net_upload (8) field write error: ", p), err)
+	}
+	if err := oprot.WriteFieldEnd(ctx); err != nil {
+		return thrift.PrependError(fmt.Sprintf("%T write field end error 8:net_upload: ", p), err)
+	}
+	return err
 }
 
 func (p *ContainerMetric) writeField9(ctx context.Context, oprot thrift.TProtocol) (err error) {
-  if err := oprot.WriteFieldBegin(ctx, "net_download", thrift.DOUBLE, 9); err != nil {
-    return thrift.PrependError(fmt.Sprintf("%T write field begin error 9:net_download: ", p), err) }
-  if err := oprot.WriteDouble(ctx, float64(p.NetDownload)); err != nil {
-  return thrift.PrependError(fmt.Sprintf("%T.net_download (9) field write error: ", p), err) }
-  if err := oprot.WriteFieldEnd(ctx); err != nil {
-    return thrift.PrependError(fmt.Sprintf("%T write field end error 9:net_download: ", p), err) }
-  return err
+	if err := oprot.WriteFieldBegin(ctx, "net_download", thrift.DOUBLE, 9); err != nil {
+		return thrift.PrependError(fmt.Sprintf("%T write field begin error 9:net_download: ", p), err)
+	}
+	if err := oprot.WriteDouble(ctx, float64(p.NetDownload)); err != nil {
+		return thrift.PrependError(fmt.Sprintf("%T.net_download (9) field write error: ", p), err)
+	}
+	if err := oprot.WriteFieldEnd(ctx); err != nil {
+		return thrift.PrependError(fmt.Sprintf("%T write field end error 9:net_download: ", p), err)
+	}
+	return err
 }
 
 func (p *ContainerMetric) Equals(other *ContainerMetric) bool {
-  if p == other {
-    return true
-  } else if p == nil || other == nil {
-    return false
-  }
-  if p.ContainerName != other.ContainerName { return false }
-  if p.ContainerID != other.ContainerID { return false }
-  if p.NodeName != other.NodeName { return false }
-  if p.ContainerStatus != other.ContainerStatus { return false }
-  if p.CPUUsage != other.CPUUsage { return false }
-  if p.MemUsage != other.MemUsage { return false }
-  if p.DiskUsage != other.DiskUsage { return false }
-  if p.NetUpload != other.NetUpload { return false }
-  if p.NetDownload != other.NetDownload { return false }
-  return true
+	if p == other {
+		return true
+	} else if p == nil || other == nil {
+		return false
+	}
+	if p.ContainerName != other.ContainerName { return false }
+	if p.ContainerID != other.ContainerID { return false }
+	if p.NodeName != other.NodeName { return false }
+	if p.ContainerStatus != other.ContainerStatus { return false }
+	if p.CPUUsage != other.CPUUsage { return false }
+	if p.MemUsage != other.MemUsage { return false }
+	if p.DiskUsage != other.DiskUsage { return false }
+	if p.NetUpload != other.NetUpload { return false }
+	if p.NetDownload != other.NetDownload { return false }
+	return true
 }
 
 func (p *ContainerMetric) String() string {
-  if p == nil {
-    return "<nil>"
-  }
-  return fmt.Sprintf("ContainerMetric(%+v)", *p)
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("ContainerMetric(%+v)", *p)
+}
+
+func (p *ContainerMetric) LogValue() slog.Value {
+	if p == nil {
+		return slog.AnyValue(nil)
+	}
+	v := thrift.SlogTStructWrapper{
+		Type: "*ksscmc.ContainerMetric",
+		Value: p,
+	}
+	return slog.AnyValue(v)
+}
+
+var _ slog.LogValuer = (*ContainerMetric)(nil)
+
+func (p *ContainerMetric) Validate() error {
+	return nil
 }
 
 // Attributes:

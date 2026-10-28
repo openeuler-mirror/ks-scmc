@@ -224,6 +224,12 @@ service KsScmcClient {
      * @return 0成功，1失败
      */
     i32 unpauseContainer(1: string node_ip, 2: string container_name)
+	
+    /**
+     * 获取 容器的状态信息，参考 docker stats 的输出
+     * 返回值为 json 格式
+     */
+    string GetAllContainers(1:string node_name)
 }
 
 // ================ 异常定义 ================

@@ -4405,28 +4405,35 @@ func (p *KsScmcClientProcessor) ProcessorMap() map[string]thrift.TProcessorFunct
 
 func NewKsScmcClientProcessor(handler KsScmcClient) *KsScmcClientProcessor {
 
-  self48 := &KsScmcClientProcessor{handler:handler, processorMap:make(map[string]thrift.TProcessorFunction)}
-  self48.processorMap["installContainer"] = &ksScmcClientProcessorInstallContainer{handler:handler}
-  self48.processorMap["startContainer"] = &ksScmcClientProcessorStartContainer{handler:handler}
-  self48.processorMap["stopContainer"] = &ksScmcClientProcessorStopContainer{handler:handler}
-  self48.processorMap["uninstallContainer"] = &ksScmcClientProcessorUninstallContainer{handler:handler}
-  self48.processorMap["getContainerStatus"] = &ksScmcClientProcessorGetContainerStatus{handler:handler}
-  self48.processorMap["getContainerMetrics"] = &ksScmcClientProcessorGetContainerMetrics{handler:handler}
-  self48.processorMap["getImageVer4Container"] = &ksScmcClientProcessorGetImageVer4Container{handler:handler}
-  self48.processorMap["getContainer"] = &ksScmcClientProcessorGetContainer{handler:handler}
-  self48.processorMap["updateContainer"] = &ksScmcClientProcessorUpdateContainer{handler:handler}
-  self48.processorMap["getAlarmList"] = &ksScmcClientProcessorGetAlarmList{handler:handler}
-  self48.processorMap["getAllNodeList"] = &ksScmcClientProcessorGetAllNodeList{handler:handler}
-  self48.processorMap["getAllContainerList"] = &ksScmcClientProcessorGetAllContainerList{handler:handler}
-  self48.processorMap["getContainerNetwork"] = &ksScmcClientProcessorGetContainerNetwork{handler:handler}
-  self48.processorMap["getContainerNetRules"] = &ksScmcClientProcessorGetContainerNetRules{handler:handler}
-  self48.processorMap["addContainerIpPort"] = &ksScmcClientProcessorAddContainerIpPort{handler:handler}
-  self48.processorMap["addContainerReqIpPort"] = &ksScmcClientProcessorAddContainerReqIpPort{handler:handler}
-  self48.processorMap["addContainerEnv"] = &ksScmcClientProcessorAddContainerEnv{handler:handler}
-  self48.processorMap["addContainerLocalVolume"] = &ksScmcClientProcessorAddContainerLocalVolume{handler:handler}
-  self48.processorMap["setContainerDisplayV2"] = &ksScmcClientProcessorSetContainerDisplayV2{handler:handler}
-  self48.processorMap["setContainerQuota"] = &ksScmcClientProcessorSetContainerQuota{handler:handler}
-return self48
+  self62 := &KsScmcClientProcessor{handler:handler, processorMap:make(map[string]thrift.TProcessorFunction)}
+  self62.processorMap["installContainer"] = &ksScmcClientProcessorInstallContainer{handler:handler}
+  self62.processorMap["startContainer"] = &ksScmcClientProcessorStartContainer{handler:handler}
+  self62.processorMap["stopContainer"] = &ksScmcClientProcessorStopContainer{handler:handler}
+  self62.processorMap["uninstallContainer"] = &ksScmcClientProcessorUninstallContainer{handler:handler}
+  self62.processorMap["getContainerStatus"] = &ksScmcClientProcessorGetContainerStatus{handler:handler}
+  self62.processorMap["getContainerMetrics"] = &ksScmcClientProcessorGetContainerMetrics{handler:handler}
+  self62.processorMap["getImageVer4Container"] = &ksScmcClientProcessorGetImageVer4Container{handler:handler}
+  self62.processorMap["getContainer"] = &ksScmcClientProcessorGetContainer{handler:handler}
+  self62.processorMap["updateContainer"] = &ksScmcClientProcessorUpdateContainer{handler:handler}
+  self62.processorMap["getAlarmList"] = &ksScmcClientProcessorGetAlarmList{handler:handler}
+  self62.processorMap["getAllNodeList"] = &ksScmcClientProcessorGetAllNodeList{handler:handler}
+  self62.processorMap["getAllContainerList"] = &ksScmcClientProcessorGetAllContainerList{handler:handler}
+  self62.processorMap["getContainerNetwork"] = &ksScmcClientProcessorGetContainerNetwork{handler:handler}
+  self62.processorMap["getContainerNetRules"] = &ksScmcClientProcessorGetContainerNetRules{handler:handler}
+  self62.processorMap["addContainerIpPort"] = &ksScmcClientProcessorAddContainerIpPort{handler:handler}
+  self62.processorMap["addContainerReqIpPort"] = &ksScmcClientProcessorAddContainerReqIpPort{handler:handler}
+  self62.processorMap["addContainerEnv"] = &ksScmcClientProcessorAddContainerEnv{handler:handler}
+  self62.processorMap["addContainerLocalVolume"] = &ksScmcClientProcessorAddContainerLocalVolume{handler:handler}
+  self62.processorMap["setContainerDisplayV2"] = &ksScmcClientProcessorSetContainerDisplayV2{handler:handler}
+  self62.processorMap["setContainerQuota"] = &ksScmcClientProcessorSetContainerQuota{handler:handler}
+  self62.processorMap["setContainerPrivileged"] = &ksScmcClientProcessorSetContainerPrivileged{handler:handler}
+  self62.processorMap["setContainerSysctls"] = &ksScmcClientProcessorSetContainerSysctls{handler:handler}
+  self62.processorMap["setContainerExtraHosts"] = &ksScmcClientProcessorSetContainerExtraHosts{handler:handler}
+  self62.processorMap["getImagesList"] = &ksScmcClientProcessorGetImagesList{handler:handler}
+  self62.processorMap["loadImage"] = &ksScmcClientProcessorLoadImage{handler:handler}
+  self62.processorMap["pauseContainer"] = &ksScmcClientProcessorPauseContainer{handler:handler}
+  self62.processorMap["unpauseContainer"] = &ksScmcClientProcessorUnpauseContainer{handler:handler}
+return self62
 }
 
 func (p *KsScmcClientProcessor) Process(ctx context.Context, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {

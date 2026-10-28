@@ -8733,34 +8733,28 @@ func (p *KsScmcClientUpdateContainerResult) writeField0(ctx context.Context, opr
   return err
 }
 
-func (p *KsScmcClientInstallContainerResult) String() string {
+func (p *KsScmcClientUpdateContainerResult) String() string {
   if p == nil {
     return "<nil>"
   }
-  return fmt.Sprintf("KsScmcClientInstallContainerResult(%+v)", *p)
+  return fmt.Sprintf("KsScmcClientUpdateContainerResult(%+v)", *p)
 }
 
 // Attributes:
-//  - NodeNameorip
-//  - ContainerName
-type KsScmcClientStartContainerArgs struct {
-  NodeNameorip string `thrift:"node_nameorip,1" db:"node_nameorip" json:"node_nameorip"`
-  ContainerName string `thrift:"container_name,2" db:"container_name" json:"container_name"`
+//  - NodeName
+type KsScmcClientGetAlarmListArgs struct {
+  NodeName string `thrift:"node_name,1" db:"node_name" json:"node_name"`
 }
 
-func NewKsScmcClientStartContainerArgs() *KsScmcClientStartContainerArgs {
-  return &KsScmcClientStartContainerArgs{}
+func NewKsScmcClientGetAlarmListArgs() *KsScmcClientGetAlarmListArgs {
+  return &KsScmcClientGetAlarmListArgs{}
 }
 
 
-func (p *KsScmcClientStartContainerArgs) GetNodeNameorip() string {
-  return p.NodeNameorip
+func (p *KsScmcClientGetAlarmListArgs) GetNodeName() string {
+  return p.NodeName
 }
-
-func (p *KsScmcClientStartContainerArgs) GetContainerName() string {
-  return p.ContainerName
-}
-func (p *KsScmcClientStartContainerArgs) Read(ctx context.Context, iprot thrift.TProtocol) error {
+func (p *KsScmcClientGetAlarmListArgs) Read(ctx context.Context, iprot thrift.TProtocol) error {
   if _, err := iprot.ReadStructBegin(ctx); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
   }

@@ -361,7 +361,7 @@ func (x *InspectBackupRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use InspectBackupRequest.ProtoReflect.Descriptor instead.
 func (*InspectBackupRequest) Descriptor() ([]byte, []int) {
-	return file_container_proto_rawDescGZIP(), []int{2}
+	return file_container_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *InspectBackupRequest) GetNodeId() int64 {

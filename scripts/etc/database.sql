@@ -91,7 +91,7 @@ CREATE TABLE `runtime_logs` (
   `node_info` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '节点名+节点IP',
   `user_id` bigint(20) NOT NULL DEFAULT '0' COMMENT '操作用户ID',
   `target` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '操作对象',
-  `detail` text COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '详情',
+  `detail` text COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '详情',
   `status_code` int(10) NOT NULL DEFAULT '0' COMMENT '错误码 0:OK',
   `error` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '错误信息',
   `created_at` bigint(20) NOT NULL DEFAULT '0',

@@ -11,6 +11,7 @@ import (
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	reflect "reflect"
 	_ "scmc/rpc/pb/common"
+	security "scmc/rpc/pb/security"
 	sync "sync"
 )
 

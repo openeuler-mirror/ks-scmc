@@ -17,7 +17,7 @@ import (
 type EthMac map[string]string
 
 func jsonFile() string {
-	return common.Config.Network.IPtablesPath + "eth-mac.json"
+	return common.Config.Network.IPtablesPath + "/eth-mac.json"
 }
 
 func readJSON() (EthMac, error) {

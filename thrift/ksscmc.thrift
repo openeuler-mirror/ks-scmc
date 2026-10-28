@@ -134,34 +134,96 @@ service KsScmcClient {
     i32 startContainer(1: string node_nameorip, 2: string container_name),
     i32 stopContainer(1: string node_nameorip, 2: string container_name),
     i32 uninstallContainer(1: string node_nameorip, 2: string container_name),
-    
+
     // 状态查询
     i32 getContainerStatus(1: string node_nameorip, 2: string container_name),
     GetContainerMetricsResponse getContainerMetrics(1: string node_nameorip, 2: string container_name),
     GetImageVer4ContainerResponse getImageVer4Container(1: string node_nameorip, 2: string container_name),
     i32 getContainer(1: string node_name, 2: string container_name),
-    
+
     // 更新操作
     i32 updateContainer(1: string node_name, 2: string container_name, 3: string new_ver),
-    
+
     // 批量查询
     GetAlarmListResponse getAlarmList(1: string node_name),
     GetAllNodeListResponse getAllNodeList(),
     GetAllContainerListResponse getAllContainerList(),
-    
+
     // 网络配置
     GetContainerNetworkResponse getContainerNetwork(1: string node_nameorip, 2: string container_name),
     GetContainerNetRulesResponse getContainerNetRules(1: string node_name, 2: string container_name),
     i32 addContainerIpPort(1: string node_nameorip, 2: string container_name, 3: string ip_addr, 4: i32 port, 5: string net_proto),
     i32 addContainerReqIpPort(1: string node_name, 2: string container_name, 3: string ip_addr, 4: i32 port, 5: string net_proto),
-    
+
     // 环境配置
     i32 addContainerEnv(1: string node_nameorip, 2: string container_name, 3: string env_name, 4: string env_value),
     i32 addContainerLocalVolume(1: string node_nameorip, 2: string container_name, 3: string in_dir, 4: string out_dir, 5: AccessAuth access_auth),
     i32 setContainerDisplayV2(1: string node_name, 2: string container_name, 3: bool enabled, 4: string display),
-    
+
     // 资源限制
     i32 setContainerQuota(1: string node_name, 2: string container_name, 3: ContainerLimit containerLimit)
+
+        /**
+     * 设置容器是否开启特权
+     * @param node_ip 节点ip
+     * @param container_name 容器名称
+     * @param isPrivileged 是否开启特权(true为开启)
+     * @return 0成功，1失败
+     */
+    i32 setContainerPrivileged(1: string node_ip, 2: string container_name, 3: bool isPrivileged),
+
+    /**
+     * 设置容器内核参数
+     * @param node_ip 节点ip
+     * @param container_name 容器名称
+     * @param sysctl_name 内核参数名(如"kernel.sem")
+     * @param sysctl_value 内核参数值(如"512 32000 100 256")
+     * @return 0成功，1失败
+     */
+    i32 setContainerSysctls(1: string node_ip, 2: string container_name,
+                           3: string sysctl_name, 4: string sysctl_value),
+
+    /**
+     * 设置容器/etc/hosts中的host信息
+     * @param node_ip 节点ip
+     * @param container_name 容器名称
+     * @param container_extrahosts host信息数组(如["docker:127.0.0.1","docker:127.0.0.1"])
+     * @return 0成功，1失败
+     */
+    i32 setContainerExtraHosts(1: string node_ip, 2: string container_name,
+                             3: list<string> container_extrahosts),
+
+    /**
+     * 获取节点上的镜像列表
+     * @param node_ip 节点ip
+     * @param image_list 镜像信息列表(输出参数)
+     * @return 0成功，1失败
+     */
+    i32 getImagesList(1: string node_ip, 2: list<string> image_list),
+
+    /**
+     * 导入镜像到节点
+     * @param node_ip 节点ip
+     * @param tarPath 镜像tar文件路径
+     * @return 0成功，1失败
+     */
+    i32 loadImage(1: string node_ip, 2: string tarPath),
+
+    /**
+     * 暂停容器
+     * @param node_ip 节点ip
+     * @param container_name 容器名称
+     * @return 0成功，1失败
+     */
+    i32 pauseContainer(1: string node_ip, 2: string container_name),
+
+    /**
+     * 恢复暂停的容器
+     * @param node_ip 节点ip
+     * @param container_name 容器名称
+     * @return 0成功，1失败
+     */
+    i32 unpauseContainer(1: string node_ip, 2: string container_name)
 }
 
 // ================ 异常定义 ================

@@ -1,7 +1,0 @@
-#!/bin/bash
-
-mysql -uroot -p'{{ mysql.root_password }}' -e "CHANGE MASTER TO MASTER_HOST='{{ other_host }}', MASTER_USER='replacation', MASTER_PASSWORD='replacation.2023', MASTER_AUTO_POSITION=1;"
-mysql -uroot -p'{{ mysql.root_password }}' -e "START SLAVE;"
-mysql -uroot -p'{{ mysql.root_password }}' -e "SET GLOBAL read_only=0;"
-
-echo "$(date) - MySQL demoted to Slave" >> /var/log/keepalived_mysql.log

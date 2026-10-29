@@ -8,584 +8,544 @@ import "security.proto";
 package container;
 
 service Container {
-  // 查询容器列表
-  rpc List(ListRequest) returns (ListReply) {}
-  // 创建新容器
-  rpc Create(CreateRequest) returns (CreateReply) {}
-  // 查看容器配置
-  rpc Inspect(InspectRequest) returns (InspectReply) {}
-  // 开始运行容器
-  rpc Start(StartRequest) returns (StartReply) {}
-  // 停止运行容器
-  rpc Stop(StopRequest) returns (StopReply) {}
-  // 删除容器
-  rpc Remove(RemoveRequest) returns (RemoveReply) {}
-  // 重启容器
-  rpc Restart(RestartRequest) returns (RestartReply) {}
-  // 更新容器配置
-  rpc Update(UpdateRequest) returns (UpdateReply) {}
-  //暂停容器
-  rpc Pause(PauseRequest) returns (PauseReply) {}
-  //取消暂停容器
-  rpc Unpause(UnpauseRequest) returns (UnpauseReply) {}
-  //加载镜像 image load
-  rpc LoadImage(LoadRequest)returns (stream LoadProgress){}
-  //设置容器/etc/hosts
-  rpc SetContainerExtraHosts(SetHostsRequest)returns (SetHostsReply){}
-  // 容器备份客户端接口
-  rpc CreateBackup(CreateBackupRequest) returns (CreateBackupReply) {}         // 创建备份
-  rpc UpdateBackup(UpdateBackupRequest) returns (UpdateBackupReply) {}         // 更新备份描述
-  rpc ResumeBackup(ResumeBackupRequest) returns (ResumeBackupReply) {}         // 恢复备份
-  rpc RemoveBackup(RemoveBackupRequest) returns (RemoveBackupReply) {}         // 删除备份
-  rpc ListBackup(ListBackupRequest) returns (ListBackupReply) {}               // 备份列表
-  rpc ExportBackup(ExportBackupRequest) returns (stream ExportBackupReply) {}  // 导出备份镜像
-  rpc ListBackupImage(ListBackupImageRequest) returns (ListBackupImageReply) {}
-  rpc InspectBackup(InspectBackupRequest) returns (InspectBackupReply) {}
+    // 查询容器列表
+    rpc List(ListRequest) returns (ListReply) {}
+    // 创建新容器
+    rpc Create(CreateRequest) returns (CreateReply) {}
+    // 查看容器配置
+    rpc Inspect(InspectRequest) returns (InspectReply) {}
+    // 开始运行容器
+    rpc Start(StartRequest) returns (StartReply) {}
+    // 停止运行容器
+    rpc Stop(StopRequest) returns (StopReply) {}
+    // 删除容器
+    rpc Remove(RemoveRequest) returns (RemoveReply) {}
+    // 重启容器
+    rpc Restart(RestartRequest) returns (RestartReply) {}
+    // 更新容器配置
+    rpc Update(UpdateRequest) returns (UpdateReply) {}
 
-  // 查询容器模板列表
-  rpc ListTemplate(ListTemplateRequest) returns (ListTemplateReply) {}
-  // 创建容器模板
-  rpc CreateTemplate(CreateTemplateRequest) returns (CreateTemplateReply) {}
-  // 更新容器模板
-  rpc UpdateTemplate(UpdateTemplateRequest) returns (UpdateTemplateReply) {}
-  // 查询单个容器模板详情
-  rpc InspectTemplate(InspectTemplateRequest) returns (InspectTemplateReply) {}
-  // 删除容器模板
-  rpc RemoveTemplate(RemoveTemplateRequest) returns (RemoveTemplateReply) {}
+    // 容器备份客户端接口
+    rpc CreateBackup(CreateBackupRequest) returns (CreateBackupReply) {}         // 创建备份
+    rpc UpdateBackup(UpdateBackupRequest) returns (UpdateBackupReply) {}         // 更新备份描述
+    rpc ResumeBackup(ResumeBackupRequest) returns (ResumeBackupReply) {}         // 恢复备份
+    rpc RemoveBackup(RemoveBackupRequest) returns (RemoveBackupReply) {}         // 删除备份
+    rpc ListBackup(ListBackupRequest) returns (ListBackupReply) {}               // 备份列表
+    rpc ExportBackup(ExportBackupRequest) returns (stream ExportBackupReply) {}  // 导出备份镜像
+    rpc ListBackupImage(ListBackupImageRequest) returns (ListBackupImageReply) {}
+    rpc InspectBackup(InspectBackupRequest) returns (InspectBackupReply) {}
 
-  // 容器多应用入口功能
-  rpc ListAppEntry(ListAppEntryRequest) returns (ListAppEntryReply) {}
-  rpc AddAppEntry(AddAppEntryRequest) returns (AddAppEntryReply) {}
-  rpc UpdateAppEntry(UpdateAppEntryRequest) returns (UpdateAppEntryReply) {}
-  rpc RemoveAppEntry(RemoveAppEntryRequest) returns (RemoveAppEntryReply) {}
-  rpc RunAppEntry(RunAppEntryRequest) returns (RunAppEntryReply) {}
-  rpc KillAppEntry(KillAppEntryRequest) returns (KillAppEntryReply) {}
+    // 查询容器模板列表
+    rpc ListTemplate(ListTemplateRequest) returns (ListTemplateReply) {}
+    // 创建容器模板
+    rpc CreateTemplate(CreateTemplateRequest) returns (CreateTemplateReply) {}
+    // 更新容器模板
+    rpc UpdateTemplate(UpdateTemplateRequest) returns (UpdateTemplateReply) {}
+    // 查询单个容器模板详情
+    rpc InspectTemplate(InspectTemplateRequest) returns (InspectTemplateReply) {}
+    // 删除容器模板
+    rpc RemoveTemplate(RemoveTemplateRequest) returns (RemoveTemplateReply) {}
 
-  // 监控历史数据查询
-  rpc MonitorHistory(MonitorHistoryRequest) returns (MonitorHistoryReply) {}
-}
-message SetHostsRequest{
-  int64  node_id = 1;
-  string container_id = 2;
-  repeated string container_extrahosts = 3;
-}
-message SetHostsReply{}
-message LoadRequest{
-  string tar_path = 1;
-  int64 node_id = 2;
-}
-message LoadProgress {
-  oneof update {
-    float percent = 1;       // 进度百分比 (0~100)
-    string message = 2;      // 状态消息
-    LoadResult result = 3;   // 最终结果
-  }
-}
-message LoadResult {
-  bool success = 1;
-  string detail = 2;
-}
-message UnpauseRequest{
-  int64  node_id = 1;
-  string container_id = 2;
-}
-message UnpauseReply {}
+    // 容器多应用入口功能
+    rpc ListAppEntry(ListAppEntryRequest) returns (ListAppEntryReply) {}
+    rpc AddAppEntry(AddAppEntryRequest) returns (AddAppEntryReply) {}
+    rpc UpdateAppEntry(UpdateAppEntryRequest) returns (UpdateAppEntryReply) {}
+    rpc RemoveAppEntry(RemoveAppEntryRequest) returns (RemoveAppEntryReply) {}
+    rpc RunAppEntry(RunAppEntryRequest) returns (RunAppEntryReply) {}
+    rpc KillAppEntry(KillAppEntryRequest) returns (KillAppEntryReply) {}
 
-message PauseRequest{
-  int64  node_id = 1;
-  string container_id = 2;
+    // 监控历史数据查询
+    rpc MonitorHistory(MonitorHistoryRequest) returns (MonitorHistoryReply) {}
 }
-message PauseReply {}
 
 message ExportBackupRequest {
-  int64  node_id = 1;
-  int64  backup_id = 2;
-  bool   is_download = 3;  // 是否下载到本地
-  string img_name = 4;
-  string img_version = 5;  // 镜像版本
-  string description = 6;  // 新镜像描述信息
+    int64  node_id     = 1;
+    int64  backup_id   = 2;
+    bool   is_download = 3;  // 是否下载到本地
+    string img_name    = 4;
+    string img_version = 5;  // 镜像版本
+    string description = 6;  // 新镜像描述信息
 }
 
 message ExportBackupReply {
-  bytes  data = 1;
-  int64  img_size = 2;
-  string img_name = 3;
-  string img_version = 4;
+    bytes  data        = 1;
+    int64  img_size    = 2;
+    string img_name    = 3;
+    string img_version = 4;
 }
 
 message InspectBackupRequest {
-  int64 node_id = 1;
-  int64 backup_id = 2;
+    int64 node_id   = 1;
+    int64 backup_id = 2;
 }
 
 message InspectBackupReply {
-  ContainerBackup backup = 1;
+    ContainerBackup backup = 1;
 }
 
 message AppEntry {
-  int64  id = 1;
-  string container_id = 2;
-  string name = 3;
-  string exe_path = 4;  // 应用程序路径
-  bool   is_gui = 5;  // 是否是图形程序
-  bool   is_running = 6;  // 应用是否正在运行
+    int64  id           = 1;
+    string container_id = 2;
+    string name         = 3;
+    string exe_path     = 4;  // 应用程序路径
+    bool   is_gui       = 5;  // 是否是图形程序
+    bool   is_running   = 6;  // 应用是否正在运行
 }
 
 message ListAppEntryRequest {
-  int64  node_id = 1;
-  string container_id = 2;
+    int64  node_id      = 1;
+    string container_id = 2;
 }
 
 message ListAppEntryReply {
-  repeated AppEntry apps = 1;
+    repeated AppEntry apps = 1;
 }
 
 message AddAppEntryRequest {
-  int64    node_id = 1;
-  AppEntry app = 2;
+    int64    node_id = 1;
+    AppEntry app     = 2;
 }
 
 message AddAppEntryReply {}
 
 message UpdateAppEntryRequest {
-  int64    node_id = 1;
-  AppEntry app = 2;
+    int64    node_id = 1;
+    AppEntry app     = 2;
 }
 
 message UpdateAppEntryReply {}
 
 message RemoveAppEntryRequest {
-  int64          node_id = 1;
-  string         container_id = 2;
-  repeated int64 app_ids = 3;
+    int64          node_id      = 1;
+    string         container_id = 2;
+    repeated int64 app_ids      = 3;
 }
 
 message RemoveAppEntryReply {}
 
 message RunAppEntryRequest {
-  int64  node_id = 1;
-  string container_id = 2;
-  int64  app_id = 3;
+    int64  node_id      = 1;
+    string container_id = 2;
+    int64  app_id       = 3;
 }
 
 message RunAppEntryReply {}
 
 message KillAppEntryRequest {
-  int64  node_id = 1;
-  string container_id = 2;
-  int64  app_id = 3;
+    int64  node_id      = 1;
+    string container_id = 2;
+    int64  app_id       = 3;
 }
 
 message KillAppEntryReply {}
 
 message CreateBackupRequest {
-  int64  node_id = 1;
-  string container_id = 2;
-  string backup_desc = 3;
-  string backup_name = 4;
+    int64  node_id      = 1;
+    string container_id = 2;
+    string backup_desc  = 3;
+    string backup_name  = 4;
 }
 
 message CreateBackupReply {}
 
 message UpdateBackupRequest {
-  int64  node_id = 3;
-  int64  id = 1;
-  string backup_desc = 2;
+    int64  node_id     = 3;
+    int64  id          = 1;
+    string backup_desc = 2;
 }
 
 message UpdateBackupReply {}
 
 message ResumeBackupRequest {
-  // for client
-  int64  node_id = 1;
-  string container_id = 2;
-  int64  backup_id = 3;
+    // for client
+    int64  node_id      = 1;
+    string container_id = 2;
+    int64  backup_id    = 3;
 
-  // for agent service
-  string         image_ref = 11;  // deprecated
-  SecurityConfig security_config = 12;  // deprecated
+    // for agent service
+    string         image_ref       = 11;  // deprecated
+    SecurityConfig security_config = 12;  // deprecated
 }
 
 message ResumeBackupReply {
-  string container_id = 1;  // 生成新容器id
+    string container_id = 1;  // 生成新容器id
 }
 
 message RemoveBackupRequest {
-  // for client
-  int64 node_id = 2;
-  int64 id = 1;
+    // for client
+    int64 node_id = 2;
+    int64 id      = 1;
 
-  // for agent service
-  string image_ref = 11;  // deprecated
+    // for agent service
+    string image_ref = 11;  // deprecated
 }
 
 message RemoveBackupReply {}
 
 message ListBackupRequest {
-  int64  node_id = 1;
-  string container_id = 2;
+    int64  node_id      = 1;
+    string container_id = 2;
 }
 
 message ListBackupReply {
-  repeated ContainerBackup data = 1;
+    repeated ContainerBackup data = 1;
 }
 
 message ListBackupImageRequest {}
 
 message ListBackupImageReply {
-  repeated string images = 1;
+    repeated string images = 1;
 }
 
 message ListRequest {
-  repeated int64 node_ids = 1;
-  bool           list_all = 2;
+    repeated int64 node_ids = 1;
+    bool           list_all = 2;
 }
 
 message ListReply {
-  repeated NodeContainer containers = 1;
-  repeated string        fail_nodes = 2;
+    repeated NodeContainer containers = 1;
+    repeated string        fail_nodes = 2;
 }
 
 message CreateRequest {
-  int64            node_id = 1;
-  ContainerConfigs configs = 2;
+    int64            node_id = 1;
+    ContainerConfigs configs = 2;
 }
 
 message CreateReply {
-  string          container_id = 1;
-  repeated string warnings = 2;
+    string          container_id = 1;
+    repeated string warnings     = 2;
 }
 
 message InspectRequest {
-  int64  node_id = 1;
-  string container_id = 2;
+    int64  node_id      = 1;
+    string container_id = 2;
 }
 
 message InspectReply {
-  ContainerConfigs configs = 1;
+    ContainerConfigs configs = 1;
 }
 
 message StartRequest {
-  repeated ContainerIdList ids = 1;
+    repeated ContainerIdList ids = 1;
 }
 
 message StartReply {
-  repeated string            ok_ids = 1;
-  repeated ContainerFailInfo fail_infos = 2;
+    repeated string            ok_ids     = 1;
+    repeated ContainerFailInfo fail_infos = 2;
 }
 
 message StopRequest {
-  repeated ContainerIdList ids = 1;
+    repeated ContainerIdList ids = 1;
 }
 
 message StopReply {
-  repeated string            ok_ids = 1;
-  repeated ContainerFailInfo fail_infos = 2;
+    repeated string            ok_ids     = 1;
+    repeated ContainerFailInfo fail_infos = 2;
 }
 
 message KillRequest {
-  repeated ContainerIdList ids = 1;
+    repeated ContainerIdList ids = 1;
 }
 
 message KillReply {
-  repeated string            ok_ids = 1;
-  repeated ContainerFailInfo fail_infos = 2;
+    repeated string            ok_ids     = 1;
+    repeated ContainerFailInfo fail_infos = 2;
 }
 
 message RestartRequest {
-  repeated ContainerIdList ids = 1;
+    repeated ContainerIdList ids = 1;
 }
 
 message RestartReply {
-  repeated string            ok_ids = 1;
-  repeated ContainerFailInfo fail_infos = 2;
+    repeated string            ok_ids     = 1;
+    repeated ContainerFailInfo fail_infos = 2;
 }
 
 message UpdateRequest {
-  int64                  node_id = 1;
-  string                 container_id = 2;
-  ResourceLimit          resource_limit = 3;
-  RestartPolicy          restart_policy = 4;
-  repeated NetworkConfig networks = 5;
-  SecurityConfig         security_config = 6;
-  repeated Mount         mounts = 7;  // 共享目录
-  map<string, string>    envs = 8;  // 环境变量
-  string                 cmd = 9;
+    int64                  node_id         = 1;
+    string                 container_id    = 2;
+    ResourceLimit          resource_limit  = 3;
+    RestartPolicy          restart_policy  = 4;
+    repeated NetworkConfig networks        = 5;
+    SecurityConfig         security_config = 6;
+    repeated Mount         mounts          = 7;  // 共享目录
+    map<string, string>    envs            = 8;  // 环境变量
+    string                 cmd             = 9;
 }
 
 message UpdateReply {}
 
 message RemoveRequest {
-  repeated ContainerIdList ids = 1;
-  bool                     remove_volumes = 2;
+    repeated ContainerIdList ids            = 1;
+    bool                     remove_volumes = 2;
 }
 
 message RemoveReply {
-  repeated string            ok_ids = 1;
-  repeated string            fail_ids = 2;
-  repeated ContainerFailInfo fail_infos = 3;
+    repeated string            ok_ids     = 1;
+    repeated string            fail_ids   = 2;
+    repeated ContainerFailInfo fail_infos = 3;
 }
 
 message StatusRequest {
-  int64 node_id = 1;
+    int64 node_id = 1;
 }
 
 message StatusReply {
-  repeated ResourceStat status = 1;
+    repeated ResourceStat status = 1;
 }
 
 message MonitorHistoryRequest {
-  int64  node_id = 1;
-  int64  start_time = 2;  // 起始时间 UNIX时间戳
-  int64  end_time = 3;  // 结束时间 UNIX时间戳
-  uint32 interval = 4;  // 取样间隔 单位分钟
-  string container_id = 5;  // 容器名 空表示取节点总和信息
+    int64  node_id      = 1;
+    int64  start_time   = 2;  // 起始时间 UNIX时间戳
+    int64  end_time     = 3;  // 结束时间 UNIX时间戳
+    uint32 interval     = 4;  // 取样间隔 单位分钟
+    string container_id = 5;  // 容器名 空表示取节点总和信息
 }
 
 message MonitorHistoryReply {
-  repeated MonitorSample cpu_usage = 1;
-  repeated MonitorSample memory_usage = 2;
-  repeated MonitorSample disk_usage = 3;
-  repeated MonitorSample net_rx = 4;
-  repeated MonitorSample net_tx = 5;
+    repeated MonitorSample cpu_usage    = 1;
+    repeated MonitorSample memory_usage = 2;
+    repeated MonitorSample disk_usage   = 3;
+    repeated MonitorSample net_rx       = 4;
+    repeated MonitorSample net_tx       = 5;
 
-  ResourceLimit rsc_limit = 11;  // 资源使用限制
+    ResourceLimit rsc_limit = 11;  // 资源使用限制
 }
 
 message ListTemplateRequest {
-  int64  per_page = 1;
-  int64  next_page = 2;
-  string sort = 3;
-  string like_search = 4;
+    int64  per_page    = 1;
+    int64  next_page   = 2;
+    string sort        = 3;
+    string like_search = 4;
 }
 
 message ListTemplateReply {
-  int64                      per_page = 1;
-  int64                      cur_page = 2;
-  int64                      total_rows = 3;
-  int64                      total_pages = 4;
-  repeated ContainerTemplate data = 5;
+    int64                      per_page    = 1;
+    int64                      cur_page    = 2;
+    int64                      total_rows  = 3;
+    int64                      total_pages = 4;
+    repeated ContainerTemplate data        = 5;
 }
 
 message CreateTemplateRequest {
-  ContainerTemplate data = 1;
+    ContainerTemplate data = 1;
 }
 
 message CreateTemplateReply {
-  int64 id = 1;
+    int64 id = 1;
 }
 
 message UpdateTemplateRequest {
-  ContainerTemplate data = 2;
+    ContainerTemplate data = 2;
 }
 
 message UpdateTemplateReply {}
 
 message RemoveTemplateRequest {
-  repeated int64 ids = 1;
+    repeated int64 ids = 1;
 }
 
 message RemoveTemplateReply {}
 
 message InspectTemplateRequest {
-  int64 id = 1;
+    int64 id = 1;
 }
 
 message InspectTemplateReply {
-  ContainerTemplate data = 1;
+    ContainerTemplate data = 1;
 }
 
 /***** DATA TYPES *****/
 
 message Port {
-  string ip = 1;
-  uint32 private_port = 2;
-  uint32 public_port = 3;
-  string type = 4;
+    string ip           = 1;
+    uint32 private_port = 2;
+    uint32 public_port  = 3;
+    string type         = 4;
 }
 
 message MountPoint {
-  string type = 1;
-  string name = 2;
-  string source = 3;
-  string destination = 4;
-  string driver = 5;
-  string mode = 6;
-  bool   rw = 7;
-  string propagation = 8;
+    string type        = 1;
+    string name        = 2;
+    string source      = 3;
+    string destination = 4;
+    string driver      = 5;
+    string mode        = 6;
+    bool   rw          = 7;
+    string propagation = 8;
 }
 
 message NodeContainer {
-  int64         node_id = 1;
-  string        node_address = 2;
-  ContainerInfo info = 10;
+    int64         node_id      = 1;
+    string        node_address = 2;
+    ContainerInfo info         = 10;
 }
 
 message ContainerInfo {
-  string              id = 1;
-  string              name = 2;
-  string              image = 3;
-  string              image_id = 4;
-  string              command = 5;
-  string              state = 6;  // "created", "running", "paused", "restarting", "removing", "exited", or "dead"
-  int64               created = 7;
-  int64               size_rw = 8;
-  int64               size_root_fs = 9;
-  map<string, string> labels = 10;
-  int64               started = 11;  // 上次开机时间
+    string              id           = 1;
+    string              name         = 2;
+    string              image        = 3;
+    string              image_id     = 4;
+    string              command      = 5;
+    string              state        = 6;  // "created", "running", "paused", "restarting", "removing", "exited", or "dead"
+    int64               created      = 7;
+    int64               size_rw      = 8;
+    int64               size_root_fs = 9;
+    map<string, string> labels       = 10;
+    int64               started      = 11;  // 上次开机时间
 
-  ResourceStat resource_stat = 101;
+    ResourceStat resource_stat = 101;
 }
 
 message ContainerIdList {
-  int64           node_id = 1;
-  repeated string container_ids = 2;
+    int64           node_id       = 1;
+    repeated string container_ids = 2;
 }
 
 message Mount {
-  string type = 1;  // "bind" "volume" "tmpfs" "npipe"
-  string source = 2;
-  string target = 3;
-  bool   read_only = 4;
-  string consistency = 5;  // "consistent" "cached" "delegated" "default"
+    string type        = 1;  // "bind" "volume" "tmpfs" "npipe"
+    string source      = 2;
+    string target      = 3;
+    bool   read_only   = 4;
+    string consistency = 5;  // "consistent" "cached" "delegated" "default"
 
-  // bind_options
-  // volume_options
-  // tmpfs_options
+    // bind_options
+    // volume_options
+    // tmpfs_options
 }
 
 message RestartPolicy {
-  string name = 1;
-  int32  max_retry = 2;
+    string name      = 1;
+    int32  max_retry = 2;
 }
 
 message DeviceMapping {
-  string path_on_host = 1;
-  string path_in_container = 2;
-  string cgroup_permissions = 3;
+    string path_on_host       = 1;
+    string path_in_container  = 2;
+    string cgroup_permissions = 3;
 }
 
 message CpuStat {
-  double core_used = 1;
+    double core_used = 1;
 }
 
 message MemoryStat {
-  double used = 1;
-  double limit = 2;
-  double percentage = 3;
+    double used       = 1;
+    double limit      = 2;
+    double percentage = 3;
 }
 
 message BlockStat {
-  double read = 1;
-  double write = 2;
+    double read  = 1;
+    double write = 2;
 }
 
 message DiskStat {
-  double used = 1;
-  double limit = 2;
+    double used  = 1;
+    double limit = 2;
 }
 
 message NetworkStats {
-  double rx = 1;
-  double tx = 2;
+    double rx = 1;
+    double tx = 2;
 }
 
 message ResourceStat {
-  string       id = 1;
-  string       state = 2;
-  CpuStat      cpu_stat = 3;
-  MemoryStat   mem_stat = 4;
-  DiskStat     disk_stat = 5;
-  BlockStat    block_stat = 6;
-  NetworkStats net_stat = 7;
+    string       id         = 1;
+    string       state      = 2;
+    CpuStat      cpu_stat   = 3;
+    MemoryStat   mem_stat   = 4;
+    DiskStat     disk_stat  = 5;
+    BlockStat    block_stat = 6;
+    NetworkStats net_stat   = 7;
 }
 
 message MonitorSample {
-  int64  timestamp = 1;
-  double value = 2;
+    int64  timestamp = 1;
+    double value     = 2;
 }
 
 message NetworkConfig {
-  string interface = 1;  // required
-  string container_id = 2;  // required
-  string ip_address = 3;  // required
-  int32  ip_prefix_len = 4;
-  string mac_address = 5;
-  string gateway = 6;
+    string interface     = 1;  // required
+    string container_id  = 2;  // required
+    string ip_address    = 3;  // required
+    int32  ip_prefix_len = 4;
+    string mac_address   = 5;
+    string gateway       = 6;
 }
 
 message ResourceLimit {
-  double cpu_limit = 1;   // CPU使用核心数限制; NanoCPUs = cpus * 1e9
-  int64  cpu_prio = 2;   // CPU优先级(0-5)
-  double memory_limit = 11;  // 内存限制 单位MB
-  double memory_soft_limit = 12;  // 内存软限制 单位MB 数值低于memory_limit
-  double disk_limit = 21;  // 磁盘使用限制 单位MB
-  int64  disk_prio = 22;   // 磁盘优先级(0-5)
+    double cpu_limit         = 1;   // CPU使用核心数限制; NanoCPUs = cpus * 1e9
+    int64  cpu_prio          = 2;   // CPU优先级(0-10)
+    double memory_limit      = 11;  // 内存限制 单位MB
+    double memory_soft_limit = 12;  // 内存软限制 单位MB 数值低于memory_limit
+    double disk_limit        = 21;  // 磁盘使用限制 单位MB
 }
 
 message SecurityConfig {
-  bool disable_external_network = 1;  // 禁止访问外部网络
-  bool disable_cmd_operation = 2;  // 禁止命令行控制容器(启停控制)
+    bool disable_external_network = 1;  // 禁止访问外部网络
+    bool disable_cmd_operation    = 2;  // 禁止命令行控制容器(启停控制)
 
-  security.ProcProtection  proc_protection = 11;  // 进程保护
-  security.ProcProtection  nproc_protection = 12;  // 网络进程保护
-  security.FileProtection  file_protection = 13;  // 文件防篡改保护
-  security.NetworkRuleList network_rule = 14;  // 网络访问规则
+    security.ProcProtection  proc_protection  = 11;  // 进程保护
+    security.ProcProtection  nproc_protection = 12;  // 网络进程保护
+    security.FileProtection  file_protection  = 13;  // 文件防篡改保护
+    security.NetworkRuleList network_rule     = 14;  // 网络访问规则
 }
 
 message ContainerConfigs {
-  string container_id = 1;  // 展示用
-  string uuid = 2;  // 内部使用 labels[KS_SCMC_UUID]
-  string name = 3;  // 容器名 必填 不支持中文字符
-  string status = 4;
-  string desc = 5;  // 描述信息 支持中文 对应LABELS[KS_SCMC_DESC]
-  string image = 6;  // 必填 镜像
-  bool   enable_graphic = 7;  // 开启图形化 对应LABELS[KS_SCMC_GRAPHIC]
-  string cmd = 8;
-  // hostname
-  // domain_name
-  // user
-  // working_dir
-  // entrypoint
+    string container_id   = 1;  // 展示用
+    string uuid           = 2;  // 内部使用 labels[KS_SCMC_UUID]
+    string name           = 3;  // 容器名 必填 不支持中文字符
+    string status         = 4;
+    string desc           = 5;  // 描述信息 支持中文 对应LABELS[KS_SCMC_DESC]
+    string image          = 6;  // 必填 镜像
+    bool   enable_graphic = 7;  // 开启图形化 对应LABELS[KS_SCMC_GRAPHIC]
+    string cmd            = 8;
+    // hostname
+    // domain_name
+    // user
+    // working_dir
+    // entrypoint
 
-  repeated Mount         mounts = 21;  // 共享目录
-  repeated NetworkConfig networks = 22;  // 网络信息
-  map<string, string>    envs = 23;  // 环境变量
-  RestartPolicy          restart_policy = 24;  // 重启策略(高可用)
-  ResourceLimit          resouce_limit = 25;
+    repeated Mount         mounts         = 21;  // 共享目录
+    repeated NetworkConfig networks       = 22;  // 网络信息
+    map<string, string>    envs           = 23;  // 环境变量
+    RestartPolicy          restart_policy = 24;  // 重启策略(高可用)
+    ResourceLimit          resouce_limit  = 25;
 
-  SecurityConfig security_config = 31;  // 安全配置
+    SecurityConfig security_config = 31;  // 安全配置
 }
 
 message ContainerTemplate {
-  int64            id = 1;
-  ContainerConfigs conf = 2;
-  int64            node_id = 3;
+    int64            id      = 1;
+    ContainerConfigs conf    = 2;
+    int64            node_id = 3;
 }
 
 enum BACKUP_STATUS {
-  ONGOING = 0;  // 备份中
-  SUCCEED = 1;  // 成功
-  FAILED = 2;  // 失败
+    ONGOING = 0;  // 备份中
+    SUCCEED = 1;  // 成功
+    FAILED  = 2;  // 失败
 }
 
 message ContainerBackup {
-  int64  id = 1;
-  int64  node_id = 2;
-  string container_id = 3;
-  string uuid = 4;
-  string backup_name = 5;
-  string backup_desc = 6;
-  string image_ref = 7;   // 备份镜像
-  string image_id = 8;   // 备份镜像id
-  int64  image_size = 9;   // 备份镜像大小
-  int64  status = 10;  // 参考 BACKUP_STATUS 定义
-  int64  created_at = 21;
+    int64  id           = 1;
+    int64  node_id      = 2;
+    string container_id = 3;
+    string uuid         = 4;
+    string backup_name  = 5;
+    string backup_desc  = 6;
+    string image_ref    = 7;   // 备份镜像
+    string image_id     = 8;   // 备份镜像id
+    int64  image_size   = 9;   // 备份镜像大小
+    int64  status       = 10;  // 参考 BACKUP_STATUS 定义
+    int64  created_at   = 21;
 }
 
 message ContainerFailInfo {
-  string node_info = 1;
-  string container_id = 2;
-  string container_name = 3;
-  string fail_reason = 4;
+    string node_info      = 1;
+    string container_id   = 2;
+    string container_name = 3;
+    string fail_reason    = 4;
 }

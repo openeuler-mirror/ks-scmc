@@ -144,12 +144,7 @@ func getContainerStats() ([]ContainerInfo, error) {
                 cpuUsage = roundToTwoDecimalPlaces(cpuUsage) // 保留两位小数
 
                 // 计算内存使用情况
-		memoryUsage := v.MemoryStats.Usage
-		if cache, ok := v.MemoryStats.Stats["cache"]; ok {
-			memoryUsage = memoryUsage - cache
-		}
-                memoryUsage = memoryUsage / 1024 / 1024 // 转换为 MB
-
+                memoryUsage := v.MemoryStats.Usage / 1024 / 1024 // 转换为 MB
                 memoryLimit := v.MemoryStats.Limit / 1024 / 1024 // 转换为 MB
                 memoryPercent := calculateMemoryPercent(&v)
                 memoryPercent = roundToTwoDecimalPlaces(memoryPercent) // 保留两位小数
@@ -196,8 +191,7 @@ func calculateCPUPercent(v *types.StatsJSON) float64 {
 	if (v.CPUStats.SystemUsage == v.PreCPUStats.SystemUsage) {
 		return float64(0.00)
 	}
-        // cpuPercent1 := (cpuDelta / systemDelta) * float64(len(v.CPUStats.CPUUsage.PercpuUsage)) * 100.0
-	cpuPercent := (float64(cpuDelta)/float64(systemDelta)) * float64(v.CPUStats.OnlineCPUs) * 100.0
+        cpuPercent := (cpuDelta / systemDelta) * float64(len(v.CPUStats.CPUUsage.PercpuUsage)) * 100.0
         return cpuPercent
 }
 

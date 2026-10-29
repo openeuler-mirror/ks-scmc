@@ -208,61 +208,37 @@ func (parser) CreateContainer(r *container.CreateRequest) *db.RuntimeLog {
 }
 
 func (parser) RemoveContainer(r *container.RemoveRequest) *db.RuntimeLog {
-	idsNum := len(r.Ids)
-	containerNum := 0
-	for i := 0; i < idsNum; i++ {
-		containerNum = containerNum + len(r.Ids[i].ContainerIds)
-	}
-
 	return &db.RuntimeLog{
 		EventType:   int64(logging.EVENT_TYPE_REMOVE_CONTAINER),
 		EventModule: int64(logging.EVENT_MODULE_CONTAINER),
-		Target:      fmt.Sprintf("容器数=%v", containerNum),
+		Target:      fmt.Sprintf("容器数=%v", len(r.Ids)),
 		Detail:      fmt.Sprintf("容器ID=%v", r.Ids),
 	}
 }
 
 func (parser) StartContainer(r *container.StartRequest) *db.RuntimeLog {
-	idsNum := len(r.Ids)
-	containerNum := 0
-	for i := 0; i < idsNum; i++ {
-		containerNum = containerNum + len(r.Ids[i].ContainerIds)
-	}
-
 	return &db.RuntimeLog{
 		EventType:   int64(logging.EVENT_TYPE_START_CONTAINER),
 		EventModule: int64(logging.EVENT_MODULE_CONTAINER),
-		Target:      fmt.Sprintf("容器数=%v", containerNum),
+		Target:      fmt.Sprintf("容器数=%v", len(r.Ids)),
 		Detail:      fmt.Sprintf("容器ID=%v", r.Ids),
 	}
 }
 
 func (parser) StopContainer(r *container.StopRequest) *db.RuntimeLog {
-	idsNum := len(r.Ids)
-	containerNum := 0
-	for i := 0; i < idsNum; i++ {
-		containerNum = containerNum + len(r.Ids[i].ContainerIds)
-	}
-
 	return &db.RuntimeLog{
 		EventType:   int64(logging.EVENT_TYPE_STOP_CONTAINER),
 		EventModule: int64(logging.EVENT_MODULE_CONTAINER),
-		Target:      fmt.Sprintf("容器数=%v", containerNum),
+		Target:      fmt.Sprintf("容器数=%v", len(r.Ids)),
 		Detail:      fmt.Sprintf("容器ID=%v", r.Ids),
 	}
 }
 
 func (parser) RestartContainer(r *container.RestartRequest) *db.RuntimeLog {
-	idsNum := len(r.Ids)
-	containerNum := 0
-	for i := 0; i < idsNum; i++ {
-		containerNum = containerNum + len(r.Ids[i].ContainerIds)
-	}
-
 	return &db.RuntimeLog{
 		EventType:   int64(logging.EVENT_TYPE_RESTART_CONTAINER),
 		EventModule: int64(logging.EVENT_MODULE_CONTAINER),
-		Target:      fmt.Sprintf("容器数=%v", containerNum),
+		Target:      fmt.Sprintf("容器数=%v", len(r.Ids)),
 		Detail:      fmt.Sprintf("容器ID=%v", r.Ids),
 	}
 }

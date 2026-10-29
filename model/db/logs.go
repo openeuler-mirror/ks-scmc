@@ -1,9 +1,7 @@
 package db
 
 import (
-	"errors"
 	"fmt"
-	"time"
 
 	log "github.com/sirupsen/logrus"
 	"gorm.io/gorm"
@@ -46,12 +44,6 @@ type WarnLog struct {
 	HaveRead      bool
 	CreatedAt     int64 `gorm:"autoCreateTime"`
 	UpdatedAt     int64 `gorm:"autoUpdateTime"`
-}
-
-type LogSettings struct {
-	ID           int64  `gorm:"primaryKey"`
-	SettingName  string `gorm:"unique;not null"` // 添加唯一键约束
-	SettingValue string
 }
 
 func CreateRuntimeLog(logs []*RuntimeLog) error {
@@ -226,119 +218,4 @@ func ListWarnLogAll(pageSize, pageNo int64, nodeID, eventModule int64) (*Pager, 
 		return nil, nil, err
 	}
 	return pager, data, nil
-}
-
-func SetLog(settingName, settingValue string) error {
-
-	db, err := getConn()
-	if err != nil {
-		log.Warnf("SetLog failed, err=%v", err)
-		return translateError(err)
-	}
-
-	// 先查询记录是否存在
-	var existingSetting LogSettings
-	err = db.Where("setting_name = ?", settingName).First(&existingSetting).Error
-
-	if err == gorm.ErrRecordNotFound {
-		// 不存在则创建
-		setting := LogSettings{
-			SettingName:  settingName,
-			SettingValue: settingValue,
-		}
-		if err := db.Create(&setting).Error; err != nil {
-			log.Warnf("failed to create log setting: %v", err)
-			return translateError(err)
-		}
-	} else if err != nil {
-		// 其他查询错误
-		log.Warnf("failed to query log setting: %v", err)
-		return translateError(err)
-	} else {
-		// 存在则更新（仅当值不同时）
-		if existingSetting.SettingValue != settingValue {
-			if err := db.Model(&LogSettings{}).
-				Where("setting_name = ?", settingName).
-				Update("setting_value", settingValue).
-				Error; err != nil {
-				log.Warnf("failed to update log setting: %v", err)
-				return translateError(err)
-			}
-		}
-	}
-
-	return nil
-}
-
-func GetLog(settingName string) (string, error) {
-	var setting LogSettings
-
-	db, err := getConn()
-	if err != nil {
-		log.Warnf("SetLog failed, err=%v", err)
-		return "", translateError(err)
-	}
-
-	// 查询数据库
-	result := db.Model(&LogSettings{}).
-		Where("setting_name = ?", settingName).
-		First(&setting)
-
-	// 处理查询结果
-	if result.Error != nil {
-		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
-			// 记录不存在时返回空字符串而非错误
-			return "180", nil
-		}
-		// 其他数据库错误
-		log.Warnf("failed to get log setting: %v", result.Error)
-		return "", translateError(result.Error)
-	}
-
-	return setting.SettingValue, nil
-}
-
-func cleanTable(db *gorm.DB, tableName string, threshold int64) error {
-	result := db.Table(tableName).
-		Where("created_at < ?", threshold).
-		Delete(nil)
-
-	if result.Error != nil {
-		return result.Error
-	}
-
-	return nil
-}
-
-func CleanLogs(saveLogDays int64) error {
-	if saveLogDays < 1 {
-		return nil
-	}
-
-	// 计算保留的截止日期（当天00:00:00往前推saveLogDays天）
-	now := time.Now()
-	retentionDate := time.Date(now.Year(), now.Month(), now.Day()-int(saveLogDays)+1, 0, 0, 0, 0, now.Location())
-
-	db, err := getConn()
-	if err != nil {
-		log.Warnf("SetLog failed, err=%v", err)
-		return translateError(err)
-	}
-
-	// 清理 runtime_logs 表
-	if err := cleanTable(db, "runtime_logs", retentionDate.Unix()); err != nil {
-		log.Warnf("failed to clean runtime_logs: %v", err)
-		return translateError(err)
-	}
-
-	// 清理 warn_logs 表
-	if err := cleanTable(db, "warn_logs", retentionDate.Unix()); err != nil {
-		log.Warnf("failed to clean warn_logs: %v", err)
-		return translateError(err)
-	}
-
-	log.Infof("Logs cleaned successfully. Retained logs after %s (saveLogDays=%d)",
-		retentionDate.Format("2006-01-02"),
-		saveLogDays)
-	return nil
 }

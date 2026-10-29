@@ -127,8 +127,14 @@ struct GetContainerMetricsResponse {
     2: i32 ret_code
 }
 
+struct GetImagesListResponse {
+    1: list<string> imageList,
+    2: i32 ret_code
+}
+
 // ================ 服务接口 ================
 service KsScmcClient {
+    string LoginV3(1: string user, 2: string passwd, 3: string node_ip),
     // 容器生命周期管理
     i32 installContainer(1: string node_nameorip, 2: string image_name, 3: string image_ver, 4: string container_name),
     i32 startContainer(1: string node_nameorip, 2: string container_name),
@@ -199,7 +205,7 @@ service KsScmcClient {
      * @param image_list 镜像信息列表(输出参数)
      * @return 0成功，1失败
      */
-    i32 getImagesList(1: string node_ip, 2: list<string> image_list),
+    GetImagesListResponse getImagesList(1: string node_ip),
 
     /**
      * 导入镜像到节点
@@ -224,12 +230,6 @@ service KsScmcClient {
      * @return 0成功，1失败
      */
     i32 unpauseContainer(1: string node_ip, 2: string container_name)
-	
-    /**
-     * 获取 容器的状态信息，参考 docker stats 的输出
-     * 返回值为 json 格式
-     */
-    string GetAllContainers(1:string node_name)
 }
 
 // ================ 异常定义 ================

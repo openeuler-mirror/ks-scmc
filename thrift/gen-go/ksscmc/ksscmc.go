@@ -789,8 +789,8 @@ func (p *NodeStatus)  ReadField8(iprot thrift.TProtocol) error {
   return nil
 }
 
-func (p *NodeStatus)  ReadField9(ctx context.Context, iprot thrift.TProtocol) error {
-  if v, err := iprot.ReadDouble(ctx); err != nil {
+func (p *NodeStatus)  ReadField9(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadDouble(); err != nil {
   return thrift.PrependError("error reading field 9: ", err)
 } else {
   p.DiskUsage = v

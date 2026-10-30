@@ -1498,66 +1498,48 @@ func (p *ContainerNetRule) GetPort() int32 {
 func (p *ContainerNetRule) GetProtocol() string {
   return p.Protocol
 }
-func (p *ContainerNetRule) Read(ctx context.Context, iprot thrift.TProtocol) error {
-  if _, err := iprot.ReadStructBegin(ctx); err != nil {
+func (p *ContainerNetRule) Read(iprot thrift.TProtocol) error {
+  if _, err := iprot.ReadStructBegin(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
   }
 
 
   for {
-    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin(ctx)
+    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin()
     if err != nil {
       return thrift.PrependError(fmt.Sprintf("%T field %d read error: ", p, fieldId), err)
     }
     if fieldTypeId == thrift.STOP { break; }
     switch fieldId {
     case 1:
-      if fieldTypeId == thrift.STRING {
-        if err := p.ReadField1(ctx, iprot); err != nil {
-          return err
-        }
-      } else {
-        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-          return err
-        }
+      if err := p.ReadField1(iprot); err != nil {
+        return err
       }
     case 2:
-      if fieldTypeId == thrift.I32 {
-        if err := p.ReadField2(ctx, iprot); err != nil {
-          return err
-        }
-      } else {
-        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-          return err
-        }
+      if err := p.ReadField2(iprot); err != nil {
+        return err
       }
     case 3:
-      if fieldTypeId == thrift.STRING {
-        if err := p.ReadField3(ctx, iprot); err != nil {
-          return err
-        }
-      } else {
-        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-          return err
-        }
+      if err := p.ReadField3(iprot); err != nil {
+        return err
       }
     default:
-      if err := iprot.Skip(ctx, fieldTypeId); err != nil {
+      if err := iprot.Skip(fieldTypeId); err != nil {
         return err
       }
     }
-    if err := iprot.ReadFieldEnd(ctx); err != nil {
+    if err := iprot.ReadFieldEnd(); err != nil {
       return err
     }
   }
-  if err := iprot.ReadStructEnd(ctx); err != nil {
+  if err := iprot.ReadStructEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
   }
   return nil
 }
 
-func (p *ContainerNetRule)  ReadField1(ctx context.Context, iprot thrift.TProtocol) error {
-  if v, err := iprot.ReadString(ctx); err != nil {
+func (p *ContainerNetRule)  ReadField1(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadString(); err != nil {
   return thrift.PrependError("error reading field 1: ", err)
 } else {
   p.IP = v

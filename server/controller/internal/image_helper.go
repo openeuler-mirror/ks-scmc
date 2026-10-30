@@ -152,7 +152,7 @@ func (i *ImageFile) parseDockerID() error {
 		}
 
 		fname := h.FileInfo().Name()
-		if fname == ManifestFileName {
+		if fname == ManifestFileName && strings.Count(h.Name, "/") < 2 {
 			var manifest []map[string]interface{}
 			decoder := json.NewDecoder(r)
 			err := decoder.Decode(&manifest)

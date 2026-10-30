@@ -1547,8 +1547,8 @@ func (p *ContainerNetRule)  ReadField1(iprot thrift.TProtocol) error {
   return nil
 }
 
-func (p *ContainerNetRule)  ReadField2(ctx context.Context, iprot thrift.TProtocol) error {
-  if v, err := iprot.ReadI32(ctx); err != nil {
+func (p *ContainerNetRule)  ReadField2(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadI32(); err != nil {
   return thrift.PrependError("error reading field 2: ", err)
 } else {
   p.Port = v
@@ -1556,8 +1556,8 @@ func (p *ContainerNetRule)  ReadField2(ctx context.Context, iprot thrift.TProtoc
   return nil
 }
 
-func (p *ContainerNetRule)  ReadField3(ctx context.Context, iprot thrift.TProtocol) error {
-  if v, err := iprot.ReadString(ctx); err != nil {
+func (p *ContainerNetRule)  ReadField3(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadString(); err != nil {
   return thrift.PrependError("error reading field 3: ", err)
 } else {
   p.Protocol = v
@@ -1565,61 +1565,49 @@ func (p *ContainerNetRule)  ReadField3(ctx context.Context, iprot thrift.TProtoc
   return nil
 }
 
-func (p *ContainerNetRule) Write(ctx context.Context, oprot thrift.TProtocol) error {
-  if err := oprot.WriteStructBegin(ctx, "ContainerNetRule"); err != nil {
+func (p *ContainerNetRule) Write(oprot thrift.TProtocol) error {
+  if err := oprot.WriteStructBegin("ContainerNetRule"); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err) }
   if p != nil {
-    if err := p.writeField1(ctx, oprot); err != nil { return err }
-    if err := p.writeField2(ctx, oprot); err != nil { return err }
-    if err := p.writeField3(ctx, oprot); err != nil { return err }
+    if err := p.writeField1(oprot); err != nil { return err }
+    if err := p.writeField2(oprot); err != nil { return err }
+    if err := p.writeField3(oprot); err != nil { return err }
   }
-  if err := oprot.WriteFieldStop(ctx); err != nil {
+  if err := oprot.WriteFieldStop(); err != nil {
     return thrift.PrependError("write field stop error: ", err) }
-  if err := oprot.WriteStructEnd(ctx); err != nil {
+  if err := oprot.WriteStructEnd(); err != nil {
     return thrift.PrependError("write struct stop error: ", err) }
   return nil
 }
 
-func (p *ContainerNetRule) writeField1(ctx context.Context, oprot thrift.TProtocol) (err error) {
-  if err := oprot.WriteFieldBegin(ctx, "ip", thrift.STRING, 1); err != nil {
+func (p *ContainerNetRule) writeField1(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("ip", thrift.STRING, 1); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field begin error 1:ip: ", p), err) }
-  if err := oprot.WriteString(ctx, string(p.IP)); err != nil {
+  if err := oprot.WriteString(string(p.IP)); err != nil {
   return thrift.PrependError(fmt.Sprintf("%T.ip (1) field write error: ", p), err) }
-  if err := oprot.WriteFieldEnd(ctx); err != nil {
+  if err := oprot.WriteFieldEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field end error 1:ip: ", p), err) }
   return err
 }
 
-func (p *ContainerNetRule) writeField2(ctx context.Context, oprot thrift.TProtocol) (err error) {
-  if err := oprot.WriteFieldBegin(ctx, "port", thrift.I32, 2); err != nil {
+func (p *ContainerNetRule) writeField2(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("port", thrift.I32, 2); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field begin error 2:port: ", p), err) }
-  if err := oprot.WriteI32(ctx, int32(p.Port)); err != nil {
+  if err := oprot.WriteI32(int32(p.Port)); err != nil {
   return thrift.PrependError(fmt.Sprintf("%T.port (2) field write error: ", p), err) }
-  if err := oprot.WriteFieldEnd(ctx); err != nil {
+  if err := oprot.WriteFieldEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field end error 2:port: ", p), err) }
   return err
 }
 
-func (p *ContainerNetRule) writeField3(ctx context.Context, oprot thrift.TProtocol) (err error) {
-  if err := oprot.WriteFieldBegin(ctx, "protocol", thrift.STRING, 3); err != nil {
+func (p *ContainerNetRule) writeField3(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("protocol", thrift.STRING, 3); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field begin error 3:protocol: ", p), err) }
-  if err := oprot.WriteString(ctx, string(p.Protocol)); err != nil {
+  if err := oprot.WriteString(string(p.Protocol)); err != nil {
   return thrift.PrependError(fmt.Sprintf("%T.protocol (3) field write error: ", p), err) }
-  if err := oprot.WriteFieldEnd(ctx); err != nil {
+  if err := oprot.WriteFieldEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field end error 3:protocol: ", p), err) }
   return err
-}
-
-func (p *ContainerNetRule) Equals(other *ContainerNetRule) bool {
-  if p == other {
-    return true
-  } else if p == nil || other == nil {
-    return false
-  }
-  if p.IP != other.IP { return false }
-  if p.Port != other.Port { return false }
-  if p.Protocol != other.Protocol { return false }
-  return true
 }
 
 func (p *ContainerNetRule) String() string {
@@ -1709,156 +1697,84 @@ func (p *ContainerLimit) GetNetRbw() float64 {
 func (p *ContainerLimit) GetNetWbw() float64 {
   return p.NetWbw
 }
-func (p *ContainerLimit) Read(ctx context.Context, iprot thrift.TProtocol) error {
-  if _, err := iprot.ReadStructBegin(ctx); err != nil {
+func (p *ContainerLimit) Read(iprot thrift.TProtocol) error {
+  if _, err := iprot.ReadStructBegin(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
   }
 
 
   for {
-    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin(ctx)
+    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin()
     if err != nil {
       return thrift.PrependError(fmt.Sprintf("%T field %d read error: ", p, fieldId), err)
     }
     if fieldTypeId == thrift.STOP { break; }
     switch fieldId {
     case 1:
-      if fieldTypeId == thrift.DOUBLE {
-        if err := p.ReadField1(ctx, iprot); err != nil {
-          return err
-        }
-      } else {
-        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-          return err
-        }
+      if err := p.ReadField1(iprot); err != nil {
+        return err
       }
     case 2:
-      if fieldTypeId == thrift.I32 {
-        if err := p.ReadField2(ctx, iprot); err != nil {
-          return err
-        }
-      } else {
-        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-          return err
-        }
+      if err := p.ReadField2(iprot); err != nil {
+        return err
       }
     case 3:
-      if fieldTypeId == thrift.I32 {
-        if err := p.ReadField3(ctx, iprot); err != nil {
-          return err
-        }
-      } else {
-        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-          return err
-        }
+      if err := p.ReadField3(iprot); err != nil {
+        return err
       }
     case 4:
-      if fieldTypeId == thrift.I32 {
-        if err := p.ReadField4(ctx, iprot); err != nil {
-          return err
-        }
-      } else {
-        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-          return err
-        }
+      if err := p.ReadField4(iprot); err != nil {
+        return err
       }
     case 5:
-      if fieldTypeId == thrift.I32 {
-        if err := p.ReadField5(ctx, iprot); err != nil {
-          return err
-        }
-      } else {
-        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-          return err
-        }
+      if err := p.ReadField5(iprot); err != nil {
+        return err
       }
     case 6:
-      if fieldTypeId == thrift.I32 {
-        if err := p.ReadField6(ctx, iprot); err != nil {
-          return err
-        }
-      } else {
-        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-          return err
-        }
+      if err := p.ReadField6(iprot); err != nil {
+        return err
       }
     case 7:
-      if fieldTypeId == thrift.I32 {
-        if err := p.ReadField7(ctx, iprot); err != nil {
-          return err
-        }
-      } else {
-        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-          return err
-        }
+      if err := p.ReadField7(iprot); err != nil {
+        return err
       }
     case 8:
-      if fieldTypeId == thrift.DOUBLE {
-        if err := p.ReadField8(ctx, iprot); err != nil {
-          return err
-        }
-      } else {
-        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-          return err
-        }
+      if err := p.ReadField8(iprot); err != nil {
+        return err
       }
     case 9:
-      if fieldTypeId == thrift.DOUBLE {
-        if err := p.ReadField9(ctx, iprot); err != nil {
-          return err
-        }
-      } else {
-        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-          return err
-        }
+      if err := p.ReadField9(iprot); err != nil {
+        return err
       }
     case 10:
-      if fieldTypeId == thrift.I32 {
-        if err := p.ReadField10(ctx, iprot); err != nil {
-          return err
-        }
-      } else {
-        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-          return err
-        }
+      if err := p.ReadField10(iprot); err != nil {
+        return err
       }
     case 11:
-      if fieldTypeId == thrift.DOUBLE {
-        if err := p.ReadField11(ctx, iprot); err != nil {
-          return err
-        }
-      } else {
-        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-          return err
-        }
+      if err := p.ReadField11(iprot); err != nil {
+        return err
       }
     case 12:
-      if fieldTypeId == thrift.DOUBLE {
-        if err := p.ReadField12(ctx, iprot); err != nil {
-          return err
-        }
-      } else {
-        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-          return err
-        }
+      if err := p.ReadField12(iprot); err != nil {
+        return err
       }
     default:
-      if err := iprot.Skip(ctx, fieldTypeId); err != nil {
+      if err := iprot.Skip(fieldTypeId); err != nil {
         return err
       }
     }
-    if err := iprot.ReadFieldEnd(ctx); err != nil {
+    if err := iprot.ReadFieldEnd(); err != nil {
       return err
     }
   }
-  if err := iprot.ReadStructEnd(ctx); err != nil {
+  if err := iprot.ReadStructEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
   }
   return nil
 }
 
-func (p *ContainerLimit)  ReadField1(ctx context.Context, iprot thrift.TProtocol) error {
-  if v, err := iprot.ReadDouble(ctx); err != nil {
+func (p *ContainerLimit)  ReadField1(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadDouble(); err != nil {
   return thrift.PrependError("error reading field 1: ", err)
 } else {
   p.CPU = v
@@ -1866,8 +1782,8 @@ func (p *ContainerLimit)  ReadField1(ctx context.Context, iprot thrift.TProtocol
   return nil
 }
 
-func (p *ContainerLimit)  ReadField2(ctx context.Context, iprot thrift.TProtocol) error {
-  if v, err := iprot.ReadI32(ctx); err != nil {
+func (p *ContainerLimit)  ReadField2(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadI32(); err != nil {
   return thrift.PrependError("error reading field 2: ", err)
 } else {
   p.CPUPrio = v
@@ -1875,8 +1791,8 @@ func (p *ContainerLimit)  ReadField2(ctx context.Context, iprot thrift.TProtocol
   return nil
 }
 
-func (p *ContainerLimit)  ReadField3(ctx context.Context, iprot thrift.TProtocol) error {
-  if v, err := iprot.ReadI32(ctx); err != nil {
+func (p *ContainerLimit)  ReadField3(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadI32(); err != nil {
   return thrift.PrependError("error reading field 3: ", err)
 } else {
   p.MemHard = v
@@ -1884,8 +1800,8 @@ func (p *ContainerLimit)  ReadField3(ctx context.Context, iprot thrift.TProtocol
   return nil
 }
 
-func (p *ContainerLimit)  ReadField4(ctx context.Context, iprot thrift.TProtocol) error {
-  if v, err := iprot.ReadI32(ctx); err != nil {
+func (p *ContainerLimit)  ReadField4(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadI32(); err != nil {
   return thrift.PrependError("error reading field 4: ", err)
 } else {
   p.MemSoft = v
@@ -1893,8 +1809,8 @@ func (p *ContainerLimit)  ReadField4(ctx context.Context, iprot thrift.TProtocol
   return nil
 }
 
-func (p *ContainerLimit)  ReadField5(ctx context.Context, iprot thrift.TProtocol) error {
-  if v, err := iprot.ReadI32(ctx); err != nil {
+func (p *ContainerLimit)  ReadField5(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadI32(); err != nil {
   return thrift.PrependError("error reading field 5: ", err)
 } else {
   p.DiskSize = v
@@ -1902,8 +1818,8 @@ func (p *ContainerLimit)  ReadField5(ctx context.Context, iprot thrift.TProtocol
   return nil
 }
 
-func (p *ContainerLimit)  ReadField6(ctx context.Context, iprot thrift.TProtocol) error {
-  if v, err := iprot.ReadI32(ctx); err != nil {
+func (p *ContainerLimit)  ReadField6(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadI32(); err != nil {
   return thrift.PrependError("error reading field 6: ", err)
 } else {
   p.DiskRio = v
@@ -1911,8 +1827,8 @@ func (p *ContainerLimit)  ReadField6(ctx context.Context, iprot thrift.TProtocol
   return nil
 }
 
-func (p *ContainerLimit)  ReadField7(ctx context.Context, iprot thrift.TProtocol) error {
-  if v, err := iprot.ReadI32(ctx); err != nil {
+func (p *ContainerLimit)  ReadField7(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadI32(); err != nil {
   return thrift.PrependError("error reading field 7: ", err)
 } else {
   p.DiskWio = v
@@ -1920,8 +1836,8 @@ func (p *ContainerLimit)  ReadField7(ctx context.Context, iprot thrift.TProtocol
   return nil
 }
 
-func (p *ContainerLimit)  ReadField8(ctx context.Context, iprot thrift.TProtocol) error {
-  if v, err := iprot.ReadDouble(ctx); err != nil {
+func (p *ContainerLimit)  ReadField8(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadDouble(); err != nil {
   return thrift.PrependError("error reading field 8: ", err)
 } else {
   p.DiskRbw = v
@@ -1929,8 +1845,8 @@ func (p *ContainerLimit)  ReadField8(ctx context.Context, iprot thrift.TProtocol
   return nil
 }
 
-func (p *ContainerLimit)  ReadField9(ctx context.Context, iprot thrift.TProtocol) error {
-  if v, err := iprot.ReadDouble(ctx); err != nil {
+func (p *ContainerLimit)  ReadField9(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadDouble(); err != nil {
   return thrift.PrependError("error reading field 9: ", err)
 } else {
   p.DiskWbw = v
@@ -1938,8 +1854,8 @@ func (p *ContainerLimit)  ReadField9(ctx context.Context, iprot thrift.TProtocol
   return nil
 }
 
-func (p *ContainerLimit)  ReadField10(ctx context.Context, iprot thrift.TProtocol) error {
-  if v, err := iprot.ReadI32(ctx); err != nil {
+func (p *ContainerLimit)  ReadField10(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadI32(); err != nil {
   return thrift.PrependError("error reading field 10: ", err)
 } else {
   p.DiskPrio = v
@@ -1947,8 +1863,8 @@ func (p *ContainerLimit)  ReadField10(ctx context.Context, iprot thrift.TProtoco
   return nil
 }
 
-func (p *ContainerLimit)  ReadField11(ctx context.Context, iprot thrift.TProtocol) error {
-  if v, err := iprot.ReadDouble(ctx); err != nil {
+func (p *ContainerLimit)  ReadField11(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadDouble(); err != nil {
   return thrift.PrependError("error reading field 11: ", err)
 } else {
   p.NetRbw = v
@@ -1956,8 +1872,8 @@ func (p *ContainerLimit)  ReadField11(ctx context.Context, iprot thrift.TProtoco
   return nil
 }
 
-func (p *ContainerLimit)  ReadField12(ctx context.Context, iprot thrift.TProtocol) error {
-  if v, err := iprot.ReadDouble(ctx); err != nil {
+func (p *ContainerLimit)  ReadField12(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadDouble(); err != nil {
   return thrift.PrependError("error reading field 12: ", err)
 } else {
   p.NetWbw = v
@@ -1965,169 +1881,148 @@ func (p *ContainerLimit)  ReadField12(ctx context.Context, iprot thrift.TProtoco
   return nil
 }
 
-func (p *ContainerLimit) Write(ctx context.Context, oprot thrift.TProtocol) error {
-  if err := oprot.WriteStructBegin(ctx, "ContainerLimit"); err != nil {
+func (p *ContainerLimit) Write(oprot thrift.TProtocol) error {
+  if err := oprot.WriteStructBegin("ContainerLimit"); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err) }
   if p != nil {
-    if err := p.writeField1(ctx, oprot); err != nil { return err }
-    if err := p.writeField2(ctx, oprot); err != nil { return err }
-    if err := p.writeField3(ctx, oprot); err != nil { return err }
-    if err := p.writeField4(ctx, oprot); err != nil { return err }
-    if err := p.writeField5(ctx, oprot); err != nil { return err }
-    if err := p.writeField6(ctx, oprot); err != nil { return err }
-    if err := p.writeField7(ctx, oprot); err != nil { return err }
-    if err := p.writeField8(ctx, oprot); err != nil { return err }
-    if err := p.writeField9(ctx, oprot); err != nil { return err }
-    if err := p.writeField10(ctx, oprot); err != nil { return err }
-    if err := p.writeField11(ctx, oprot); err != nil { return err }
-    if err := p.writeField12(ctx, oprot); err != nil { return err }
+    if err := p.writeField1(oprot); err != nil { return err }
+    if err := p.writeField2(oprot); err != nil { return err }
+    if err := p.writeField3(oprot); err != nil { return err }
+    if err := p.writeField4(oprot); err != nil { return err }
+    if err := p.writeField5(oprot); err != nil { return err }
+    if err := p.writeField6(oprot); err != nil { return err }
+    if err := p.writeField7(oprot); err != nil { return err }
+    if err := p.writeField8(oprot); err != nil { return err }
+    if err := p.writeField9(oprot); err != nil { return err }
+    if err := p.writeField10(oprot); err != nil { return err }
+    if err := p.writeField11(oprot); err != nil { return err }
+    if err := p.writeField12(oprot); err != nil { return err }
   }
-  if err := oprot.WriteFieldStop(ctx); err != nil {
+  if err := oprot.WriteFieldStop(); err != nil {
     return thrift.PrependError("write field stop error: ", err) }
-  if err := oprot.WriteStructEnd(ctx); err != nil {
+  if err := oprot.WriteStructEnd(); err != nil {
     return thrift.PrependError("write struct stop error: ", err) }
   return nil
 }
 
-func (p *ContainerLimit) writeField1(ctx context.Context, oprot thrift.TProtocol) (err error) {
-  if err := oprot.WriteFieldBegin(ctx, "cpu", thrift.DOUBLE, 1); err != nil {
+func (p *ContainerLimit) writeField1(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("cpu", thrift.DOUBLE, 1); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field begin error 1:cpu: ", p), err) }
-  if err := oprot.WriteDouble(ctx, float64(p.CPU)); err != nil {
+  if err := oprot.WriteDouble(float64(p.CPU)); err != nil {
   return thrift.PrependError(fmt.Sprintf("%T.cpu (1) field write error: ", p), err) }
-  if err := oprot.WriteFieldEnd(ctx); err != nil {
+  if err := oprot.WriteFieldEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field end error 1:cpu: ", p), err) }
   return err
 }
 
-func (p *ContainerLimit) writeField2(ctx context.Context, oprot thrift.TProtocol) (err error) {
-  if err := oprot.WriteFieldBegin(ctx, "cpu_prio", thrift.I32, 2); err != nil {
+func (p *ContainerLimit) writeField2(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("cpu_prio", thrift.I32, 2); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field begin error 2:cpu_prio: ", p), err) }
-  if err := oprot.WriteI32(ctx, int32(p.CPUPrio)); err != nil {
+  if err := oprot.WriteI32(int32(p.CPUPrio)); err != nil {
   return thrift.PrependError(fmt.Sprintf("%T.cpu_prio (2) field write error: ", p), err) }
-  if err := oprot.WriteFieldEnd(ctx); err != nil {
+  if err := oprot.WriteFieldEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field end error 2:cpu_prio: ", p), err) }
   return err
 }
 
-func (p *ContainerLimit) writeField3(ctx context.Context, oprot thrift.TProtocol) (err error) {
-  if err := oprot.WriteFieldBegin(ctx, "mem_hard", thrift.I32, 3); err != nil {
+func (p *ContainerLimit) writeField3(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("mem_hard", thrift.I32, 3); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field begin error 3:mem_hard: ", p), err) }
-  if err := oprot.WriteI32(ctx, int32(p.MemHard)); err != nil {
+  if err := oprot.WriteI32(int32(p.MemHard)); err != nil {
   return thrift.PrependError(fmt.Sprintf("%T.mem_hard (3) field write error: ", p), err) }
-  if err := oprot.WriteFieldEnd(ctx); err != nil {
+  if err := oprot.WriteFieldEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field end error 3:mem_hard: ", p), err) }
   return err
 }
 
-func (p *ContainerLimit) writeField4(ctx context.Context, oprot thrift.TProtocol) (err error) {
-  if err := oprot.WriteFieldBegin(ctx, "mem_soft", thrift.I32, 4); err != nil {
+func (p *ContainerLimit) writeField4(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("mem_soft", thrift.I32, 4); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field begin error 4:mem_soft: ", p), err) }
-  if err := oprot.WriteI32(ctx, int32(p.MemSoft)); err != nil {
+  if err := oprot.WriteI32(int32(p.MemSoft)); err != nil {
   return thrift.PrependError(fmt.Sprintf("%T.mem_soft (4) field write error: ", p), err) }
-  if err := oprot.WriteFieldEnd(ctx); err != nil {
+  if err := oprot.WriteFieldEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field end error 4:mem_soft: ", p), err) }
   return err
 }
 
-func (p *ContainerLimit) writeField5(ctx context.Context, oprot thrift.TProtocol) (err error) {
-  if err := oprot.WriteFieldBegin(ctx, "disk_size", thrift.I32, 5); err != nil {
+func (p *ContainerLimit) writeField5(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("disk_size", thrift.I32, 5); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field begin error 5:disk_size: ", p), err) }
-  if err := oprot.WriteI32(ctx, int32(p.DiskSize)); err != nil {
+  if err := oprot.WriteI32(int32(p.DiskSize)); err != nil {
   return thrift.PrependError(fmt.Sprintf("%T.disk_size (5) field write error: ", p), err) }
-  if err := oprot.WriteFieldEnd(ctx); err != nil {
+  if err := oprot.WriteFieldEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field end error 5:disk_size: ", p), err) }
   return err
 }
 
-func (p *ContainerLimit) writeField6(ctx context.Context, oprot thrift.TProtocol) (err error) {
-  if err := oprot.WriteFieldBegin(ctx, "disk_rio", thrift.I32, 6); err != nil {
+func (p *ContainerLimit) writeField6(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("disk_rio", thrift.I32, 6); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field begin error 6:disk_rio: ", p), err) }
-  if err := oprot.WriteI32(ctx, int32(p.DiskRio)); err != nil {
+  if err := oprot.WriteI32(int32(p.DiskRio)); err != nil {
   return thrift.PrependError(fmt.Sprintf("%T.disk_rio (6) field write error: ", p), err) }
-  if err := oprot.WriteFieldEnd(ctx); err != nil {
+  if err := oprot.WriteFieldEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field end error 6:disk_rio: ", p), err) }
   return err
 }
 
-func (p *ContainerLimit) writeField7(ctx context.Context, oprot thrift.TProtocol) (err error) {
-  if err := oprot.WriteFieldBegin(ctx, "disk_wio", thrift.I32, 7); err != nil {
+func (p *ContainerLimit) writeField7(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("disk_wio", thrift.I32, 7); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field begin error 7:disk_wio: ", p), err) }
-  if err := oprot.WriteI32(ctx, int32(p.DiskWio)); err != nil {
+  if err := oprot.WriteI32(int32(p.DiskWio)); err != nil {
   return thrift.PrependError(fmt.Sprintf("%T.disk_wio (7) field write error: ", p), err) }
-  if err := oprot.WriteFieldEnd(ctx); err != nil {
+  if err := oprot.WriteFieldEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field end error 7:disk_wio: ", p), err) }
   return err
 }
 
-func (p *ContainerLimit) writeField8(ctx context.Context, oprot thrift.TProtocol) (err error) {
-  if err := oprot.WriteFieldBegin(ctx, "disk_rbw", thrift.DOUBLE, 8); err != nil {
+func (p *ContainerLimit) writeField8(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("disk_rbw", thrift.DOUBLE, 8); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field begin error 8:disk_rbw: ", p), err) }
-  if err := oprot.WriteDouble(ctx, float64(p.DiskRbw)); err != nil {
+  if err := oprot.WriteDouble(float64(p.DiskRbw)); err != nil {
   return thrift.PrependError(fmt.Sprintf("%T.disk_rbw (8) field write error: ", p), err) }
-  if err := oprot.WriteFieldEnd(ctx); err != nil {
+  if err := oprot.WriteFieldEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field end error 8:disk_rbw: ", p), err) }
   return err
 }
 
-func (p *ContainerLimit) writeField9(ctx context.Context, oprot thrift.TProtocol) (err error) {
-  if err := oprot.WriteFieldBegin(ctx, "disk_wbw", thrift.DOUBLE, 9); err != nil {
+func (p *ContainerLimit) writeField9(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("disk_wbw", thrift.DOUBLE, 9); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field begin error 9:disk_wbw: ", p), err) }
-  if err := oprot.WriteDouble(ctx, float64(p.DiskWbw)); err != nil {
+  if err := oprot.WriteDouble(float64(p.DiskWbw)); err != nil {
   return thrift.PrependError(fmt.Sprintf("%T.disk_wbw (9) field write error: ", p), err) }
-  if err := oprot.WriteFieldEnd(ctx); err != nil {
+  if err := oprot.WriteFieldEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field end error 9:disk_wbw: ", p), err) }
   return err
 }
 
-func (p *ContainerLimit) writeField10(ctx context.Context, oprot thrift.TProtocol) (err error) {
-  if err := oprot.WriteFieldBegin(ctx, "disk_prio", thrift.I32, 10); err != nil {
+func (p *ContainerLimit) writeField10(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("disk_prio", thrift.I32, 10); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field begin error 10:disk_prio: ", p), err) }
-  if err := oprot.WriteI32(ctx, int32(p.DiskPrio)); err != nil {
+  if err := oprot.WriteI32(int32(p.DiskPrio)); err != nil {
   return thrift.PrependError(fmt.Sprintf("%T.disk_prio (10) field write error: ", p), err) }
-  if err := oprot.WriteFieldEnd(ctx); err != nil {
+  if err := oprot.WriteFieldEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field end error 10:disk_prio: ", p), err) }
   return err
 }
 
-func (p *ContainerLimit) writeField11(ctx context.Context, oprot thrift.TProtocol) (err error) {
-  if err := oprot.WriteFieldBegin(ctx, "net_rbw", thrift.DOUBLE, 11); err != nil {
+func (p *ContainerLimit) writeField11(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("net_rbw", thrift.DOUBLE, 11); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field begin error 11:net_rbw: ", p), err) }
-  if err := oprot.WriteDouble(ctx, float64(p.NetRbw)); err != nil {
+  if err := oprot.WriteDouble(float64(p.NetRbw)); err != nil {
   return thrift.PrependError(fmt.Sprintf("%T.net_rbw (11) field write error: ", p), err) }
-  if err := oprot.WriteFieldEnd(ctx); err != nil {
+  if err := oprot.WriteFieldEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field end error 11:net_rbw: ", p), err) }
   return err
 }
 
-func (p *ContainerLimit) writeField12(ctx context.Context, oprot thrift.TProtocol) (err error) {
-  if err := oprot.WriteFieldBegin(ctx, "net_wbw", thrift.DOUBLE, 12); err != nil {
+func (p *ContainerLimit) writeField12(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("net_wbw", thrift.DOUBLE, 12); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field begin error 12:net_wbw: ", p), err) }
-  if err := oprot.WriteDouble(ctx, float64(p.NetWbw)); err != nil {
+  if err := oprot.WriteDouble(float64(p.NetWbw)); err != nil {
   return thrift.PrependError(fmt.Sprintf("%T.net_wbw (12) field write error: ", p), err) }
-  if err := oprot.WriteFieldEnd(ctx); err != nil {
+  if err := oprot.WriteFieldEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field end error 12:net_wbw: ", p), err) }
   return err
-}
-
-func (p *ContainerLimit) Equals(other *ContainerLimit) bool {
-  if p == other {
-    return true
-  } else if p == nil || other == nil {
-    return false
-  }
-  if p.CPU != other.CPU { return false }
-  if p.CPUPrio != other.CPUPrio { return false }
-  if p.MemHard != other.MemHard { return false }
-  if p.MemSoft != other.MemSoft { return false }
-  if p.DiskSize != other.DiskSize { return false }
-  if p.DiskRio != other.DiskRio { return false }
-  if p.DiskWio != other.DiskWio { return false }
-  if p.DiskRbw != other.DiskRbw { return false }
-  if p.DiskWbw != other.DiskWbw { return false }
-  if p.DiskPrio != other.DiskPrio { return false }
-  if p.NetRbw != other.NetRbw { return false }
-  if p.NetWbw != other.NetWbw { return false }
-  return true
 }
 
 func (p *ContainerLimit) String() string {
@@ -2135,6 +2030,941 @@ func (p *ContainerLimit) String() string {
     return "<nil>"
   }
   return fmt.Sprintf("ContainerLimit(%+v)", *p)
+}
+
+// Attributes:
+//  - EthName
+//  - IP
+//  - Mac
+//  - Gateway
+//  - Mask
+type NetworkInterface struct {
+  EthName string `thrift:"eth_name,1,required" db:"eth_name" json:"eth_name"`
+  IP string `thrift:"ip,2,required" db:"ip" json:"ip"`
+  Mac string `thrift:"mac,3,required" db:"mac" json:"mac"`
+  Gateway string `thrift:"gateway,4,required" db:"gateway" json:"gateway"`
+  Mask string `thrift:"mask,5,required" db:"mask" json:"mask"`
+}
+
+func NewNetworkInterface() *NetworkInterface {
+  return &NetworkInterface{}
+}
+
+
+func (p *NetworkInterface) GetEthName() string {
+  return p.EthName
+}
+
+func (p *NetworkInterface) GetIP() string {
+  return p.IP
+}
+
+func (p *NetworkInterface) GetMac() string {
+  return p.Mac
+}
+
+func (p *NetworkInterface) GetGateway() string {
+  return p.Gateway
+}
+
+func (p *NetworkInterface) GetMask() string {
+  return p.Mask
+}
+func (p *NetworkInterface) Read(iprot thrift.TProtocol) error {
+  if _, err := iprot.ReadStructBegin(); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
+  }
+
+  var issetEthName bool = false;
+  var issetIP bool = false;
+  var issetMac bool = false;
+  var issetGateway bool = false;
+  var issetMask bool = false;
+
+  for {
+    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin()
+    if err != nil {
+      return thrift.PrependError(fmt.Sprintf("%T field %d read error: ", p, fieldId), err)
+    }
+    if fieldTypeId == thrift.STOP { break; }
+    switch fieldId {
+    case 1:
+      if err := p.ReadField1(iprot); err != nil {
+        return err
+      }
+      issetEthName = true
+    case 2:
+      if err := p.ReadField2(iprot); err != nil {
+        return err
+      }
+      issetIP = true
+    case 3:
+      if err := p.ReadField3(iprot); err != nil {
+        return err
+      }
+      issetMac = true
+    case 4:
+      if err := p.ReadField4(iprot); err != nil {
+        return err
+      }
+      issetGateway = true
+    case 5:
+      if err := p.ReadField5(iprot); err != nil {
+        return err
+      }
+      issetMask = true
+    default:
+      if err := iprot.Skip(fieldTypeId); err != nil {
+        return err
+      }
+    }
+    if err := iprot.ReadFieldEnd(); err != nil {
+      return err
+    }
+  }
+  if err := iprot.ReadStructEnd(); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+  }
+  if !issetEthName{
+    return thrift.NewTProtocolExceptionWithType(thrift.INVALID_DATA, fmt.Errorf("Required field EthName is not set"));
+  }
+  if !issetIP{
+    return thrift.NewTProtocolExceptionWithType(thrift.INVALID_DATA, fmt.Errorf("Required field IP is not set"));
+  }
+  if !issetMac{
+    return thrift.NewTProtocolExceptionWithType(thrift.INVALID_DATA, fmt.Errorf("Required field Mac is not set"));
+  }
+  if !issetGateway{
+    return thrift.NewTProtocolExceptionWithType(thrift.INVALID_DATA, fmt.Errorf("Required field Gateway is not set"));
+  }
+  if !issetMask{
+    return thrift.NewTProtocolExceptionWithType(thrift.INVALID_DATA, fmt.Errorf("Required field Mask is not set"));
+  }
+  return nil
+}
+
+func (p *NetworkInterface)  ReadField1(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadString(); err != nil {
+  return thrift.PrependError("error reading field 1: ", err)
+} else {
+  p.EthName = v
+}
+  return nil
+}
+
+func (p *NetworkInterface)  ReadField2(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadString(); err != nil {
+  return thrift.PrependError("error reading field 2: ", err)
+} else {
+  p.IP = v
+}
+  return nil
+}
+
+func (p *NetworkInterface)  ReadField3(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadString(); err != nil {
+  return thrift.PrependError("error reading field 3: ", err)
+} else {
+  p.Mac = v
+}
+  return nil
+}
+
+func (p *NetworkInterface)  ReadField4(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadString(); err != nil {
+  return thrift.PrependError("error reading field 4: ", err)
+} else {
+  p.Gateway = v
+}
+  return nil
+}
+
+func (p *NetworkInterface)  ReadField5(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadString(); err != nil {
+  return thrift.PrependError("error reading field 5: ", err)
+} else {
+  p.Mask = v
+}
+  return nil
+}
+
+func (p *NetworkInterface) Write(oprot thrift.TProtocol) error {
+  if err := oprot.WriteStructBegin("NetworkInterface"); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err) }
+  if p != nil {
+    if err := p.writeField1(oprot); err != nil { return err }
+    if err := p.writeField2(oprot); err != nil { return err }
+    if err := p.writeField3(oprot); err != nil { return err }
+    if err := p.writeField4(oprot); err != nil { return err }
+    if err := p.writeField5(oprot); err != nil { return err }
+  }
+  if err := oprot.WriteFieldStop(); err != nil {
+    return thrift.PrependError("write field stop error: ", err) }
+  if err := oprot.WriteStructEnd(); err != nil {
+    return thrift.PrependError("write struct stop error: ", err) }
+  return nil
+}
+
+func (p *NetworkInterface) writeField1(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("eth_name", thrift.STRING, 1); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write field begin error 1:eth_name: ", p), err) }
+  if err := oprot.WriteString(string(p.EthName)); err != nil {
+  return thrift.PrependError(fmt.Sprintf("%T.eth_name (1) field write error: ", p), err) }
+  if err := oprot.WriteFieldEnd(); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write field end error 1:eth_name: ", p), err) }
+  return err
+}
+
+func (p *NetworkInterface) writeField2(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("ip", thrift.STRING, 2); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write field begin error 2:ip: ", p), err) }
+  if err := oprot.WriteString(string(p.IP)); err != nil {
+  return thrift.PrependError(fmt.Sprintf("%T.ip (2) field write error: ", p), err) }
+  if err := oprot.WriteFieldEnd(); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write field end error 2:ip: ", p), err) }
+  return err
+}
+
+func (p *NetworkInterface) writeField3(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("mac", thrift.STRING, 3); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write field begin error 3:mac: ", p), err) }
+  if err := oprot.WriteString(string(p.Mac)); err != nil {
+  return thrift.PrependError(fmt.Sprintf("%T.mac (3) field write error: ", p), err) }
+  if err := oprot.WriteFieldEnd(); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write field end error 3:mac: ", p), err) }
+  return err
+}
+
+func (p *NetworkInterface) writeField4(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("gateway", thrift.STRING, 4); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write field begin error 4:gateway: ", p), err) }
+  if err := oprot.WriteString(string(p.Gateway)); err != nil {
+  return thrift.PrependError(fmt.Sprintf("%T.gateway (4) field write error: ", p), err) }
+  if err := oprot.WriteFieldEnd(); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write field end error 4:gateway: ", p), err) }
+  return err
+}
+
+func (p *NetworkInterface) writeField5(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("mask", thrift.STRING, 5); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write field begin error 5:mask: ", p), err) }
+  if err := oprot.WriteString(string(p.Mask)); err != nil {
+  return thrift.PrependError(fmt.Sprintf("%T.mask (5) field write error: ", p), err) }
+  if err := oprot.WriteFieldEnd(); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write field end error 5:mask: ", p), err) }
+  return err
+}
+
+func (p *NetworkInterface) String() string {
+  if p == nil {
+    return "<nil>"
+  }
+  return fmt.Sprintf("NetworkInterface(%+v)", *p)
+}
+
+// Attributes:
+//  - Name
+//  - Stat
+//  - UUID
+//  - CPU
+//  - CPUUsage
+//  - MemUsage
+//  - MemTotal
+//  - DiskUsage
+//  - DiskTotal
+//  - DiskRbw
+//  - DiskWbw
+//  - NetRbw
+//  - NetWbw
+//  - Image
+//  - Version
+//  - Ha
+//  - Level
+//  - Nets
+type GetAllContainersResponse struct {
+  Name string `thrift:"name,1,required" db:"name" json:"name"`
+  Stat int32 `thrift:"stat,2,required" db:"stat" json:"stat"`
+  UUID string `thrift:"uuid,3,required" db:"uuid" json:"uuid"`
+  CPU float64 `thrift:"cpu,4,required" db:"cpu" json:"cpu"`
+  CPUUsage float64 `thrift:"cpu_usage,5,required" db:"cpu_usage" json:"cpu_usage"`
+  MemUsage int32 `thrift:"mem_usage,6,required" db:"mem_usage" json:"mem_usage"`
+  MemTotal int32 `thrift:"mem_total,7,required" db:"mem_total" json:"mem_total"`
+  DiskUsage float64 `thrift:"disk_usage,8,required" db:"disk_usage" json:"disk_usage"`
+  DiskTotal int32 `thrift:"disk_total,9,required" db:"disk_total" json:"disk_total"`
+  DiskRbw float64 `thrift:"disk_rbw,10,required" db:"disk_rbw" json:"disk_rbw"`
+  DiskWbw float64 `thrift:"disk_wbw,11,required" db:"disk_wbw" json:"disk_wbw"`
+  NetRbw float64 `thrift:"net_rbw,12,required" db:"net_rbw" json:"net_rbw"`
+  NetWbw float64 `thrift:"net_wbw,13,required" db:"net_wbw" json:"net_wbw"`
+  Image string `thrift:"image,14,required" db:"image" json:"image"`
+  Version string `thrift:"version,15,required" db:"version" json:"version"`
+  Ha bool `thrift:"ha,16,required" db:"ha" json:"ha"`
+  Level int32 `thrift:"level,17,required" db:"level" json:"level"`
+  Nets []*NetworkInterface `thrift:"nets,18,required" db:"nets" json:"nets"`
+}
+
+func NewGetAllContainersResponse() *GetAllContainersResponse {
+  return &GetAllContainersResponse{}
+}
+
+
+func (p *GetAllContainersResponse) GetName() string {
+  return p.Name
+}
+
+func (p *GetAllContainersResponse) GetStat() int32 {
+  return p.Stat
+}
+
+func (p *GetAllContainersResponse) GetUUID() string {
+  return p.UUID
+}
+
+func (p *GetAllContainersResponse) GetCPU() float64 {
+  return p.CPU
+}
+
+func (p *GetAllContainersResponse) GetCPUUsage() float64 {
+  return p.CPUUsage
+}
+
+func (p *GetAllContainersResponse) GetMemUsage() int32 {
+  return p.MemUsage
+}
+
+func (p *GetAllContainersResponse) GetMemTotal() int32 {
+  return p.MemTotal
+}
+
+func (p *GetAllContainersResponse) GetDiskUsage() float64 {
+  return p.DiskUsage
+}
+
+func (p *GetAllContainersResponse) GetDiskTotal() int32 {
+  return p.DiskTotal
+}
+
+func (p *GetAllContainersResponse) GetDiskRbw() float64 {
+  return p.DiskRbw
+}
+
+func (p *GetAllContainersResponse) GetDiskWbw() float64 {
+  return p.DiskWbw
+}
+
+func (p *GetAllContainersResponse) GetNetRbw() float64 {
+  return p.NetRbw
+}
+
+func (p *GetAllContainersResponse) GetNetWbw() float64 {
+  return p.NetWbw
+}
+
+func (p *GetAllContainersResponse) GetImage() string {
+  return p.Image
+}
+
+func (p *GetAllContainersResponse) GetVersion() string {
+  return p.Version
+}
+
+func (p *GetAllContainersResponse) GetHa() bool {
+  return p.Ha
+}
+
+func (p *GetAllContainersResponse) GetLevel() int32 {
+  return p.Level
+}
+
+func (p *GetAllContainersResponse) GetNets() []*NetworkInterface {
+  return p.Nets
+}
+func (p *GetAllContainersResponse) Read(iprot thrift.TProtocol) error {
+  if _, err := iprot.ReadStructBegin(); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
+  }
+
+  var issetName bool = false;
+  var issetStat bool = false;
+  var issetUUID bool = false;
+  var issetCPU bool = false;
+  var issetCPUUsage bool = false;
+  var issetMemUsage bool = false;
+  var issetMemTotal bool = false;
+  var issetDiskUsage bool = false;
+  var issetDiskTotal bool = false;
+  var issetDiskRbw bool = false;
+  var issetDiskWbw bool = false;
+  var issetNetRbw bool = false;
+  var issetNetWbw bool = false;
+  var issetImage bool = false;
+  var issetVersion bool = false;
+  var issetHa bool = false;
+  var issetLevel bool = false;
+  var issetNets bool = false;
+
+  for {
+    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin()
+    if err != nil {
+      return thrift.PrependError(fmt.Sprintf("%T field %d read error: ", p, fieldId), err)
+    }
+    if fieldTypeId == thrift.STOP { break; }
+    switch fieldId {
+    case 1:
+      if err := p.ReadField1(iprot); err != nil {
+        return err
+      }
+      issetName = true
+    case 2:
+      if err := p.ReadField2(iprot); err != nil {
+        return err
+      }
+      issetStat = true
+    case 3:
+      if err := p.ReadField3(iprot); err != nil {
+        return err
+      }
+      issetUUID = true
+    case 4:
+      if err := p.ReadField4(iprot); err != nil {
+        return err
+      }
+      issetCPU = true
+    case 5:
+      if err := p.ReadField5(iprot); err != nil {
+        return err
+      }
+      issetCPUUsage = true
+    case 6:
+      if err := p.ReadField6(iprot); err != nil {
+        return err
+      }
+      issetMemUsage = true
+    case 7:
+      if err := p.ReadField7(iprot); err != nil {
+        return err
+      }
+      issetMemTotal = true
+    case 8:
+      if err := p.ReadField8(iprot); err != nil {
+        return err
+      }
+      issetDiskUsage = true
+    case 9:
+      if err := p.ReadField9(iprot); err != nil {
+        return err
+      }
+      issetDiskTotal = true
+    case 10:
+      if err := p.ReadField10(iprot); err != nil {
+        return err
+      }
+      issetDiskRbw = true
+    case 11:
+      if err := p.ReadField11(iprot); err != nil {
+        return err
+      }
+      issetDiskWbw = true
+    case 12:
+      if err := p.ReadField12(iprot); err != nil {
+        return err
+      }
+      issetNetRbw = true
+    case 13:
+      if err := p.ReadField13(iprot); err != nil {
+        return err
+      }
+      issetNetWbw = true
+    case 14:
+      if err := p.ReadField14(iprot); err != nil {
+        return err
+      }
+      issetImage = true
+    case 15:
+      if err := p.ReadField15(iprot); err != nil {
+        return err
+      }
+      issetVersion = true
+    case 16:
+      if err := p.ReadField16(iprot); err != nil {
+        return err
+      }
+      issetHa = true
+    case 17:
+      if err := p.ReadField17(iprot); err != nil {
+        return err
+      }
+      issetLevel = true
+    case 18:
+      if err := p.ReadField18(iprot); err != nil {
+        return err
+      }
+      issetNets = true
+    default:
+      if err := iprot.Skip(fieldTypeId); err != nil {
+        return err
+      }
+    }
+    if err := iprot.ReadFieldEnd(); err != nil {
+      return err
+    }
+  }
+  if err := iprot.ReadStructEnd(); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+  }
+  if !issetName{
+    return thrift.NewTProtocolExceptionWithType(thrift.INVALID_DATA, fmt.Errorf("Required field Name is not set"));
+  }
+  if !issetStat{
+    return thrift.NewTProtocolExceptionWithType(thrift.INVALID_DATA, fmt.Errorf("Required field Stat is not set"));
+  }
+  if !issetUUID{
+    return thrift.NewTProtocolExceptionWithType(thrift.INVALID_DATA, fmt.Errorf("Required field UUID is not set"));
+  }
+  if !issetCPU{
+    return thrift.NewTProtocolExceptionWithType(thrift.INVALID_DATA, fmt.Errorf("Required field CPU is not set"));
+  }
+  if !issetCPUUsage{
+    return thrift.NewTProtocolExceptionWithType(thrift.INVALID_DATA, fmt.Errorf("Required field CPUUsage is not set"));
+  }
+  if !issetMemUsage{
+    return thrift.NewTProtocolExceptionWithType(thrift.INVALID_DATA, fmt.Errorf("Required field MemUsage is not set"));
+  }
+  if !issetMemTotal{
+    return thrift.NewTProtocolExceptionWithType(thrift.INVALID_DATA, fmt.Errorf("Required field MemTotal is not set"));
+  }
+  if !issetDiskUsage{
+    return thrift.NewTProtocolExceptionWithType(thrift.INVALID_DATA, fmt.Errorf("Required field DiskUsage is not set"));
+  }
+  if !issetDiskTotal{
+    return thrift.NewTProtocolExceptionWithType(thrift.INVALID_DATA, fmt.Errorf("Required field DiskTotal is not set"));
+  }
+  if !issetDiskRbw{
+    return thrift.NewTProtocolExceptionWithType(thrift.INVALID_DATA, fmt.Errorf("Required field DiskRbw is not set"));
+  }
+  if !issetDiskWbw{
+    return thrift.NewTProtocolExceptionWithType(thrift.INVALID_DATA, fmt.Errorf("Required field DiskWbw is not set"));
+  }
+  if !issetNetRbw{
+    return thrift.NewTProtocolExceptionWithType(thrift.INVALID_DATA, fmt.Errorf("Required field NetRbw is not set"));
+  }
+  if !issetNetWbw{
+    return thrift.NewTProtocolExceptionWithType(thrift.INVALID_DATA, fmt.Errorf("Required field NetWbw is not set"));
+  }
+  if !issetImage{
+    return thrift.NewTProtocolExceptionWithType(thrift.INVALID_DATA, fmt.Errorf("Required field Image is not set"));
+  }
+  if !issetVersion{
+    return thrift.NewTProtocolExceptionWithType(thrift.INVALID_DATA, fmt.Errorf("Required field Version is not set"));
+  }
+  if !issetHa{
+    return thrift.NewTProtocolExceptionWithType(thrift.INVALID_DATA, fmt.Errorf("Required field Ha is not set"));
+  }
+  if !issetLevel{
+    return thrift.NewTProtocolExceptionWithType(thrift.INVALID_DATA, fmt.Errorf("Required field Level is not set"));
+  }
+  if !issetNets{
+    return thrift.NewTProtocolExceptionWithType(thrift.INVALID_DATA, fmt.Errorf("Required field Nets is not set"));
+  }
+  return nil
+}
+
+func (p *GetAllContainersResponse)  ReadField1(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadString(); err != nil {
+  return thrift.PrependError("error reading field 1: ", err)
+} else {
+  p.Name = v
+}
+  return nil
+}
+
+func (p *GetAllContainersResponse)  ReadField2(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadI32(); err != nil {
+  return thrift.PrependError("error reading field 2: ", err)
+} else {
+  p.Stat = v
+}
+  return nil
+}
+
+func (p *GetAllContainersResponse)  ReadField3(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadString(); err != nil {
+  return thrift.PrependError("error reading field 3: ", err)
+} else {
+  p.UUID = v
+}
+  return nil
+}
+
+func (p *GetAllContainersResponse)  ReadField4(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadDouble(); err != nil {
+  return thrift.PrependError("error reading field 4: ", err)
+} else {
+  p.CPU = v
+}
+  return nil
+}
+
+func (p *GetAllContainersResponse)  ReadField5(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadDouble(); err != nil {
+  return thrift.PrependError("error reading field 5: ", err)
+} else {
+  p.CPUUsage = v
+}
+  return nil
+}
+
+func (p *GetAllContainersResponse)  ReadField6(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadI32(); err != nil {
+  return thrift.PrependError("error reading field 6: ", err)
+} else {
+  p.MemUsage = v
+}
+  return nil
+}
+
+func (p *GetAllContainersResponse)  ReadField7(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadI32(); err != nil {
+  return thrift.PrependError("error reading field 7: ", err)
+} else {
+  p.MemTotal = v
+}
+  return nil
+}
+
+func (p *GetAllContainersResponse)  ReadField8(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadDouble(); err != nil {
+  return thrift.PrependError("error reading field 8: ", err)
+} else {
+  p.DiskUsage = v
+}
+  return nil
+}
+
+func (p *GetAllContainersResponse)  ReadField9(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadI32(); err != nil {
+  return thrift.PrependError("error reading field 9: ", err)
+} else {
+  p.DiskTotal = v
+}
+  return nil
+}
+
+func (p *GetAllContainersResponse)  ReadField10(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadDouble(); err != nil {
+  return thrift.PrependError("error reading field 10: ", err)
+} else {
+  p.DiskRbw = v
+}
+  return nil
+}
+
+func (p *GetAllContainersResponse)  ReadField11(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadDouble(); err != nil {
+  return thrift.PrependError("error reading field 11: ", err)
+} else {
+  p.DiskWbw = v
+}
+  return nil
+}
+
+func (p *GetAllContainersResponse)  ReadField12(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadDouble(); err != nil {
+  return thrift.PrependError("error reading field 12: ", err)
+} else {
+  p.NetRbw = v
+}
+  return nil
+}
+
+func (p *GetAllContainersResponse)  ReadField13(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadDouble(); err != nil {
+  return thrift.PrependError("error reading field 13: ", err)
+} else {
+  p.NetWbw = v
+}
+  return nil
+}
+
+func (p *GetAllContainersResponse)  ReadField14(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadString(); err != nil {
+  return thrift.PrependError("error reading field 14: ", err)
+} else {
+  p.Image = v
+}
+  return nil
+}
+
+func (p *GetAllContainersResponse)  ReadField15(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadString(); err != nil {
+  return thrift.PrependError("error reading field 15: ", err)
+} else {
+  p.Version = v
+}
+  return nil
+}
+
+func (p *GetAllContainersResponse)  ReadField16(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadBool(); err != nil {
+  return thrift.PrependError("error reading field 16: ", err)
+} else {
+  p.Ha = v
+}
+  return nil
+}
+
+func (p *GetAllContainersResponse)  ReadField17(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadI32(); err != nil {
+  return thrift.PrependError("error reading field 17: ", err)
+} else {
+  p.Level = v
+}
+  return nil
+}
+
+func (p *GetAllContainersResponse)  ReadField18(iprot thrift.TProtocol) error {
+  _, size, err := iprot.ReadListBegin()
+  if err != nil {
+    return thrift.PrependError("error reading list begin: ", err)
+  }
+  tSlice := make([]*NetworkInterface, 0, size)
+  p.Nets =  tSlice
+  for i := 0; i < size; i ++ {
+    _elem0 := &NetworkInterface{}
+    if err := _elem0.Read(iprot); err != nil {
+      return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", _elem0), err)
+    }
+    p.Nets = append(p.Nets, _elem0)
+  }
+  if err := iprot.ReadListEnd(); err != nil {
+    return thrift.PrependError("error reading list end: ", err)
+  }
+  return nil
+}
+
+func (p *GetAllContainersResponse) Write(oprot thrift.TProtocol) error {
+  if err := oprot.WriteStructBegin("GetAllContainersResponse"); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err) }
+  if p != nil {
+    if err := p.writeField1(oprot); err != nil { return err }
+    if err := p.writeField2(oprot); err != nil { return err }
+    if err := p.writeField3(oprot); err != nil { return err }
+    if err := p.writeField4(oprot); err != nil { return err }
+    if err := p.writeField5(oprot); err != nil { return err }
+    if err := p.writeField6(oprot); err != nil { return err }
+    if err := p.writeField7(oprot); err != nil { return err }
+    if err := p.writeField8(oprot); err != nil { return err }
+    if err := p.writeField9(oprot); err != nil { return err }
+    if err := p.writeField10(oprot); err != nil { return err }
+    if err := p.writeField11(oprot); err != nil { return err }
+    if err := p.writeField12(oprot); err != nil { return err }
+    if err := p.writeField13(oprot); err != nil { return err }
+    if err := p.writeField14(oprot); err != nil { return err }
+    if err := p.writeField15(oprot); err != nil { return err }
+    if err := p.writeField16(oprot); err != nil { return err }
+    if err := p.writeField17(oprot); err != nil { return err }
+    if err := p.writeField18(oprot); err != nil { return err }
+  }
+  if err := oprot.WriteFieldStop(); err != nil {
+    return thrift.PrependError("write field stop error: ", err) }
+  if err := oprot.WriteStructEnd(); err != nil {
+    return thrift.PrependError("write struct stop error: ", err) }
+  return nil
+}
+
+func (p *GetAllContainersResponse) writeField1(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("name", thrift.STRING, 1); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write field begin error 1:name: ", p), err) }
+  if err := oprot.WriteString(string(p.Name)); err != nil {
+  return thrift.PrependError(fmt.Sprintf("%T.name (1) field write error: ", p), err) }
+  if err := oprot.WriteFieldEnd(); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write field end error 1:name: ", p), err) }
+  return err
+}
+
+func (p *GetAllContainersResponse) writeField2(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("stat", thrift.I32, 2); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write field begin error 2:stat: ", p), err) }
+  if err := oprot.WriteI32(int32(p.Stat)); err != nil {
+  return thrift.PrependError(fmt.Sprintf("%T.stat (2) field write error: ", p), err) }
+  if err := oprot.WriteFieldEnd(); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write field end error 2:stat: ", p), err) }
+  return err
+}
+
+func (p *GetAllContainersResponse) writeField3(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("uuid", thrift.STRING, 3); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write field begin error 3:uuid: ", p), err) }
+  if err := oprot.WriteString(string(p.UUID)); err != nil {
+  return thrift.PrependError(fmt.Sprintf("%T.uuid (3) field write error: ", p), err) }
+  if err := oprot.WriteFieldEnd(); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write field end error 3:uuid: ", p), err) }
+  return err
+}
+
+func (p *GetAllContainersResponse) writeField4(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("cpu", thrift.DOUBLE, 4); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write field begin error 4:cpu: ", p), err) }
+  if err := oprot.WriteDouble(float64(p.CPU)); err != nil {
+  return thrift.PrependError(fmt.Sprintf("%T.cpu (4) field write error: ", p), err) }
+  if err := oprot.WriteFieldEnd(); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write field end error 4:cpu: ", p), err) }
+  return err
+}
+
+func (p *GetAllContainersResponse) writeField5(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("cpu_usage", thrift.DOUBLE, 5); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write field begin error 5:cpu_usage: ", p), err) }
+  if err := oprot.WriteDouble(float64(p.CPUUsage)); err != nil {
+  return thrift.PrependError(fmt.Sprintf("%T.cpu_usage (5) field write error: ", p), err) }
+  if err := oprot.WriteFieldEnd(); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write field end error 5:cpu_usage: ", p), err) }
+  return err
+}
+
+func (p *GetAllContainersResponse) writeField6(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("mem_usage", thrift.I32, 6); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write field begin error 6:mem_usage: ", p), err) }
+  if err := oprot.WriteI32(int32(p.MemUsage)); err != nil {
+  return thrift.PrependError(fmt.Sprintf("%T.mem_usage (6) field write error: ", p), err) }
+  if err := oprot.WriteFieldEnd(); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write field end error 6:mem_usage: ", p), err) }
+  return err
+}
+
+func (p *GetAllContainersResponse) writeField7(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("mem_total", thrift.I32, 7); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write field begin error 7:mem_total: ", p), err) }
+  if err := oprot.WriteI32(int32(p.MemTotal)); err != nil {
+  return thrift.PrependError(fmt.Sprintf("%T.mem_total (7) field write error: ", p), err) }
+  if err := oprot.WriteFieldEnd(); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write field end error 7:mem_total: ", p), err) }
+  return err
+}
+
+func (p *GetAllContainersResponse) writeField8(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("disk_usage", thrift.DOUBLE, 8); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write field begin error 8:disk_usage: ", p), err) }
+  if err := oprot.WriteDouble(float64(p.DiskUsage)); err != nil {
+  return thrift.PrependError(fmt.Sprintf("%T.disk_usage (8) field write error: ", p), err) }
+  if err := oprot.WriteFieldEnd(); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write field end error 8:disk_usage: ", p), err) }
+  return err
+}
+
+func (p *GetAllContainersResponse) writeField9(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("disk_total", thrift.I32, 9); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write field begin error 9:disk_total: ", p), err) }
+  if err := oprot.WriteI32(int32(p.DiskTotal)); err != nil {
+  return thrift.PrependError(fmt.Sprintf("%T.disk_total (9) field write error: ", p), err) }
+  if err := oprot.WriteFieldEnd(); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write field end error 9:disk_total: ", p), err) }
+  return err
+}
+
+func (p *GetAllContainersResponse) writeField10(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("disk_rbw", thrift.DOUBLE, 10); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write field begin error 10:disk_rbw: ", p), err) }
+  if err := oprot.WriteDouble(float64(p.DiskRbw)); err != nil {
+  return thrift.PrependError(fmt.Sprintf("%T.disk_rbw (10) field write error: ", p), err) }
+  if err := oprot.WriteFieldEnd(); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write field end error 10:disk_rbw: ", p), err) }
+  return err
+}
+
+func (p *GetAllContainersResponse) writeField11(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("disk_wbw", thrift.DOUBLE, 11); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write field begin error 11:disk_wbw: ", p), err) }
+  if err := oprot.WriteDouble(float64(p.DiskWbw)); err != nil {
+  return thrift.PrependError(fmt.Sprintf("%T.disk_wbw (11) field write error: ", p), err) }
+  if err := oprot.WriteFieldEnd(); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write field end error 11:disk_wbw: ", p), err) }
+  return err
+}
+
+func (p *GetAllContainersResponse) writeField12(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("net_rbw", thrift.DOUBLE, 12); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write field begin error 12:net_rbw: ", p), err) }
+  if err := oprot.WriteDouble(float64(p.NetRbw)); err != nil {
+  return thrift.PrependError(fmt.Sprintf("%T.net_rbw (12) field write error: ", p), err) }
+  if err := oprot.WriteFieldEnd(); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write field end error 12:net_rbw: ", p), err) }
+  return err
+}
+
+func (p *GetAllContainersResponse) writeField13(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("net_wbw", thrift.DOUBLE, 13); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write field begin error 13:net_wbw: ", p), err) }
+  if err := oprot.WriteDouble(float64(p.NetWbw)); err != nil {
+  return thrift.PrependError(fmt.Sprintf("%T.net_wbw (13) field write error: ", p), err) }
+  if err := oprot.WriteFieldEnd(); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write field end error 13:net_wbw: ", p), err) }
+  return err
+}
+
+func (p *GetAllContainersResponse) writeField14(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("image", thrift.STRING, 14); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write field begin error 14:image: ", p), err) }
+  if err := oprot.WriteString(string(p.Image)); err != nil {
+  return thrift.PrependError(fmt.Sprintf("%T.image (14) field write error: ", p), err) }
+  if err := oprot.WriteFieldEnd(); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write field end error 14:image: ", p), err) }
+  return err
+}
+
+func (p *GetAllContainersResponse) writeField15(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("version", thrift.STRING, 15); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write field begin error 15:version: ", p), err) }
+  if err := oprot.WriteString(string(p.Version)); err != nil {
+  return thrift.PrependError(fmt.Sprintf("%T.version (15) field write error: ", p), err) }
+  if err := oprot.WriteFieldEnd(); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write field end error 15:version: ", p), err) }
+  return err
+}
+
+func (p *GetAllContainersResponse) writeField16(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("ha", thrift.BOOL, 16); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write field begin error 16:ha: ", p), err) }
+  if err := oprot.WriteBool(bool(p.Ha)); err != nil {
+  return thrift.PrependError(fmt.Sprintf("%T.ha (16) field write error: ", p), err) }
+  if err := oprot.WriteFieldEnd(); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write field end error 16:ha: ", p), err) }
+  return err
+}
+
+func (p *GetAllContainersResponse) writeField17(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("level", thrift.I32, 17); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write field begin error 17:level: ", p), err) }
+  if err := oprot.WriteI32(int32(p.Level)); err != nil {
+  return thrift.PrependError(fmt.Sprintf("%T.level (17) field write error: ", p), err) }
+  if err := oprot.WriteFieldEnd(); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write field end error 17:level: ", p), err) }
+  return err
+}
+
+func (p *GetAllContainersResponse) writeField18(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("nets", thrift.LIST, 18); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write field begin error 18:nets: ", p), err) }
+  if err := oprot.WriteListBegin(thrift.STRUCT, len(p.Nets)); err != nil {
+    return thrift.PrependError("error writing list begin: ", err)
+  }
+  for _, v := range p.Nets {
+    if err := v.Write(oprot); err != nil {
+      return thrift.PrependError(fmt.Sprintf("%T error writing struct: ", v), err)
+    }
+  }
+  if err := oprot.WriteListEnd(); err != nil {
+    return thrift.PrependError("error writing list end: ", err)
+  }
+  if err := oprot.WriteFieldEnd(); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write field end error 18:nets: ", p), err) }
+  return err
+}
+
+func (p *GetAllContainersResponse) String() string {
+  if p == nil {
+    return "<nil>"
+  }
+  return fmt.Sprintf("GetAllContainersResponse(%+v)", *p)
 }
 
 // Attributes:
@@ -2157,76 +2987,64 @@ func (p *GetAllNodeListResponse) GetNodelist() []*NodeStatus {
 func (p *GetAllNodeListResponse) GetRetCode() int32 {
   return p.RetCode
 }
-func (p *GetAllNodeListResponse) Read(ctx context.Context, iprot thrift.TProtocol) error {
-  if _, err := iprot.ReadStructBegin(ctx); err != nil {
+func (p *GetAllNodeListResponse) Read(iprot thrift.TProtocol) error {
+  if _, err := iprot.ReadStructBegin(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
   }
 
 
   for {
-    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin(ctx)
+    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin()
     if err != nil {
       return thrift.PrependError(fmt.Sprintf("%T field %d read error: ", p, fieldId), err)
     }
     if fieldTypeId == thrift.STOP { break; }
     switch fieldId {
     case 1:
-      if fieldTypeId == thrift.LIST {
-        if err := p.ReadField1(ctx, iprot); err != nil {
-          return err
-        }
-      } else {
-        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-          return err
-        }
+      if err := p.ReadField1(iprot); err != nil {
+        return err
       }
     case 2:
-      if fieldTypeId == thrift.I32 {
-        if err := p.ReadField2(ctx, iprot); err != nil {
-          return err
-        }
-      } else {
-        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-          return err
-        }
+      if err := p.ReadField2(iprot); err != nil {
+        return err
       }
     default:
-      if err := iprot.Skip(ctx, fieldTypeId); err != nil {
+      if err := iprot.Skip(fieldTypeId); err != nil {
         return err
       }
     }
-    if err := iprot.ReadFieldEnd(ctx); err != nil {
+    if err := iprot.ReadFieldEnd(); err != nil {
       return err
     }
   }
-  if err := iprot.ReadStructEnd(ctx); err != nil {
+  if err := iprot.ReadStructEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
   }
   return nil
 }
 
-func (p *GetAllNodeListResponse)  ReadField1(ctx context.Context, iprot thrift.TProtocol) error {
-  _, size, err := iprot.ReadListBegin(ctx)
+func (p *GetAllNodeListResponse)  ReadField1(iprot thrift.TProtocol) error {
+  _, size, err := iprot.ReadListBegin()
   if err != nil {
     return thrift.PrependError("error reading list begin: ", err)
   }
   tSlice := make([]*NodeStatus, 0, size)
   p.Nodelist =  tSlice
   for i := 0; i < size; i ++ {
-    _elem0 := &NodeStatus{}
-    if err := _elem0.Read(ctx, iprot); err != nil {
-      return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", _elem0), err)
+    _elem1 := &NodeStatus{}
+    if err := _elem1.Read(iprot); err != nil {
+      return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", _elem1), err)
     }
-    p.Nodelist = append(p.Nodelist, _elem0)
+    p.Nodelist = append(p.Nodelist, _elem1)
   }
-  if err := iprot.ReadListEnd(ctx); err != nil {
+  if err := iprot.ReadListEnd(); err != nil {
     return thrift.PrependError("error reading list end: ", err)
   }
   return nil
 }
 
-func (p *GetAllNodeListResponse)  ReadField2(ctx context.Context, iprot thrift.TProtocol) error {
-  if v, err := iprot.ReadI32(ctx); err != nil {
+func (p *GetAllNodeListResponse)  ReadField2(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadI32(); err != nil {
   return thrift.PrependError("error reading field 2: ", err)
 } else {
   p.RetCode = v
@@ -2234,62 +3052,47 @@ func (p *GetAllNodeListResponse)  ReadField2(ctx context.Context, iprot thrift.T
   return nil
 }
 
-func (p *GetAllNodeListResponse) Write(ctx context.Context, oprot thrift.TProtocol) error {
-  if err := oprot.WriteStructBegin(ctx, "GetAllNodeListResponse"); err != nil {
+func (p *GetAllNodeListResponse) Write(oprot thrift.TProtocol) error {
+  if err := oprot.WriteStructBegin("GetAllNodeListResponse"); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err) }
   if p != nil {
-    if err := p.writeField1(ctx, oprot); err != nil { return err }
-    if err := p.writeField2(ctx, oprot); err != nil { return err }
+    if err := p.writeField1(oprot); err != nil { return err }
+    if err := p.writeField2(oprot); err != nil { return err }
   }
-  if err := oprot.WriteFieldStop(ctx); err != nil {
+  if err := oprot.WriteFieldStop(); err != nil {
     return thrift.PrependError("write field stop error: ", err) }
-  if err := oprot.WriteStructEnd(ctx); err != nil {
+  if err := oprot.WriteStructEnd(); err != nil {
     return thrift.PrependError("write struct stop error: ", err) }
   return nil
 }
 
-func (p *GetAllNodeListResponse) writeField1(ctx context.Context, oprot thrift.TProtocol) (err error) {
-  if err := oprot.WriteFieldBegin(ctx, "nodelist", thrift.LIST, 1); err != nil {
+func (p *GetAllNodeListResponse) writeField1(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("nodelist", thrift.LIST, 1); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field begin error 1:nodelist: ", p), err) }
-  if err := oprot.WriteListBegin(ctx, thrift.STRUCT, len(p.Nodelist)); err != nil {
+  if err := oprot.WriteListBegin(thrift.STRUCT, len(p.Nodelist)); err != nil {
     return thrift.PrependError("error writing list begin: ", err)
   }
   for _, v := range p.Nodelist {
-    if err := v.Write(ctx, oprot); err != nil {
+    if err := v.Write(oprot); err != nil {
       return thrift.PrependError(fmt.Sprintf("%T error writing struct: ", v), err)
     }
   }
-  if err := oprot.WriteListEnd(ctx); err != nil {
+  if err := oprot.WriteListEnd(); err != nil {
     return thrift.PrependError("error writing list end: ", err)
   }
-  if err := oprot.WriteFieldEnd(ctx); err != nil {
+  if err := oprot.WriteFieldEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field end error 1:nodelist: ", p), err) }
   return err
 }
 
-func (p *GetAllNodeListResponse) writeField2(ctx context.Context, oprot thrift.TProtocol) (err error) {
-  if err := oprot.WriteFieldBegin(ctx, "ret_code", thrift.I32, 2); err != nil {
+func (p *GetAllNodeListResponse) writeField2(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("ret_code", thrift.I32, 2); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field begin error 2:ret_code: ", p), err) }
-  if err := oprot.WriteI32(ctx, int32(p.RetCode)); err != nil {
+  if err := oprot.WriteI32(int32(p.RetCode)); err != nil {
   return thrift.PrependError(fmt.Sprintf("%T.ret_code (2) field write error: ", p), err) }
-  if err := oprot.WriteFieldEnd(ctx); err != nil {
+  if err := oprot.WriteFieldEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field end error 2:ret_code: ", p), err) }
   return err
-}
-
-func (p *GetAllNodeListResponse) Equals(other *GetAllNodeListResponse) bool {
-  if p == other {
-    return true
-  } else if p == nil || other == nil {
-    return false
-  }
-  if len(p.Nodelist) != len(other.Nodelist) { return false }
-  for i, _tgt := range p.Nodelist {
-    _src1 := other.Nodelist[i]
-    if !_tgt.Equals(_src1) { return false }
-  }
-  if p.RetCode != other.RetCode { return false }
-  return true
 }
 
 func (p *GetAllNodeListResponse) String() string {
@@ -2326,64 +3129,52 @@ func (p *GetImageVer4ContainerResponse) IsSetContainerImage() bool {
   return p.ContainerImage != nil
 }
 
-func (p *GetImageVer4ContainerResponse) Read(ctx context.Context, iprot thrift.TProtocol) error {
-  if _, err := iprot.ReadStructBegin(ctx); err != nil {
+func (p *GetImageVer4ContainerResponse) Read(iprot thrift.TProtocol) error {
+  if _, err := iprot.ReadStructBegin(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
   }
 
 
   for {
-    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin(ctx)
+    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin()
     if err != nil {
       return thrift.PrependError(fmt.Sprintf("%T field %d read error: ", p, fieldId), err)
     }
     if fieldTypeId == thrift.STOP { break; }
     switch fieldId {
     case 1:
-      if fieldTypeId == thrift.STRUCT {
-        if err := p.ReadField1(ctx, iprot); err != nil {
-          return err
-        }
-      } else {
-        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-          return err
-        }
+      if err := p.ReadField1(iprot); err != nil {
+        return err
       }
     case 2:
-      if fieldTypeId == thrift.I32 {
-        if err := p.ReadField2(ctx, iprot); err != nil {
-          return err
-        }
-      } else {
-        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-          return err
-        }
+      if err := p.ReadField2(iprot); err != nil {
+        return err
       }
     default:
-      if err := iprot.Skip(ctx, fieldTypeId); err != nil {
+      if err := iprot.Skip(fieldTypeId); err != nil {
         return err
       }
     }
-    if err := iprot.ReadFieldEnd(ctx); err != nil {
+    if err := iprot.ReadFieldEnd(); err != nil {
       return err
     }
   }
-  if err := iprot.ReadStructEnd(ctx); err != nil {
+  if err := iprot.ReadStructEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
   }
   return nil
 }
 
-func (p *GetImageVer4ContainerResponse)  ReadField1(ctx context.Context, iprot thrift.TProtocol) error {
+func (p *GetImageVer4ContainerResponse)  ReadField1(iprot thrift.TProtocol) error {
   p.ContainerImage = &ContainerImage{}
-  if err := p.ContainerImage.Read(ctx, iprot); err != nil {
+  if err := p.ContainerImage.Read(iprot); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", p.ContainerImage), err)
   }
   return nil
 }
 
-func (p *GetImageVer4ContainerResponse)  ReadField2(ctx context.Context, iprot thrift.TProtocol) error {
-  if v, err := iprot.ReadI32(ctx); err != nil {
+func (p *GetImageVer4ContainerResponse)  ReadField2(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadI32(); err != nil {
   return thrift.PrependError("error reading field 2: ", err)
 } else {
   p.RetCode = v
@@ -2391,50 +3182,39 @@ func (p *GetImageVer4ContainerResponse)  ReadField2(ctx context.Context, iprot t
   return nil
 }
 
-func (p *GetImageVer4ContainerResponse) Write(ctx context.Context, oprot thrift.TProtocol) error {
-  if err := oprot.WriteStructBegin(ctx, "GetImageVer4ContainerResponse"); err != nil {
+func (p *GetImageVer4ContainerResponse) Write(oprot thrift.TProtocol) error {
+  if err := oprot.WriteStructBegin("GetImageVer4ContainerResponse"); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err) }
   if p != nil {
-    if err := p.writeField1(ctx, oprot); err != nil { return err }
-    if err := p.writeField2(ctx, oprot); err != nil { return err }
+    if err := p.writeField1(oprot); err != nil { return err }
+    if err := p.writeField2(oprot); err != nil { return err }
   }
-  if err := oprot.WriteFieldStop(ctx); err != nil {
+  if err := oprot.WriteFieldStop(); err != nil {
     return thrift.PrependError("write field stop error: ", err) }
-  if err := oprot.WriteStructEnd(ctx); err != nil {
+  if err := oprot.WriteStructEnd(); err != nil {
     return thrift.PrependError("write struct stop error: ", err) }
   return nil
 }
 
-func (p *GetImageVer4ContainerResponse) writeField1(ctx context.Context, oprot thrift.TProtocol) (err error) {
-  if err := oprot.WriteFieldBegin(ctx, "containerImage", thrift.STRUCT, 1); err != nil {
+func (p *GetImageVer4ContainerResponse) writeField1(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("containerImage", thrift.STRUCT, 1); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field begin error 1:containerImage: ", p), err) }
-  if err := p.ContainerImage.Write(ctx, oprot); err != nil {
+  if err := p.ContainerImage.Write(oprot); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T error writing struct: ", p.ContainerImage), err)
   }
-  if err := oprot.WriteFieldEnd(ctx); err != nil {
+  if err := oprot.WriteFieldEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field end error 1:containerImage: ", p), err) }
   return err
 }
 
-func (p *GetImageVer4ContainerResponse) writeField2(ctx context.Context, oprot thrift.TProtocol) (err error) {
-  if err := oprot.WriteFieldBegin(ctx, "ret_code", thrift.I32, 2); err != nil {
+func (p *GetImageVer4ContainerResponse) writeField2(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("ret_code", thrift.I32, 2); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field begin error 2:ret_code: ", p), err) }
-  if err := oprot.WriteI32(ctx, int32(p.RetCode)); err != nil {
+  if err := oprot.WriteI32(int32(p.RetCode)); err != nil {
   return thrift.PrependError(fmt.Sprintf("%T.ret_code (2) field write error: ", p), err) }
-  if err := oprot.WriteFieldEnd(ctx); err != nil {
+  if err := oprot.WriteFieldEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field end error 2:ret_code: ", p), err) }
   return err
-}
-
-func (p *GetImageVer4ContainerResponse) Equals(other *GetImageVer4ContainerResponse) bool {
-  if p == other {
-    return true
-  } else if p == nil || other == nil {
-    return false
-  }
-  if !p.ContainerImage.Equals(other.ContainerImage) { return false }
-  if p.RetCode != other.RetCode { return false }
-  return true
 }
 
 func (p *GetImageVer4ContainerResponse) String() string {
@@ -2464,56 +3244,44 @@ func (p *GetAlarmListResponse) GetAlarmlist() []*ContainerAlarm {
 func (p *GetAlarmListResponse) GetRetCode() int32 {
   return p.RetCode
 }
-func (p *GetAlarmListResponse) Read(ctx context.Context, iprot thrift.TProtocol) error {
-  if _, err := iprot.ReadStructBegin(ctx); err != nil {
+func (p *GetAlarmListResponse) Read(iprot thrift.TProtocol) error {
+  if _, err := iprot.ReadStructBegin(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
   }
 
 
   for {
-    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin(ctx)
+    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin()
     if err != nil {
       return thrift.PrependError(fmt.Sprintf("%T field %d read error: ", p, fieldId), err)
     }
     if fieldTypeId == thrift.STOP { break; }
     switch fieldId {
     case 1:
-      if fieldTypeId == thrift.LIST {
-        if err := p.ReadField1(ctx, iprot); err != nil {
-          return err
-        }
-      } else {
-        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-          return err
-        }
+      if err := p.ReadField1(iprot); err != nil {
+        return err
       }
     case 2:
-      if fieldTypeId == thrift.I32 {
-        if err := p.ReadField2(ctx, iprot); err != nil {
-          return err
-        }
-      } else {
-        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-          return err
-        }
+      if err := p.ReadField2(iprot); err != nil {
+        return err
       }
     default:
-      if err := iprot.Skip(ctx, fieldTypeId); err != nil {
+      if err := iprot.Skip(fieldTypeId); err != nil {
         return err
       }
     }
-    if err := iprot.ReadFieldEnd(ctx); err != nil {
+    if err := iprot.ReadFieldEnd(); err != nil {
       return err
     }
   }
-  if err := iprot.ReadStructEnd(ctx); err != nil {
+  if err := iprot.ReadStructEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
   }
   return nil
 }
 
-func (p *GetAlarmListResponse)  ReadField1(ctx context.Context, iprot thrift.TProtocol) error {
-  _, size, err := iprot.ReadListBegin(ctx)
+func (p *GetAlarmListResponse)  ReadField1(iprot thrift.TProtocol) error {
+  _, size, err := iprot.ReadListBegin()
   if err != nil {
     return thrift.PrependError("error reading list begin: ", err)
   }
@@ -2521,19 +3289,19 @@ func (p *GetAlarmListResponse)  ReadField1(ctx context.Context, iprot thrift.TPr
   p.Alarmlist =  tSlice
   for i := 0; i < size; i ++ {
     _elem2 := &ContainerAlarm{}
-    if err := _elem2.Read(ctx, iprot); err != nil {
+    if err := _elem2.Read(iprot); err != nil {
       return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", _elem2), err)
     }
     p.Alarmlist = append(p.Alarmlist, _elem2)
   }
-  if err := iprot.ReadListEnd(ctx); err != nil {
+  if err := iprot.ReadListEnd(); err != nil {
     return thrift.PrependError("error reading list end: ", err)
   }
   return nil
 }
 
-func (p *GetAlarmListResponse)  ReadField2(ctx context.Context, iprot thrift.TProtocol) error {
-  if v, err := iprot.ReadI32(ctx); err != nil {
+func (p *GetAlarmListResponse)  ReadField2(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadI32(); err != nil {
   return thrift.PrependError("error reading field 2: ", err)
 } else {
   p.RetCode = v
@@ -2541,62 +3309,47 @@ func (p *GetAlarmListResponse)  ReadField2(ctx context.Context, iprot thrift.TPr
   return nil
 }
 
-func (p *GetAlarmListResponse) Write(ctx context.Context, oprot thrift.TProtocol) error {
-  if err := oprot.WriteStructBegin(ctx, "GetAlarmListResponse"); err != nil {
+func (p *GetAlarmListResponse) Write(oprot thrift.TProtocol) error {
+  if err := oprot.WriteStructBegin("GetAlarmListResponse"); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err) }
   if p != nil {
-    if err := p.writeField1(ctx, oprot); err != nil { return err }
-    if err := p.writeField2(ctx, oprot); err != nil { return err }
+    if err := p.writeField1(oprot); err != nil { return err }
+    if err := p.writeField2(oprot); err != nil { return err }
   }
-  if err := oprot.WriteFieldStop(ctx); err != nil {
+  if err := oprot.WriteFieldStop(); err != nil {
     return thrift.PrependError("write field stop error: ", err) }
-  if err := oprot.WriteStructEnd(ctx); err != nil {
+  if err := oprot.WriteStructEnd(); err != nil {
     return thrift.PrependError("write struct stop error: ", err) }
   return nil
 }
 
-func (p *GetAlarmListResponse) writeField1(ctx context.Context, oprot thrift.TProtocol) (err error) {
-  if err := oprot.WriteFieldBegin(ctx, "alarmlist", thrift.LIST, 1); err != nil {
+func (p *GetAlarmListResponse) writeField1(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("alarmlist", thrift.LIST, 1); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field begin error 1:alarmlist: ", p), err) }
-  if err := oprot.WriteListBegin(ctx, thrift.STRUCT, len(p.Alarmlist)); err != nil {
+  if err := oprot.WriteListBegin(thrift.STRUCT, len(p.Alarmlist)); err != nil {
     return thrift.PrependError("error writing list begin: ", err)
   }
   for _, v := range p.Alarmlist {
-    if err := v.Write(ctx, oprot); err != nil {
+    if err := v.Write(oprot); err != nil {
       return thrift.PrependError(fmt.Sprintf("%T error writing struct: ", v), err)
     }
   }
-  if err := oprot.WriteListEnd(ctx); err != nil {
+  if err := oprot.WriteListEnd(); err != nil {
     return thrift.PrependError("error writing list end: ", err)
   }
-  if err := oprot.WriteFieldEnd(ctx); err != nil {
+  if err := oprot.WriteFieldEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field end error 1:alarmlist: ", p), err) }
   return err
 }
 
-func (p *GetAlarmListResponse) writeField2(ctx context.Context, oprot thrift.TProtocol) (err error) {
-  if err := oprot.WriteFieldBegin(ctx, "ret_code", thrift.I32, 2); err != nil {
+func (p *GetAlarmListResponse) writeField2(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("ret_code", thrift.I32, 2); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field begin error 2:ret_code: ", p), err) }
-  if err := oprot.WriteI32(ctx, int32(p.RetCode)); err != nil {
+  if err := oprot.WriteI32(int32(p.RetCode)); err != nil {
   return thrift.PrependError(fmt.Sprintf("%T.ret_code (2) field write error: ", p), err) }
-  if err := oprot.WriteFieldEnd(ctx); err != nil {
+  if err := oprot.WriteFieldEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field end error 2:ret_code: ", p), err) }
   return err
-}
-
-func (p *GetAlarmListResponse) Equals(other *GetAlarmListResponse) bool {
-  if p == other {
-    return true
-  } else if p == nil || other == nil {
-    return false
-  }
-  if len(p.Alarmlist) != len(other.Alarmlist) { return false }
-  for i, _tgt := range p.Alarmlist {
-    _src3 := other.Alarmlist[i]
-    if !_tgt.Equals(_src3) { return false }
-  }
-  if p.RetCode != other.RetCode { return false }
-  return true
 }
 
 func (p *GetAlarmListResponse) String() string {
@@ -2626,76 +3379,64 @@ func (p *GetAllContainerListResponse) GetContainerlist() []*ContainerMetric {
 func (p *GetAllContainerListResponse) GetRetCode() int32 {
   return p.RetCode
 }
-func (p *GetAllContainerListResponse) Read(ctx context.Context, iprot thrift.TProtocol) error {
-  if _, err := iprot.ReadStructBegin(ctx); err != nil {
+func (p *GetAllContainerListResponse) Read(iprot thrift.TProtocol) error {
+  if _, err := iprot.ReadStructBegin(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
   }
 
 
   for {
-    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin(ctx)
+    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin()
     if err != nil {
       return thrift.PrependError(fmt.Sprintf("%T field %d read error: ", p, fieldId), err)
     }
     if fieldTypeId == thrift.STOP { break; }
     switch fieldId {
     case 1:
-      if fieldTypeId == thrift.LIST {
-        if err := p.ReadField1(ctx, iprot); err != nil {
-          return err
-        }
-      } else {
-        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-          return err
-        }
+      if err := p.ReadField1(iprot); err != nil {
+        return err
       }
     case 2:
-      if fieldTypeId == thrift.I32 {
-        if err := p.ReadField2(ctx, iprot); err != nil {
-          return err
-        }
-      } else {
-        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-          return err
-        }
+      if err := p.ReadField2(iprot); err != nil {
+        return err
       }
     default:
-      if err := iprot.Skip(ctx, fieldTypeId); err != nil {
+      if err := iprot.Skip(fieldTypeId); err != nil {
         return err
       }
     }
-    if err := iprot.ReadFieldEnd(ctx); err != nil {
+    if err := iprot.ReadFieldEnd(); err != nil {
       return err
     }
   }
-  if err := iprot.ReadStructEnd(ctx); err != nil {
+  if err := iprot.ReadStructEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
   }
   return nil
 }
 
-func (p *GetAllContainerListResponse)  ReadField1(ctx context.Context, iprot thrift.TProtocol) error {
-  _, size, err := iprot.ReadListBegin(ctx)
+func (p *GetAllContainerListResponse)  ReadField1(iprot thrift.TProtocol) error {
+  _, size, err := iprot.ReadListBegin()
   if err != nil {
     return thrift.PrependError("error reading list begin: ", err)
   }
   tSlice := make([]*ContainerMetric, 0, size)
   p.Containerlist =  tSlice
   for i := 0; i < size; i ++ {
-    _elem4 := &ContainerMetric{}
-    if err := _elem4.Read(ctx, iprot); err != nil {
-      return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", _elem4), err)
+    _elem3 := &ContainerMetric{}
+    if err := _elem3.Read(iprot); err != nil {
+      return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", _elem3), err)
     }
-    p.Containerlist = append(p.Containerlist, _elem4)
+    p.Containerlist = append(p.Containerlist, _elem3)
   }
-  if err := iprot.ReadListEnd(ctx); err != nil {
+  if err := iprot.ReadListEnd(); err != nil {
     return thrift.PrependError("error reading list end: ", err)
   }
   return nil
 }
 
-func (p *GetAllContainerListResponse)  ReadField2(ctx context.Context, iprot thrift.TProtocol) error {
-  if v, err := iprot.ReadI32(ctx); err != nil {
+func (p *GetAllContainerListResponse)  ReadField2(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadI32(); err != nil {
   return thrift.PrependError("error reading field 2: ", err)
 } else {
   p.RetCode = v
@@ -2703,62 +3444,47 @@ func (p *GetAllContainerListResponse)  ReadField2(ctx context.Context, iprot thr
   return nil
 }
 
-func (p *GetAllContainerListResponse) Write(ctx context.Context, oprot thrift.TProtocol) error {
-  if err := oprot.WriteStructBegin(ctx, "GetAllContainerListResponse"); err != nil {
+func (p *GetAllContainerListResponse) Write(oprot thrift.TProtocol) error {
+  if err := oprot.WriteStructBegin("GetAllContainerListResponse"); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err) }
   if p != nil {
-    if err := p.writeField1(ctx, oprot); err != nil { return err }
-    if err := p.writeField2(ctx, oprot); err != nil { return err }
+    if err := p.writeField1(oprot); err != nil { return err }
+    if err := p.writeField2(oprot); err != nil { return err }
   }
-  if err := oprot.WriteFieldStop(ctx); err != nil {
+  if err := oprot.WriteFieldStop(); err != nil {
     return thrift.PrependError("write field stop error: ", err) }
-  if err := oprot.WriteStructEnd(ctx); err != nil {
+  if err := oprot.WriteStructEnd(); err != nil {
     return thrift.PrependError("write struct stop error: ", err) }
   return nil
 }
 
-func (p *GetAllContainerListResponse) writeField1(ctx context.Context, oprot thrift.TProtocol) (err error) {
-  if err := oprot.WriteFieldBegin(ctx, "containerlist", thrift.LIST, 1); err != nil {
+func (p *GetAllContainerListResponse) writeField1(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("containerlist", thrift.LIST, 1); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field begin error 1:containerlist: ", p), err) }
-  if err := oprot.WriteListBegin(ctx, thrift.STRUCT, len(p.Containerlist)); err != nil {
+  if err := oprot.WriteListBegin(thrift.STRUCT, len(p.Containerlist)); err != nil {
     return thrift.PrependError("error writing list begin: ", err)
   }
   for _, v := range p.Containerlist {
-    if err := v.Write(ctx, oprot); err != nil {
+    if err := v.Write(oprot); err != nil {
       return thrift.PrependError(fmt.Sprintf("%T error writing struct: ", v), err)
     }
   }
-  if err := oprot.WriteListEnd(ctx); err != nil {
+  if err := oprot.WriteListEnd(); err != nil {
     return thrift.PrependError("error writing list end: ", err)
   }
-  if err := oprot.WriteFieldEnd(ctx); err != nil {
+  if err := oprot.WriteFieldEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field end error 1:containerlist: ", p), err) }
   return err
 }
 
-func (p *GetAllContainerListResponse) writeField2(ctx context.Context, oprot thrift.TProtocol) (err error) {
-  if err := oprot.WriteFieldBegin(ctx, "ret_code", thrift.I32, 2); err != nil {
+func (p *GetAllContainerListResponse) writeField2(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("ret_code", thrift.I32, 2); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field begin error 2:ret_code: ", p), err) }
-  if err := oprot.WriteI32(ctx, int32(p.RetCode)); err != nil {
+  if err := oprot.WriteI32(int32(p.RetCode)); err != nil {
   return thrift.PrependError(fmt.Sprintf("%T.ret_code (2) field write error: ", p), err) }
-  if err := oprot.WriteFieldEnd(ctx); err != nil {
+  if err := oprot.WriteFieldEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field end error 2:ret_code: ", p), err) }
   return err
-}
-
-func (p *GetAllContainerListResponse) Equals(other *GetAllContainerListResponse) bool {
-  if p == other {
-    return true
-  } else if p == nil || other == nil {
-    return false
-  }
-  if len(p.Containerlist) != len(other.Containerlist) { return false }
-  for i, _tgt := range p.Containerlist {
-    _src5 := other.Containerlist[i]
-    if !_tgt.Equals(_src5) { return false }
-  }
-  if p.RetCode != other.RetCode { return false }
-  return true
 }
 
 func (p *GetAllContainerListResponse) String() string {
@@ -2795,64 +3521,52 @@ func (p *GetContainerNetworkResponse) IsSetContainerNetInfo() bool {
   return p.ContainerNetInfo != nil
 }
 
-func (p *GetContainerNetworkResponse) Read(ctx context.Context, iprot thrift.TProtocol) error {
-  if _, err := iprot.ReadStructBegin(ctx); err != nil {
+func (p *GetContainerNetworkResponse) Read(iprot thrift.TProtocol) error {
+  if _, err := iprot.ReadStructBegin(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
   }
 
 
   for {
-    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin(ctx)
+    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin()
     if err != nil {
       return thrift.PrependError(fmt.Sprintf("%T field %d read error: ", p, fieldId), err)
     }
     if fieldTypeId == thrift.STOP { break; }
     switch fieldId {
     case 1:
-      if fieldTypeId == thrift.STRUCT {
-        if err := p.ReadField1(ctx, iprot); err != nil {
-          return err
-        }
-      } else {
-        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-          return err
-        }
+      if err := p.ReadField1(iprot); err != nil {
+        return err
       }
     case 2:
-      if fieldTypeId == thrift.I32 {
-        if err := p.ReadField2(ctx, iprot); err != nil {
-          return err
-        }
-      } else {
-        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-          return err
-        }
+      if err := p.ReadField2(iprot); err != nil {
+        return err
       }
     default:
-      if err := iprot.Skip(ctx, fieldTypeId); err != nil {
+      if err := iprot.Skip(fieldTypeId); err != nil {
         return err
       }
     }
-    if err := iprot.ReadFieldEnd(ctx); err != nil {
+    if err := iprot.ReadFieldEnd(); err != nil {
       return err
     }
   }
-  if err := iprot.ReadStructEnd(ctx); err != nil {
+  if err := iprot.ReadStructEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
   }
   return nil
 }
 
-func (p *GetContainerNetworkResponse)  ReadField1(ctx context.Context, iprot thrift.TProtocol) error {
+func (p *GetContainerNetworkResponse)  ReadField1(iprot thrift.TProtocol) error {
   p.ContainerNetInfo = &ContainerNetInfo{}
-  if err := p.ContainerNetInfo.Read(ctx, iprot); err != nil {
+  if err := p.ContainerNetInfo.Read(iprot); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", p.ContainerNetInfo), err)
   }
   return nil
 }
 
-func (p *GetContainerNetworkResponse)  ReadField2(ctx context.Context, iprot thrift.TProtocol) error {
-  if v, err := iprot.ReadI32(ctx); err != nil {
+func (p *GetContainerNetworkResponse)  ReadField2(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadI32(); err != nil {
   return thrift.PrependError("error reading field 2: ", err)
 } else {
   p.RetCode = v
@@ -2860,50 +3574,39 @@ func (p *GetContainerNetworkResponse)  ReadField2(ctx context.Context, iprot thr
   return nil
 }
 
-func (p *GetContainerNetworkResponse) Write(ctx context.Context, oprot thrift.TProtocol) error {
-  if err := oprot.WriteStructBegin(ctx, "GetContainerNetworkResponse"); err != nil {
+func (p *GetContainerNetworkResponse) Write(oprot thrift.TProtocol) error {
+  if err := oprot.WriteStructBegin("GetContainerNetworkResponse"); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err) }
   if p != nil {
-    if err := p.writeField1(ctx, oprot); err != nil { return err }
-    if err := p.writeField2(ctx, oprot); err != nil { return err }
+    if err := p.writeField1(oprot); err != nil { return err }
+    if err := p.writeField2(oprot); err != nil { return err }
   }
-  if err := oprot.WriteFieldStop(ctx); err != nil {
+  if err := oprot.WriteFieldStop(); err != nil {
     return thrift.PrependError("write field stop error: ", err) }
-  if err := oprot.WriteStructEnd(ctx); err != nil {
+  if err := oprot.WriteStructEnd(); err != nil {
     return thrift.PrependError("write struct stop error: ", err) }
   return nil
 }
 
-func (p *GetContainerNetworkResponse) writeField1(ctx context.Context, oprot thrift.TProtocol) (err error) {
-  if err := oprot.WriteFieldBegin(ctx, "containerNetInfo", thrift.STRUCT, 1); err != nil {
+func (p *GetContainerNetworkResponse) writeField1(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("containerNetInfo", thrift.STRUCT, 1); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field begin error 1:containerNetInfo: ", p), err) }
-  if err := p.ContainerNetInfo.Write(ctx, oprot); err != nil {
+  if err := p.ContainerNetInfo.Write(oprot); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T error writing struct: ", p.ContainerNetInfo), err)
   }
-  if err := oprot.WriteFieldEnd(ctx); err != nil {
+  if err := oprot.WriteFieldEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field end error 1:containerNetInfo: ", p), err) }
   return err
 }
 
-func (p *GetContainerNetworkResponse) writeField2(ctx context.Context, oprot thrift.TProtocol) (err error) {
-  if err := oprot.WriteFieldBegin(ctx, "ret_code", thrift.I32, 2); err != nil {
+func (p *GetContainerNetworkResponse) writeField2(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("ret_code", thrift.I32, 2); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field begin error 2:ret_code: ", p), err) }
-  if err := oprot.WriteI32(ctx, int32(p.RetCode)); err != nil {
+  if err := oprot.WriteI32(int32(p.RetCode)); err != nil {
   return thrift.PrependError(fmt.Sprintf("%T.ret_code (2) field write error: ", p), err) }
-  if err := oprot.WriteFieldEnd(ctx); err != nil {
+  if err := oprot.WriteFieldEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field end error 2:ret_code: ", p), err) }
   return err
-}
-
-func (p *GetContainerNetworkResponse) Equals(other *GetContainerNetworkResponse) bool {
-  if p == other {
-    return true
-  } else if p == nil || other == nil {
-    return false
-  }
-  if !p.ContainerNetInfo.Equals(other.ContainerNetInfo) { return false }
-  if p.RetCode != other.RetCode { return false }
-  return true
 }
 
 func (p *GetContainerNetworkResponse) String() string {
@@ -2933,76 +3636,64 @@ func (p *GetContainerNetRulesResponse) GetContainerNetRules() []*ContainerNetRul
 func (p *GetContainerNetRulesResponse) GetRetCode() int32 {
   return p.RetCode
 }
-func (p *GetContainerNetRulesResponse) Read(ctx context.Context, iprot thrift.TProtocol) error {
-  if _, err := iprot.ReadStructBegin(ctx); err != nil {
+func (p *GetContainerNetRulesResponse) Read(iprot thrift.TProtocol) error {
+  if _, err := iprot.ReadStructBegin(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
   }
 
 
   for {
-    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin(ctx)
+    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin()
     if err != nil {
       return thrift.PrependError(fmt.Sprintf("%T field %d read error: ", p, fieldId), err)
     }
     if fieldTypeId == thrift.STOP { break; }
     switch fieldId {
     case 1:
-      if fieldTypeId == thrift.LIST {
-        if err := p.ReadField1(ctx, iprot); err != nil {
-          return err
-        }
-      } else {
-        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-          return err
-        }
+      if err := p.ReadField1(iprot); err != nil {
+        return err
       }
     case 2:
-      if fieldTypeId == thrift.I32 {
-        if err := p.ReadField2(ctx, iprot); err != nil {
-          return err
-        }
-      } else {
-        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-          return err
-        }
+      if err := p.ReadField2(iprot); err != nil {
+        return err
       }
     default:
-      if err := iprot.Skip(ctx, fieldTypeId); err != nil {
+      if err := iprot.Skip(fieldTypeId); err != nil {
         return err
       }
     }
-    if err := iprot.ReadFieldEnd(ctx); err != nil {
+    if err := iprot.ReadFieldEnd(); err != nil {
       return err
     }
   }
-  if err := iprot.ReadStructEnd(ctx); err != nil {
+  if err := iprot.ReadStructEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
   }
   return nil
 }
 
-func (p *GetContainerNetRulesResponse)  ReadField1(ctx context.Context, iprot thrift.TProtocol) error {
-  _, size, err := iprot.ReadListBegin(ctx)
+func (p *GetContainerNetRulesResponse)  ReadField1(iprot thrift.TProtocol) error {
+  _, size, err := iprot.ReadListBegin()
   if err != nil {
     return thrift.PrependError("error reading list begin: ", err)
   }
   tSlice := make([]*ContainerNetRule, 0, size)
   p.ContainerNetRules =  tSlice
   for i := 0; i < size; i ++ {
-    _elem6 := &ContainerNetRule{}
-    if err := _elem6.Read(ctx, iprot); err != nil {
-      return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", _elem6), err)
+    _elem4 := &ContainerNetRule{}
+    if err := _elem4.Read(iprot); err != nil {
+      return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", _elem4), err)
     }
-    p.ContainerNetRules = append(p.ContainerNetRules, _elem6)
+    p.ContainerNetRules = append(p.ContainerNetRules, _elem4)
   }
-  if err := iprot.ReadListEnd(ctx); err != nil {
+  if err := iprot.ReadListEnd(); err != nil {
     return thrift.PrependError("error reading list end: ", err)
   }
   return nil
 }
 
-func (p *GetContainerNetRulesResponse)  ReadField2(ctx context.Context, iprot thrift.TProtocol) error {
-  if v, err := iprot.ReadI32(ctx); err != nil {
+func (p *GetContainerNetRulesResponse)  ReadField2(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadI32(); err != nil {
   return thrift.PrependError("error reading field 2: ", err)
 } else {
   p.RetCode = v
@@ -3010,62 +3701,47 @@ func (p *GetContainerNetRulesResponse)  ReadField2(ctx context.Context, iprot th
   return nil
 }
 
-func (p *GetContainerNetRulesResponse) Write(ctx context.Context, oprot thrift.TProtocol) error {
-  if err := oprot.WriteStructBegin(ctx, "GetContainerNetRulesResponse"); err != nil {
+func (p *GetContainerNetRulesResponse) Write(oprot thrift.TProtocol) error {
+  if err := oprot.WriteStructBegin("GetContainerNetRulesResponse"); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err) }
   if p != nil {
-    if err := p.writeField1(ctx, oprot); err != nil { return err }
-    if err := p.writeField2(ctx, oprot); err != nil { return err }
+    if err := p.writeField1(oprot); err != nil { return err }
+    if err := p.writeField2(oprot); err != nil { return err }
   }
-  if err := oprot.WriteFieldStop(ctx); err != nil {
+  if err := oprot.WriteFieldStop(); err != nil {
     return thrift.PrependError("write field stop error: ", err) }
-  if err := oprot.WriteStructEnd(ctx); err != nil {
+  if err := oprot.WriteStructEnd(); err != nil {
     return thrift.PrependError("write struct stop error: ", err) }
   return nil
 }
 
-func (p *GetContainerNetRulesResponse) writeField1(ctx context.Context, oprot thrift.TProtocol) (err error) {
-  if err := oprot.WriteFieldBegin(ctx, "containerNetRules", thrift.LIST, 1); err != nil {
+func (p *GetContainerNetRulesResponse) writeField1(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("containerNetRules", thrift.LIST, 1); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field begin error 1:containerNetRules: ", p), err) }
-  if err := oprot.WriteListBegin(ctx, thrift.STRUCT, len(p.ContainerNetRules)); err != nil {
+  if err := oprot.WriteListBegin(thrift.STRUCT, len(p.ContainerNetRules)); err != nil {
     return thrift.PrependError("error writing list begin: ", err)
   }
   for _, v := range p.ContainerNetRules {
-    if err := v.Write(ctx, oprot); err != nil {
+    if err := v.Write(oprot); err != nil {
       return thrift.PrependError(fmt.Sprintf("%T error writing struct: ", v), err)
     }
   }
-  if err := oprot.WriteListEnd(ctx); err != nil {
+  if err := oprot.WriteListEnd(); err != nil {
     return thrift.PrependError("error writing list end: ", err)
   }
-  if err := oprot.WriteFieldEnd(ctx); err != nil {
+  if err := oprot.WriteFieldEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field end error 1:containerNetRules: ", p), err) }
   return err
 }
 
-func (p *GetContainerNetRulesResponse) writeField2(ctx context.Context, oprot thrift.TProtocol) (err error) {
-  if err := oprot.WriteFieldBegin(ctx, "ret_code", thrift.I32, 2); err != nil {
+func (p *GetContainerNetRulesResponse) writeField2(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("ret_code", thrift.I32, 2); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field begin error 2:ret_code: ", p), err) }
-  if err := oprot.WriteI32(ctx, int32(p.RetCode)); err != nil {
+  if err := oprot.WriteI32(int32(p.RetCode)); err != nil {
   return thrift.PrependError(fmt.Sprintf("%T.ret_code (2) field write error: ", p), err) }
-  if err := oprot.WriteFieldEnd(ctx); err != nil {
+  if err := oprot.WriteFieldEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field end error 2:ret_code: ", p), err) }
   return err
-}
-
-func (p *GetContainerNetRulesResponse) Equals(other *GetContainerNetRulesResponse) bool {
-  if p == other {
-    return true
-  } else if p == nil || other == nil {
-    return false
-  }
-  if len(p.ContainerNetRules) != len(other.ContainerNetRules) { return false }
-  for i, _tgt := range p.ContainerNetRules {
-    _src7 := other.ContainerNetRules[i]
-    if !_tgt.Equals(_src7) { return false }
-  }
-  if p.RetCode != other.RetCode { return false }
-  return true
 }
 
 func (p *GetContainerNetRulesResponse) String() string {
@@ -3102,64 +3778,52 @@ func (p *GetContainerMetricsResponse) IsSetContainerMetric() bool {
   return p.ContainerMetric != nil
 }
 
-func (p *GetContainerMetricsResponse) Read(ctx context.Context, iprot thrift.TProtocol) error {
-  if _, err := iprot.ReadStructBegin(ctx); err != nil {
+func (p *GetContainerMetricsResponse) Read(iprot thrift.TProtocol) error {
+  if _, err := iprot.ReadStructBegin(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
   }
 
 
   for {
-    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin(ctx)
+    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin()
     if err != nil {
       return thrift.PrependError(fmt.Sprintf("%T field %d read error: ", p, fieldId), err)
     }
     if fieldTypeId == thrift.STOP { break; }
     switch fieldId {
     case 1:
-      if fieldTypeId == thrift.STRUCT {
-        if err := p.ReadField1(ctx, iprot); err != nil {
-          return err
-        }
-      } else {
-        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-          return err
-        }
+      if err := p.ReadField1(iprot); err != nil {
+        return err
       }
     case 2:
-      if fieldTypeId == thrift.I32 {
-        if err := p.ReadField2(ctx, iprot); err != nil {
-          return err
-        }
-      } else {
-        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-          return err
-        }
+      if err := p.ReadField2(iprot); err != nil {
+        return err
       }
     default:
-      if err := iprot.Skip(ctx, fieldTypeId); err != nil {
+      if err := iprot.Skip(fieldTypeId); err != nil {
         return err
       }
     }
-    if err := iprot.ReadFieldEnd(ctx); err != nil {
+    if err := iprot.ReadFieldEnd(); err != nil {
       return err
     }
   }
-  if err := iprot.ReadStructEnd(ctx); err != nil {
+  if err := iprot.ReadStructEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
   }
   return nil
 }
 
-func (p *GetContainerMetricsResponse)  ReadField1(ctx context.Context, iprot thrift.TProtocol) error {
+func (p *GetContainerMetricsResponse)  ReadField1(iprot thrift.TProtocol) error {
   p.ContainerMetric = &ContainerMetric{}
-  if err := p.ContainerMetric.Read(ctx, iprot); err != nil {
+  if err := p.ContainerMetric.Read(iprot); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", p.ContainerMetric), err)
   }
   return nil
 }
 
-func (p *GetContainerMetricsResponse)  ReadField2(ctx context.Context, iprot thrift.TProtocol) error {
-  if v, err := iprot.ReadI32(ctx); err != nil {
+func (p *GetContainerMetricsResponse)  ReadField2(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadI32(); err != nil {
   return thrift.PrependError("error reading field 2: ", err)
 } else {
   p.RetCode = v
@@ -3167,50 +3831,39 @@ func (p *GetContainerMetricsResponse)  ReadField2(ctx context.Context, iprot thr
   return nil
 }
 
-func (p *GetContainerMetricsResponse) Write(ctx context.Context, oprot thrift.TProtocol) error {
-  if err := oprot.WriteStructBegin(ctx, "GetContainerMetricsResponse"); err != nil {
+func (p *GetContainerMetricsResponse) Write(oprot thrift.TProtocol) error {
+  if err := oprot.WriteStructBegin("GetContainerMetricsResponse"); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err) }
   if p != nil {
-    if err := p.writeField1(ctx, oprot); err != nil { return err }
-    if err := p.writeField2(ctx, oprot); err != nil { return err }
+    if err := p.writeField1(oprot); err != nil { return err }
+    if err := p.writeField2(oprot); err != nil { return err }
   }
-  if err := oprot.WriteFieldStop(ctx); err != nil {
+  if err := oprot.WriteFieldStop(); err != nil {
     return thrift.PrependError("write field stop error: ", err) }
-  if err := oprot.WriteStructEnd(ctx); err != nil {
+  if err := oprot.WriteStructEnd(); err != nil {
     return thrift.PrependError("write struct stop error: ", err) }
   return nil
 }
 
-func (p *GetContainerMetricsResponse) writeField1(ctx context.Context, oprot thrift.TProtocol) (err error) {
-  if err := oprot.WriteFieldBegin(ctx, "containerMetric", thrift.STRUCT, 1); err != nil {
+func (p *GetContainerMetricsResponse) writeField1(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("containerMetric", thrift.STRUCT, 1); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field begin error 1:containerMetric: ", p), err) }
-  if err := p.ContainerMetric.Write(ctx, oprot); err != nil {
+  if err := p.ContainerMetric.Write(oprot); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T error writing struct: ", p.ContainerMetric), err)
   }
-  if err := oprot.WriteFieldEnd(ctx); err != nil {
+  if err := oprot.WriteFieldEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field end error 1:containerMetric: ", p), err) }
   return err
 }
 
-func (p *GetContainerMetricsResponse) writeField2(ctx context.Context, oprot thrift.TProtocol) (err error) {
-  if err := oprot.WriteFieldBegin(ctx, "ret_code", thrift.I32, 2); err != nil {
+func (p *GetContainerMetricsResponse) writeField2(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("ret_code", thrift.I32, 2); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field begin error 2:ret_code: ", p), err) }
-  if err := oprot.WriteI32(ctx, int32(p.RetCode)); err != nil {
+  if err := oprot.WriteI32(int32(p.RetCode)); err != nil {
   return thrift.PrependError(fmt.Sprintf("%T.ret_code (2) field write error: ", p), err) }
-  if err := oprot.WriteFieldEnd(ctx); err != nil {
+  if err := oprot.WriteFieldEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field end error 2:ret_code: ", p), err) }
   return err
-}
-
-func (p *GetContainerMetricsResponse) Equals(other *GetContainerMetricsResponse) bool {
-  if p == other {
-    return true
-  } else if p == nil || other == nil {
-    return false
-  }
-  if !p.ContainerMetric.Equals(other.ContainerMetric) { return false }
-  if p.RetCode != other.RetCode { return false }
-  return true
 }
 
 func (p *GetContainerMetricsResponse) String() string {
@@ -3240,78 +3893,66 @@ func (p *GetImagesListResponse) GetImageList() []string {
 func (p *GetImagesListResponse) GetRetCode() int32 {
   return p.RetCode
 }
-func (p *GetImagesListResponse) Read(ctx context.Context, iprot thrift.TProtocol) error {
-  if _, err := iprot.ReadStructBegin(ctx); err != nil {
+func (p *GetImagesListResponse) Read(iprot thrift.TProtocol) error {
+  if _, err := iprot.ReadStructBegin(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
   }
 
 
   for {
-    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin(ctx)
+    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin()
     if err != nil {
       return thrift.PrependError(fmt.Sprintf("%T field %d read error: ", p, fieldId), err)
     }
     if fieldTypeId == thrift.STOP { break; }
     switch fieldId {
     case 1:
-      if fieldTypeId == thrift.LIST {
-        if err := p.ReadField1(ctx, iprot); err != nil {
-          return err
-        }
-      } else {
-        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-          return err
-        }
+      if err := p.ReadField1(iprot); err != nil {
+        return err
       }
     case 2:
-      if fieldTypeId == thrift.I32 {
-        if err := p.ReadField2(ctx, iprot); err != nil {
-          return err
-        }
-      } else {
-        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-          return err
-        }
+      if err := p.ReadField2(iprot); err != nil {
+        return err
       }
     default:
-      if err := iprot.Skip(ctx, fieldTypeId); err != nil {
+      if err := iprot.Skip(fieldTypeId); err != nil {
         return err
       }
     }
-    if err := iprot.ReadFieldEnd(ctx); err != nil {
+    if err := iprot.ReadFieldEnd(); err != nil {
       return err
     }
   }
-  if err := iprot.ReadStructEnd(ctx); err != nil {
+  if err := iprot.ReadStructEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
   }
   return nil
 }
 
-func (p *GetImagesListResponse)  ReadField1(ctx context.Context, iprot thrift.TProtocol) error {
-  _, size, err := iprot.ReadListBegin(ctx)
+func (p *GetImagesListResponse)  ReadField1(iprot thrift.TProtocol) error {
+  _, size, err := iprot.ReadListBegin()
   if err != nil {
     return thrift.PrependError("error reading list begin: ", err)
   }
   tSlice := make([]string, 0, size)
   p.ImageList =  tSlice
   for i := 0; i < size; i ++ {
-var _elem8 string
-    if v, err := iprot.ReadString(ctx); err != nil {
+var _elem5 string
+    if v, err := iprot.ReadString(); err != nil {
     return thrift.PrependError("error reading field 0: ", err)
 } else {
-    _elem8 = v
+    _elem5 = v
 }
-    p.ImageList = append(p.ImageList, _elem8)
+    p.ImageList = append(p.ImageList, _elem5)
   }
-  if err := iprot.ReadListEnd(ctx); err != nil {
+  if err := iprot.ReadListEnd(); err != nil {
     return thrift.PrependError("error reading list end: ", err)
   }
   return nil
 }
 
-func (p *GetImagesListResponse)  ReadField2(ctx context.Context, iprot thrift.TProtocol) error {
-  if v, err := iprot.ReadI32(ctx); err != nil {
+func (p *GetImagesListResponse)  ReadField2(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadI32(); err != nil {
   return thrift.PrependError("error reading field 2: ", err)
 } else {
   p.RetCode = v
@@ -3319,61 +3960,46 @@ func (p *GetImagesListResponse)  ReadField2(ctx context.Context, iprot thrift.TP
   return nil
 }
 
-func (p *GetImagesListResponse) Write(ctx context.Context, oprot thrift.TProtocol) error {
-  if err := oprot.WriteStructBegin(ctx, "GetImagesListResponse"); err != nil {
+func (p *GetImagesListResponse) Write(oprot thrift.TProtocol) error {
+  if err := oprot.WriteStructBegin("GetImagesListResponse"); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err) }
   if p != nil {
-    if err := p.writeField1(ctx, oprot); err != nil { return err }
-    if err := p.writeField2(ctx, oprot); err != nil { return err }
+    if err := p.writeField1(oprot); err != nil { return err }
+    if err := p.writeField2(oprot); err != nil { return err }
   }
-  if err := oprot.WriteFieldStop(ctx); err != nil {
+  if err := oprot.WriteFieldStop(); err != nil {
     return thrift.PrependError("write field stop error: ", err) }
-  if err := oprot.WriteStructEnd(ctx); err != nil {
+  if err := oprot.WriteStructEnd(); err != nil {
     return thrift.PrependError("write struct stop error: ", err) }
   return nil
 }
 
-func (p *GetImagesListResponse) writeField1(ctx context.Context, oprot thrift.TProtocol) (err error) {
-  if err := oprot.WriteFieldBegin(ctx, "imageList", thrift.LIST, 1); err != nil {
+func (p *GetImagesListResponse) writeField1(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("imageList", thrift.LIST, 1); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field begin error 1:imageList: ", p), err) }
-  if err := oprot.WriteListBegin(ctx, thrift.STRING, len(p.ImageList)); err != nil {
+  if err := oprot.WriteListBegin(thrift.STRING, len(p.ImageList)); err != nil {
     return thrift.PrependError("error writing list begin: ", err)
   }
   for _, v := range p.ImageList {
-    if err := oprot.WriteString(ctx, string(v)); err != nil {
+    if err := oprot.WriteString(string(v)); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T. (0) field write error: ", p), err) }
   }
-  if err := oprot.WriteListEnd(ctx); err != nil {
+  if err := oprot.WriteListEnd(); err != nil {
     return thrift.PrependError("error writing list end: ", err)
   }
-  if err := oprot.WriteFieldEnd(ctx); err != nil {
+  if err := oprot.WriteFieldEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field end error 1:imageList: ", p), err) }
   return err
 }
 
-func (p *GetImagesListResponse) writeField2(ctx context.Context, oprot thrift.TProtocol) (err error) {
-  if err := oprot.WriteFieldBegin(ctx, "ret_code", thrift.I32, 2); err != nil {
+func (p *GetImagesListResponse) writeField2(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("ret_code", thrift.I32, 2); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field begin error 2:ret_code: ", p), err) }
-  if err := oprot.WriteI32(ctx, int32(p.RetCode)); err != nil {
+  if err := oprot.WriteI32(int32(p.RetCode)); err != nil {
   return thrift.PrependError(fmt.Sprintf("%T.ret_code (2) field write error: ", p), err) }
-  if err := oprot.WriteFieldEnd(ctx); err != nil {
+  if err := oprot.WriteFieldEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field end error 2:ret_code: ", p), err) }
   return err
-}
-
-func (p *GetImagesListResponse) Equals(other *GetImagesListResponse) bool {
-  if p == other {
-    return true
-  } else if p == nil || other == nil {
-    return false
-  }
-  if len(p.ImageList) != len(other.ImageList) { return false }
-  for i, _tgt := range p.ImageList {
-    _src9 := other.ImageList[i]
-    if _tgt != _src9 { return false }
-  }
-  if p.RetCode != other.RetCode { return false }
-  return true
 }
 
 func (p *GetImagesListResponse) String() string {
@@ -3403,56 +4029,44 @@ func (p *OperationFailed) GetErrorCode() int32 {
 func (p *OperationFailed) GetReason() string {
   return p.Reason
 }
-func (p *OperationFailed) Read(ctx context.Context, iprot thrift.TProtocol) error {
-  if _, err := iprot.ReadStructBegin(ctx); err != nil {
+func (p *OperationFailed) Read(iprot thrift.TProtocol) error {
+  if _, err := iprot.ReadStructBegin(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
   }
 
 
   for {
-    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin(ctx)
+    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin()
     if err != nil {
       return thrift.PrependError(fmt.Sprintf("%T field %d read error: ", p, fieldId), err)
     }
     if fieldTypeId == thrift.STOP { break; }
     switch fieldId {
     case 1:
-      if fieldTypeId == thrift.I32 {
-        if err := p.ReadField1(ctx, iprot); err != nil {
-          return err
-        }
-      } else {
-        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-          return err
-        }
+      if err := p.ReadField1(iprot); err != nil {
+        return err
       }
     case 2:
-      if fieldTypeId == thrift.STRING {
-        if err := p.ReadField2(ctx, iprot); err != nil {
-          return err
-        }
-      } else {
-        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-          return err
-        }
+      if err := p.ReadField2(iprot); err != nil {
+        return err
       }
     default:
-      if err := iprot.Skip(ctx, fieldTypeId); err != nil {
+      if err := iprot.Skip(fieldTypeId); err != nil {
         return err
       }
     }
-    if err := iprot.ReadFieldEnd(ctx); err != nil {
+    if err := iprot.ReadFieldEnd(); err != nil {
       return err
     }
   }
-  if err := iprot.ReadStructEnd(ctx); err != nil {
+  if err := iprot.ReadStructEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
   }
   return nil
 }
 
-func (p *OperationFailed)  ReadField1(ctx context.Context, iprot thrift.TProtocol) error {
-  if v, err := iprot.ReadI32(ctx); err != nil {
+func (p *OperationFailed)  ReadField1(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadI32(); err != nil {
   return thrift.PrependError("error reading field 1: ", err)
 } else {
   p.ErrorCode = v
@@ -3460,8 +4074,8 @@ func (p *OperationFailed)  ReadField1(ctx context.Context, iprot thrift.TProtoco
   return nil
 }
 
-func (p *OperationFailed)  ReadField2(ctx context.Context, iprot thrift.TProtocol) error {
-  if v, err := iprot.ReadString(ctx); err != nil {
+func (p *OperationFailed)  ReadField2(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadString(); err != nil {
   return thrift.PrependError("error reading field 2: ", err)
 } else {
   p.Reason = v
@@ -3469,49 +4083,38 @@ func (p *OperationFailed)  ReadField2(ctx context.Context, iprot thrift.TProtoco
   return nil
 }
 
-func (p *OperationFailed) Write(ctx context.Context, oprot thrift.TProtocol) error {
-  if err := oprot.WriteStructBegin(ctx, "OperationFailed"); err != nil {
+func (p *OperationFailed) Write(oprot thrift.TProtocol) error {
+  if err := oprot.WriteStructBegin("OperationFailed"); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err) }
   if p != nil {
-    if err := p.writeField1(ctx, oprot); err != nil { return err }
-    if err := p.writeField2(ctx, oprot); err != nil { return err }
+    if err := p.writeField1(oprot); err != nil { return err }
+    if err := p.writeField2(oprot); err != nil { return err }
   }
-  if err := oprot.WriteFieldStop(ctx); err != nil {
+  if err := oprot.WriteFieldStop(); err != nil {
     return thrift.PrependError("write field stop error: ", err) }
-  if err := oprot.WriteStructEnd(ctx); err != nil {
+  if err := oprot.WriteStructEnd(); err != nil {
     return thrift.PrependError("write struct stop error: ", err) }
   return nil
 }
 
-func (p *OperationFailed) writeField1(ctx context.Context, oprot thrift.TProtocol) (err error) {
-  if err := oprot.WriteFieldBegin(ctx, "error_code", thrift.I32, 1); err != nil {
+func (p *OperationFailed) writeField1(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("error_code", thrift.I32, 1); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field begin error 1:error_code: ", p), err) }
-  if err := oprot.WriteI32(ctx, int32(p.ErrorCode)); err != nil {
+  if err := oprot.WriteI32(int32(p.ErrorCode)); err != nil {
   return thrift.PrependError(fmt.Sprintf("%T.error_code (1) field write error: ", p), err) }
-  if err := oprot.WriteFieldEnd(ctx); err != nil {
+  if err := oprot.WriteFieldEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field end error 1:error_code: ", p), err) }
   return err
 }
 
-func (p *OperationFailed) writeField2(ctx context.Context, oprot thrift.TProtocol) (err error) {
-  if err := oprot.WriteFieldBegin(ctx, "reason", thrift.STRING, 2); err != nil {
+func (p *OperationFailed) writeField2(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("reason", thrift.STRING, 2); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field begin error 2:reason: ", p), err) }
-  if err := oprot.WriteString(ctx, string(p.Reason)); err != nil {
+  if err := oprot.WriteString(string(p.Reason)); err != nil {
   return thrift.PrependError(fmt.Sprintf("%T.reason (2) field write error: ", p), err) }
-  if err := oprot.WriteFieldEnd(ctx); err != nil {
+  if err := oprot.WriteFieldEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field end error 2:reason: ", p), err) }
   return err
-}
-
-func (p *OperationFailed) Equals(other *OperationFailed) bool {
-  if p == other {
-    return true
-  } else if p == nil || other == nil {
-    return false
-  }
-  if p.ErrorCode != other.ErrorCode { return false }
-  if p.Reason != other.Reason { return false }
-  return true
 }
 
 func (p *OperationFailed) String() string {
@@ -3525,108 +4128,115 @@ func (p *OperationFailed) Error() string {
   return p.String()
 }
 
-func (OperationFailed) TExceptionType() thrift.TExceptionType {
-  return thrift.TExceptionTypeCompiled
-}
-
-var _ thrift.TException = (*OperationFailed)(nil)
-
 type KsScmcClient interface {
   // Parameters:
   //  - User
   //  - Passwd
   //  - NodeIP
-  LoginV3(ctx context.Context, user string, passwd string, node_ip string) (r string, err error)
+  LoginV3(user string, passwd string, node_ip string) (r string, err error)
   // Parameters:
-  //  - NodeNameorip
-  //  - ImageName
-  //  - ImageVer
-  //  - ContainerName
-  InstallContainer(ctx context.Context, node_nameorip string, image_name string, image_ver string, container_name string) (r int32, err error)
+  //  - NodeName
+  //  - Image
+  //  - Ver
+  //  - Name
+  //  - Desc
+  InstallContainer(node_name string, image string, ver string, name string, desc string) (r string, err error)
   // Parameters:
-  //  - NodeNameorip
-  //  - ContainerName
-  StartContainer(ctx context.Context, node_nameorip string, container_name string) (r int32, err error)
+  //  - NodeName
+  //  - Name
+  StartContainer(node_name string, name string) (r string, err error)
   // Parameters:
-  //  - NodeNameorip
-  //  - ContainerName
-  StopContainer(ctx context.Context, node_nameorip string, container_name string) (r int32, err error)
+  //  - NodeName
+  //  - Name
+  StopContainer(node_name string, name string) (r string, err error)
   // Parameters:
-  //  - NodeNameorip
-  //  - ContainerName
-  UninstallContainer(ctx context.Context, node_nameorip string, container_name string) (r int32, err error)
-  // Parameters:
-  //  - NodeNameorip
-  //  - ContainerName
-  GetContainerStatus(ctx context.Context, node_nameorip string, container_name string) (r int32, err error)
+  //  - NodeName
+  //  - Name
+  UninstallContainer(node_name string, name string) (r string, err error)
   // Parameters:
   //  - NodeNameorip
   //  - ContainerName
-  GetContainerMetrics(ctx context.Context, node_nameorip string, container_name string) (r *GetContainerMetricsResponse, err error)
+  GetContainerStatus(node_nameorip string, container_name string) (r int32, err error)
   // Parameters:
   //  - NodeNameorip
   //  - ContainerName
-  GetImageVer4Container(ctx context.Context, node_nameorip string, container_name string) (r *GetImageVer4ContainerResponse, err error)
+  GetContainerMetrics(node_nameorip string, container_name string) (r *GetContainerMetricsResponse, err error)
+  // Parameters:
+  //  - NodeName
+  //  - Name
+  GetContainerImageVers(node_name string, name string) (r string, err error)
+  // Parameters:
+  //  - NodeNameorip
+  //  - ContainerName
+  GetImageVer4Container(node_nameorip string, container_name string) (r *GetImageVer4ContainerResponse, err error)
   // Parameters:
   //  - NodeName
   //  - ContainerName
-  GetContainer(ctx context.Context, node_name string, container_name string) (r int32, err error)
+  GetContainer(node_name string, container_name string) (r int32, err error)
   // Parameters:
   //  - NodeName
   //  - ContainerName
   //  - NewVer_
-  UpdateContainer(ctx context.Context, node_name string, container_name string, new_ver string) (r int32, err error)
+  UpdateContainer(node_name string, container_name string, new_ver string) (r string, err error)
   // Parameters:
   //  - NodeName
-  GetAlarmList(ctx context.Context, node_name string) (r *GetAlarmListResponse, err error)
-  GetAllNodeList(ctx context.Context) (r *GetAllNodeListResponse, err error)
-  GetAllContainerList(ctx context.Context) (r *GetAllContainerListResponse, err error)
+  GetAlarmList(node_name string) (r string, err error)
+  GetAllNodeList() (r *GetAllNodeListResponse, err error)
+  // Parameters:
+  //  - NodeName
+  GetAllContainers(node_name string) (r string, err error)
+  // Parameters:
+  //  - Nid
+  GetAllContainersV2(nid string) (r string, err error)
+  // Parameters:
+  //  - NodeName
+  GetAllContainerList(node_name string) (r *GetAllContainerListResponse, err error)
   // Parameters:
   //  - NodeNameorip
   //  - ContainerName
-  GetContainerNetwork(ctx context.Context, node_nameorip string, container_name string) (r *GetContainerNetworkResponse, err error)
+  GetContainerNetwork(node_nameorip string, container_name string) (r string, err error)
   // Parameters:
   //  - NodeName
   //  - ContainerName
-  GetContainerNetRules(ctx context.Context, node_name string, container_name string) (r *GetContainerNetRulesResponse, err error)
+  GetContainerNetRules(node_name string, container_name string) (r *GetContainerNetRulesResponse, err error)
   // Parameters:
   //  - NodeNameorip
   //  - ContainerName
   //  - IPAddr
   //  - Port
   //  - NetProto
-  AddContainerIpPort(ctx context.Context, node_nameorip string, container_name string, ip_addr string, port int32, net_proto string) (r int32, err error)
+  AddContainerIpPort(node_nameorip string, container_name string, ip_addr string, port int32, net_proto string) (r int32, err error)
   // Parameters:
   //  - NodeName
   //  - ContainerName
   //  - IPAddr
   //  - Port
   //  - NetProto
-  AddContainerReqIpPort(ctx context.Context, node_name string, container_name string, ip_addr string, port int32, net_proto string) (r int32, err error)
+  AddContainerReqIpPort(node_name string, container_name string, ip_addr string, port int32, net_proto string) (r int32, err error)
   // Parameters:
   //  - NodeNameorip
   //  - ContainerName
   //  - EnvName
   //  - EnvValue
-  AddContainerEnv(ctx context.Context, node_nameorip string, container_name string, env_name string, env_value string) (r int32, err error)
+  AddContainerEnv(node_nameorip string, container_name string, env_name string, env_value string) (r string, err error)
   // Parameters:
   //  - NodeNameorip
   //  - ContainerName
   //  - InDir
   //  - OutDir
   //  - AccessAuth
-  AddContainerLocalVolume(ctx context.Context, node_nameorip string, container_name string, in_dir string, out_dir string, access_auth AccessAuth) (r int32, err error)
+  AddContainerLocalVolume(node_nameorip string, container_name string, in_dir string, out_dir string, access_auth AccessAuth) (r int32, err error)
   // Parameters:
   //  - NodeName
   //  - ContainerName
   //  - Enabled
   //  - Display
-  SetContainerDisplayV2(ctx context.Context, node_name string, container_name string, enabled bool, display string) (r int32, err error)
+  SetContainerDisplayV2(node_name string, container_name string, enabled bool, display string) (r string, err error)
   // Parameters:
   //  - NodeName
   //  - ContainerName
   //  - ContainerLimit
-  SetContainerQuota(ctx context.Context, node_name string, container_name string, containerLimit *ContainerLimit) (r int32, err error)
+  SetContainerQuota(node_name string, container_name string, containerLimit *ContainerLimit) (r string, err error)
   // 设置容器是否开启特权
   // @param node_ip 节点ip
   // @param container_name 容器名称
@@ -3637,7 +4247,7 @@ type KsScmcClient interface {
   //  - NodeIP
   //  - ContainerName
   //  - IsPrivileged
-  SetContainerPrivileged(ctx context.Context, node_ip string, container_name string, isPrivileged bool) (r int32, err error)
+  SetContainerPrivileged(node_ip string, container_name string, isPrivileged bool) (r int32, err error)
   // 设置容器内核参数
   // @param node_ip 节点ip
   // @param container_name 容器名称
@@ -3650,7 +4260,7 @@ type KsScmcClient interface {
   //  - ContainerName
   //  - SysctlName
   //  - SysctlValue
-  SetContainerSysctls(ctx context.Context, node_ip string, container_name string, sysctl_name string, sysctl_value string) (r int32, err error)
+  SetContainerSysctls(node_ip string, container_name string, sysctl_name string, sysctl_value string) (r int32, err error)
   // 设置容器/etc/hosts中的host信息
   // @param node_ip 节点ip
   // @param container_name 容器名称
@@ -3661,7 +4271,7 @@ type KsScmcClient interface {
   //  - NodeIP
   //  - ContainerName
   //  - ContainerExtrahosts
-  SetContainerExtraHosts(ctx context.Context, node_ip string, container_name string, container_extrahosts []string) (r int32, err error)
+  SetContainerExtraHosts(node_ip string, container_name string, container_extrahosts []string) (r int32, err error)
   // 获取节点上的镜像列表
   // @param node_ip 节点ip
   // @param image_list 镜像信息列表(输出参数)
@@ -3669,7 +4279,7 @@ type KsScmcClient interface {
   // 
   // Parameters:
   //  - NodeIP
-  GetImagesList(ctx context.Context, node_ip string) (r *GetImagesListResponse, err error)
+  GetImagesList(node_ip string) (r *GetImagesListResponse, err error)
   // 导入镜像到节点
   // @param node_ip 节点ip
   // @param tarPath 镜像tar文件路径
@@ -3678,7 +4288,7 @@ type KsScmcClient interface {
   // Parameters:
   //  - NodeIP
   //  - TarPath
-  LoadImage(ctx context.Context, node_ip string, tarPath string) (r int32, err error)
+  LoadImage(node_ip string, tarPath string) (r int32, err error)
   // 暂停容器
   // @param node_ip 节点ip
   // @param container_name 容器名称
@@ -3687,7 +4297,7 @@ type KsScmcClient interface {
   // Parameters:
   //  - NodeIP
   //  - ContainerName
-  PauseContainer(ctx context.Context, node_ip string, container_name string) (r int32, err error)
+  PauseContainer(node_ip string, container_name string) (r int32, err error)
   // 恢复暂停的容器
   // @param node_ip 节点ip
   // @param container_name 容器名称
@@ -3696,293 +4306,1434 @@ type KsScmcClient interface {
   // Parameters:
   //  - NodeIP
   //  - ContainerName
-  UnpauseContainer(ctx context.Context, node_ip string, container_name string) (r int32, err error)
+  UnpauseContainer(node_ip string, container_name string) (r int32, err error)
 }
 
 type KsScmcClientClient struct {
-  c thrift.TClient
-  meta thrift.ResponseMeta
+  Transport thrift.TTransport
+  ProtocolFactory thrift.TProtocolFactory
+  InputProtocol thrift.TProtocol
+  OutputProtocol thrift.TProtocol
+  SeqId int32
 }
 
 func NewKsScmcClientClientFactory(t thrift.TTransport, f thrift.TProtocolFactory) *KsScmcClientClient {
-  return &KsScmcClientClient{
-    c: thrift.NewTStandardClient(f.GetProtocol(t), f.GetProtocol(t)),
+  return &KsScmcClientClient{Transport: t,
+    ProtocolFactory: f,
+    InputProtocol: f.GetProtocol(t),
+    OutputProtocol: f.GetProtocol(t),
+    SeqId: 0,
   }
 }
 
 func NewKsScmcClientClientProtocol(t thrift.TTransport, iprot thrift.TProtocol, oprot thrift.TProtocol) *KsScmcClientClient {
-  return &KsScmcClientClient{
-    c: thrift.NewTStandardClient(iprot, oprot),
+  return &KsScmcClientClient{Transport: t,
+    ProtocolFactory: nil,
+    InputProtocol: iprot,
+    OutputProtocol: oprot,
+    SeqId: 0,
   }
-}
-
-func NewKsScmcClientClient(c thrift.TClient) *KsScmcClientClient {
-  return &KsScmcClientClient{
-    c: c,
-  }
-}
-
-func (p *KsScmcClientClient) Client_() thrift.TClient {
-  return p.c
-}
-
-func (p *KsScmcClientClient) LastResponseMeta_() thrift.ResponseMeta {
-  return p.meta
-}
-
-func (p *KsScmcClientClient) SetLastResponseMeta_(meta thrift.ResponseMeta) {
-  p.meta = meta
 }
 
 // Parameters:
 //  - User
 //  - Passwd
 //  - NodeIP
-func (p *KsScmcClientClient) LoginV3(ctx context.Context, user string, passwd string, node_ip string) (r string, err error) {
-  var _args10 KsScmcClientLoginV3Args
-  _args10.User = user
-  _args10.Passwd = passwd
-  _args10.NodeIP = node_ip
-  var _result11 KsScmcClientLoginV3Result
-  var meta thrift.ResponseMeta
-  meta, err = p.Client_().Call(ctx, "LoginV3", &_args10, &_result11)
-  p.SetLastResponseMeta_(meta)
+func (p *KsScmcClientClient) LoginV3(user string, passwd string, node_ip string) (r string, err error) {
+  if err = p.sendLoginV3(user, passwd, node_ip); err != nil { return }
+  return p.recvLoginV3()
+}
+
+func (p *KsScmcClientClient) sendLoginV3(user string, passwd string, node_ip string)(err error) {
+  oprot := p.OutputProtocol
+  if oprot == nil {
+    oprot = p.ProtocolFactory.GetProtocol(p.Transport)
+    p.OutputProtocol = oprot
+  }
+  p.SeqId++
+  if err = oprot.WriteMessageBegin("LoginV3", thrift.CALL, p.SeqId); err != nil {
+      return
+  }
+  args := KsScmcClientLoginV3Args{
+  User : user,
+  Passwd : passwd,
+  NodeIP : node_ip,
+  }
+  if err = args.Write(oprot); err != nil {
+      return
+  }
+  if err = oprot.WriteMessageEnd(); err != nil {
+      return
+  }
+  return oprot.Flush()
+}
+
+
+func (p *KsScmcClientClient) recvLoginV3() (value string, err error) {
+  iprot := p.InputProtocol
+  if iprot == nil {
+    iprot = p.ProtocolFactory.GetProtocol(p.Transport)
+    p.InputProtocol = iprot
+  }
+  method, mTypeId, seqId, err := iprot.ReadMessageBegin()
   if err != nil {
     return
   }
-  return _result11.GetSuccess(), nil
+  if method != "LoginV3" {
+    err = thrift.NewTApplicationException(thrift.WRONG_METHOD_NAME, "LoginV3 failed: wrong method name")
+    return
+  }
+  if p.SeqId != seqId {
+    err = thrift.NewTApplicationException(thrift.BAD_SEQUENCE_ID, "LoginV3 failed: out of sequence response")
+    return
+  }
+  if mTypeId == thrift.EXCEPTION {
+    error6 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
+    var error7 error
+    error7, err = error6.Read(iprot)
+    if err != nil {
+      return
+    }
+    if err = iprot.ReadMessageEnd(); err != nil {
+      return
+    }
+    err = error7
+    return
+  }
+  if mTypeId != thrift.REPLY {
+    err = thrift.NewTApplicationException(thrift.INVALID_MESSAGE_TYPE_EXCEPTION, "LoginV3 failed: invalid message type")
+    return
+  }
+  result := KsScmcClientLoginV3Result{}
+  if err = result.Read(iprot); err != nil {
+    return
+  }
+  if err = iprot.ReadMessageEnd(); err != nil {
+    return
+  }
+  value = result.GetSuccess()
+  return
+}
+
+// Parameters:
+//  - NodeName
+//  - Image
+//  - Ver
+//  - Name
+//  - Desc
+func (p *KsScmcClientClient) InstallContainer(node_name string, image string, ver string, name string, desc string) (r string, err error) {
+  if err = p.sendInstallContainer(node_name, image, ver, name, desc); err != nil { return }
+  return p.recvInstallContainer()
+}
+
+func (p *KsScmcClientClient) sendInstallContainer(node_name string, image string, ver string, name string, desc string)(err error) {
+  oprot := p.OutputProtocol
+  if oprot == nil {
+    oprot = p.ProtocolFactory.GetProtocol(p.Transport)
+    p.OutputProtocol = oprot
+  }
+  p.SeqId++
+  if err = oprot.WriteMessageBegin("InstallContainer", thrift.CALL, p.SeqId); err != nil {
+      return
+  }
+  args := KsScmcClientInstallContainerArgs{
+  NodeName : node_name,
+  Image : image,
+  Ver : ver,
+  Name : name,
+  Desc : desc,
+  }
+  if err = args.Write(oprot); err != nil {
+      return
+  }
+  if err = oprot.WriteMessageEnd(); err != nil {
+      return
+  }
+  return oprot.Flush()
+}
+
+
+func (p *KsScmcClientClient) recvInstallContainer() (value string, err error) {
+  iprot := p.InputProtocol
+  if iprot == nil {
+    iprot = p.ProtocolFactory.GetProtocol(p.Transport)
+    p.InputProtocol = iprot
+  }
+  method, mTypeId, seqId, err := iprot.ReadMessageBegin()
+  if err != nil {
+    return
+  }
+  if method != "InstallContainer" {
+    err = thrift.NewTApplicationException(thrift.WRONG_METHOD_NAME, "InstallContainer failed: wrong method name")
+    return
+  }
+  if p.SeqId != seqId {
+    err = thrift.NewTApplicationException(thrift.BAD_SEQUENCE_ID, "InstallContainer failed: out of sequence response")
+    return
+  }
+  if mTypeId == thrift.EXCEPTION {
+    error8 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
+    var error9 error
+    error9, err = error8.Read(iprot)
+    if err != nil {
+      return
+    }
+    if err = iprot.ReadMessageEnd(); err != nil {
+      return
+    }
+    err = error9
+    return
+  }
+  if mTypeId != thrift.REPLY {
+    err = thrift.NewTApplicationException(thrift.INVALID_MESSAGE_TYPE_EXCEPTION, "InstallContainer failed: invalid message type")
+    return
+  }
+  result := KsScmcClientInstallContainerResult{}
+  if err = result.Read(iprot); err != nil {
+    return
+  }
+  if err = iprot.ReadMessageEnd(); err != nil {
+    return
+  }
+  value = result.GetSuccess()
+  return
+}
+
+// Parameters:
+//  - NodeName
+//  - Name
+func (p *KsScmcClientClient) StartContainer(node_name string, name string) (r string, err error) {
+  if err = p.sendStartContainer(node_name, name); err != nil { return }
+  return p.recvStartContainer()
+}
+
+func (p *KsScmcClientClient) sendStartContainer(node_name string, name string)(err error) {
+  oprot := p.OutputProtocol
+  if oprot == nil {
+    oprot = p.ProtocolFactory.GetProtocol(p.Transport)
+    p.OutputProtocol = oprot
+  }
+  p.SeqId++
+  if err = oprot.WriteMessageBegin("StartContainer", thrift.CALL, p.SeqId); err != nil {
+      return
+  }
+  args := KsScmcClientStartContainerArgs{
+  NodeName : node_name,
+  Name : name,
+  }
+  if err = args.Write(oprot); err != nil {
+      return
+  }
+  if err = oprot.WriteMessageEnd(); err != nil {
+      return
+  }
+  return oprot.Flush()
+}
+
+
+func (p *KsScmcClientClient) recvStartContainer() (value string, err error) {
+  iprot := p.InputProtocol
+  if iprot == nil {
+    iprot = p.ProtocolFactory.GetProtocol(p.Transport)
+    p.InputProtocol = iprot
+  }
+  method, mTypeId, seqId, err := iprot.ReadMessageBegin()
+  if err != nil {
+    return
+  }
+  if method != "StartContainer" {
+    err = thrift.NewTApplicationException(thrift.WRONG_METHOD_NAME, "StartContainer failed: wrong method name")
+    return
+  }
+  if p.SeqId != seqId {
+    err = thrift.NewTApplicationException(thrift.BAD_SEQUENCE_ID, "StartContainer failed: out of sequence response")
+    return
+  }
+  if mTypeId == thrift.EXCEPTION {
+    error10 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
+    var error11 error
+    error11, err = error10.Read(iprot)
+    if err != nil {
+      return
+    }
+    if err = iprot.ReadMessageEnd(); err != nil {
+      return
+    }
+    err = error11
+    return
+  }
+  if mTypeId != thrift.REPLY {
+    err = thrift.NewTApplicationException(thrift.INVALID_MESSAGE_TYPE_EXCEPTION, "StartContainer failed: invalid message type")
+    return
+  }
+  result := KsScmcClientStartContainerResult{}
+  if err = result.Read(iprot); err != nil {
+    return
+  }
+  if err = iprot.ReadMessageEnd(); err != nil {
+    return
+  }
+  value = result.GetSuccess()
+  return
+}
+
+// Parameters:
+//  - NodeName
+//  - Name
+func (p *KsScmcClientClient) StopContainer(node_name string, name string) (r string, err error) {
+  if err = p.sendStopContainer(node_name, name); err != nil { return }
+  return p.recvStopContainer()
+}
+
+func (p *KsScmcClientClient) sendStopContainer(node_name string, name string)(err error) {
+  oprot := p.OutputProtocol
+  if oprot == nil {
+    oprot = p.ProtocolFactory.GetProtocol(p.Transport)
+    p.OutputProtocol = oprot
+  }
+  p.SeqId++
+  if err = oprot.WriteMessageBegin("StopContainer", thrift.CALL, p.SeqId); err != nil {
+      return
+  }
+  args := KsScmcClientStopContainerArgs{
+  NodeName : node_name,
+  Name : name,
+  }
+  if err = args.Write(oprot); err != nil {
+      return
+  }
+  if err = oprot.WriteMessageEnd(); err != nil {
+      return
+  }
+  return oprot.Flush()
+}
+
+
+func (p *KsScmcClientClient) recvStopContainer() (value string, err error) {
+  iprot := p.InputProtocol
+  if iprot == nil {
+    iprot = p.ProtocolFactory.GetProtocol(p.Transport)
+    p.InputProtocol = iprot
+  }
+  method, mTypeId, seqId, err := iprot.ReadMessageBegin()
+  if err != nil {
+    return
+  }
+  if method != "StopContainer" {
+    err = thrift.NewTApplicationException(thrift.WRONG_METHOD_NAME, "StopContainer failed: wrong method name")
+    return
+  }
+  if p.SeqId != seqId {
+    err = thrift.NewTApplicationException(thrift.BAD_SEQUENCE_ID, "StopContainer failed: out of sequence response")
+    return
+  }
+  if mTypeId == thrift.EXCEPTION {
+    error12 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
+    var error13 error
+    error13, err = error12.Read(iprot)
+    if err != nil {
+      return
+    }
+    if err = iprot.ReadMessageEnd(); err != nil {
+      return
+    }
+    err = error13
+    return
+  }
+  if mTypeId != thrift.REPLY {
+    err = thrift.NewTApplicationException(thrift.INVALID_MESSAGE_TYPE_EXCEPTION, "StopContainer failed: invalid message type")
+    return
+  }
+  result := KsScmcClientStopContainerResult{}
+  if err = result.Read(iprot); err != nil {
+    return
+  }
+  if err = iprot.ReadMessageEnd(); err != nil {
+    return
+  }
+  value = result.GetSuccess()
+  return
+}
+
+// Parameters:
+//  - NodeName
+//  - Name
+func (p *KsScmcClientClient) UninstallContainer(node_name string, name string) (r string, err error) {
+  if err = p.sendUninstallContainer(node_name, name); err != nil { return }
+  return p.recvUninstallContainer()
+}
+
+func (p *KsScmcClientClient) sendUninstallContainer(node_name string, name string)(err error) {
+  oprot := p.OutputProtocol
+  if oprot == nil {
+    oprot = p.ProtocolFactory.GetProtocol(p.Transport)
+    p.OutputProtocol = oprot
+  }
+  p.SeqId++
+  if err = oprot.WriteMessageBegin("UninstallContainer", thrift.CALL, p.SeqId); err != nil {
+      return
+  }
+  args := KsScmcClientUninstallContainerArgs{
+  NodeName : node_name,
+  Name : name,
+  }
+  if err = args.Write(oprot); err != nil {
+      return
+  }
+  if err = oprot.WriteMessageEnd(); err != nil {
+      return
+  }
+  return oprot.Flush()
+}
+
+
+func (p *KsScmcClientClient) recvUninstallContainer() (value string, err error) {
+  iprot := p.InputProtocol
+  if iprot == nil {
+    iprot = p.ProtocolFactory.GetProtocol(p.Transport)
+    p.InputProtocol = iprot
+  }
+  method, mTypeId, seqId, err := iprot.ReadMessageBegin()
+  if err != nil {
+    return
+  }
+  if method != "UninstallContainer" {
+    err = thrift.NewTApplicationException(thrift.WRONG_METHOD_NAME, "UninstallContainer failed: wrong method name")
+    return
+  }
+  if p.SeqId != seqId {
+    err = thrift.NewTApplicationException(thrift.BAD_SEQUENCE_ID, "UninstallContainer failed: out of sequence response")
+    return
+  }
+  if mTypeId == thrift.EXCEPTION {
+    error14 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
+    var error15 error
+    error15, err = error14.Read(iprot)
+    if err != nil {
+      return
+    }
+    if err = iprot.ReadMessageEnd(); err != nil {
+      return
+    }
+    err = error15
+    return
+  }
+  if mTypeId != thrift.REPLY {
+    err = thrift.NewTApplicationException(thrift.INVALID_MESSAGE_TYPE_EXCEPTION, "UninstallContainer failed: invalid message type")
+    return
+  }
+  result := KsScmcClientUninstallContainerResult{}
+  if err = result.Read(iprot); err != nil {
+    return
+  }
+  if err = iprot.ReadMessageEnd(); err != nil {
+    return
+  }
+  value = result.GetSuccess()
+  return
 }
 
 // Parameters:
 //  - NodeNameorip
-//  - ImageName
-//  - ImageVer
 //  - ContainerName
-func (p *KsScmcClientClient) InstallContainer(ctx context.Context, node_nameorip string, image_name string, image_ver string, container_name string) (r int32, err error) {
-  var _args12 KsScmcClientInstallContainerArgs
-  _args12.NodeNameorip = node_nameorip
-  _args12.ImageName = image_name
-  _args12.ImageVer = image_ver
-  _args12.ContainerName = container_name
-  var _result13 KsScmcClientInstallContainerResult
-  var meta thrift.ResponseMeta
-  meta, err = p.Client_().Call(ctx, "installContainer", &_args12, &_result13)
-  p.SetLastResponseMeta_(meta)
+func (p *KsScmcClientClient) GetContainerStatus(node_nameorip string, container_name string) (r int32, err error) {
+  if err = p.sendGetContainerStatus(node_nameorip, container_name); err != nil { return }
+  return p.recvGetContainerStatus()
+}
+
+func (p *KsScmcClientClient) sendGetContainerStatus(node_nameorip string, container_name string)(err error) {
+  oprot := p.OutputProtocol
+  if oprot == nil {
+    oprot = p.ProtocolFactory.GetProtocol(p.Transport)
+    p.OutputProtocol = oprot
+  }
+  p.SeqId++
+  if err = oprot.WriteMessageBegin("getContainerStatus", thrift.CALL, p.SeqId); err != nil {
+      return
+  }
+  args := KsScmcClientGetContainerStatusArgs{
+  NodeNameorip : node_nameorip,
+  ContainerName : container_name,
+  }
+  if err = args.Write(oprot); err != nil {
+      return
+  }
+  if err = oprot.WriteMessageEnd(); err != nil {
+      return
+  }
+  return oprot.Flush()
+}
+
+
+func (p *KsScmcClientClient) recvGetContainerStatus() (value int32, err error) {
+  iprot := p.InputProtocol
+  if iprot == nil {
+    iprot = p.ProtocolFactory.GetProtocol(p.Transport)
+    p.InputProtocol = iprot
+  }
+  method, mTypeId, seqId, err := iprot.ReadMessageBegin()
   if err != nil {
     return
   }
-  return _result13.GetSuccess(), nil
+  if method != "getContainerStatus" {
+    err = thrift.NewTApplicationException(thrift.WRONG_METHOD_NAME, "getContainerStatus failed: wrong method name")
+    return
+  }
+  if p.SeqId != seqId {
+    err = thrift.NewTApplicationException(thrift.BAD_SEQUENCE_ID, "getContainerStatus failed: out of sequence response")
+    return
+  }
+  if mTypeId == thrift.EXCEPTION {
+    error16 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
+    var error17 error
+    error17, err = error16.Read(iprot)
+    if err != nil {
+      return
+    }
+    if err = iprot.ReadMessageEnd(); err != nil {
+      return
+    }
+    err = error17
+    return
+  }
+  if mTypeId != thrift.REPLY {
+    err = thrift.NewTApplicationException(thrift.INVALID_MESSAGE_TYPE_EXCEPTION, "getContainerStatus failed: invalid message type")
+    return
+  }
+  result := KsScmcClientGetContainerStatusResult{}
+  if err = result.Read(iprot); err != nil {
+    return
+  }
+  if err = iprot.ReadMessageEnd(); err != nil {
+    return
+  }
+  value = result.GetSuccess()
+  return
 }
 
 // Parameters:
 //  - NodeNameorip
 //  - ContainerName
-func (p *KsScmcClientClient) StartContainer(ctx context.Context, node_nameorip string, container_name string) (r int32, err error) {
-  var _args14 KsScmcClientStartContainerArgs
-  _args14.NodeNameorip = node_nameorip
-  _args14.ContainerName = container_name
-  var _result15 KsScmcClientStartContainerResult
-  var meta thrift.ResponseMeta
-  meta, err = p.Client_().Call(ctx, "startContainer", &_args14, &_result15)
-  p.SetLastResponseMeta_(meta)
+func (p *KsScmcClientClient) GetContainerMetrics(node_nameorip string, container_name string) (r *GetContainerMetricsResponse, err error) {
+  if err = p.sendGetContainerMetrics(node_nameorip, container_name); err != nil { return }
+  return p.recvGetContainerMetrics()
+}
+
+func (p *KsScmcClientClient) sendGetContainerMetrics(node_nameorip string, container_name string)(err error) {
+  oprot := p.OutputProtocol
+  if oprot == nil {
+    oprot = p.ProtocolFactory.GetProtocol(p.Transport)
+    p.OutputProtocol = oprot
+  }
+  p.SeqId++
+  if err = oprot.WriteMessageBegin("getContainerMetrics", thrift.CALL, p.SeqId); err != nil {
+      return
+  }
+  args := KsScmcClientGetContainerMetricsArgs{
+  NodeNameorip : node_nameorip,
+  ContainerName : container_name,
+  }
+  if err = args.Write(oprot); err != nil {
+      return
+  }
+  if err = oprot.WriteMessageEnd(); err != nil {
+      return
+  }
+  return oprot.Flush()
+}
+
+
+func (p *KsScmcClientClient) recvGetContainerMetrics() (value *GetContainerMetricsResponse, err error) {
+  iprot := p.InputProtocol
+  if iprot == nil {
+    iprot = p.ProtocolFactory.GetProtocol(p.Transport)
+    p.InputProtocol = iprot
+  }
+  method, mTypeId, seqId, err := iprot.ReadMessageBegin()
   if err != nil {
     return
   }
-  return _result15.GetSuccess(), nil
+  if method != "getContainerMetrics" {
+    err = thrift.NewTApplicationException(thrift.WRONG_METHOD_NAME, "getContainerMetrics failed: wrong method name")
+    return
+  }
+  if p.SeqId != seqId {
+    err = thrift.NewTApplicationException(thrift.BAD_SEQUENCE_ID, "getContainerMetrics failed: out of sequence response")
+    return
+  }
+  if mTypeId == thrift.EXCEPTION {
+    error18 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
+    var error19 error
+    error19, err = error18.Read(iprot)
+    if err != nil {
+      return
+    }
+    if err = iprot.ReadMessageEnd(); err != nil {
+      return
+    }
+    err = error19
+    return
+  }
+  if mTypeId != thrift.REPLY {
+    err = thrift.NewTApplicationException(thrift.INVALID_MESSAGE_TYPE_EXCEPTION, "getContainerMetrics failed: invalid message type")
+    return
+  }
+  result := KsScmcClientGetContainerMetricsResult{}
+  if err = result.Read(iprot); err != nil {
+    return
+  }
+  if err = iprot.ReadMessageEnd(); err != nil {
+    return
+  }
+  value = result.GetSuccess()
+  return
+}
+
+// Parameters:
+//  - NodeName
+//  - Name
+func (p *KsScmcClientClient) GetContainerImageVers(node_name string, name string) (r string, err error) {
+  if err = p.sendGetContainerImageVers(node_name, name); err != nil { return }
+  return p.recvGetContainerImageVers()
+}
+
+func (p *KsScmcClientClient) sendGetContainerImageVers(node_name string, name string)(err error) {
+  oprot := p.OutputProtocol
+  if oprot == nil {
+    oprot = p.ProtocolFactory.GetProtocol(p.Transport)
+    p.OutputProtocol = oprot
+  }
+  p.SeqId++
+  if err = oprot.WriteMessageBegin("GetContainerImageVers", thrift.CALL, p.SeqId); err != nil {
+      return
+  }
+  args := KsScmcClientGetContainerImageVersArgs{
+  NodeName : node_name,
+  Name : name,
+  }
+  if err = args.Write(oprot); err != nil {
+      return
+  }
+  if err = oprot.WriteMessageEnd(); err != nil {
+      return
+  }
+  return oprot.Flush()
+}
+
+
+func (p *KsScmcClientClient) recvGetContainerImageVers() (value string, err error) {
+  iprot := p.InputProtocol
+  if iprot == nil {
+    iprot = p.ProtocolFactory.GetProtocol(p.Transport)
+    p.InputProtocol = iprot
+  }
+  method, mTypeId, seqId, err := iprot.ReadMessageBegin()
+  if err != nil {
+    return
+  }
+  if method != "GetContainerImageVers" {
+    err = thrift.NewTApplicationException(thrift.WRONG_METHOD_NAME, "GetContainerImageVers failed: wrong method name")
+    return
+  }
+  if p.SeqId != seqId {
+    err = thrift.NewTApplicationException(thrift.BAD_SEQUENCE_ID, "GetContainerImageVers failed: out of sequence response")
+    return
+  }
+  if mTypeId == thrift.EXCEPTION {
+    error20 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
+    var error21 error
+    error21, err = error20.Read(iprot)
+    if err != nil {
+      return
+    }
+    if err = iprot.ReadMessageEnd(); err != nil {
+      return
+    }
+    err = error21
+    return
+  }
+  if mTypeId != thrift.REPLY {
+    err = thrift.NewTApplicationException(thrift.INVALID_MESSAGE_TYPE_EXCEPTION, "GetContainerImageVers failed: invalid message type")
+    return
+  }
+  result := KsScmcClientGetContainerImageVersResult{}
+  if err = result.Read(iprot); err != nil {
+    return
+  }
+  if err = iprot.ReadMessageEnd(); err != nil {
+    return
+  }
+  value = result.GetSuccess()
+  return
 }
 
 // Parameters:
 //  - NodeNameorip
 //  - ContainerName
-func (p *KsScmcClientClient) StopContainer(ctx context.Context, node_nameorip string, container_name string) (r int32, err error) {
-  var _args16 KsScmcClientStopContainerArgs
-  _args16.NodeNameorip = node_nameorip
-  _args16.ContainerName = container_name
-  var _result17 KsScmcClientStopContainerResult
-  var meta thrift.ResponseMeta
-  meta, err = p.Client_().Call(ctx, "stopContainer", &_args16, &_result17)
-  p.SetLastResponseMeta_(meta)
-  if err != nil {
-    return
-  }
-  return _result17.GetSuccess(), nil
+func (p *KsScmcClientClient) GetImageVer4Container(node_nameorip string, container_name string) (r *GetImageVer4ContainerResponse, err error) {
+  if err = p.sendGetImageVer4Container(node_nameorip, container_name); err != nil { return }
+  return p.recvGetImageVer4Container()
 }
 
-// Parameters:
-//  - NodeNameorip
-//  - ContainerName
-func (p *KsScmcClientClient) UninstallContainer(ctx context.Context, node_nameorip string, container_name string) (r int32, err error) {
-  var _args18 KsScmcClientUninstallContainerArgs
-  _args18.NodeNameorip = node_nameorip
-  _args18.ContainerName = container_name
-  var _result19 KsScmcClientUninstallContainerResult
-  var meta thrift.ResponseMeta
-  meta, err = p.Client_().Call(ctx, "uninstallContainer", &_args18, &_result19)
-  p.SetLastResponseMeta_(meta)
-  if err != nil {
-    return
+func (p *KsScmcClientClient) sendGetImageVer4Container(node_nameorip string, container_name string)(err error) {
+  oprot := p.OutputProtocol
+  if oprot == nil {
+    oprot = p.ProtocolFactory.GetProtocol(p.Transport)
+    p.OutputProtocol = oprot
   }
-  return _result19.GetSuccess(), nil
+  p.SeqId++
+  if err = oprot.WriteMessageBegin("getImageVer4Container", thrift.CALL, p.SeqId); err != nil {
+      return
+  }
+  args := KsScmcClientGetImageVer4ContainerArgs{
+  NodeNameorip : node_nameorip,
+  ContainerName : container_name,
+  }
+  if err = args.Write(oprot); err != nil {
+      return
+  }
+  if err = oprot.WriteMessageEnd(); err != nil {
+      return
+  }
+  return oprot.Flush()
 }
 
-// Parameters:
-//  - NodeNameorip
-//  - ContainerName
-func (p *KsScmcClientClient) GetContainerStatus(ctx context.Context, node_nameorip string, container_name string) (r int32, err error) {
-  var _args20 KsScmcClientGetContainerStatusArgs
-  _args20.NodeNameorip = node_nameorip
-  _args20.ContainerName = container_name
-  var _result21 KsScmcClientGetContainerStatusResult
-  var meta thrift.ResponseMeta
-  meta, err = p.Client_().Call(ctx, "getContainerStatus", &_args20, &_result21)
-  p.SetLastResponseMeta_(meta)
-  if err != nil {
-    return
-  }
-  return _result21.GetSuccess(), nil
-}
 
-// Parameters:
-//  - NodeNameorip
-//  - ContainerName
-func (p *KsScmcClientClient) GetContainerMetrics(ctx context.Context, node_nameorip string, container_name string) (r *GetContainerMetricsResponse, err error) {
-  var _args22 KsScmcClientGetContainerMetricsArgs
-  _args22.NodeNameorip = node_nameorip
-  _args22.ContainerName = container_name
-  var _result23 KsScmcClientGetContainerMetricsResult
-  var meta thrift.ResponseMeta
-  meta, err = p.Client_().Call(ctx, "getContainerMetrics", &_args22, &_result23)
-  p.SetLastResponseMeta_(meta)
+func (p *KsScmcClientClient) recvGetImageVer4Container() (value *GetImageVer4ContainerResponse, err error) {
+  iprot := p.InputProtocol
+  if iprot == nil {
+    iprot = p.ProtocolFactory.GetProtocol(p.Transport)
+    p.InputProtocol = iprot
+  }
+  method, mTypeId, seqId, err := iprot.ReadMessageBegin()
   if err != nil {
     return
   }
-  return _result23.GetSuccess(), nil
-}
-
-// Parameters:
-//  - NodeNameorip
-//  - ContainerName
-func (p *KsScmcClientClient) GetImageVer4Container(ctx context.Context, node_nameorip string, container_name string) (r *GetImageVer4ContainerResponse, err error) {
-  var _args24 KsScmcClientGetImageVer4ContainerArgs
-  _args24.NodeNameorip = node_nameorip
-  _args24.ContainerName = container_name
-  var _result25 KsScmcClientGetImageVer4ContainerResult
-  var meta thrift.ResponseMeta
-  meta, err = p.Client_().Call(ctx, "getImageVer4Container", &_args24, &_result25)
-  p.SetLastResponseMeta_(meta)
-  if err != nil {
+  if method != "getImageVer4Container" {
+    err = thrift.NewTApplicationException(thrift.WRONG_METHOD_NAME, "getImageVer4Container failed: wrong method name")
     return
   }
-  return _result25.GetSuccess(), nil
+  if p.SeqId != seqId {
+    err = thrift.NewTApplicationException(thrift.BAD_SEQUENCE_ID, "getImageVer4Container failed: out of sequence response")
+    return
+  }
+  if mTypeId == thrift.EXCEPTION {
+    error22 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
+    var error23 error
+    error23, err = error22.Read(iprot)
+    if err != nil {
+      return
+    }
+    if err = iprot.ReadMessageEnd(); err != nil {
+      return
+    }
+    err = error23
+    return
+  }
+  if mTypeId != thrift.REPLY {
+    err = thrift.NewTApplicationException(thrift.INVALID_MESSAGE_TYPE_EXCEPTION, "getImageVer4Container failed: invalid message type")
+    return
+  }
+  result := KsScmcClientGetImageVer4ContainerResult{}
+  if err = result.Read(iprot); err != nil {
+    return
+  }
+  if err = iprot.ReadMessageEnd(); err != nil {
+    return
+  }
+  value = result.GetSuccess()
+  return
 }
 
 // Parameters:
 //  - NodeName
 //  - ContainerName
-func (p *KsScmcClientClient) GetContainer(ctx context.Context, node_name string, container_name string) (r int32, err error) {
-  var _args26 KsScmcClientGetContainerArgs
-  _args26.NodeName = node_name
-  _args26.ContainerName = container_name
-  var _result27 KsScmcClientGetContainerResult
-  var meta thrift.ResponseMeta
-  meta, err = p.Client_().Call(ctx, "getContainer", &_args26, &_result27)
-  p.SetLastResponseMeta_(meta)
+func (p *KsScmcClientClient) GetContainer(node_name string, container_name string) (r int32, err error) {
+  if err = p.sendGetContainer(node_name, container_name); err != nil { return }
+  return p.recvGetContainer()
+}
+
+func (p *KsScmcClientClient) sendGetContainer(node_name string, container_name string)(err error) {
+  oprot := p.OutputProtocol
+  if oprot == nil {
+    oprot = p.ProtocolFactory.GetProtocol(p.Transport)
+    p.OutputProtocol = oprot
+  }
+  p.SeqId++
+  if err = oprot.WriteMessageBegin("getContainer", thrift.CALL, p.SeqId); err != nil {
+      return
+  }
+  args := KsScmcClientGetContainerArgs{
+  NodeName : node_name,
+  ContainerName : container_name,
+  }
+  if err = args.Write(oprot); err != nil {
+      return
+  }
+  if err = oprot.WriteMessageEnd(); err != nil {
+      return
+  }
+  return oprot.Flush()
+}
+
+
+func (p *KsScmcClientClient) recvGetContainer() (value int32, err error) {
+  iprot := p.InputProtocol
+  if iprot == nil {
+    iprot = p.ProtocolFactory.GetProtocol(p.Transport)
+    p.InputProtocol = iprot
+  }
+  method, mTypeId, seqId, err := iprot.ReadMessageBegin()
   if err != nil {
     return
   }
-  return _result27.GetSuccess(), nil
+  if method != "getContainer" {
+    err = thrift.NewTApplicationException(thrift.WRONG_METHOD_NAME, "getContainer failed: wrong method name")
+    return
+  }
+  if p.SeqId != seqId {
+    err = thrift.NewTApplicationException(thrift.BAD_SEQUENCE_ID, "getContainer failed: out of sequence response")
+    return
+  }
+  if mTypeId == thrift.EXCEPTION {
+    error24 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
+    var error25 error
+    error25, err = error24.Read(iprot)
+    if err != nil {
+      return
+    }
+    if err = iprot.ReadMessageEnd(); err != nil {
+      return
+    }
+    err = error25
+    return
+  }
+  if mTypeId != thrift.REPLY {
+    err = thrift.NewTApplicationException(thrift.INVALID_MESSAGE_TYPE_EXCEPTION, "getContainer failed: invalid message type")
+    return
+  }
+  result := KsScmcClientGetContainerResult{}
+  if err = result.Read(iprot); err != nil {
+    return
+  }
+  if err = iprot.ReadMessageEnd(); err != nil {
+    return
+  }
+  value = result.GetSuccess()
+  return
 }
 
 // Parameters:
 //  - NodeName
 //  - ContainerName
 //  - NewVer_
-func (p *KsScmcClientClient) UpdateContainer(ctx context.Context, node_name string, container_name string, new_ver string) (r int32, err error) {
-  var _args28 KsScmcClientUpdateContainerArgs
-  _args28.NodeName = node_name
-  _args28.ContainerName = container_name
-  _args28.NewVer_ = new_ver
-  var _result29 KsScmcClientUpdateContainerResult
-  var meta thrift.ResponseMeta
-  meta, err = p.Client_().Call(ctx, "updateContainer", &_args28, &_result29)
-  p.SetLastResponseMeta_(meta)
+func (p *KsScmcClientClient) UpdateContainer(node_name string, container_name string, new_ver string) (r string, err error) {
+  if err = p.sendUpdateContainer(node_name, container_name, new_ver); err != nil { return }
+  return p.recvUpdateContainer()
+}
+
+func (p *KsScmcClientClient) sendUpdateContainer(node_name string, container_name string, new_ver string)(err error) {
+  oprot := p.OutputProtocol
+  if oprot == nil {
+    oprot = p.ProtocolFactory.GetProtocol(p.Transport)
+    p.OutputProtocol = oprot
+  }
+  p.SeqId++
+  if err = oprot.WriteMessageBegin("UpdateContainer", thrift.CALL, p.SeqId); err != nil {
+      return
+  }
+  args := KsScmcClientUpdateContainerArgs{
+  NodeName : node_name,
+  ContainerName : container_name,
+  NewVer_ : new_ver,
+  }
+  if err = args.Write(oprot); err != nil {
+      return
+  }
+  if err = oprot.WriteMessageEnd(); err != nil {
+      return
+  }
+  return oprot.Flush()
+}
+
+
+func (p *KsScmcClientClient) recvUpdateContainer() (value string, err error) {
+  iprot := p.InputProtocol
+  if iprot == nil {
+    iprot = p.ProtocolFactory.GetProtocol(p.Transport)
+    p.InputProtocol = iprot
+  }
+  method, mTypeId, seqId, err := iprot.ReadMessageBegin()
   if err != nil {
     return
   }
-  return _result29.GetSuccess(), nil
+  if method != "UpdateContainer" {
+    err = thrift.NewTApplicationException(thrift.WRONG_METHOD_NAME, "UpdateContainer failed: wrong method name")
+    return
+  }
+  if p.SeqId != seqId {
+    err = thrift.NewTApplicationException(thrift.BAD_SEQUENCE_ID, "UpdateContainer failed: out of sequence response")
+    return
+  }
+  if mTypeId == thrift.EXCEPTION {
+    error26 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
+    var error27 error
+    error27, err = error26.Read(iprot)
+    if err != nil {
+      return
+    }
+    if err = iprot.ReadMessageEnd(); err != nil {
+      return
+    }
+    err = error27
+    return
+  }
+  if mTypeId != thrift.REPLY {
+    err = thrift.NewTApplicationException(thrift.INVALID_MESSAGE_TYPE_EXCEPTION, "UpdateContainer failed: invalid message type")
+    return
+  }
+  result := KsScmcClientUpdateContainerResult{}
+  if err = result.Read(iprot); err != nil {
+    return
+  }
+  if err = iprot.ReadMessageEnd(); err != nil {
+    return
+  }
+  value = result.GetSuccess()
+  return
 }
 
 // Parameters:
 //  - NodeName
-func (p *KsScmcClientClient) GetAlarmList(ctx context.Context, node_name string) (r *GetAlarmListResponse, err error) {
-  var _args30 KsScmcClientGetAlarmListArgs
-  _args30.NodeName = node_name
-  var _result31 KsScmcClientGetAlarmListResult
-  var meta thrift.ResponseMeta
-  meta, err = p.Client_().Call(ctx, "getAlarmList", &_args30, &_result31)
-  p.SetLastResponseMeta_(meta)
-  if err != nil {
-    return
-  }
-  return _result31.GetSuccess(), nil
+func (p *KsScmcClientClient) GetAlarmList(node_name string) (r string, err error) {
+  if err = p.sendGetAlarmList(node_name); err != nil { return }
+  return p.recvGetAlarmList()
 }
 
-func (p *KsScmcClientClient) GetAllNodeList(ctx context.Context) (r *GetAllNodeListResponse, err error) {
-  var _args32 KsScmcClientGetAllNodeListArgs
-  var _result33 KsScmcClientGetAllNodeListResult
-  var meta thrift.ResponseMeta
-  meta, err = p.Client_().Call(ctx, "getAllNodeList", &_args32, &_result33)
-  p.SetLastResponseMeta_(meta)
-  if err != nil {
-    return
+func (p *KsScmcClientClient) sendGetAlarmList(node_name string)(err error) {
+  oprot := p.OutputProtocol
+  if oprot == nil {
+    oprot = p.ProtocolFactory.GetProtocol(p.Transport)
+    p.OutputProtocol = oprot
   }
-  return _result33.GetSuccess(), nil
+  p.SeqId++
+  if err = oprot.WriteMessageBegin("GetAlarmList", thrift.CALL, p.SeqId); err != nil {
+      return
+  }
+  args := KsScmcClientGetAlarmListArgs{
+  NodeName : node_name,
+  }
+  if err = args.Write(oprot); err != nil {
+      return
+  }
+  if err = oprot.WriteMessageEnd(); err != nil {
+      return
+  }
+  return oprot.Flush()
 }
 
-func (p *KsScmcClientClient) GetAllContainerList(ctx context.Context) (r *GetAllContainerListResponse, err error) {
-  var _args34 KsScmcClientGetAllContainerListArgs
-  var _result35 KsScmcClientGetAllContainerListResult
-  var meta thrift.ResponseMeta
-  meta, err = p.Client_().Call(ctx, "getAllContainerList", &_args34, &_result35)
-  p.SetLastResponseMeta_(meta)
+
+func (p *KsScmcClientClient) recvGetAlarmList() (value string, err error) {
+  iprot := p.InputProtocol
+  if iprot == nil {
+    iprot = p.ProtocolFactory.GetProtocol(p.Transport)
+    p.InputProtocol = iprot
+  }
+  method, mTypeId, seqId, err := iprot.ReadMessageBegin()
   if err != nil {
     return
   }
-  return _result35.GetSuccess(), nil
+  if method != "GetAlarmList" {
+    err = thrift.NewTApplicationException(thrift.WRONG_METHOD_NAME, "GetAlarmList failed: wrong method name")
+    return
+  }
+  if p.SeqId != seqId {
+    err = thrift.NewTApplicationException(thrift.BAD_SEQUENCE_ID, "GetAlarmList failed: out of sequence response")
+    return
+  }
+  if mTypeId == thrift.EXCEPTION {
+    error28 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
+    var error29 error
+    error29, err = error28.Read(iprot)
+    if err != nil {
+      return
+    }
+    if err = iprot.ReadMessageEnd(); err != nil {
+      return
+    }
+    err = error29
+    return
+  }
+  if mTypeId != thrift.REPLY {
+    err = thrift.NewTApplicationException(thrift.INVALID_MESSAGE_TYPE_EXCEPTION, "GetAlarmList failed: invalid message type")
+    return
+  }
+  result := KsScmcClientGetAlarmListResult{}
+  if err = result.Read(iprot); err != nil {
+    return
+  }
+  if err = iprot.ReadMessageEnd(); err != nil {
+    return
+  }
+  value = result.GetSuccess()
+  return
+}
+
+func (p *KsScmcClientClient) GetAllNodeList() (r *GetAllNodeListResponse, err error) {
+  if err = p.sendGetAllNodeList(); err != nil { return }
+  return p.recvGetAllNodeList()
+}
+
+func (p *KsScmcClientClient) sendGetAllNodeList()(err error) {
+  oprot := p.OutputProtocol
+  if oprot == nil {
+    oprot = p.ProtocolFactory.GetProtocol(p.Transport)
+    p.OutputProtocol = oprot
+  }
+  p.SeqId++
+  if err = oprot.WriteMessageBegin("getAllNodeList", thrift.CALL, p.SeqId); err != nil {
+      return
+  }
+  args := KsScmcClientGetAllNodeListArgs{
+  }
+  if err = args.Write(oprot); err != nil {
+      return
+  }
+  if err = oprot.WriteMessageEnd(); err != nil {
+      return
+  }
+  return oprot.Flush()
+}
+
+
+func (p *KsScmcClientClient) recvGetAllNodeList() (value *GetAllNodeListResponse, err error) {
+  iprot := p.InputProtocol
+  if iprot == nil {
+    iprot = p.ProtocolFactory.GetProtocol(p.Transport)
+    p.InputProtocol = iprot
+  }
+  method, mTypeId, seqId, err := iprot.ReadMessageBegin()
+  if err != nil {
+    return
+  }
+  if method != "getAllNodeList" {
+    err = thrift.NewTApplicationException(thrift.WRONG_METHOD_NAME, "getAllNodeList failed: wrong method name")
+    return
+  }
+  if p.SeqId != seqId {
+    err = thrift.NewTApplicationException(thrift.BAD_SEQUENCE_ID, "getAllNodeList failed: out of sequence response")
+    return
+  }
+  if mTypeId == thrift.EXCEPTION {
+    error30 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
+    var error31 error
+    error31, err = error30.Read(iprot)
+    if err != nil {
+      return
+    }
+    if err = iprot.ReadMessageEnd(); err != nil {
+      return
+    }
+    err = error31
+    return
+  }
+  if mTypeId != thrift.REPLY {
+    err = thrift.NewTApplicationException(thrift.INVALID_MESSAGE_TYPE_EXCEPTION, "getAllNodeList failed: invalid message type")
+    return
+  }
+  result := KsScmcClientGetAllNodeListResult{}
+  if err = result.Read(iprot); err != nil {
+    return
+  }
+  if err = iprot.ReadMessageEnd(); err != nil {
+    return
+  }
+  value = result.GetSuccess()
+  return
+}
+
+// Parameters:
+//  - NodeName
+func (p *KsScmcClientClient) GetAllContainers(node_name string) (r string, err error) {
+  if err = p.sendGetAllContainers(node_name); err != nil { return }
+  return p.recvGetAllContainers()
+}
+
+func (p *KsScmcClientClient) sendGetAllContainers(node_name string)(err error) {
+  oprot := p.OutputProtocol
+  if oprot == nil {
+    oprot = p.ProtocolFactory.GetProtocol(p.Transport)
+    p.OutputProtocol = oprot
+  }
+  p.SeqId++
+  if err = oprot.WriteMessageBegin("GetAllContainers", thrift.CALL, p.SeqId); err != nil {
+      return
+  }
+  args := KsScmcClientGetAllContainersArgs{
+  NodeName : node_name,
+  }
+  if err = args.Write(oprot); err != nil {
+      return
+  }
+  if err = oprot.WriteMessageEnd(); err != nil {
+      return
+  }
+  return oprot.Flush()
+}
+
+
+func (p *KsScmcClientClient) recvGetAllContainers() (value string, err error) {
+  iprot := p.InputProtocol
+  if iprot == nil {
+    iprot = p.ProtocolFactory.GetProtocol(p.Transport)
+    p.InputProtocol = iprot
+  }
+  method, mTypeId, seqId, err := iprot.ReadMessageBegin()
+  if err != nil {
+    return
+  }
+  if method != "GetAllContainers" {
+    err = thrift.NewTApplicationException(thrift.WRONG_METHOD_NAME, "GetAllContainers failed: wrong method name")
+    return
+  }
+  if p.SeqId != seqId {
+    err = thrift.NewTApplicationException(thrift.BAD_SEQUENCE_ID, "GetAllContainers failed: out of sequence response")
+    return
+  }
+  if mTypeId == thrift.EXCEPTION {
+    error32 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
+    var error33 error
+    error33, err = error32.Read(iprot)
+    if err != nil {
+      return
+    }
+    if err = iprot.ReadMessageEnd(); err != nil {
+      return
+    }
+    err = error33
+    return
+  }
+  if mTypeId != thrift.REPLY {
+    err = thrift.NewTApplicationException(thrift.INVALID_MESSAGE_TYPE_EXCEPTION, "GetAllContainers failed: invalid message type")
+    return
+  }
+  result := KsScmcClientGetAllContainersResult{}
+  if err = result.Read(iprot); err != nil {
+    return
+  }
+  if err = iprot.ReadMessageEnd(); err != nil {
+    return
+  }
+  value = result.GetSuccess()
+  return
+}
+
+// Parameters:
+//  - Nid
+func (p *KsScmcClientClient) GetAllContainersV2(nid string) (r string, err error) {
+  if err = p.sendGetAllContainersV2(nid); err != nil { return }
+  return p.recvGetAllContainersV2()
+}
+
+func (p *KsScmcClientClient) sendGetAllContainersV2(nid string)(err error) {
+  oprot := p.OutputProtocol
+  if oprot == nil {
+    oprot = p.ProtocolFactory.GetProtocol(p.Transport)
+    p.OutputProtocol = oprot
+  }
+  p.SeqId++
+  if err = oprot.WriteMessageBegin("GetAllContainersV2", thrift.CALL, p.SeqId); err != nil {
+      return
+  }
+  args := KsScmcClientGetAllContainersV2Args{
+  Nid : nid,
+  }
+  if err = args.Write(oprot); err != nil {
+      return
+  }
+  if err = oprot.WriteMessageEnd(); err != nil {
+      return
+  }
+  return oprot.Flush()
+}
+
+
+func (p *KsScmcClientClient) recvGetAllContainersV2() (value string, err error) {
+  iprot := p.InputProtocol
+  if iprot == nil {
+    iprot = p.ProtocolFactory.GetProtocol(p.Transport)
+    p.InputProtocol = iprot
+  }
+  method, mTypeId, seqId, err := iprot.ReadMessageBegin()
+  if err != nil {
+    return
+  }
+  if method != "GetAllContainersV2" {
+    err = thrift.NewTApplicationException(thrift.WRONG_METHOD_NAME, "GetAllContainersV2 failed: wrong method name")
+    return
+  }
+  if p.SeqId != seqId {
+    err = thrift.NewTApplicationException(thrift.BAD_SEQUENCE_ID, "GetAllContainersV2 failed: out of sequence response")
+    return
+  }
+  if mTypeId == thrift.EXCEPTION {
+    error34 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
+    var error35 error
+    error35, err = error34.Read(iprot)
+    if err != nil {
+      return
+    }
+    if err = iprot.ReadMessageEnd(); err != nil {
+      return
+    }
+    err = error35
+    return
+  }
+  if mTypeId != thrift.REPLY {
+    err = thrift.NewTApplicationException(thrift.INVALID_MESSAGE_TYPE_EXCEPTION, "GetAllContainersV2 failed: invalid message type")
+    return
+  }
+  result := KsScmcClientGetAllContainersV2Result{}
+  if err = result.Read(iprot); err != nil {
+    return
+  }
+  if err = iprot.ReadMessageEnd(); err != nil {
+    return
+  }
+  value = result.GetSuccess()
+  return
+}
+
+// Parameters:
+//  - NodeName
+func (p *KsScmcClientClient) GetAllContainerList(node_name string) (r *GetAllContainerListResponse, err error) {
+  if err = p.sendGetAllContainerList(node_name); err != nil { return }
+  return p.recvGetAllContainerList()
+}
+
+func (p *KsScmcClientClient) sendGetAllContainerList(node_name string)(err error) {
+  oprot := p.OutputProtocol
+  if oprot == nil {
+    oprot = p.ProtocolFactory.GetProtocol(p.Transport)
+    p.OutputProtocol = oprot
+  }
+  p.SeqId++
+  if err = oprot.WriteMessageBegin("getAllContainerList", thrift.CALL, p.SeqId); err != nil {
+      return
+  }
+  args := KsScmcClientGetAllContainerListArgs{
+  NodeName : node_name,
+  }
+  if err = args.Write(oprot); err != nil {
+      return
+  }
+  if err = oprot.WriteMessageEnd(); err != nil {
+      return
+  }
+  return oprot.Flush()
+}
+
+
+func (p *KsScmcClientClient) recvGetAllContainerList() (value *GetAllContainerListResponse, err error) {
+  iprot := p.InputProtocol
+  if iprot == nil {
+    iprot = p.ProtocolFactory.GetProtocol(p.Transport)
+    p.InputProtocol = iprot
+  }
+  method, mTypeId, seqId, err := iprot.ReadMessageBegin()
+  if err != nil {
+    return
+  }
+  if method != "getAllContainerList" {
+    err = thrift.NewTApplicationException(thrift.WRONG_METHOD_NAME, "getAllContainerList failed: wrong method name")
+    return
+  }
+  if p.SeqId != seqId {
+    err = thrift.NewTApplicationException(thrift.BAD_SEQUENCE_ID, "getAllContainerList failed: out of sequence response")
+    return
+  }
+  if mTypeId == thrift.EXCEPTION {
+    error36 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
+    var error37 error
+    error37, err = error36.Read(iprot)
+    if err != nil {
+      return
+    }
+    if err = iprot.ReadMessageEnd(); err != nil {
+      return
+    }
+    err = error37
+    return
+  }
+  if mTypeId != thrift.REPLY {
+    err = thrift.NewTApplicationException(thrift.INVALID_MESSAGE_TYPE_EXCEPTION, "getAllContainerList failed: invalid message type")
+    return
+  }
+  result := KsScmcClientGetAllContainerListResult{}
+  if err = result.Read(iprot); err != nil {
+    return
+  }
+  if err = iprot.ReadMessageEnd(); err != nil {
+    return
+  }
+  value = result.GetSuccess()
+  return
 }
 
 // Parameters:
 //  - NodeNameorip
 //  - ContainerName
-func (p *KsScmcClientClient) GetContainerNetwork(ctx context.Context, node_nameorip string, container_name string) (r *GetContainerNetworkResponse, err error) {
-  var _args36 KsScmcClientGetContainerNetworkArgs
-  _args36.NodeNameorip = node_nameorip
-  _args36.ContainerName = container_name
-  var _result37 KsScmcClientGetContainerNetworkResult
-  var meta thrift.ResponseMeta
-  meta, err = p.Client_().Call(ctx, "getContainerNetwork", &_args36, &_result37)
-  p.SetLastResponseMeta_(meta)
+func (p *KsScmcClientClient) GetContainerNetwork(node_nameorip string, container_name string) (r string, err error) {
+  if err = p.sendGetContainerNetwork(node_nameorip, container_name); err != nil { return }
+  return p.recvGetContainerNetwork()
+}
+
+func (p *KsScmcClientClient) sendGetContainerNetwork(node_nameorip string, container_name string)(err error) {
+  oprot := p.OutputProtocol
+  if oprot == nil {
+    oprot = p.ProtocolFactory.GetProtocol(p.Transport)
+    p.OutputProtocol = oprot
+  }
+  p.SeqId++
+  if err = oprot.WriteMessageBegin("GetContainerNetwork", thrift.CALL, p.SeqId); err != nil {
+      return
+  }
+  args := KsScmcClientGetContainerNetworkArgs{
+  NodeNameorip : node_nameorip,
+  ContainerName : container_name,
+  }
+  if err = args.Write(oprot); err != nil {
+      return
+  }
+  if err = oprot.WriteMessageEnd(); err != nil {
+      return
+  }
+  return oprot.Flush()
+}
+
+
+func (p *KsScmcClientClient) recvGetContainerNetwork() (value string, err error) {
+  iprot := p.InputProtocol
+  if iprot == nil {
+    iprot = p.ProtocolFactory.GetProtocol(p.Transport)
+    p.InputProtocol = iprot
+  }
+  method, mTypeId, seqId, err := iprot.ReadMessageBegin()
   if err != nil {
     return
   }
-  return _result37.GetSuccess(), nil
+  if method != "GetContainerNetwork" {
+    err = thrift.NewTApplicationException(thrift.WRONG_METHOD_NAME, "GetContainerNetwork failed: wrong method name")
+    return
+  }
+  if p.SeqId != seqId {
+    err = thrift.NewTApplicationException(thrift.BAD_SEQUENCE_ID, "GetContainerNetwork failed: out of sequence response")
+    return
+  }
+  if mTypeId == thrift.EXCEPTION {
+    error38 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
+    var error39 error
+    error39, err = error38.Read(iprot)
+    if err != nil {
+      return
+    }
+    if err = iprot.ReadMessageEnd(); err != nil {
+      return
+    }
+    err = error39
+    return
+  }
+  if mTypeId != thrift.REPLY {
+    err = thrift.NewTApplicationException(thrift.INVALID_MESSAGE_TYPE_EXCEPTION, "GetContainerNetwork failed: invalid message type")
+    return
+  }
+  result := KsScmcClientGetContainerNetworkResult{}
+  if err = result.Read(iprot); err != nil {
+    return
+  }
+  if err = iprot.ReadMessageEnd(); err != nil {
+    return
+  }
+  value = result.GetSuccess()
+  return
 }
 
 // Parameters:
 //  - NodeName
 //  - ContainerName
-func (p *KsScmcClientClient) GetContainerNetRules(ctx context.Context, node_name string, container_name string) (r *GetContainerNetRulesResponse, err error) {
-  var _args38 KsScmcClientGetContainerNetRulesArgs
-  _args38.NodeName = node_name
-  _args38.ContainerName = container_name
-  var _result39 KsScmcClientGetContainerNetRulesResult
-  var meta thrift.ResponseMeta
-  meta, err = p.Client_().Call(ctx, "getContainerNetRules", &_args38, &_result39)
-  p.SetLastResponseMeta_(meta)
+func (p *KsScmcClientClient) GetContainerNetRules(node_name string, container_name string) (r *GetContainerNetRulesResponse, err error) {
+  if err = p.sendGetContainerNetRules(node_name, container_name); err != nil { return }
+  return p.recvGetContainerNetRules()
+}
+
+func (p *KsScmcClientClient) sendGetContainerNetRules(node_name string, container_name string)(err error) {
+  oprot := p.OutputProtocol
+  if oprot == nil {
+    oprot = p.ProtocolFactory.GetProtocol(p.Transport)
+    p.OutputProtocol = oprot
+  }
+  p.SeqId++
+  if err = oprot.WriteMessageBegin("getContainerNetRules", thrift.CALL, p.SeqId); err != nil {
+      return
+  }
+  args := KsScmcClientGetContainerNetRulesArgs{
+  NodeName : node_name,
+  ContainerName : container_name,
+  }
+  if err = args.Write(oprot); err != nil {
+      return
+  }
+  if err = oprot.WriteMessageEnd(); err != nil {
+      return
+  }
+  return oprot.Flush()
+}
+
+
+func (p *KsScmcClientClient) recvGetContainerNetRules() (value *GetContainerNetRulesResponse, err error) {
+  iprot := p.InputProtocol
+  if iprot == nil {
+    iprot = p.ProtocolFactory.GetProtocol(p.Transport)
+    p.InputProtocol = iprot
+  }
+  method, mTypeId, seqId, err := iprot.ReadMessageBegin()
   if err != nil {
     return
   }
-  return _result39.GetSuccess(), nil
+  if method != "getContainerNetRules" {
+    err = thrift.NewTApplicationException(thrift.WRONG_METHOD_NAME, "getContainerNetRules failed: wrong method name")
+    return
+  }
+  if p.SeqId != seqId {
+    err = thrift.NewTApplicationException(thrift.BAD_SEQUENCE_ID, "getContainerNetRules failed: out of sequence response")
+    return
+  }
+  if mTypeId == thrift.EXCEPTION {
+    error40 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
+    var error41 error
+    error41, err = error40.Read(iprot)
+    if err != nil {
+      return
+    }
+    if err = iprot.ReadMessageEnd(); err != nil {
+      return
+    }
+    err = error41
+    return
+  }
+  if mTypeId != thrift.REPLY {
+    err = thrift.NewTApplicationException(thrift.INVALID_MESSAGE_TYPE_EXCEPTION, "getContainerNetRules failed: invalid message type")
+    return
+  }
+  result := KsScmcClientGetContainerNetRulesResult{}
+  if err = result.Read(iprot); err != nil {
+    return
+  }
+  if err = iprot.ReadMessageEnd(); err != nil {
+    return
+  }
+  value = result.GetSuccess()
+  return
 }
 
 // Parameters:
@@ -3991,21 +5742,82 @@ func (p *KsScmcClientClient) GetContainerNetRules(ctx context.Context, node_name
 //  - IPAddr
 //  - Port
 //  - NetProto
-func (p *KsScmcClientClient) AddContainerIpPort(ctx context.Context, node_nameorip string, container_name string, ip_addr string, port int32, net_proto string) (r int32, err error) {
-  var _args40 KsScmcClientAddContainerIpPortArgs
-  _args40.NodeNameorip = node_nameorip
-  _args40.ContainerName = container_name
-  _args40.IPAddr = ip_addr
-  _args40.Port = port
-  _args40.NetProto = net_proto
-  var _result41 KsScmcClientAddContainerIpPortResult
-  var meta thrift.ResponseMeta
-  meta, err = p.Client_().Call(ctx, "addContainerIpPort", &_args40, &_result41)
-  p.SetLastResponseMeta_(meta)
+func (p *KsScmcClientClient) AddContainerIpPort(node_nameorip string, container_name string, ip_addr string, port int32, net_proto string) (r int32, err error) {
+  if err = p.sendAddContainerIpPort(node_nameorip, container_name, ip_addr, port, net_proto); err != nil { return }
+  return p.recvAddContainerIpPort()
+}
+
+func (p *KsScmcClientClient) sendAddContainerIpPort(node_nameorip string, container_name string, ip_addr string, port int32, net_proto string)(err error) {
+  oprot := p.OutputProtocol
+  if oprot == nil {
+    oprot = p.ProtocolFactory.GetProtocol(p.Transport)
+    p.OutputProtocol = oprot
+  }
+  p.SeqId++
+  if err = oprot.WriteMessageBegin("addContainerIpPort", thrift.CALL, p.SeqId); err != nil {
+      return
+  }
+  args := KsScmcClientAddContainerIpPortArgs{
+  NodeNameorip : node_nameorip,
+  ContainerName : container_name,
+  IPAddr : ip_addr,
+  Port : port,
+  NetProto : net_proto,
+  }
+  if err = args.Write(oprot); err != nil {
+      return
+  }
+  if err = oprot.WriteMessageEnd(); err != nil {
+      return
+  }
+  return oprot.Flush()
+}
+
+
+func (p *KsScmcClientClient) recvAddContainerIpPort() (value int32, err error) {
+  iprot := p.InputProtocol
+  if iprot == nil {
+    iprot = p.ProtocolFactory.GetProtocol(p.Transport)
+    p.InputProtocol = iprot
+  }
+  method, mTypeId, seqId, err := iprot.ReadMessageBegin()
   if err != nil {
     return
   }
-  return _result41.GetSuccess(), nil
+  if method != "addContainerIpPort" {
+    err = thrift.NewTApplicationException(thrift.WRONG_METHOD_NAME, "addContainerIpPort failed: wrong method name")
+    return
+  }
+  if p.SeqId != seqId {
+    err = thrift.NewTApplicationException(thrift.BAD_SEQUENCE_ID, "addContainerIpPort failed: out of sequence response")
+    return
+  }
+  if mTypeId == thrift.EXCEPTION {
+    error42 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
+    var error43 error
+    error43, err = error42.Read(iprot)
+    if err != nil {
+      return
+    }
+    if err = iprot.ReadMessageEnd(); err != nil {
+      return
+    }
+    err = error43
+    return
+  }
+  if mTypeId != thrift.REPLY {
+    err = thrift.NewTApplicationException(thrift.INVALID_MESSAGE_TYPE_EXCEPTION, "addContainerIpPort failed: invalid message type")
+    return
+  }
+  result := KsScmcClientAddContainerIpPortResult{}
+  if err = result.Read(iprot); err != nil {
+    return
+  }
+  if err = iprot.ReadMessageEnd(); err != nil {
+    return
+  }
+  value = result.GetSuccess()
+  return
 }
 
 // Parameters:
@@ -4014,21 +5826,82 @@ func (p *KsScmcClientClient) AddContainerIpPort(ctx context.Context, node_nameor
 //  - IPAddr
 //  - Port
 //  - NetProto
-func (p *KsScmcClientClient) AddContainerReqIpPort(ctx context.Context, node_name string, container_name string, ip_addr string, port int32, net_proto string) (r int32, err error) {
-  var _args42 KsScmcClientAddContainerReqIpPortArgs
-  _args42.NodeName = node_name
-  _args42.ContainerName = container_name
-  _args42.IPAddr = ip_addr
-  _args42.Port = port
-  _args42.NetProto = net_proto
-  var _result43 KsScmcClientAddContainerReqIpPortResult
-  var meta thrift.ResponseMeta
-  meta, err = p.Client_().Call(ctx, "addContainerReqIpPort", &_args42, &_result43)
-  p.SetLastResponseMeta_(meta)
+func (p *KsScmcClientClient) AddContainerReqIpPort(node_name string, container_name string, ip_addr string, port int32, net_proto string) (r int32, err error) {
+  if err = p.sendAddContainerReqIpPort(node_name, container_name, ip_addr, port, net_proto); err != nil { return }
+  return p.recvAddContainerReqIpPort()
+}
+
+func (p *KsScmcClientClient) sendAddContainerReqIpPort(node_name string, container_name string, ip_addr string, port int32, net_proto string)(err error) {
+  oprot := p.OutputProtocol
+  if oprot == nil {
+    oprot = p.ProtocolFactory.GetProtocol(p.Transport)
+    p.OutputProtocol = oprot
+  }
+  p.SeqId++
+  if err = oprot.WriteMessageBegin("addContainerReqIpPort", thrift.CALL, p.SeqId); err != nil {
+      return
+  }
+  args := KsScmcClientAddContainerReqIpPortArgs{
+  NodeName : node_name,
+  ContainerName : container_name,
+  IPAddr : ip_addr,
+  Port : port,
+  NetProto : net_proto,
+  }
+  if err = args.Write(oprot); err != nil {
+      return
+  }
+  if err = oprot.WriteMessageEnd(); err != nil {
+      return
+  }
+  return oprot.Flush()
+}
+
+
+func (p *KsScmcClientClient) recvAddContainerReqIpPort() (value int32, err error) {
+  iprot := p.InputProtocol
+  if iprot == nil {
+    iprot = p.ProtocolFactory.GetProtocol(p.Transport)
+    p.InputProtocol = iprot
+  }
+  method, mTypeId, seqId, err := iprot.ReadMessageBegin()
   if err != nil {
     return
   }
-  return _result43.GetSuccess(), nil
+  if method != "addContainerReqIpPort" {
+    err = thrift.NewTApplicationException(thrift.WRONG_METHOD_NAME, "addContainerReqIpPort failed: wrong method name")
+    return
+  }
+  if p.SeqId != seqId {
+    err = thrift.NewTApplicationException(thrift.BAD_SEQUENCE_ID, "addContainerReqIpPort failed: out of sequence response")
+    return
+  }
+  if mTypeId == thrift.EXCEPTION {
+    error44 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
+    var error45 error
+    error45, err = error44.Read(iprot)
+    if err != nil {
+      return
+    }
+    if err = iprot.ReadMessageEnd(); err != nil {
+      return
+    }
+    err = error45
+    return
+  }
+  if mTypeId != thrift.REPLY {
+    err = thrift.NewTApplicationException(thrift.INVALID_MESSAGE_TYPE_EXCEPTION, "addContainerReqIpPort failed: invalid message type")
+    return
+  }
+  result := KsScmcClientAddContainerReqIpPortResult{}
+  if err = result.Read(iprot); err != nil {
+    return
+  }
+  if err = iprot.ReadMessageEnd(); err != nil {
+    return
+  }
+  value = result.GetSuccess()
+  return
 }
 
 // Parameters:
@@ -4036,20 +5909,81 @@ func (p *KsScmcClientClient) AddContainerReqIpPort(ctx context.Context, node_nam
 //  - ContainerName
 //  - EnvName
 //  - EnvValue
-func (p *KsScmcClientClient) AddContainerEnv(ctx context.Context, node_nameorip string, container_name string, env_name string, env_value string) (r int32, err error) {
-  var _args44 KsScmcClientAddContainerEnvArgs
-  _args44.NodeNameorip = node_nameorip
-  _args44.ContainerName = container_name
-  _args44.EnvName = env_name
-  _args44.EnvValue = env_value
-  var _result45 KsScmcClientAddContainerEnvResult
-  var meta thrift.ResponseMeta
-  meta, err = p.Client_().Call(ctx, "addContainerEnv", &_args44, &_result45)
-  p.SetLastResponseMeta_(meta)
+func (p *KsScmcClientClient) AddContainerEnv(node_nameorip string, container_name string, env_name string, env_value string) (r string, err error) {
+  if err = p.sendAddContainerEnv(node_nameorip, container_name, env_name, env_value); err != nil { return }
+  return p.recvAddContainerEnv()
+}
+
+func (p *KsScmcClientClient) sendAddContainerEnv(node_nameorip string, container_name string, env_name string, env_value string)(err error) {
+  oprot := p.OutputProtocol
+  if oprot == nil {
+    oprot = p.ProtocolFactory.GetProtocol(p.Transport)
+    p.OutputProtocol = oprot
+  }
+  p.SeqId++
+  if err = oprot.WriteMessageBegin("AddContainerEnv", thrift.CALL, p.SeqId); err != nil {
+      return
+  }
+  args := KsScmcClientAddContainerEnvArgs{
+  NodeNameorip : node_nameorip,
+  ContainerName : container_name,
+  EnvName : env_name,
+  EnvValue : env_value,
+  }
+  if err = args.Write(oprot); err != nil {
+      return
+  }
+  if err = oprot.WriteMessageEnd(); err != nil {
+      return
+  }
+  return oprot.Flush()
+}
+
+
+func (p *KsScmcClientClient) recvAddContainerEnv() (value string, err error) {
+  iprot := p.InputProtocol
+  if iprot == nil {
+    iprot = p.ProtocolFactory.GetProtocol(p.Transport)
+    p.InputProtocol = iprot
+  }
+  method, mTypeId, seqId, err := iprot.ReadMessageBegin()
   if err != nil {
     return
   }
-  return _result45.GetSuccess(), nil
+  if method != "AddContainerEnv" {
+    err = thrift.NewTApplicationException(thrift.WRONG_METHOD_NAME, "AddContainerEnv failed: wrong method name")
+    return
+  }
+  if p.SeqId != seqId {
+    err = thrift.NewTApplicationException(thrift.BAD_SEQUENCE_ID, "AddContainerEnv failed: out of sequence response")
+    return
+  }
+  if mTypeId == thrift.EXCEPTION {
+    error46 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
+    var error47 error
+    error47, err = error46.Read(iprot)
+    if err != nil {
+      return
+    }
+    if err = iprot.ReadMessageEnd(); err != nil {
+      return
+    }
+    err = error47
+    return
+  }
+  if mTypeId != thrift.REPLY {
+    err = thrift.NewTApplicationException(thrift.INVALID_MESSAGE_TYPE_EXCEPTION, "AddContainerEnv failed: invalid message type")
+    return
+  }
+  result := KsScmcClientAddContainerEnvResult{}
+  if err = result.Read(iprot); err != nil {
+    return
+  }
+  if err = iprot.ReadMessageEnd(); err != nil {
+    return
+  }
+  value = result.GetSuccess()
+  return
 }
 
 // Parameters:
@@ -4058,21 +5992,82 @@ func (p *KsScmcClientClient) AddContainerEnv(ctx context.Context, node_nameorip 
 //  - InDir
 //  - OutDir
 //  - AccessAuth
-func (p *KsScmcClientClient) AddContainerLocalVolume(ctx context.Context, node_nameorip string, container_name string, in_dir string, out_dir string, access_auth AccessAuth) (r int32, err error) {
-  var _args46 KsScmcClientAddContainerLocalVolumeArgs
-  _args46.NodeNameorip = node_nameorip
-  _args46.ContainerName = container_name
-  _args46.InDir = in_dir
-  _args46.OutDir = out_dir
-  _args46.AccessAuth = access_auth
-  var _result47 KsScmcClientAddContainerLocalVolumeResult
-  var meta thrift.ResponseMeta
-  meta, err = p.Client_().Call(ctx, "addContainerLocalVolume", &_args46, &_result47)
-  p.SetLastResponseMeta_(meta)
+func (p *KsScmcClientClient) AddContainerLocalVolume(node_nameorip string, container_name string, in_dir string, out_dir string, access_auth AccessAuth) (r int32, err error) {
+  if err = p.sendAddContainerLocalVolume(node_nameorip, container_name, in_dir, out_dir, access_auth); err != nil { return }
+  return p.recvAddContainerLocalVolume()
+}
+
+func (p *KsScmcClientClient) sendAddContainerLocalVolume(node_nameorip string, container_name string, in_dir string, out_dir string, access_auth AccessAuth)(err error) {
+  oprot := p.OutputProtocol
+  if oprot == nil {
+    oprot = p.ProtocolFactory.GetProtocol(p.Transport)
+    p.OutputProtocol = oprot
+  }
+  p.SeqId++
+  if err = oprot.WriteMessageBegin("addContainerLocalVolume", thrift.CALL, p.SeqId); err != nil {
+      return
+  }
+  args := KsScmcClientAddContainerLocalVolumeArgs{
+  NodeNameorip : node_nameorip,
+  ContainerName : container_name,
+  InDir : in_dir,
+  OutDir : out_dir,
+  AccessAuth : access_auth,
+  }
+  if err = args.Write(oprot); err != nil {
+      return
+  }
+  if err = oprot.WriteMessageEnd(); err != nil {
+      return
+  }
+  return oprot.Flush()
+}
+
+
+func (p *KsScmcClientClient) recvAddContainerLocalVolume() (value int32, err error) {
+  iprot := p.InputProtocol
+  if iprot == nil {
+    iprot = p.ProtocolFactory.GetProtocol(p.Transport)
+    p.InputProtocol = iprot
+  }
+  method, mTypeId, seqId, err := iprot.ReadMessageBegin()
   if err != nil {
     return
   }
-  return _result47.GetSuccess(), nil
+  if method != "addContainerLocalVolume" {
+    err = thrift.NewTApplicationException(thrift.WRONG_METHOD_NAME, "addContainerLocalVolume failed: wrong method name")
+    return
+  }
+  if p.SeqId != seqId {
+    err = thrift.NewTApplicationException(thrift.BAD_SEQUENCE_ID, "addContainerLocalVolume failed: out of sequence response")
+    return
+  }
+  if mTypeId == thrift.EXCEPTION {
+    error48 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
+    var error49 error
+    error49, err = error48.Read(iprot)
+    if err != nil {
+      return
+    }
+    if err = iprot.ReadMessageEnd(); err != nil {
+      return
+    }
+    err = error49
+    return
+  }
+  if mTypeId != thrift.REPLY {
+    err = thrift.NewTApplicationException(thrift.INVALID_MESSAGE_TYPE_EXCEPTION, "addContainerLocalVolume failed: invalid message type")
+    return
+  }
+  result := KsScmcClientAddContainerLocalVolumeResult{}
+  if err = result.Read(iprot); err != nil {
+    return
+  }
+  if err = iprot.ReadMessageEnd(); err != nil {
+    return
+  }
+  value = result.GetSuccess()
+  return
 }
 
 // Parameters:
@@ -4080,39 +6075,161 @@ func (p *KsScmcClientClient) AddContainerLocalVolume(ctx context.Context, node_n
 //  - ContainerName
 //  - Enabled
 //  - Display
-func (p *KsScmcClientClient) SetContainerDisplayV2(ctx context.Context, node_name string, container_name string, enabled bool, display string) (r int32, err error) {
-  var _args48 KsScmcClientSetContainerDisplayV2Args
-  _args48.NodeName = node_name
-  _args48.ContainerName = container_name
-  _args48.Enabled = enabled
-  _args48.Display = display
-  var _result49 KsScmcClientSetContainerDisplayV2Result
-  var meta thrift.ResponseMeta
-  meta, err = p.Client_().Call(ctx, "setContainerDisplayV2", &_args48, &_result49)
-  p.SetLastResponseMeta_(meta)
+func (p *KsScmcClientClient) SetContainerDisplayV2(node_name string, container_name string, enabled bool, display string) (r string, err error) {
+  if err = p.sendSetContainerDisplayV2(node_name, container_name, enabled, display); err != nil { return }
+  return p.recvSetContainerDisplayV2()
+}
+
+func (p *KsScmcClientClient) sendSetContainerDisplayV2(node_name string, container_name string, enabled bool, display string)(err error) {
+  oprot := p.OutputProtocol
+  if oprot == nil {
+    oprot = p.ProtocolFactory.GetProtocol(p.Transport)
+    p.OutputProtocol = oprot
+  }
+  p.SeqId++
+  if err = oprot.WriteMessageBegin("SetContainerDisplayV2", thrift.CALL, p.SeqId); err != nil {
+      return
+  }
+  args := KsScmcClientSetContainerDisplayV2Args{
+  NodeName : node_name,
+  ContainerName : container_name,
+  Enabled : enabled,
+  Display : display,
+  }
+  if err = args.Write(oprot); err != nil {
+      return
+  }
+  if err = oprot.WriteMessageEnd(); err != nil {
+      return
+  }
+  return oprot.Flush()
+}
+
+
+func (p *KsScmcClientClient) recvSetContainerDisplayV2() (value string, err error) {
+  iprot := p.InputProtocol
+  if iprot == nil {
+    iprot = p.ProtocolFactory.GetProtocol(p.Transport)
+    p.InputProtocol = iprot
+  }
+  method, mTypeId, seqId, err := iprot.ReadMessageBegin()
   if err != nil {
     return
   }
-  return _result49.GetSuccess(), nil
+  if method != "SetContainerDisplayV2" {
+    err = thrift.NewTApplicationException(thrift.WRONG_METHOD_NAME, "SetContainerDisplayV2 failed: wrong method name")
+    return
+  }
+  if p.SeqId != seqId {
+    err = thrift.NewTApplicationException(thrift.BAD_SEQUENCE_ID, "SetContainerDisplayV2 failed: out of sequence response")
+    return
+  }
+  if mTypeId == thrift.EXCEPTION {
+    error50 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
+    var error51 error
+    error51, err = error50.Read(iprot)
+    if err != nil {
+      return
+    }
+    if err = iprot.ReadMessageEnd(); err != nil {
+      return
+    }
+    err = error51
+    return
+  }
+  if mTypeId != thrift.REPLY {
+    err = thrift.NewTApplicationException(thrift.INVALID_MESSAGE_TYPE_EXCEPTION, "SetContainerDisplayV2 failed: invalid message type")
+    return
+  }
+  result := KsScmcClientSetContainerDisplayV2Result{}
+  if err = result.Read(iprot); err != nil {
+    return
+  }
+  if err = iprot.ReadMessageEnd(); err != nil {
+    return
+  }
+  value = result.GetSuccess()
+  return
 }
 
 // Parameters:
 //  - NodeName
 //  - ContainerName
 //  - ContainerLimit
-func (p *KsScmcClientClient) SetContainerQuota(ctx context.Context, node_name string, container_name string, containerLimit *ContainerLimit) (r int32, err error) {
-  var _args50 KsScmcClientSetContainerQuotaArgs
-  _args50.NodeName = node_name
-  _args50.ContainerName = container_name
-  _args50.ContainerLimit = containerLimit
-  var _result51 KsScmcClientSetContainerQuotaResult
-  var meta thrift.ResponseMeta
-  meta, err = p.Client_().Call(ctx, "setContainerQuota", &_args50, &_result51)
-  p.SetLastResponseMeta_(meta)
+func (p *KsScmcClientClient) SetContainerQuota(node_name string, container_name string, containerLimit *ContainerLimit) (r string, err error) {
+  if err = p.sendSetContainerQuota(node_name, container_name, containerLimit); err != nil { return }
+  return p.recvSetContainerQuota()
+}
+
+func (p *KsScmcClientClient) sendSetContainerQuota(node_name string, container_name string, containerLimit *ContainerLimit)(err error) {
+  oprot := p.OutputProtocol
+  if oprot == nil {
+    oprot = p.ProtocolFactory.GetProtocol(p.Transport)
+    p.OutputProtocol = oprot
+  }
+  p.SeqId++
+  if err = oprot.WriteMessageBegin("SetContainerQuota", thrift.CALL, p.SeqId); err != nil {
+      return
+  }
+  args := KsScmcClientSetContainerQuotaArgs{
+  NodeName : node_name,
+  ContainerName : container_name,
+  ContainerLimit : containerLimit,
+  }
+  if err = args.Write(oprot); err != nil {
+      return
+  }
+  if err = oprot.WriteMessageEnd(); err != nil {
+      return
+  }
+  return oprot.Flush()
+}
+
+
+func (p *KsScmcClientClient) recvSetContainerQuota() (value string, err error) {
+  iprot := p.InputProtocol
+  if iprot == nil {
+    iprot = p.ProtocolFactory.GetProtocol(p.Transport)
+    p.InputProtocol = iprot
+  }
+  method, mTypeId, seqId, err := iprot.ReadMessageBegin()
   if err != nil {
     return
   }
-  return _result51.GetSuccess(), nil
+  if method != "SetContainerQuota" {
+    err = thrift.NewTApplicationException(thrift.WRONG_METHOD_NAME, "SetContainerQuota failed: wrong method name")
+    return
+  }
+  if p.SeqId != seqId {
+    err = thrift.NewTApplicationException(thrift.BAD_SEQUENCE_ID, "SetContainerQuota failed: out of sequence response")
+    return
+  }
+  if mTypeId == thrift.EXCEPTION {
+    error52 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
+    var error53 error
+    error53, err = error52.Read(iprot)
+    if err != nil {
+      return
+    }
+    if err = iprot.ReadMessageEnd(); err != nil {
+      return
+    }
+    err = error53
+    return
+  }
+  if mTypeId != thrift.REPLY {
+    err = thrift.NewTApplicationException(thrift.INVALID_MESSAGE_TYPE_EXCEPTION, "SetContainerQuota failed: invalid message type")
+    return
+  }
+  result := KsScmcClientSetContainerQuotaResult{}
+  if err = result.Read(iprot); err != nil {
+    return
+  }
+  if err = iprot.ReadMessageEnd(); err != nil {
+    return
+  }
+  value = result.GetSuccess()
+  return
 }
 
 // 设置容器是否开启特权
@@ -4125,19 +6242,80 @@ func (p *KsScmcClientClient) SetContainerQuota(ctx context.Context, node_name st
 //  - NodeIP
 //  - ContainerName
 //  - IsPrivileged
-func (p *KsScmcClientClient) SetContainerPrivileged(ctx context.Context, node_ip string, container_name string, isPrivileged bool) (r int32, err error) {
-  var _args52 KsScmcClientSetContainerPrivilegedArgs
-  _args52.NodeIP = node_ip
-  _args52.ContainerName = container_name
-  _args52.IsPrivileged = isPrivileged
-  var _result53 KsScmcClientSetContainerPrivilegedResult
-  var meta thrift.ResponseMeta
-  meta, err = p.Client_().Call(ctx, "setContainerPrivileged", &_args52, &_result53)
-  p.SetLastResponseMeta_(meta)
+func (p *KsScmcClientClient) SetContainerPrivileged(node_ip string, container_name string, isPrivileged bool) (r int32, err error) {
+  if err = p.sendSetContainerPrivileged(node_ip, container_name, isPrivileged); err != nil { return }
+  return p.recvSetContainerPrivileged()
+}
+
+func (p *KsScmcClientClient) sendSetContainerPrivileged(node_ip string, container_name string, isPrivileged bool)(err error) {
+  oprot := p.OutputProtocol
+  if oprot == nil {
+    oprot = p.ProtocolFactory.GetProtocol(p.Transport)
+    p.OutputProtocol = oprot
+  }
+  p.SeqId++
+  if err = oprot.WriteMessageBegin("setContainerPrivileged", thrift.CALL, p.SeqId); err != nil {
+      return
+  }
+  args := KsScmcClientSetContainerPrivilegedArgs{
+  NodeIP : node_ip,
+  ContainerName : container_name,
+  IsPrivileged : isPrivileged,
+  }
+  if err = args.Write(oprot); err != nil {
+      return
+  }
+  if err = oprot.WriteMessageEnd(); err != nil {
+      return
+  }
+  return oprot.Flush()
+}
+
+
+func (p *KsScmcClientClient) recvSetContainerPrivileged() (value int32, err error) {
+  iprot := p.InputProtocol
+  if iprot == nil {
+    iprot = p.ProtocolFactory.GetProtocol(p.Transport)
+    p.InputProtocol = iprot
+  }
+  method, mTypeId, seqId, err := iprot.ReadMessageBegin()
   if err != nil {
     return
   }
-  return _result53.GetSuccess(), nil
+  if method != "setContainerPrivileged" {
+    err = thrift.NewTApplicationException(thrift.WRONG_METHOD_NAME, "setContainerPrivileged failed: wrong method name")
+    return
+  }
+  if p.SeqId != seqId {
+    err = thrift.NewTApplicationException(thrift.BAD_SEQUENCE_ID, "setContainerPrivileged failed: out of sequence response")
+    return
+  }
+  if mTypeId == thrift.EXCEPTION {
+    error54 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
+    var error55 error
+    error55, err = error54.Read(iprot)
+    if err != nil {
+      return
+    }
+    if err = iprot.ReadMessageEnd(); err != nil {
+      return
+    }
+    err = error55
+    return
+  }
+  if mTypeId != thrift.REPLY {
+    err = thrift.NewTApplicationException(thrift.INVALID_MESSAGE_TYPE_EXCEPTION, "setContainerPrivileged failed: invalid message type")
+    return
+  }
+  result := KsScmcClientSetContainerPrivilegedResult{}
+  if err = result.Read(iprot); err != nil {
+    return
+  }
+  if err = iprot.ReadMessageEnd(); err != nil {
+    return
+  }
+  value = result.GetSuccess()
+  return
 }
 
 // 设置容器内核参数
@@ -4152,20 +6330,81 @@ func (p *KsScmcClientClient) SetContainerPrivileged(ctx context.Context, node_ip
 //  - ContainerName
 //  - SysctlName
 //  - SysctlValue
-func (p *KsScmcClientClient) SetContainerSysctls(ctx context.Context, node_ip string, container_name string, sysctl_name string, sysctl_value string) (r int32, err error) {
-  var _args54 KsScmcClientSetContainerSysctlsArgs
-  _args54.NodeIP = node_ip
-  _args54.ContainerName = container_name
-  _args54.SysctlName = sysctl_name
-  _args54.SysctlValue = sysctl_value
-  var _result55 KsScmcClientSetContainerSysctlsResult
-  var meta thrift.ResponseMeta
-  meta, err = p.Client_().Call(ctx, "setContainerSysctls", &_args54, &_result55)
-  p.SetLastResponseMeta_(meta)
+func (p *KsScmcClientClient) SetContainerSysctls(node_ip string, container_name string, sysctl_name string, sysctl_value string) (r int32, err error) {
+  if err = p.sendSetContainerSysctls(node_ip, container_name, sysctl_name, sysctl_value); err != nil { return }
+  return p.recvSetContainerSysctls()
+}
+
+func (p *KsScmcClientClient) sendSetContainerSysctls(node_ip string, container_name string, sysctl_name string, sysctl_value string)(err error) {
+  oprot := p.OutputProtocol
+  if oprot == nil {
+    oprot = p.ProtocolFactory.GetProtocol(p.Transport)
+    p.OutputProtocol = oprot
+  }
+  p.SeqId++
+  if err = oprot.WriteMessageBegin("setContainerSysctls", thrift.CALL, p.SeqId); err != nil {
+      return
+  }
+  args := KsScmcClientSetContainerSysctlsArgs{
+  NodeIP : node_ip,
+  ContainerName : container_name,
+  SysctlName : sysctl_name,
+  SysctlValue : sysctl_value,
+  }
+  if err = args.Write(oprot); err != nil {
+      return
+  }
+  if err = oprot.WriteMessageEnd(); err != nil {
+      return
+  }
+  return oprot.Flush()
+}
+
+
+func (p *KsScmcClientClient) recvSetContainerSysctls() (value int32, err error) {
+  iprot := p.InputProtocol
+  if iprot == nil {
+    iprot = p.ProtocolFactory.GetProtocol(p.Transport)
+    p.InputProtocol = iprot
+  }
+  method, mTypeId, seqId, err := iprot.ReadMessageBegin()
   if err != nil {
     return
   }
-  return _result55.GetSuccess(), nil
+  if method != "setContainerSysctls" {
+    err = thrift.NewTApplicationException(thrift.WRONG_METHOD_NAME, "setContainerSysctls failed: wrong method name")
+    return
+  }
+  if p.SeqId != seqId {
+    err = thrift.NewTApplicationException(thrift.BAD_SEQUENCE_ID, "setContainerSysctls failed: out of sequence response")
+    return
+  }
+  if mTypeId == thrift.EXCEPTION {
+    error56 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
+    var error57 error
+    error57, err = error56.Read(iprot)
+    if err != nil {
+      return
+    }
+    if err = iprot.ReadMessageEnd(); err != nil {
+      return
+    }
+    err = error57
+    return
+  }
+  if mTypeId != thrift.REPLY {
+    err = thrift.NewTApplicationException(thrift.INVALID_MESSAGE_TYPE_EXCEPTION, "setContainerSysctls failed: invalid message type")
+    return
+  }
+  result := KsScmcClientSetContainerSysctlsResult{}
+  if err = result.Read(iprot); err != nil {
+    return
+  }
+  if err = iprot.ReadMessageEnd(); err != nil {
+    return
+  }
+  value = result.GetSuccess()
+  return
 }
 
 // 设置容器/etc/hosts中的host信息
@@ -4178,19 +6417,80 @@ func (p *KsScmcClientClient) SetContainerSysctls(ctx context.Context, node_ip st
 //  - NodeIP
 //  - ContainerName
 //  - ContainerExtrahosts
-func (p *KsScmcClientClient) SetContainerExtraHosts(ctx context.Context, node_ip string, container_name string, container_extrahosts []string) (r int32, err error) {
-  var _args56 KsScmcClientSetContainerExtraHostsArgs
-  _args56.NodeIP = node_ip
-  _args56.ContainerName = container_name
-  _args56.ContainerExtrahosts = container_extrahosts
-  var _result57 KsScmcClientSetContainerExtraHostsResult
-  var meta thrift.ResponseMeta
-  meta, err = p.Client_().Call(ctx, "setContainerExtraHosts", &_args56, &_result57)
-  p.SetLastResponseMeta_(meta)
+func (p *KsScmcClientClient) SetContainerExtraHosts(node_ip string, container_name string, container_extrahosts []string) (r int32, err error) {
+  if err = p.sendSetContainerExtraHosts(node_ip, container_name, container_extrahosts); err != nil { return }
+  return p.recvSetContainerExtraHosts()
+}
+
+func (p *KsScmcClientClient) sendSetContainerExtraHosts(node_ip string, container_name string, container_extrahosts []string)(err error) {
+  oprot := p.OutputProtocol
+  if oprot == nil {
+    oprot = p.ProtocolFactory.GetProtocol(p.Transport)
+    p.OutputProtocol = oprot
+  }
+  p.SeqId++
+  if err = oprot.WriteMessageBegin("setContainerExtraHosts", thrift.CALL, p.SeqId); err != nil {
+      return
+  }
+  args := KsScmcClientSetContainerExtraHostsArgs{
+  NodeIP : node_ip,
+  ContainerName : container_name,
+  ContainerExtrahosts : container_extrahosts,
+  }
+  if err = args.Write(oprot); err != nil {
+      return
+  }
+  if err = oprot.WriteMessageEnd(); err != nil {
+      return
+  }
+  return oprot.Flush()
+}
+
+
+func (p *KsScmcClientClient) recvSetContainerExtraHosts() (value int32, err error) {
+  iprot := p.InputProtocol
+  if iprot == nil {
+    iprot = p.ProtocolFactory.GetProtocol(p.Transport)
+    p.InputProtocol = iprot
+  }
+  method, mTypeId, seqId, err := iprot.ReadMessageBegin()
   if err != nil {
     return
   }
-  return _result57.GetSuccess(), nil
+  if method != "setContainerExtraHosts" {
+    err = thrift.NewTApplicationException(thrift.WRONG_METHOD_NAME, "setContainerExtraHosts failed: wrong method name")
+    return
+  }
+  if p.SeqId != seqId {
+    err = thrift.NewTApplicationException(thrift.BAD_SEQUENCE_ID, "setContainerExtraHosts failed: out of sequence response")
+    return
+  }
+  if mTypeId == thrift.EXCEPTION {
+    error58 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
+    var error59 error
+    error59, err = error58.Read(iprot)
+    if err != nil {
+      return
+    }
+    if err = iprot.ReadMessageEnd(); err != nil {
+      return
+    }
+    err = error59
+    return
+  }
+  if mTypeId != thrift.REPLY {
+    err = thrift.NewTApplicationException(thrift.INVALID_MESSAGE_TYPE_EXCEPTION, "setContainerExtraHosts failed: invalid message type")
+    return
+  }
+  result := KsScmcClientSetContainerExtraHostsResult{}
+  if err = result.Read(iprot); err != nil {
+    return
+  }
+  if err = iprot.ReadMessageEnd(); err != nil {
+    return
+  }
+  value = result.GetSuccess()
+  return
 }
 
 // 获取节点上的镜像列表
@@ -4200,17 +6500,78 @@ func (p *KsScmcClientClient) SetContainerExtraHosts(ctx context.Context, node_ip
 // 
 // Parameters:
 //  - NodeIP
-func (p *KsScmcClientClient) GetImagesList(ctx context.Context, node_ip string) (r *GetImagesListResponse, err error) {
-  var _args58 KsScmcClientGetImagesListArgs
-  _args58.NodeIP = node_ip
-  var _result59 KsScmcClientGetImagesListResult
-  var meta thrift.ResponseMeta
-  meta, err = p.Client_().Call(ctx, "getImagesList", &_args58, &_result59)
-  p.SetLastResponseMeta_(meta)
+func (p *KsScmcClientClient) GetImagesList(node_ip string) (r *GetImagesListResponse, err error) {
+  if err = p.sendGetImagesList(node_ip); err != nil { return }
+  return p.recvGetImagesList()
+}
+
+func (p *KsScmcClientClient) sendGetImagesList(node_ip string)(err error) {
+  oprot := p.OutputProtocol
+  if oprot == nil {
+    oprot = p.ProtocolFactory.GetProtocol(p.Transport)
+    p.OutputProtocol = oprot
+  }
+  p.SeqId++
+  if err = oprot.WriteMessageBegin("getImagesList", thrift.CALL, p.SeqId); err != nil {
+      return
+  }
+  args := KsScmcClientGetImagesListArgs{
+  NodeIP : node_ip,
+  }
+  if err = args.Write(oprot); err != nil {
+      return
+  }
+  if err = oprot.WriteMessageEnd(); err != nil {
+      return
+  }
+  return oprot.Flush()
+}
+
+
+func (p *KsScmcClientClient) recvGetImagesList() (value *GetImagesListResponse, err error) {
+  iprot := p.InputProtocol
+  if iprot == nil {
+    iprot = p.ProtocolFactory.GetProtocol(p.Transport)
+    p.InputProtocol = iprot
+  }
+  method, mTypeId, seqId, err := iprot.ReadMessageBegin()
   if err != nil {
     return
   }
-  return _result59.GetSuccess(), nil
+  if method != "getImagesList" {
+    err = thrift.NewTApplicationException(thrift.WRONG_METHOD_NAME, "getImagesList failed: wrong method name")
+    return
+  }
+  if p.SeqId != seqId {
+    err = thrift.NewTApplicationException(thrift.BAD_SEQUENCE_ID, "getImagesList failed: out of sequence response")
+    return
+  }
+  if mTypeId == thrift.EXCEPTION {
+    error60 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
+    var error61 error
+    error61, err = error60.Read(iprot)
+    if err != nil {
+      return
+    }
+    if err = iprot.ReadMessageEnd(); err != nil {
+      return
+    }
+    err = error61
+    return
+  }
+  if mTypeId != thrift.REPLY {
+    err = thrift.NewTApplicationException(thrift.INVALID_MESSAGE_TYPE_EXCEPTION, "getImagesList failed: invalid message type")
+    return
+  }
+  result := KsScmcClientGetImagesListResult{}
+  if err = result.Read(iprot); err != nil {
+    return
+  }
+  if err = iprot.ReadMessageEnd(); err != nil {
+    return
+  }
+  value = result.GetSuccess()
+  return
 }
 
 // 导入镜像到节点
@@ -4221,18 +6582,79 @@ func (p *KsScmcClientClient) GetImagesList(ctx context.Context, node_ip string) 
 // Parameters:
 //  - NodeIP
 //  - TarPath
-func (p *KsScmcClientClient) LoadImage(ctx context.Context, node_ip string, tarPath string) (r int32, err error) {
-  var _args60 KsScmcClientLoadImageArgs
-  _args60.NodeIP = node_ip
-  _args60.TarPath = tarPath
-  var _result61 KsScmcClientLoadImageResult
-  var meta thrift.ResponseMeta
-  meta, err = p.Client_().Call(ctx, "loadImage", &_args60, &_result61)
-  p.SetLastResponseMeta_(meta)
+func (p *KsScmcClientClient) LoadImage(node_ip string, tarPath string) (r int32, err error) {
+  if err = p.sendLoadImage(node_ip, tarPath); err != nil { return }
+  return p.recvLoadImage()
+}
+
+func (p *KsScmcClientClient) sendLoadImage(node_ip string, tarPath string)(err error) {
+  oprot := p.OutputProtocol
+  if oprot == nil {
+    oprot = p.ProtocolFactory.GetProtocol(p.Transport)
+    p.OutputProtocol = oprot
+  }
+  p.SeqId++
+  if err = oprot.WriteMessageBegin("loadImage", thrift.CALL, p.SeqId); err != nil {
+      return
+  }
+  args := KsScmcClientLoadImageArgs{
+  NodeIP : node_ip,
+  TarPath : tarPath,
+  }
+  if err = args.Write(oprot); err != nil {
+      return
+  }
+  if err = oprot.WriteMessageEnd(); err != nil {
+      return
+  }
+  return oprot.Flush()
+}
+
+
+func (p *KsScmcClientClient) recvLoadImage() (value int32, err error) {
+  iprot := p.InputProtocol
+  if iprot == nil {
+    iprot = p.ProtocolFactory.GetProtocol(p.Transport)
+    p.InputProtocol = iprot
+  }
+  method, mTypeId, seqId, err := iprot.ReadMessageBegin()
   if err != nil {
     return
   }
-  return _result61.GetSuccess(), nil
+  if method != "loadImage" {
+    err = thrift.NewTApplicationException(thrift.WRONG_METHOD_NAME, "loadImage failed: wrong method name")
+    return
+  }
+  if p.SeqId != seqId {
+    err = thrift.NewTApplicationException(thrift.BAD_SEQUENCE_ID, "loadImage failed: out of sequence response")
+    return
+  }
+  if mTypeId == thrift.EXCEPTION {
+    error62 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
+    var error63 error
+    error63, err = error62.Read(iprot)
+    if err != nil {
+      return
+    }
+    if err = iprot.ReadMessageEnd(); err != nil {
+      return
+    }
+    err = error63
+    return
+  }
+  if mTypeId != thrift.REPLY {
+    err = thrift.NewTApplicationException(thrift.INVALID_MESSAGE_TYPE_EXCEPTION, "loadImage failed: invalid message type")
+    return
+  }
+  result := KsScmcClientLoadImageResult{}
+  if err = result.Read(iprot); err != nil {
+    return
+  }
+  if err = iprot.ReadMessageEnd(); err != nil {
+    return
+  }
+  value = result.GetSuccess()
+  return
 }
 
 // 暂停容器
@@ -4243,18 +6665,79 @@ func (p *KsScmcClientClient) LoadImage(ctx context.Context, node_ip string, tarP
 // Parameters:
 //  - NodeIP
 //  - ContainerName
-func (p *KsScmcClientClient) PauseContainer(ctx context.Context, node_ip string, container_name string) (r int32, err error) {
-  var _args62 KsScmcClientPauseContainerArgs
-  _args62.NodeIP = node_ip
-  _args62.ContainerName = container_name
-  var _result63 KsScmcClientPauseContainerResult
-  var meta thrift.ResponseMeta
-  meta, err = p.Client_().Call(ctx, "pauseContainer", &_args62, &_result63)
-  p.SetLastResponseMeta_(meta)
+func (p *KsScmcClientClient) PauseContainer(node_ip string, container_name string) (r int32, err error) {
+  if err = p.sendPauseContainer(node_ip, container_name); err != nil { return }
+  return p.recvPauseContainer()
+}
+
+func (p *KsScmcClientClient) sendPauseContainer(node_ip string, container_name string)(err error) {
+  oprot := p.OutputProtocol
+  if oprot == nil {
+    oprot = p.ProtocolFactory.GetProtocol(p.Transport)
+    p.OutputProtocol = oprot
+  }
+  p.SeqId++
+  if err = oprot.WriteMessageBegin("pauseContainer", thrift.CALL, p.SeqId); err != nil {
+      return
+  }
+  args := KsScmcClientPauseContainerArgs{
+  NodeIP : node_ip,
+  ContainerName : container_name,
+  }
+  if err = args.Write(oprot); err != nil {
+      return
+  }
+  if err = oprot.WriteMessageEnd(); err != nil {
+      return
+  }
+  return oprot.Flush()
+}
+
+
+func (p *KsScmcClientClient) recvPauseContainer() (value int32, err error) {
+  iprot := p.InputProtocol
+  if iprot == nil {
+    iprot = p.ProtocolFactory.GetProtocol(p.Transport)
+    p.InputProtocol = iprot
+  }
+  method, mTypeId, seqId, err := iprot.ReadMessageBegin()
   if err != nil {
     return
   }
-  return _result63.GetSuccess(), nil
+  if method != "pauseContainer" {
+    err = thrift.NewTApplicationException(thrift.WRONG_METHOD_NAME, "pauseContainer failed: wrong method name")
+    return
+  }
+  if p.SeqId != seqId {
+    err = thrift.NewTApplicationException(thrift.BAD_SEQUENCE_ID, "pauseContainer failed: out of sequence response")
+    return
+  }
+  if mTypeId == thrift.EXCEPTION {
+    error64 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
+    var error65 error
+    error65, err = error64.Read(iprot)
+    if err != nil {
+      return
+    }
+    if err = iprot.ReadMessageEnd(); err != nil {
+      return
+    }
+    err = error65
+    return
+  }
+  if mTypeId != thrift.REPLY {
+    err = thrift.NewTApplicationException(thrift.INVALID_MESSAGE_TYPE_EXCEPTION, "pauseContainer failed: invalid message type")
+    return
+  }
+  result := KsScmcClientPauseContainerResult{}
+  if err = result.Read(iprot); err != nil {
+    return
+  }
+  if err = iprot.ReadMessageEnd(); err != nil {
+    return
+  }
+  value = result.GetSuccess()
+  return
 }
 
 // 恢复暂停的容器
@@ -4265,19 +6748,81 @@ func (p *KsScmcClientClient) PauseContainer(ctx context.Context, node_ip string,
 // Parameters:
 //  - NodeIP
 //  - ContainerName
-func (p *KsScmcClientClient) UnpauseContainer(ctx context.Context, node_ip string, container_name string) (r int32, err error) {
-  var _args64 KsScmcClientUnpauseContainerArgs
-  _args64.NodeIP = node_ip
-  _args64.ContainerName = container_name
-  var _result65 KsScmcClientUnpauseContainerResult
-  var meta thrift.ResponseMeta
-  meta, err = p.Client_().Call(ctx, "unpauseContainer", &_args64, &_result65)
-  p.SetLastResponseMeta_(meta)
+func (p *KsScmcClientClient) UnpauseContainer(node_ip string, container_name string) (r int32, err error) {
+  if err = p.sendUnpauseContainer(node_ip, container_name); err != nil { return }
+  return p.recvUnpauseContainer()
+}
+
+func (p *KsScmcClientClient) sendUnpauseContainer(node_ip string, container_name string)(err error) {
+  oprot := p.OutputProtocol
+  if oprot == nil {
+    oprot = p.ProtocolFactory.GetProtocol(p.Transport)
+    p.OutputProtocol = oprot
+  }
+  p.SeqId++
+  if err = oprot.WriteMessageBegin("unpauseContainer", thrift.CALL, p.SeqId); err != nil {
+      return
+  }
+  args := KsScmcClientUnpauseContainerArgs{
+  NodeIP : node_ip,
+  ContainerName : container_name,
+  }
+  if err = args.Write(oprot); err != nil {
+      return
+  }
+  if err = oprot.WriteMessageEnd(); err != nil {
+      return
+  }
+  return oprot.Flush()
+}
+
+
+func (p *KsScmcClientClient) recvUnpauseContainer() (value int32, err error) {
+  iprot := p.InputProtocol
+  if iprot == nil {
+    iprot = p.ProtocolFactory.GetProtocol(p.Transport)
+    p.InputProtocol = iprot
+  }
+  method, mTypeId, seqId, err := iprot.ReadMessageBegin()
   if err != nil {
     return
   }
-  return _result65.GetSuccess(), nil
+  if method != "unpauseContainer" {
+    err = thrift.NewTApplicationException(thrift.WRONG_METHOD_NAME, "unpauseContainer failed: wrong method name")
+    return
+  }
+  if p.SeqId != seqId {
+    err = thrift.NewTApplicationException(thrift.BAD_SEQUENCE_ID, "unpauseContainer failed: out of sequence response")
+    return
+  }
+  if mTypeId == thrift.EXCEPTION {
+    error66 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
+    var error67 error
+    error67, err = error66.Read(iprot)
+    if err != nil {
+      return
+    }
+    if err = iprot.ReadMessageEnd(); err != nil {
+      return
+    }
+    err = error67
+    return
+  }
+  if mTypeId != thrift.REPLY {
+    err = thrift.NewTApplicationException(thrift.INVALID_MESSAGE_TYPE_EXCEPTION, "unpauseContainer failed: invalid message type")
+    return
+  }
+  result := KsScmcClientUnpauseContainerResult{}
+  if err = result.Read(iprot); err != nil {
+    return
+  }
+  if err = iprot.ReadMessageEnd(); err != nil {
+    return
+  }
+  value = result.GetSuccess()
+  return
 }
+
 
 type KsScmcClientProcessor struct {
   processorMap map[string]thrift.TProcessorFunction
@@ -4299,52 +6844,55 @@ func (p *KsScmcClientProcessor) ProcessorMap() map[string]thrift.TProcessorFunct
 
 func NewKsScmcClientProcessor(handler KsScmcClient) *KsScmcClientProcessor {
 
-  self66 := &KsScmcClientProcessor{handler:handler, processorMap:make(map[string]thrift.TProcessorFunction)}
-  self66.processorMap["LoginV3"] = &ksScmcClientProcessorLoginV3{handler:handler}
-  self66.processorMap["installContainer"] = &ksScmcClientProcessorInstallContainer{handler:handler}
-  self66.processorMap["startContainer"] = &ksScmcClientProcessorStartContainer{handler:handler}
-  self66.processorMap["stopContainer"] = &ksScmcClientProcessorStopContainer{handler:handler}
-  self66.processorMap["uninstallContainer"] = &ksScmcClientProcessorUninstallContainer{handler:handler}
-  self66.processorMap["getContainerStatus"] = &ksScmcClientProcessorGetContainerStatus{handler:handler}
-  self66.processorMap["getContainerMetrics"] = &ksScmcClientProcessorGetContainerMetrics{handler:handler}
-  self66.processorMap["getImageVer4Container"] = &ksScmcClientProcessorGetImageVer4Container{handler:handler}
-  self66.processorMap["getContainer"] = &ksScmcClientProcessorGetContainer{handler:handler}
-  self66.processorMap["updateContainer"] = &ksScmcClientProcessorUpdateContainer{handler:handler}
-  self66.processorMap["getAlarmList"] = &ksScmcClientProcessorGetAlarmList{handler:handler}
-  self66.processorMap["getAllNodeList"] = &ksScmcClientProcessorGetAllNodeList{handler:handler}
-  self66.processorMap["getAllContainerList"] = &ksScmcClientProcessorGetAllContainerList{handler:handler}
-  self66.processorMap["getContainerNetwork"] = &ksScmcClientProcessorGetContainerNetwork{handler:handler}
-  self66.processorMap["getContainerNetRules"] = &ksScmcClientProcessorGetContainerNetRules{handler:handler}
-  self66.processorMap["addContainerIpPort"] = &ksScmcClientProcessorAddContainerIpPort{handler:handler}
-  self66.processorMap["addContainerReqIpPort"] = &ksScmcClientProcessorAddContainerReqIpPort{handler:handler}
-  self66.processorMap["addContainerEnv"] = &ksScmcClientProcessorAddContainerEnv{handler:handler}
-  self66.processorMap["addContainerLocalVolume"] = &ksScmcClientProcessorAddContainerLocalVolume{handler:handler}
-  self66.processorMap["setContainerDisplayV2"] = &ksScmcClientProcessorSetContainerDisplayV2{handler:handler}
-  self66.processorMap["setContainerQuota"] = &ksScmcClientProcessorSetContainerQuota{handler:handler}
-  self66.processorMap["setContainerPrivileged"] = &ksScmcClientProcessorSetContainerPrivileged{handler:handler}
-  self66.processorMap["setContainerSysctls"] = &ksScmcClientProcessorSetContainerSysctls{handler:handler}
-  self66.processorMap["setContainerExtraHosts"] = &ksScmcClientProcessorSetContainerExtraHosts{handler:handler}
-  self66.processorMap["getImagesList"] = &ksScmcClientProcessorGetImagesList{handler:handler}
-  self66.processorMap["loadImage"] = &ksScmcClientProcessorLoadImage{handler:handler}
-  self66.processorMap["pauseContainer"] = &ksScmcClientProcessorPauseContainer{handler:handler}
-  self66.processorMap["unpauseContainer"] = &ksScmcClientProcessorUnpauseContainer{handler:handler}
-return self66
+  self68 := &KsScmcClientProcessor{handler:handler, processorMap:make(map[string]thrift.TProcessorFunction)}
+  self68.processorMap["LoginV3"] = &ksScmcClientProcessorLoginV3{handler:handler}
+  self68.processorMap["InstallContainer"] = &ksScmcClientProcessorInstallContainer{handler:handler}
+  self68.processorMap["StartContainer"] = &ksScmcClientProcessorStartContainer{handler:handler}
+  self68.processorMap["StopContainer"] = &ksScmcClientProcessorStopContainer{handler:handler}
+  self68.processorMap["UninstallContainer"] = &ksScmcClientProcessorUninstallContainer{handler:handler}
+  self68.processorMap["getContainerStatus"] = &ksScmcClientProcessorGetContainerStatus{handler:handler}
+  self68.processorMap["getContainerMetrics"] = &ksScmcClientProcessorGetContainerMetrics{handler:handler}
+  self68.processorMap["GetContainerImageVers"] = &ksScmcClientProcessorGetContainerImageVers{handler:handler}
+  self68.processorMap["getImageVer4Container"] = &ksScmcClientProcessorGetImageVer4Container{handler:handler}
+  self68.processorMap["getContainer"] = &ksScmcClientProcessorGetContainer{handler:handler}
+  self68.processorMap["UpdateContainer"] = &ksScmcClientProcessorUpdateContainer{handler:handler}
+  self68.processorMap["GetAlarmList"] = &ksScmcClientProcessorGetAlarmList{handler:handler}
+  self68.processorMap["getAllNodeList"] = &ksScmcClientProcessorGetAllNodeList{handler:handler}
+  self68.processorMap["GetAllContainers"] = &ksScmcClientProcessorGetAllContainers{handler:handler}
+  self68.processorMap["GetAllContainersV2"] = &ksScmcClientProcessorGetAllContainersV2{handler:handler}
+  self68.processorMap["getAllContainerList"] = &ksScmcClientProcessorGetAllContainerList{handler:handler}
+  self68.processorMap["GetContainerNetwork"] = &ksScmcClientProcessorGetContainerNetwork{handler:handler}
+  self68.processorMap["getContainerNetRules"] = &ksScmcClientProcessorGetContainerNetRules{handler:handler}
+  self68.processorMap["addContainerIpPort"] = &ksScmcClientProcessorAddContainerIpPort{handler:handler}
+  self68.processorMap["addContainerReqIpPort"] = &ksScmcClientProcessorAddContainerReqIpPort{handler:handler}
+  self68.processorMap["AddContainerEnv"] = &ksScmcClientProcessorAddContainerEnv{handler:handler}
+  self68.processorMap["addContainerLocalVolume"] = &ksScmcClientProcessorAddContainerLocalVolume{handler:handler}
+  self68.processorMap["SetContainerDisplayV2"] = &ksScmcClientProcessorSetContainerDisplayV2{handler:handler}
+  self68.processorMap["SetContainerQuota"] = &ksScmcClientProcessorSetContainerQuota{handler:handler}
+  self68.processorMap["setContainerPrivileged"] = &ksScmcClientProcessorSetContainerPrivileged{handler:handler}
+  self68.processorMap["setContainerSysctls"] = &ksScmcClientProcessorSetContainerSysctls{handler:handler}
+  self68.processorMap["setContainerExtraHosts"] = &ksScmcClientProcessorSetContainerExtraHosts{handler:handler}
+  self68.processorMap["getImagesList"] = &ksScmcClientProcessorGetImagesList{handler:handler}
+  self68.processorMap["loadImage"] = &ksScmcClientProcessorLoadImage{handler:handler}
+  self68.processorMap["pauseContainer"] = &ksScmcClientProcessorPauseContainer{handler:handler}
+  self68.processorMap["unpauseContainer"] = &ksScmcClientProcessorUnpauseContainer{handler:handler}
+return self68
 }
 
-func (p *KsScmcClientProcessor) Process(ctx context.Context, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
-  name, _, seqId, err2 := iprot.ReadMessageBegin(ctx)
-  if err2 != nil { return false, thrift.WrapTException(err2) }
+func (p *KsScmcClientProcessor) Process(iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
+  name, _, seqId, err := iprot.ReadMessageBegin()
+  if err != nil { return false, err }
   if processor, ok := p.GetProcessorFunction(name); ok {
-    return processor.Process(ctx, seqId, iprot, oprot)
+    return processor.Process(seqId, iprot, oprot)
   }
-  iprot.Skip(ctx, thrift.STRUCT)
-  iprot.ReadMessageEnd(ctx)
-  x67 := thrift.NewTApplicationException(thrift.UNKNOWN_METHOD, "Unknown function " + name)
-  oprot.WriteMessageBegin(ctx, name, thrift.EXCEPTION, seqId)
-  x67.Write(ctx, oprot)
-  oprot.WriteMessageEnd(ctx)
-  oprot.Flush(ctx)
-  return false, x67
+  iprot.Skip(thrift.STRUCT)
+  iprot.ReadMessageEnd()
+  x69 := thrift.NewTApplicationException(thrift.UNKNOWN_METHOD, "Unknown function " + name)
+  oprot.WriteMessageBegin(name, thrift.EXCEPTION, seqId)
+  x69.Write(oprot)
+  oprot.WriteMessageEnd()
+  oprot.Flush()
+  return false, x69
 
 }
 
@@ -4352,74 +6900,43 @@ type ksScmcClientProcessorLoginV3 struct {
   handler KsScmcClient
 }
 
-func (p *ksScmcClientProcessorLoginV3) Process(ctx context.Context, seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
+func (p *ksScmcClientProcessorLoginV3) Process(seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
   args := KsScmcClientLoginV3Args{}
-  var err2 error
-  if err2 = args.Read(ctx, iprot); err2 != nil {
-    iprot.ReadMessageEnd(ctx)
-    x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err2.Error())
-    oprot.WriteMessageBegin(ctx, "LoginV3", thrift.EXCEPTION, seqId)
-    x.Write(ctx, oprot)
-    oprot.WriteMessageEnd(ctx)
-    oprot.Flush(ctx)
-    return false, thrift.WrapTException(err2)
-  }
-  iprot.ReadMessageEnd(ctx)
-
-  tickerCancel := func() {}
-  // Start a goroutine to do server side connectivity check.
-  if thrift.ServerConnectivityCheckInterval > 0 {
-    var cancel context.CancelFunc
-    ctx, cancel = context.WithCancel(ctx)
-    defer cancel()
-    var tickerCtx context.Context
-    tickerCtx, tickerCancel = context.WithCancel(context.Background())
-    defer tickerCancel()
-    go func(ctx context.Context, cancel context.CancelFunc) {
-      ticker := time.NewTicker(thrift.ServerConnectivityCheckInterval)
-      defer ticker.Stop()
-      for {
-        select {
-        case <-ctx.Done():
-          return
-        case <-ticker.C:
-          if !iprot.Transport().IsOpen() {
-            cancel()
-            return
-          }
-        }
-      }
-    }(tickerCtx, cancel)
+  if err = args.Read(iprot); err != nil {
+    iprot.ReadMessageEnd()
+    x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err.Error())
+    oprot.WriteMessageBegin("LoginV3", thrift.EXCEPTION, seqId)
+    x.Write(oprot)
+    oprot.WriteMessageEnd()
+    oprot.Flush()
+    return false, err
   }
 
+  iprot.ReadMessageEnd()
   result := KsScmcClientLoginV3Result{}
-  var retval string
-  if retval, err2 = p.handler.LoginV3(ctx, args.User, args.Passwd, args.NodeIP); err2 != nil {
-    tickerCancel()
-    if err2 == thrift.ErrAbandonRequest {
-      return false, thrift.WrapTException(err2)
-    }
+var retval string
+  var err2 error
+  if retval, err2 = p.handler.LoginV3(args.User, args.Passwd, args.NodeIP); err2 != nil {
     x := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing LoginV3: " + err2.Error())
-    oprot.WriteMessageBegin(ctx, "LoginV3", thrift.EXCEPTION, seqId)
-    x.Write(ctx, oprot)
-    oprot.WriteMessageEnd(ctx)
-    oprot.Flush(ctx)
-    return true, thrift.WrapTException(err2)
+    oprot.WriteMessageBegin("LoginV3", thrift.EXCEPTION, seqId)
+    x.Write(oprot)
+    oprot.WriteMessageEnd()
+    oprot.Flush()
+    return true, err2
   } else {
     result.Success = &retval
+}
+  if err2 = oprot.WriteMessageBegin("LoginV3", thrift.REPLY, seqId); err2 != nil {
+    err = err2
   }
-  tickerCancel()
-  if err2 = oprot.WriteMessageBegin(ctx, "LoginV3", thrift.REPLY, seqId); err2 != nil {
-    err = thrift.WrapTException(err2)
+  if err2 = result.Write(oprot); err == nil && err2 != nil {
+    err = err2
   }
-  if err2 = result.Write(ctx, oprot); err == nil && err2 != nil {
-    err = thrift.WrapTException(err2)
+  if err2 = oprot.WriteMessageEnd(); err == nil && err2 != nil {
+    err = err2
   }
-  if err2 = oprot.WriteMessageEnd(ctx); err == nil && err2 != nil {
-    err = thrift.WrapTException(err2)
-  }
-  if err2 = oprot.Flush(ctx); err == nil && err2 != nil {
-    err = thrift.WrapTException(err2)
+  if err2 = oprot.Flush(); err == nil && err2 != nil {
+    err = err2
   }
   if err != nil {
     return
@@ -4431,74 +6948,43 @@ type ksScmcClientProcessorInstallContainer struct {
   handler KsScmcClient
 }
 
-func (p *ksScmcClientProcessorInstallContainer) Process(ctx context.Context, seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
+func (p *ksScmcClientProcessorInstallContainer) Process(seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
   args := KsScmcClientInstallContainerArgs{}
-  var err2 error
-  if err2 = args.Read(ctx, iprot); err2 != nil {
-    iprot.ReadMessageEnd(ctx)
-    x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err2.Error())
-    oprot.WriteMessageBegin(ctx, "installContainer", thrift.EXCEPTION, seqId)
-    x.Write(ctx, oprot)
-    oprot.WriteMessageEnd(ctx)
-    oprot.Flush(ctx)
-    return false, thrift.WrapTException(err2)
-  }
-  iprot.ReadMessageEnd(ctx)
-
-  tickerCancel := func() {}
-  // Start a goroutine to do server side connectivity check.
-  if thrift.ServerConnectivityCheckInterval > 0 {
-    var cancel context.CancelFunc
-    ctx, cancel = context.WithCancel(ctx)
-    defer cancel()
-    var tickerCtx context.Context
-    tickerCtx, tickerCancel = context.WithCancel(context.Background())
-    defer tickerCancel()
-    go func(ctx context.Context, cancel context.CancelFunc) {
-      ticker := time.NewTicker(thrift.ServerConnectivityCheckInterval)
-      defer ticker.Stop()
-      for {
-        select {
-        case <-ctx.Done():
-          return
-        case <-ticker.C:
-          if !iprot.Transport().IsOpen() {
-            cancel()
-            return
-          }
-        }
-      }
-    }(tickerCtx, cancel)
+  if err = args.Read(iprot); err != nil {
+    iprot.ReadMessageEnd()
+    x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err.Error())
+    oprot.WriteMessageBegin("InstallContainer", thrift.EXCEPTION, seqId)
+    x.Write(oprot)
+    oprot.WriteMessageEnd()
+    oprot.Flush()
+    return false, err
   }
 
+  iprot.ReadMessageEnd()
   result := KsScmcClientInstallContainerResult{}
-  var retval int32
-  if retval, err2 = p.handler.InstallContainer(ctx, args.NodeNameorip, args.ImageName, args.ImageVer, args.ContainerName); err2 != nil {
-    tickerCancel()
-    if err2 == thrift.ErrAbandonRequest {
-      return false, thrift.WrapTException(err2)
-    }
-    x := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing installContainer: " + err2.Error())
-    oprot.WriteMessageBegin(ctx, "installContainer", thrift.EXCEPTION, seqId)
-    x.Write(ctx, oprot)
-    oprot.WriteMessageEnd(ctx)
-    oprot.Flush(ctx)
-    return true, thrift.WrapTException(err2)
+var retval string
+  var err2 error
+  if retval, err2 = p.handler.InstallContainer(args.NodeName, args.Image, args.Ver, args.Name, args.Desc); err2 != nil {
+    x := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing InstallContainer: " + err2.Error())
+    oprot.WriteMessageBegin("InstallContainer", thrift.EXCEPTION, seqId)
+    x.Write(oprot)
+    oprot.WriteMessageEnd()
+    oprot.Flush()
+    return true, err2
   } else {
     result.Success = &retval
+}
+  if err2 = oprot.WriteMessageBegin("InstallContainer", thrift.REPLY, seqId); err2 != nil {
+    err = err2
   }
-  tickerCancel()
-  if err2 = oprot.WriteMessageBegin(ctx, "installContainer", thrift.REPLY, seqId); err2 != nil {
-    err = thrift.WrapTException(err2)
+  if err2 = result.Write(oprot); err == nil && err2 != nil {
+    err = err2
   }
-  if err2 = result.Write(ctx, oprot); err == nil && err2 != nil {
-    err = thrift.WrapTException(err2)
+  if err2 = oprot.WriteMessageEnd(); err == nil && err2 != nil {
+    err = err2
   }
-  if err2 = oprot.WriteMessageEnd(ctx); err == nil && err2 != nil {
-    err = thrift.WrapTException(err2)
-  }
-  if err2 = oprot.Flush(ctx); err == nil && err2 != nil {
-    err = thrift.WrapTException(err2)
+  if err2 = oprot.Flush(); err == nil && err2 != nil {
+    err = err2
   }
   if err != nil {
     return
@@ -4510,74 +6996,43 @@ type ksScmcClientProcessorStartContainer struct {
   handler KsScmcClient
 }
 
-func (p *ksScmcClientProcessorStartContainer) Process(ctx context.Context, seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
+func (p *ksScmcClientProcessorStartContainer) Process(seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
   args := KsScmcClientStartContainerArgs{}
-  var err2 error
-  if err2 = args.Read(ctx, iprot); err2 != nil {
-    iprot.ReadMessageEnd(ctx)
-    x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err2.Error())
-    oprot.WriteMessageBegin(ctx, "startContainer", thrift.EXCEPTION, seqId)
-    x.Write(ctx, oprot)
-    oprot.WriteMessageEnd(ctx)
-    oprot.Flush(ctx)
-    return false, thrift.WrapTException(err2)
-  }
-  iprot.ReadMessageEnd(ctx)
-
-  tickerCancel := func() {}
-  // Start a goroutine to do server side connectivity check.
-  if thrift.ServerConnectivityCheckInterval > 0 {
-    var cancel context.CancelFunc
-    ctx, cancel = context.WithCancel(ctx)
-    defer cancel()
-    var tickerCtx context.Context
-    tickerCtx, tickerCancel = context.WithCancel(context.Background())
-    defer tickerCancel()
-    go func(ctx context.Context, cancel context.CancelFunc) {
-      ticker := time.NewTicker(thrift.ServerConnectivityCheckInterval)
-      defer ticker.Stop()
-      for {
-        select {
-        case <-ctx.Done():
-          return
-        case <-ticker.C:
-          if !iprot.Transport().IsOpen() {
-            cancel()
-            return
-          }
-        }
-      }
-    }(tickerCtx, cancel)
+  if err = args.Read(iprot); err != nil {
+    iprot.ReadMessageEnd()
+    x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err.Error())
+    oprot.WriteMessageBegin("StartContainer", thrift.EXCEPTION, seqId)
+    x.Write(oprot)
+    oprot.WriteMessageEnd()
+    oprot.Flush()
+    return false, err
   }
 
+  iprot.ReadMessageEnd()
   result := KsScmcClientStartContainerResult{}
-  var retval int32
-  if retval, err2 = p.handler.StartContainer(ctx, args.NodeNameorip, args.ContainerName); err2 != nil {
-    tickerCancel()
-    if err2 == thrift.ErrAbandonRequest {
-      return false, thrift.WrapTException(err2)
-    }
-    x := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing startContainer: " + err2.Error())
-    oprot.WriteMessageBegin(ctx, "startContainer", thrift.EXCEPTION, seqId)
-    x.Write(ctx, oprot)
-    oprot.WriteMessageEnd(ctx)
-    oprot.Flush(ctx)
-    return true, thrift.WrapTException(err2)
+var retval string
+  var err2 error
+  if retval, err2 = p.handler.StartContainer(args.NodeName, args.Name); err2 != nil {
+    x := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing StartContainer: " + err2.Error())
+    oprot.WriteMessageBegin("StartContainer", thrift.EXCEPTION, seqId)
+    x.Write(oprot)
+    oprot.WriteMessageEnd()
+    oprot.Flush()
+    return true, err2
   } else {
     result.Success = &retval
+}
+  if err2 = oprot.WriteMessageBegin("StartContainer", thrift.REPLY, seqId); err2 != nil {
+    err = err2
   }
-  tickerCancel()
-  if err2 = oprot.WriteMessageBegin(ctx, "startContainer", thrift.REPLY, seqId); err2 != nil {
-    err = thrift.WrapTException(err2)
+  if err2 = result.Write(oprot); err == nil && err2 != nil {
+    err = err2
   }
-  if err2 = result.Write(ctx, oprot); err == nil && err2 != nil {
-    err = thrift.WrapTException(err2)
+  if err2 = oprot.WriteMessageEnd(); err == nil && err2 != nil {
+    err = err2
   }
-  if err2 = oprot.WriteMessageEnd(ctx); err == nil && err2 != nil {
-    err = thrift.WrapTException(err2)
-  }
-  if err2 = oprot.Flush(ctx); err == nil && err2 != nil {
-    err = thrift.WrapTException(err2)
+  if err2 = oprot.Flush(); err == nil && err2 != nil {
+    err = err2
   }
   if err != nil {
     return
@@ -4589,74 +7044,43 @@ type ksScmcClientProcessorStopContainer struct {
   handler KsScmcClient
 }
 
-func (p *ksScmcClientProcessorStopContainer) Process(ctx context.Context, seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
+func (p *ksScmcClientProcessorStopContainer) Process(seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
   args := KsScmcClientStopContainerArgs{}
-  var err2 error
-  if err2 = args.Read(ctx, iprot); err2 != nil {
-    iprot.ReadMessageEnd(ctx)
-    x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err2.Error())
-    oprot.WriteMessageBegin(ctx, "stopContainer", thrift.EXCEPTION, seqId)
-    x.Write(ctx, oprot)
-    oprot.WriteMessageEnd(ctx)
-    oprot.Flush(ctx)
-    return false, thrift.WrapTException(err2)
-  }
-  iprot.ReadMessageEnd(ctx)
-
-  tickerCancel := func() {}
-  // Start a goroutine to do server side connectivity check.
-  if thrift.ServerConnectivityCheckInterval > 0 {
-    var cancel context.CancelFunc
-    ctx, cancel = context.WithCancel(ctx)
-    defer cancel()
-    var tickerCtx context.Context
-    tickerCtx, tickerCancel = context.WithCancel(context.Background())
-    defer tickerCancel()
-    go func(ctx context.Context, cancel context.CancelFunc) {
-      ticker := time.NewTicker(thrift.ServerConnectivityCheckInterval)
-      defer ticker.Stop()
-      for {
-        select {
-        case <-ctx.Done():
-          return
-        case <-ticker.C:
-          if !iprot.Transport().IsOpen() {
-            cancel()
-            return
-          }
-        }
-      }
-    }(tickerCtx, cancel)
+  if err = args.Read(iprot); err != nil {
+    iprot.ReadMessageEnd()
+    x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err.Error())
+    oprot.WriteMessageBegin("StopContainer", thrift.EXCEPTION, seqId)
+    x.Write(oprot)
+    oprot.WriteMessageEnd()
+    oprot.Flush()
+    return false, err
   }
 
+  iprot.ReadMessageEnd()
   result := KsScmcClientStopContainerResult{}
-  var retval int32
-  if retval, err2 = p.handler.StopContainer(ctx, args.NodeNameorip, args.ContainerName); err2 != nil {
-    tickerCancel()
-    if err2 == thrift.ErrAbandonRequest {
-      return false, thrift.WrapTException(err2)
-    }
-    x := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing stopContainer: " + err2.Error())
-    oprot.WriteMessageBegin(ctx, "stopContainer", thrift.EXCEPTION, seqId)
-    x.Write(ctx, oprot)
-    oprot.WriteMessageEnd(ctx)
-    oprot.Flush(ctx)
-    return true, thrift.WrapTException(err2)
+var retval string
+  var err2 error
+  if retval, err2 = p.handler.StopContainer(args.NodeName, args.Name); err2 != nil {
+    x := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing StopContainer: " + err2.Error())
+    oprot.WriteMessageBegin("StopContainer", thrift.EXCEPTION, seqId)
+    x.Write(oprot)
+    oprot.WriteMessageEnd()
+    oprot.Flush()
+    return true, err2
   } else {
     result.Success = &retval
+}
+  if err2 = oprot.WriteMessageBegin("StopContainer", thrift.REPLY, seqId); err2 != nil {
+    err = err2
   }
-  tickerCancel()
-  if err2 = oprot.WriteMessageBegin(ctx, "stopContainer", thrift.REPLY, seqId); err2 != nil {
-    err = thrift.WrapTException(err2)
+  if err2 = result.Write(oprot); err == nil && err2 != nil {
+    err = err2
   }
-  if err2 = result.Write(ctx, oprot); err == nil && err2 != nil {
-    err = thrift.WrapTException(err2)
+  if err2 = oprot.WriteMessageEnd(); err == nil && err2 != nil {
+    err = err2
   }
-  if err2 = oprot.WriteMessageEnd(ctx); err == nil && err2 != nil {
-    err = thrift.WrapTException(err2)
-  }
-  if err2 = oprot.Flush(ctx); err == nil && err2 != nil {
-    err = thrift.WrapTException(err2)
+  if err2 = oprot.Flush(); err == nil && err2 != nil {
+    err = err2
   }
   if err != nil {
     return
@@ -4668,74 +7092,43 @@ type ksScmcClientProcessorUninstallContainer struct {
   handler KsScmcClient
 }
 
-func (p *ksScmcClientProcessorUninstallContainer) Process(ctx context.Context, seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
+func (p *ksScmcClientProcessorUninstallContainer) Process(seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
   args := KsScmcClientUninstallContainerArgs{}
-  var err2 error
-  if err2 = args.Read(ctx, iprot); err2 != nil {
-    iprot.ReadMessageEnd(ctx)
-    x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err2.Error())
-    oprot.WriteMessageBegin(ctx, "uninstallContainer", thrift.EXCEPTION, seqId)
-    x.Write(ctx, oprot)
-    oprot.WriteMessageEnd(ctx)
-    oprot.Flush(ctx)
-    return false, thrift.WrapTException(err2)
-  }
-  iprot.ReadMessageEnd(ctx)
-
-  tickerCancel := func() {}
-  // Start a goroutine to do server side connectivity check.
-  if thrift.ServerConnectivityCheckInterval > 0 {
-    var cancel context.CancelFunc
-    ctx, cancel = context.WithCancel(ctx)
-    defer cancel()
-    var tickerCtx context.Context
-    tickerCtx, tickerCancel = context.WithCancel(context.Background())
-    defer tickerCancel()
-    go func(ctx context.Context, cancel context.CancelFunc) {
-      ticker := time.NewTicker(thrift.ServerConnectivityCheckInterval)
-      defer ticker.Stop()
-      for {
-        select {
-        case <-ctx.Done():
-          return
-        case <-ticker.C:
-          if !iprot.Transport().IsOpen() {
-            cancel()
-            return
-          }
-        }
-      }
-    }(tickerCtx, cancel)
+  if err = args.Read(iprot); err != nil {
+    iprot.ReadMessageEnd()
+    x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err.Error())
+    oprot.WriteMessageBegin("UninstallContainer", thrift.EXCEPTION, seqId)
+    x.Write(oprot)
+    oprot.WriteMessageEnd()
+    oprot.Flush()
+    return false, err
   }
 
+  iprot.ReadMessageEnd()
   result := KsScmcClientUninstallContainerResult{}
-  var retval int32
-  if retval, err2 = p.handler.UninstallContainer(ctx, args.NodeNameorip, args.ContainerName); err2 != nil {
-    tickerCancel()
-    if err2 == thrift.ErrAbandonRequest {
-      return false, thrift.WrapTException(err2)
-    }
-    x := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing uninstallContainer: " + err2.Error())
-    oprot.WriteMessageBegin(ctx, "uninstallContainer", thrift.EXCEPTION, seqId)
-    x.Write(ctx, oprot)
-    oprot.WriteMessageEnd(ctx)
-    oprot.Flush(ctx)
-    return true, thrift.WrapTException(err2)
+var retval string
+  var err2 error
+  if retval, err2 = p.handler.UninstallContainer(args.NodeName, args.Name); err2 != nil {
+    x := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing UninstallContainer: " + err2.Error())
+    oprot.WriteMessageBegin("UninstallContainer", thrift.EXCEPTION, seqId)
+    x.Write(oprot)
+    oprot.WriteMessageEnd()
+    oprot.Flush()
+    return true, err2
   } else {
     result.Success = &retval
+}
+  if err2 = oprot.WriteMessageBegin("UninstallContainer", thrift.REPLY, seqId); err2 != nil {
+    err = err2
   }
-  tickerCancel()
-  if err2 = oprot.WriteMessageBegin(ctx, "uninstallContainer", thrift.REPLY, seqId); err2 != nil {
-    err = thrift.WrapTException(err2)
+  if err2 = result.Write(oprot); err == nil && err2 != nil {
+    err = err2
   }
-  if err2 = result.Write(ctx, oprot); err == nil && err2 != nil {
-    err = thrift.WrapTException(err2)
+  if err2 = oprot.WriteMessageEnd(); err == nil && err2 != nil {
+    err = err2
   }
-  if err2 = oprot.WriteMessageEnd(ctx); err == nil && err2 != nil {
-    err = thrift.WrapTException(err2)
-  }
-  if err2 = oprot.Flush(ctx); err == nil && err2 != nil {
-    err = thrift.WrapTException(err2)
+  if err2 = oprot.Flush(); err == nil && err2 != nil {
+    err = err2
   }
   if err != nil {
     return
@@ -4747,74 +7140,43 @@ type ksScmcClientProcessorGetContainerStatus struct {
   handler KsScmcClient
 }
 
-func (p *ksScmcClientProcessorGetContainerStatus) Process(ctx context.Context, seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
+func (p *ksScmcClientProcessorGetContainerStatus) Process(seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
   args := KsScmcClientGetContainerStatusArgs{}
-  var err2 error
-  if err2 = args.Read(ctx, iprot); err2 != nil {
-    iprot.ReadMessageEnd(ctx)
-    x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err2.Error())
-    oprot.WriteMessageBegin(ctx, "getContainerStatus", thrift.EXCEPTION, seqId)
-    x.Write(ctx, oprot)
-    oprot.WriteMessageEnd(ctx)
-    oprot.Flush(ctx)
-    return false, thrift.WrapTException(err2)
-  }
-  iprot.ReadMessageEnd(ctx)
-
-  tickerCancel := func() {}
-  // Start a goroutine to do server side connectivity check.
-  if thrift.ServerConnectivityCheckInterval > 0 {
-    var cancel context.CancelFunc
-    ctx, cancel = context.WithCancel(ctx)
-    defer cancel()
-    var tickerCtx context.Context
-    tickerCtx, tickerCancel = context.WithCancel(context.Background())
-    defer tickerCancel()
-    go func(ctx context.Context, cancel context.CancelFunc) {
-      ticker := time.NewTicker(thrift.ServerConnectivityCheckInterval)
-      defer ticker.Stop()
-      for {
-        select {
-        case <-ctx.Done():
-          return
-        case <-ticker.C:
-          if !iprot.Transport().IsOpen() {
-            cancel()
-            return
-          }
-        }
-      }
-    }(tickerCtx, cancel)
+  if err = args.Read(iprot); err != nil {
+    iprot.ReadMessageEnd()
+    x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err.Error())
+    oprot.WriteMessageBegin("getContainerStatus", thrift.EXCEPTION, seqId)
+    x.Write(oprot)
+    oprot.WriteMessageEnd()
+    oprot.Flush()
+    return false, err
   }
 
+  iprot.ReadMessageEnd()
   result := KsScmcClientGetContainerStatusResult{}
-  var retval int32
-  if retval, err2 = p.handler.GetContainerStatus(ctx, args.NodeNameorip, args.ContainerName); err2 != nil {
-    tickerCancel()
-    if err2 == thrift.ErrAbandonRequest {
-      return false, thrift.WrapTException(err2)
-    }
+var retval int32
+  var err2 error
+  if retval, err2 = p.handler.GetContainerStatus(args.NodeNameorip, args.ContainerName); err2 != nil {
     x := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing getContainerStatus: " + err2.Error())
-    oprot.WriteMessageBegin(ctx, "getContainerStatus", thrift.EXCEPTION, seqId)
-    x.Write(ctx, oprot)
-    oprot.WriteMessageEnd(ctx)
-    oprot.Flush(ctx)
-    return true, thrift.WrapTException(err2)
+    oprot.WriteMessageBegin("getContainerStatus", thrift.EXCEPTION, seqId)
+    x.Write(oprot)
+    oprot.WriteMessageEnd()
+    oprot.Flush()
+    return true, err2
   } else {
     result.Success = &retval
+}
+  if err2 = oprot.WriteMessageBegin("getContainerStatus", thrift.REPLY, seqId); err2 != nil {
+    err = err2
   }
-  tickerCancel()
-  if err2 = oprot.WriteMessageBegin(ctx, "getContainerStatus", thrift.REPLY, seqId); err2 != nil {
-    err = thrift.WrapTException(err2)
+  if err2 = result.Write(oprot); err == nil && err2 != nil {
+    err = err2
   }
-  if err2 = result.Write(ctx, oprot); err == nil && err2 != nil {
-    err = thrift.WrapTException(err2)
+  if err2 = oprot.WriteMessageEnd(); err == nil && err2 != nil {
+    err = err2
   }
-  if err2 = oprot.WriteMessageEnd(ctx); err == nil && err2 != nil {
-    err = thrift.WrapTException(err2)
-  }
-  if err2 = oprot.Flush(ctx); err == nil && err2 != nil {
-    err = thrift.WrapTException(err2)
+  if err2 = oprot.Flush(); err == nil && err2 != nil {
+    err = err2
   }
   if err != nil {
     return
@@ -4826,74 +7188,91 @@ type ksScmcClientProcessorGetContainerMetrics struct {
   handler KsScmcClient
 }
 
-func (p *ksScmcClientProcessorGetContainerMetrics) Process(ctx context.Context, seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
+func (p *ksScmcClientProcessorGetContainerMetrics) Process(seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
   args := KsScmcClientGetContainerMetricsArgs{}
-  var err2 error
-  if err2 = args.Read(ctx, iprot); err2 != nil {
-    iprot.ReadMessageEnd(ctx)
-    x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err2.Error())
-    oprot.WriteMessageBegin(ctx, "getContainerMetrics", thrift.EXCEPTION, seqId)
-    x.Write(ctx, oprot)
-    oprot.WriteMessageEnd(ctx)
-    oprot.Flush(ctx)
-    return false, thrift.WrapTException(err2)
-  }
-  iprot.ReadMessageEnd(ctx)
-
-  tickerCancel := func() {}
-  // Start a goroutine to do server side connectivity check.
-  if thrift.ServerConnectivityCheckInterval > 0 {
-    var cancel context.CancelFunc
-    ctx, cancel = context.WithCancel(ctx)
-    defer cancel()
-    var tickerCtx context.Context
-    tickerCtx, tickerCancel = context.WithCancel(context.Background())
-    defer tickerCancel()
-    go func(ctx context.Context, cancel context.CancelFunc) {
-      ticker := time.NewTicker(thrift.ServerConnectivityCheckInterval)
-      defer ticker.Stop()
-      for {
-        select {
-        case <-ctx.Done():
-          return
-        case <-ticker.C:
-          if !iprot.Transport().IsOpen() {
-            cancel()
-            return
-          }
-        }
-      }
-    }(tickerCtx, cancel)
+  if err = args.Read(iprot); err != nil {
+    iprot.ReadMessageEnd()
+    x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err.Error())
+    oprot.WriteMessageBegin("getContainerMetrics", thrift.EXCEPTION, seqId)
+    x.Write(oprot)
+    oprot.WriteMessageEnd()
+    oprot.Flush()
+    return false, err
   }
 
+  iprot.ReadMessageEnd()
   result := KsScmcClientGetContainerMetricsResult{}
-  var retval *GetContainerMetricsResponse
-  if retval, err2 = p.handler.GetContainerMetrics(ctx, args.NodeNameorip, args.ContainerName); err2 != nil {
-    tickerCancel()
-    if err2 == thrift.ErrAbandonRequest {
-      return false, thrift.WrapTException(err2)
-    }
+var retval *GetContainerMetricsResponse
+  var err2 error
+  if retval, err2 = p.handler.GetContainerMetrics(args.NodeNameorip, args.ContainerName); err2 != nil {
     x := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing getContainerMetrics: " + err2.Error())
-    oprot.WriteMessageBegin(ctx, "getContainerMetrics", thrift.EXCEPTION, seqId)
-    x.Write(ctx, oprot)
-    oprot.WriteMessageEnd(ctx)
-    oprot.Flush(ctx)
-    return true, thrift.WrapTException(err2)
+    oprot.WriteMessageBegin("getContainerMetrics", thrift.EXCEPTION, seqId)
+    x.Write(oprot)
+    oprot.WriteMessageEnd()
+    oprot.Flush()
+    return true, err2
   } else {
     result.Success = retval
+}
+  if err2 = oprot.WriteMessageBegin("getContainerMetrics", thrift.REPLY, seqId); err2 != nil {
+    err = err2
   }
-  tickerCancel()
-  if err2 = oprot.WriteMessageBegin(ctx, "getContainerMetrics", thrift.REPLY, seqId); err2 != nil {
-    err = thrift.WrapTException(err2)
+  if err2 = result.Write(oprot); err == nil && err2 != nil {
+    err = err2
   }
-  if err2 = result.Write(ctx, oprot); err == nil && err2 != nil {
-    err = thrift.WrapTException(err2)
+  if err2 = oprot.WriteMessageEnd(); err == nil && err2 != nil {
+    err = err2
   }
-  if err2 = oprot.WriteMessageEnd(ctx); err == nil && err2 != nil {
-    err = thrift.WrapTException(err2)
+  if err2 = oprot.Flush(); err == nil && err2 != nil {
+    err = err2
   }
-  if err2 = oprot.Flush(ctx); err == nil && err2 != nil {
-    err = thrift.WrapTException(err2)
+  if err != nil {
+    return
+  }
+  return true, err
+}
+
+type ksScmcClientProcessorGetContainerImageVers struct {
+  handler KsScmcClient
+}
+
+func (p *ksScmcClientProcessorGetContainerImageVers) Process(seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
+  args := KsScmcClientGetContainerImageVersArgs{}
+  if err = args.Read(iprot); err != nil {
+    iprot.ReadMessageEnd()
+    x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err.Error())
+    oprot.WriteMessageBegin("GetContainerImageVers", thrift.EXCEPTION, seqId)
+    x.Write(oprot)
+    oprot.WriteMessageEnd()
+    oprot.Flush()
+    return false, err
+  }
+
+  iprot.ReadMessageEnd()
+  result := KsScmcClientGetContainerImageVersResult{}
+var retval string
+  var err2 error
+  if retval, err2 = p.handler.GetContainerImageVers(args.NodeName, args.Name); err2 != nil {
+    x := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing GetContainerImageVers: " + err2.Error())
+    oprot.WriteMessageBegin("GetContainerImageVers", thrift.EXCEPTION, seqId)
+    x.Write(oprot)
+    oprot.WriteMessageEnd()
+    oprot.Flush()
+    return true, err2
+  } else {
+    result.Success = &retval
+}
+  if err2 = oprot.WriteMessageBegin("GetContainerImageVers", thrift.REPLY, seqId); err2 != nil {
+    err = err2
+  }
+  if err2 = result.Write(oprot); err == nil && err2 != nil {
+    err = err2
+  }
+  if err2 = oprot.WriteMessageEnd(); err == nil && err2 != nil {
+    err = err2
+  }
+  if err2 = oprot.Flush(); err == nil && err2 != nil {
+    err = err2
   }
   if err != nil {
     return
@@ -4905,74 +7284,43 @@ type ksScmcClientProcessorGetImageVer4Container struct {
   handler KsScmcClient
 }
 
-func (p *ksScmcClientProcessorGetImageVer4Container) Process(ctx context.Context, seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
+func (p *ksScmcClientProcessorGetImageVer4Container) Process(seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
   args := KsScmcClientGetImageVer4ContainerArgs{}
-  var err2 error
-  if err2 = args.Read(ctx, iprot); err2 != nil {
-    iprot.ReadMessageEnd(ctx)
-    x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err2.Error())
-    oprot.WriteMessageBegin(ctx, "getImageVer4Container", thrift.EXCEPTION, seqId)
-    x.Write(ctx, oprot)
-    oprot.WriteMessageEnd(ctx)
-    oprot.Flush(ctx)
-    return false, thrift.WrapTException(err2)
-  }
-  iprot.ReadMessageEnd(ctx)
-
-  tickerCancel := func() {}
-  // Start a goroutine to do server side connectivity check.
-  if thrift.ServerConnectivityCheckInterval > 0 {
-    var cancel context.CancelFunc
-    ctx, cancel = context.WithCancel(ctx)
-    defer cancel()
-    var tickerCtx context.Context
-    tickerCtx, tickerCancel = context.WithCancel(context.Background())
-    defer tickerCancel()
-    go func(ctx context.Context, cancel context.CancelFunc) {
-      ticker := time.NewTicker(thrift.ServerConnectivityCheckInterval)
-      defer ticker.Stop()
-      for {
-        select {
-        case <-ctx.Done():
-          return
-        case <-ticker.C:
-          if !iprot.Transport().IsOpen() {
-            cancel()
-            return
-          }
-        }
-      }
-    }(tickerCtx, cancel)
+  if err = args.Read(iprot); err != nil {
+    iprot.ReadMessageEnd()
+    x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err.Error())
+    oprot.WriteMessageBegin("getImageVer4Container", thrift.EXCEPTION, seqId)
+    x.Write(oprot)
+    oprot.WriteMessageEnd()
+    oprot.Flush()
+    return false, err
   }
 
+  iprot.ReadMessageEnd()
   result := KsScmcClientGetImageVer4ContainerResult{}
-  var retval *GetImageVer4ContainerResponse
-  if retval, err2 = p.handler.GetImageVer4Container(ctx, args.NodeNameorip, args.ContainerName); err2 != nil {
-    tickerCancel()
-    if err2 == thrift.ErrAbandonRequest {
-      return false, thrift.WrapTException(err2)
-    }
+var retval *GetImageVer4ContainerResponse
+  var err2 error
+  if retval, err2 = p.handler.GetImageVer4Container(args.NodeNameorip, args.ContainerName); err2 != nil {
     x := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing getImageVer4Container: " + err2.Error())
-    oprot.WriteMessageBegin(ctx, "getImageVer4Container", thrift.EXCEPTION, seqId)
-    x.Write(ctx, oprot)
-    oprot.WriteMessageEnd(ctx)
-    oprot.Flush(ctx)
-    return true, thrift.WrapTException(err2)
+    oprot.WriteMessageBegin("getImageVer4Container", thrift.EXCEPTION, seqId)
+    x.Write(oprot)
+    oprot.WriteMessageEnd()
+    oprot.Flush()
+    return true, err2
   } else {
     result.Success = retval
+}
+  if err2 = oprot.WriteMessageBegin("getImageVer4Container", thrift.REPLY, seqId); err2 != nil {
+    err = err2
   }
-  tickerCancel()
-  if err2 = oprot.WriteMessageBegin(ctx, "getImageVer4Container", thrift.REPLY, seqId); err2 != nil {
-    err = thrift.WrapTException(err2)
+  if err2 = result.Write(oprot); err == nil && err2 != nil {
+    err = err2
   }
-  if err2 = result.Write(ctx, oprot); err == nil && err2 != nil {
-    err = thrift.WrapTException(err2)
+  if err2 = oprot.WriteMessageEnd(); err == nil && err2 != nil {
+    err = err2
   }
-  if err2 = oprot.WriteMessageEnd(ctx); err == nil && err2 != nil {
-    err = thrift.WrapTException(err2)
-  }
-  if err2 = oprot.Flush(ctx); err == nil && err2 != nil {
-    err = thrift.WrapTException(err2)
+  if err2 = oprot.Flush(); err == nil && err2 != nil {
+    err = err2
   }
   if err != nil {
     return
@@ -4984,74 +7332,43 @@ type ksScmcClientProcessorGetContainer struct {
   handler KsScmcClient
 }
 
-func (p *ksScmcClientProcessorGetContainer) Process(ctx context.Context, seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
+func (p *ksScmcClientProcessorGetContainer) Process(seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
   args := KsScmcClientGetContainerArgs{}
-  var err2 error
-  if err2 = args.Read(ctx, iprot); err2 != nil {
-    iprot.ReadMessageEnd(ctx)
-    x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err2.Error())
-    oprot.WriteMessageBegin(ctx, "getContainer", thrift.EXCEPTION, seqId)
-    x.Write(ctx, oprot)
-    oprot.WriteMessageEnd(ctx)
-    oprot.Flush(ctx)
-    return false, thrift.WrapTException(err2)
-  }
-  iprot.ReadMessageEnd(ctx)
-
-  tickerCancel := func() {}
-  // Start a goroutine to do server side connectivity check.
-  if thrift.ServerConnectivityCheckInterval > 0 {
-    var cancel context.CancelFunc
-    ctx, cancel = context.WithCancel(ctx)
-    defer cancel()
-    var tickerCtx context.Context
-    tickerCtx, tickerCancel = context.WithCancel(context.Background())
-    defer tickerCancel()
-    go func(ctx context.Context, cancel context.CancelFunc) {
-      ticker := time.NewTicker(thrift.ServerConnectivityCheckInterval)
-      defer ticker.Stop()
-      for {
-        select {
-        case <-ctx.Done():
-          return
-        case <-ticker.C:
-          if !iprot.Transport().IsOpen() {
-            cancel()
-            return
-          }
-        }
-      }
-    }(tickerCtx, cancel)
+  if err = args.Read(iprot); err != nil {
+    iprot.ReadMessageEnd()
+    x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err.Error())
+    oprot.WriteMessageBegin("getContainer", thrift.EXCEPTION, seqId)
+    x.Write(oprot)
+    oprot.WriteMessageEnd()
+    oprot.Flush()
+    return false, err
   }
 
+  iprot.ReadMessageEnd()
   result := KsScmcClientGetContainerResult{}
-  var retval int32
-  if retval, err2 = p.handler.GetContainer(ctx, args.NodeName, args.ContainerName); err2 != nil {
-    tickerCancel()
-    if err2 == thrift.ErrAbandonRequest {
-      return false, thrift.WrapTException(err2)
-    }
+var retval int32
+  var err2 error
+  if retval, err2 = p.handler.GetContainer(args.NodeName, args.ContainerName); err2 != nil {
     x := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing getContainer: " + err2.Error())
-    oprot.WriteMessageBegin(ctx, "getContainer", thrift.EXCEPTION, seqId)
-    x.Write(ctx, oprot)
-    oprot.WriteMessageEnd(ctx)
-    oprot.Flush(ctx)
-    return true, thrift.WrapTException(err2)
+    oprot.WriteMessageBegin("getContainer", thrift.EXCEPTION, seqId)
+    x.Write(oprot)
+    oprot.WriteMessageEnd()
+    oprot.Flush()
+    return true, err2
   } else {
     result.Success = &retval
+}
+  if err2 = oprot.WriteMessageBegin("getContainer", thrift.REPLY, seqId); err2 != nil {
+    err = err2
   }
-  tickerCancel()
-  if err2 = oprot.WriteMessageBegin(ctx, "getContainer", thrift.REPLY, seqId); err2 != nil {
-    err = thrift.WrapTException(err2)
+  if err2 = result.Write(oprot); err == nil && err2 != nil {
+    err = err2
   }
-  if err2 = result.Write(ctx, oprot); err == nil && err2 != nil {
-    err = thrift.WrapTException(err2)
+  if err2 = oprot.WriteMessageEnd(); err == nil && err2 != nil {
+    err = err2
   }
-  if err2 = oprot.WriteMessageEnd(ctx); err == nil && err2 != nil {
-    err = thrift.WrapTException(err2)
-  }
-  if err2 = oprot.Flush(ctx); err == nil && err2 != nil {
-    err = thrift.WrapTException(err2)
+  if err2 = oprot.Flush(); err == nil && err2 != nil {
+    err = err2
   }
   if err != nil {
     return
@@ -5063,74 +7380,43 @@ type ksScmcClientProcessorUpdateContainer struct {
   handler KsScmcClient
 }
 
-func (p *ksScmcClientProcessorUpdateContainer) Process(ctx context.Context, seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
+func (p *ksScmcClientProcessorUpdateContainer) Process(seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
   args := KsScmcClientUpdateContainerArgs{}
-  var err2 error
-  if err2 = args.Read(ctx, iprot); err2 != nil {
-    iprot.ReadMessageEnd(ctx)
-    x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err2.Error())
-    oprot.WriteMessageBegin(ctx, "updateContainer", thrift.EXCEPTION, seqId)
-    x.Write(ctx, oprot)
-    oprot.WriteMessageEnd(ctx)
-    oprot.Flush(ctx)
-    return false, thrift.WrapTException(err2)
-  }
-  iprot.ReadMessageEnd(ctx)
-
-  tickerCancel := func() {}
-  // Start a goroutine to do server side connectivity check.
-  if thrift.ServerConnectivityCheckInterval > 0 {
-    var cancel context.CancelFunc
-    ctx, cancel = context.WithCancel(ctx)
-    defer cancel()
-    var tickerCtx context.Context
-    tickerCtx, tickerCancel = context.WithCancel(context.Background())
-    defer tickerCancel()
-    go func(ctx context.Context, cancel context.CancelFunc) {
-      ticker := time.NewTicker(thrift.ServerConnectivityCheckInterval)
-      defer ticker.Stop()
-      for {
-        select {
-        case <-ctx.Done():
-          return
-        case <-ticker.C:
-          if !iprot.Transport().IsOpen() {
-            cancel()
-            return
-          }
-        }
-      }
-    }(tickerCtx, cancel)
+  if err = args.Read(iprot); err != nil {
+    iprot.ReadMessageEnd()
+    x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err.Error())
+    oprot.WriteMessageBegin("UpdateContainer", thrift.EXCEPTION, seqId)
+    x.Write(oprot)
+    oprot.WriteMessageEnd()
+    oprot.Flush()
+    return false, err
   }
 
+  iprot.ReadMessageEnd()
   result := KsScmcClientUpdateContainerResult{}
-  var retval int32
-  if retval, err2 = p.handler.UpdateContainer(ctx, args.NodeName, args.ContainerName, args.NewVer_); err2 != nil {
-    tickerCancel()
-    if err2 == thrift.ErrAbandonRequest {
-      return false, thrift.WrapTException(err2)
-    }
-    x := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing updateContainer: " + err2.Error())
-    oprot.WriteMessageBegin(ctx, "updateContainer", thrift.EXCEPTION, seqId)
-    x.Write(ctx, oprot)
-    oprot.WriteMessageEnd(ctx)
-    oprot.Flush(ctx)
-    return true, thrift.WrapTException(err2)
+var retval string
+  var err2 error
+  if retval, err2 = p.handler.UpdateContainer(args.NodeName, args.ContainerName, args.NewVer_); err2 != nil {
+    x := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing UpdateContainer: " + err2.Error())
+    oprot.WriteMessageBegin("UpdateContainer", thrift.EXCEPTION, seqId)
+    x.Write(oprot)
+    oprot.WriteMessageEnd()
+    oprot.Flush()
+    return true, err2
   } else {
     result.Success = &retval
+}
+  if err2 = oprot.WriteMessageBegin("UpdateContainer", thrift.REPLY, seqId); err2 != nil {
+    err = err2
   }
-  tickerCancel()
-  if err2 = oprot.WriteMessageBegin(ctx, "updateContainer", thrift.REPLY, seqId); err2 != nil {
-    err = thrift.WrapTException(err2)
+  if err2 = result.Write(oprot); err == nil && err2 != nil {
+    err = err2
   }
-  if err2 = result.Write(ctx, oprot); err == nil && err2 != nil {
-    err = thrift.WrapTException(err2)
+  if err2 = oprot.WriteMessageEnd(); err == nil && err2 != nil {
+    err = err2
   }
-  if err2 = oprot.WriteMessageEnd(ctx); err == nil && err2 != nil {
-    err = thrift.WrapTException(err2)
-  }
-  if err2 = oprot.Flush(ctx); err == nil && err2 != nil {
-    err = thrift.WrapTException(err2)
+  if err2 = oprot.Flush(); err == nil && err2 != nil {
+    err = err2
   }
   if err != nil {
     return
@@ -5142,74 +7428,43 @@ type ksScmcClientProcessorGetAlarmList struct {
   handler KsScmcClient
 }
 
-func (p *ksScmcClientProcessorGetAlarmList) Process(ctx context.Context, seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
+func (p *ksScmcClientProcessorGetAlarmList) Process(seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
   args := KsScmcClientGetAlarmListArgs{}
-  var err2 error
-  if err2 = args.Read(ctx, iprot); err2 != nil {
-    iprot.ReadMessageEnd(ctx)
-    x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err2.Error())
-    oprot.WriteMessageBegin(ctx, "getAlarmList", thrift.EXCEPTION, seqId)
-    x.Write(ctx, oprot)
-    oprot.WriteMessageEnd(ctx)
-    oprot.Flush(ctx)
-    return false, thrift.WrapTException(err2)
-  }
-  iprot.ReadMessageEnd(ctx)
-
-  tickerCancel := func() {}
-  // Start a goroutine to do server side connectivity check.
-  if thrift.ServerConnectivityCheckInterval > 0 {
-    var cancel context.CancelFunc
-    ctx, cancel = context.WithCancel(ctx)
-    defer cancel()
-    var tickerCtx context.Context
-    tickerCtx, tickerCancel = context.WithCancel(context.Background())
-    defer tickerCancel()
-    go func(ctx context.Context, cancel context.CancelFunc) {
-      ticker := time.NewTicker(thrift.ServerConnectivityCheckInterval)
-      defer ticker.Stop()
-      for {
-        select {
-        case <-ctx.Done():
-          return
-        case <-ticker.C:
-          if !iprot.Transport().IsOpen() {
-            cancel()
-            return
-          }
-        }
-      }
-    }(tickerCtx, cancel)
+  if err = args.Read(iprot); err != nil {
+    iprot.ReadMessageEnd()
+    x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err.Error())
+    oprot.WriteMessageBegin("GetAlarmList", thrift.EXCEPTION, seqId)
+    x.Write(oprot)
+    oprot.WriteMessageEnd()
+    oprot.Flush()
+    return false, err
   }
 
+  iprot.ReadMessageEnd()
   result := KsScmcClientGetAlarmListResult{}
-  var retval *GetAlarmListResponse
-  if retval, err2 = p.handler.GetAlarmList(ctx, args.NodeName); err2 != nil {
-    tickerCancel()
-    if err2 == thrift.ErrAbandonRequest {
-      return false, thrift.WrapTException(err2)
-    }
-    x := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing getAlarmList: " + err2.Error())
-    oprot.WriteMessageBegin(ctx, "getAlarmList", thrift.EXCEPTION, seqId)
-    x.Write(ctx, oprot)
-    oprot.WriteMessageEnd(ctx)
-    oprot.Flush(ctx)
-    return true, thrift.WrapTException(err2)
+var retval string
+  var err2 error
+  if retval, err2 = p.handler.GetAlarmList(args.NodeName); err2 != nil {
+    x := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing GetAlarmList: " + err2.Error())
+    oprot.WriteMessageBegin("GetAlarmList", thrift.EXCEPTION, seqId)
+    x.Write(oprot)
+    oprot.WriteMessageEnd()
+    oprot.Flush()
+    return true, err2
   } else {
-    result.Success = retval
+    result.Success = &retval
+}
+  if err2 = oprot.WriteMessageBegin("GetAlarmList", thrift.REPLY, seqId); err2 != nil {
+    err = err2
   }
-  tickerCancel()
-  if err2 = oprot.WriteMessageBegin(ctx, "getAlarmList", thrift.REPLY, seqId); err2 != nil {
-    err = thrift.WrapTException(err2)
+  if err2 = result.Write(oprot); err == nil && err2 != nil {
+    err = err2
   }
-  if err2 = result.Write(ctx, oprot); err == nil && err2 != nil {
-    err = thrift.WrapTException(err2)
+  if err2 = oprot.WriteMessageEnd(); err == nil && err2 != nil {
+    err = err2
   }
-  if err2 = oprot.WriteMessageEnd(ctx); err == nil && err2 != nil {
-    err = thrift.WrapTException(err2)
-  }
-  if err2 = oprot.Flush(ctx); err == nil && err2 != nil {
-    err = thrift.WrapTException(err2)
+  if err2 = oprot.Flush(); err == nil && err2 != nil {
+    err = err2
   }
   if err != nil {
     return
@@ -5221,74 +7476,139 @@ type ksScmcClientProcessorGetAllNodeList struct {
   handler KsScmcClient
 }
 
-func (p *ksScmcClientProcessorGetAllNodeList) Process(ctx context.Context, seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
+func (p *ksScmcClientProcessorGetAllNodeList) Process(seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
   args := KsScmcClientGetAllNodeListArgs{}
-  var err2 error
-  if err2 = args.Read(ctx, iprot); err2 != nil {
-    iprot.ReadMessageEnd(ctx)
-    x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err2.Error())
-    oprot.WriteMessageBegin(ctx, "getAllNodeList", thrift.EXCEPTION, seqId)
-    x.Write(ctx, oprot)
-    oprot.WriteMessageEnd(ctx)
-    oprot.Flush(ctx)
-    return false, thrift.WrapTException(err2)
-  }
-  iprot.ReadMessageEnd(ctx)
-
-  tickerCancel := func() {}
-  // Start a goroutine to do server side connectivity check.
-  if thrift.ServerConnectivityCheckInterval > 0 {
-    var cancel context.CancelFunc
-    ctx, cancel = context.WithCancel(ctx)
-    defer cancel()
-    var tickerCtx context.Context
-    tickerCtx, tickerCancel = context.WithCancel(context.Background())
-    defer tickerCancel()
-    go func(ctx context.Context, cancel context.CancelFunc) {
-      ticker := time.NewTicker(thrift.ServerConnectivityCheckInterval)
-      defer ticker.Stop()
-      for {
-        select {
-        case <-ctx.Done():
-          return
-        case <-ticker.C:
-          if !iprot.Transport().IsOpen() {
-            cancel()
-            return
-          }
-        }
-      }
-    }(tickerCtx, cancel)
+  if err = args.Read(iprot); err != nil {
+    iprot.ReadMessageEnd()
+    x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err.Error())
+    oprot.WriteMessageBegin("getAllNodeList", thrift.EXCEPTION, seqId)
+    x.Write(oprot)
+    oprot.WriteMessageEnd()
+    oprot.Flush()
+    return false, err
   }
 
+  iprot.ReadMessageEnd()
   result := KsScmcClientGetAllNodeListResult{}
-  var retval *GetAllNodeListResponse
-  if retval, err2 = p.handler.GetAllNodeList(ctx); err2 != nil {
-    tickerCancel()
-    if err2 == thrift.ErrAbandonRequest {
-      return false, thrift.WrapTException(err2)
-    }
+var retval *GetAllNodeListResponse
+  var err2 error
+  if retval, err2 = p.handler.GetAllNodeList(); err2 != nil {
     x := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing getAllNodeList: " + err2.Error())
-    oprot.WriteMessageBegin(ctx, "getAllNodeList", thrift.EXCEPTION, seqId)
-    x.Write(ctx, oprot)
-    oprot.WriteMessageEnd(ctx)
-    oprot.Flush(ctx)
-    return true, thrift.WrapTException(err2)
+    oprot.WriteMessageBegin("getAllNodeList", thrift.EXCEPTION, seqId)
+    x.Write(oprot)
+    oprot.WriteMessageEnd()
+    oprot.Flush()
+    return true, err2
   } else {
     result.Success = retval
+}
+  if err2 = oprot.WriteMessageBegin("getAllNodeList", thrift.REPLY, seqId); err2 != nil {
+    err = err2
   }
-  tickerCancel()
-  if err2 = oprot.WriteMessageBegin(ctx, "getAllNodeList", thrift.REPLY, seqId); err2 != nil {
-    err = thrift.WrapTException(err2)
+  if err2 = result.Write(oprot); err == nil && err2 != nil {
+    err = err2
   }
-  if err2 = result.Write(ctx, oprot); err == nil && err2 != nil {
-    err = thrift.WrapTException(err2)
+  if err2 = oprot.WriteMessageEnd(); err == nil && err2 != nil {
+    err = err2
   }
-  if err2 = oprot.WriteMessageEnd(ctx); err == nil && err2 != nil {
-    err = thrift.WrapTException(err2)
+  if err2 = oprot.Flush(); err == nil && err2 != nil {
+    err = err2
   }
-  if err2 = oprot.Flush(ctx); err == nil && err2 != nil {
-    err = thrift.WrapTException(err2)
+  if err != nil {
+    return
+  }
+  return true, err
+}
+
+type ksScmcClientProcessorGetAllContainers struct {
+  handler KsScmcClient
+}
+
+func (p *ksScmcClientProcessorGetAllContainers) Process(seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
+  args := KsScmcClientGetAllContainersArgs{}
+  if err = args.Read(iprot); err != nil {
+    iprot.ReadMessageEnd()
+    x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err.Error())
+    oprot.WriteMessageBegin("GetAllContainers", thrift.EXCEPTION, seqId)
+    x.Write(oprot)
+    oprot.WriteMessageEnd()
+    oprot.Flush()
+    return false, err
+  }
+
+  iprot.ReadMessageEnd()
+  result := KsScmcClientGetAllContainersResult{}
+var retval string
+  var err2 error
+  if retval, err2 = p.handler.GetAllContainers(args.NodeName); err2 != nil {
+    x := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing GetAllContainers: " + err2.Error())
+    oprot.WriteMessageBegin("GetAllContainers", thrift.EXCEPTION, seqId)
+    x.Write(oprot)
+    oprot.WriteMessageEnd()
+    oprot.Flush()
+    return true, err2
+  } else {
+    result.Success = &retval
+}
+  if err2 = oprot.WriteMessageBegin("GetAllContainers", thrift.REPLY, seqId); err2 != nil {
+    err = err2
+  }
+  if err2 = result.Write(oprot); err == nil && err2 != nil {
+    err = err2
+  }
+  if err2 = oprot.WriteMessageEnd(); err == nil && err2 != nil {
+    err = err2
+  }
+  if err2 = oprot.Flush(); err == nil && err2 != nil {
+    err = err2
+  }
+  if err != nil {
+    return
+  }
+  return true, err
+}
+
+type ksScmcClientProcessorGetAllContainersV2 struct {
+  handler KsScmcClient
+}
+
+func (p *ksScmcClientProcessorGetAllContainersV2) Process(seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
+  args := KsScmcClientGetAllContainersV2Args{}
+  if err = args.Read(iprot); err != nil {
+    iprot.ReadMessageEnd()
+    x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err.Error())
+    oprot.WriteMessageBegin("GetAllContainersV2", thrift.EXCEPTION, seqId)
+    x.Write(oprot)
+    oprot.WriteMessageEnd()
+    oprot.Flush()
+    return false, err
+  }
+
+  iprot.ReadMessageEnd()
+  result := KsScmcClientGetAllContainersV2Result{}
+var retval string
+  var err2 error
+  if retval, err2 = p.handler.GetAllContainersV2(args.Nid); err2 != nil {
+    x := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing GetAllContainersV2: " + err2.Error())
+    oprot.WriteMessageBegin("GetAllContainersV2", thrift.EXCEPTION, seqId)
+    x.Write(oprot)
+    oprot.WriteMessageEnd()
+    oprot.Flush()
+    return true, err2
+  } else {
+    result.Success = &retval
+}
+  if err2 = oprot.WriteMessageBegin("GetAllContainersV2", thrift.REPLY, seqId); err2 != nil {
+    err = err2
+  }
+  if err2 = result.Write(oprot); err == nil && err2 != nil {
+    err = err2
+  }
+  if err2 = oprot.WriteMessageEnd(); err == nil && err2 != nil {
+    err = err2
+  }
+  if err2 = oprot.Flush(); err == nil && err2 != nil {
+    err = err2
   }
   if err != nil {
     return
@@ -5300,74 +7620,43 @@ type ksScmcClientProcessorGetAllContainerList struct {
   handler KsScmcClient
 }
 
-func (p *ksScmcClientProcessorGetAllContainerList) Process(ctx context.Context, seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
+func (p *ksScmcClientProcessorGetAllContainerList) Process(seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
   args := KsScmcClientGetAllContainerListArgs{}
-  var err2 error
-  if err2 = args.Read(ctx, iprot); err2 != nil {
-    iprot.ReadMessageEnd(ctx)
-    x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err2.Error())
-    oprot.WriteMessageBegin(ctx, "getAllContainerList", thrift.EXCEPTION, seqId)
-    x.Write(ctx, oprot)
-    oprot.WriteMessageEnd(ctx)
-    oprot.Flush(ctx)
-    return false, thrift.WrapTException(err2)
-  }
-  iprot.ReadMessageEnd(ctx)
-
-  tickerCancel := func() {}
-  // Start a goroutine to do server side connectivity check.
-  if thrift.ServerConnectivityCheckInterval > 0 {
-    var cancel context.CancelFunc
-    ctx, cancel = context.WithCancel(ctx)
-    defer cancel()
-    var tickerCtx context.Context
-    tickerCtx, tickerCancel = context.WithCancel(context.Background())
-    defer tickerCancel()
-    go func(ctx context.Context, cancel context.CancelFunc) {
-      ticker := time.NewTicker(thrift.ServerConnectivityCheckInterval)
-      defer ticker.Stop()
-      for {
-        select {
-        case <-ctx.Done():
-          return
-        case <-ticker.C:
-          if !iprot.Transport().IsOpen() {
-            cancel()
-            return
-          }
-        }
-      }
-    }(tickerCtx, cancel)
+  if err = args.Read(iprot); err != nil {
+    iprot.ReadMessageEnd()
+    x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err.Error())
+    oprot.WriteMessageBegin("getAllContainerList", thrift.EXCEPTION, seqId)
+    x.Write(oprot)
+    oprot.WriteMessageEnd()
+    oprot.Flush()
+    return false, err
   }
 
+  iprot.ReadMessageEnd()
   result := KsScmcClientGetAllContainerListResult{}
-  var retval *GetAllContainerListResponse
-  if retval, err2 = p.handler.GetAllContainerList(ctx); err2 != nil {
-    tickerCancel()
-    if err2 == thrift.ErrAbandonRequest {
-      return false, thrift.WrapTException(err2)
-    }
+var retval *GetAllContainerListResponse
+  var err2 error
+  if retval, err2 = p.handler.GetAllContainerList(args.NodeName); err2 != nil {
     x := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing getAllContainerList: " + err2.Error())
-    oprot.WriteMessageBegin(ctx, "getAllContainerList", thrift.EXCEPTION, seqId)
-    x.Write(ctx, oprot)
-    oprot.WriteMessageEnd(ctx)
-    oprot.Flush(ctx)
-    return true, thrift.WrapTException(err2)
+    oprot.WriteMessageBegin("getAllContainerList", thrift.EXCEPTION, seqId)
+    x.Write(oprot)
+    oprot.WriteMessageEnd()
+    oprot.Flush()
+    return true, err2
   } else {
     result.Success = retval
+}
+  if err2 = oprot.WriteMessageBegin("getAllContainerList", thrift.REPLY, seqId); err2 != nil {
+    err = err2
   }
-  tickerCancel()
-  if err2 = oprot.WriteMessageBegin(ctx, "getAllContainerList", thrift.REPLY, seqId); err2 != nil {
-    err = thrift.WrapTException(err2)
+  if err2 = result.Write(oprot); err == nil && err2 != nil {
+    err = err2
   }
-  if err2 = result.Write(ctx, oprot); err == nil && err2 != nil {
-    err = thrift.WrapTException(err2)
+  if err2 = oprot.WriteMessageEnd(); err == nil && err2 != nil {
+    err = err2
   }
-  if err2 = oprot.WriteMessageEnd(ctx); err == nil && err2 != nil {
-    err = thrift.WrapTException(err2)
-  }
-  if err2 = oprot.Flush(ctx); err == nil && err2 != nil {
-    err = thrift.WrapTException(err2)
+  if err2 = oprot.Flush(); err == nil && err2 != nil {
+    err = err2
   }
   if err != nil {
     return
@@ -5379,74 +7668,43 @@ type ksScmcClientProcessorGetContainerNetwork struct {
   handler KsScmcClient
 }
 
-func (p *ksScmcClientProcessorGetContainerNetwork) Process(ctx context.Context, seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
+func (p *ksScmcClientProcessorGetContainerNetwork) Process(seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
   args := KsScmcClientGetContainerNetworkArgs{}
-  var err2 error
-  if err2 = args.Read(ctx, iprot); err2 != nil {
-    iprot.ReadMessageEnd(ctx)
-    x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err2.Error())
-    oprot.WriteMessageBegin(ctx, "getContainerNetwork", thrift.EXCEPTION, seqId)
-    x.Write(ctx, oprot)
-    oprot.WriteMessageEnd(ctx)
-    oprot.Flush(ctx)
-    return false, thrift.WrapTException(err2)
-  }
-  iprot.ReadMessageEnd(ctx)
-
-  tickerCancel := func() {}
-  // Start a goroutine to do server side connectivity check.
-  if thrift.ServerConnectivityCheckInterval > 0 {
-    var cancel context.CancelFunc
-    ctx, cancel = context.WithCancel(ctx)
-    defer cancel()
-    var tickerCtx context.Context
-    tickerCtx, tickerCancel = context.WithCancel(context.Background())
-    defer tickerCancel()
-    go func(ctx context.Context, cancel context.CancelFunc) {
-      ticker := time.NewTicker(thrift.ServerConnectivityCheckInterval)
-      defer ticker.Stop()
-      for {
-        select {
-        case <-ctx.Done():
-          return
-        case <-ticker.C:
-          if !iprot.Transport().IsOpen() {
-            cancel()
-            return
-          }
-        }
-      }
-    }(tickerCtx, cancel)
+  if err = args.Read(iprot); err != nil {
+    iprot.ReadMessageEnd()
+    x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err.Error())
+    oprot.WriteMessageBegin("GetContainerNetwork", thrift.EXCEPTION, seqId)
+    x.Write(oprot)
+    oprot.WriteMessageEnd()
+    oprot.Flush()
+    return false, err
   }
 
+  iprot.ReadMessageEnd()
   result := KsScmcClientGetContainerNetworkResult{}
-  var retval *GetContainerNetworkResponse
-  if retval, err2 = p.handler.GetContainerNetwork(ctx, args.NodeNameorip, args.ContainerName); err2 != nil {
-    tickerCancel()
-    if err2 == thrift.ErrAbandonRequest {
-      return false, thrift.WrapTException(err2)
-    }
-    x := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing getContainerNetwork: " + err2.Error())
-    oprot.WriteMessageBegin(ctx, "getContainerNetwork", thrift.EXCEPTION, seqId)
-    x.Write(ctx, oprot)
-    oprot.WriteMessageEnd(ctx)
-    oprot.Flush(ctx)
-    return true, thrift.WrapTException(err2)
+var retval string
+  var err2 error
+  if retval, err2 = p.handler.GetContainerNetwork(args.NodeNameorip, args.ContainerName); err2 != nil {
+    x := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing GetContainerNetwork: " + err2.Error())
+    oprot.WriteMessageBegin("GetContainerNetwork", thrift.EXCEPTION, seqId)
+    x.Write(oprot)
+    oprot.WriteMessageEnd()
+    oprot.Flush()
+    return true, err2
   } else {
-    result.Success = retval
+    result.Success = &retval
+}
+  if err2 = oprot.WriteMessageBegin("GetContainerNetwork", thrift.REPLY, seqId); err2 != nil {
+    err = err2
   }
-  tickerCancel()
-  if err2 = oprot.WriteMessageBegin(ctx, "getContainerNetwork", thrift.REPLY, seqId); err2 != nil {
-    err = thrift.WrapTException(err2)
+  if err2 = result.Write(oprot); err == nil && err2 != nil {
+    err = err2
   }
-  if err2 = result.Write(ctx, oprot); err == nil && err2 != nil {
-    err = thrift.WrapTException(err2)
+  if err2 = oprot.WriteMessageEnd(); err == nil && err2 != nil {
+    err = err2
   }
-  if err2 = oprot.WriteMessageEnd(ctx); err == nil && err2 != nil {
-    err = thrift.WrapTException(err2)
-  }
-  if err2 = oprot.Flush(ctx); err == nil && err2 != nil {
-    err = thrift.WrapTException(err2)
+  if err2 = oprot.Flush(); err == nil && err2 != nil {
+    err = err2
   }
   if err != nil {
     return
@@ -5458,74 +7716,43 @@ type ksScmcClientProcessorGetContainerNetRules struct {
   handler KsScmcClient
 }
 
-func (p *ksScmcClientProcessorGetContainerNetRules) Process(ctx context.Context, seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
+func (p *ksScmcClientProcessorGetContainerNetRules) Process(seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
   args := KsScmcClientGetContainerNetRulesArgs{}
-  var err2 error
-  if err2 = args.Read(ctx, iprot); err2 != nil {
-    iprot.ReadMessageEnd(ctx)
-    x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err2.Error())
-    oprot.WriteMessageBegin(ctx, "getContainerNetRules", thrift.EXCEPTION, seqId)
-    x.Write(ctx, oprot)
-    oprot.WriteMessageEnd(ctx)
-    oprot.Flush(ctx)
-    return false, thrift.WrapTException(err2)
-  }
-  iprot.ReadMessageEnd(ctx)
-
-  tickerCancel := func() {}
-  // Start a goroutine to do server side connectivity check.
-  if thrift.ServerConnectivityCheckInterval > 0 {
-    var cancel context.CancelFunc
-    ctx, cancel = context.WithCancel(ctx)
-    defer cancel()
-    var tickerCtx context.Context
-    tickerCtx, tickerCancel = context.WithCancel(context.Background())
-    defer tickerCancel()
-    go func(ctx context.Context, cancel context.CancelFunc) {
-      ticker := time.NewTicker(thrift.ServerConnectivityCheckInterval)
-      defer ticker.Stop()
-      for {
-        select {
-        case <-ctx.Done():
-          return
-        case <-ticker.C:
-          if !iprot.Transport().IsOpen() {
-            cancel()
-            return
-          }
-        }
-      }
-    }(tickerCtx, cancel)
+  if err = args.Read(iprot); err != nil {
+    iprot.ReadMessageEnd()
+    x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err.Error())
+    oprot.WriteMessageBegin("getContainerNetRules", thrift.EXCEPTION, seqId)
+    x.Write(oprot)
+    oprot.WriteMessageEnd()
+    oprot.Flush()
+    return false, err
   }
 
+  iprot.ReadMessageEnd()
   result := KsScmcClientGetContainerNetRulesResult{}
-  var retval *GetContainerNetRulesResponse
-  if retval, err2 = p.handler.GetContainerNetRules(ctx, args.NodeName, args.ContainerName); err2 != nil {
-    tickerCancel()
-    if err2 == thrift.ErrAbandonRequest {
-      return false, thrift.WrapTException(err2)
-    }
+var retval *GetContainerNetRulesResponse
+  var err2 error
+  if retval, err2 = p.handler.GetContainerNetRules(args.NodeName, args.ContainerName); err2 != nil {
     x := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing getContainerNetRules: " + err2.Error())
-    oprot.WriteMessageBegin(ctx, "getContainerNetRules", thrift.EXCEPTION, seqId)
-    x.Write(ctx, oprot)
-    oprot.WriteMessageEnd(ctx)
-    oprot.Flush(ctx)
-    return true, thrift.WrapTException(err2)
+    oprot.WriteMessageBegin("getContainerNetRules", thrift.EXCEPTION, seqId)
+    x.Write(oprot)
+    oprot.WriteMessageEnd()
+    oprot.Flush()
+    return true, err2
   } else {
     result.Success = retval
+}
+  if err2 = oprot.WriteMessageBegin("getContainerNetRules", thrift.REPLY, seqId); err2 != nil {
+    err = err2
   }
-  tickerCancel()
-  if err2 = oprot.WriteMessageBegin(ctx, "getContainerNetRules", thrift.REPLY, seqId); err2 != nil {
-    err = thrift.WrapTException(err2)
+  if err2 = result.Write(oprot); err == nil && err2 != nil {
+    err = err2
   }
-  if err2 = result.Write(ctx, oprot); err == nil && err2 != nil {
-    err = thrift.WrapTException(err2)
+  if err2 = oprot.WriteMessageEnd(); err == nil && err2 != nil {
+    err = err2
   }
-  if err2 = oprot.WriteMessageEnd(ctx); err == nil && err2 != nil {
-    err = thrift.WrapTException(err2)
-  }
-  if err2 = oprot.Flush(ctx); err == nil && err2 != nil {
-    err = thrift.WrapTException(err2)
+  if err2 = oprot.Flush(); err == nil && err2 != nil {
+    err = err2
   }
   if err != nil {
     return
@@ -5537,74 +7764,43 @@ type ksScmcClientProcessorAddContainerIpPort struct {
   handler KsScmcClient
 }
 
-func (p *ksScmcClientProcessorAddContainerIpPort) Process(ctx context.Context, seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
+func (p *ksScmcClientProcessorAddContainerIpPort) Process(seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
   args := KsScmcClientAddContainerIpPortArgs{}
-  var err2 error
-  if err2 = args.Read(ctx, iprot); err2 != nil {
-    iprot.ReadMessageEnd(ctx)
-    x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err2.Error())
-    oprot.WriteMessageBegin(ctx, "addContainerIpPort", thrift.EXCEPTION, seqId)
-    x.Write(ctx, oprot)
-    oprot.WriteMessageEnd(ctx)
-    oprot.Flush(ctx)
-    return false, thrift.WrapTException(err2)
-  }
-  iprot.ReadMessageEnd(ctx)
-
-  tickerCancel := func() {}
-  // Start a goroutine to do server side connectivity check.
-  if thrift.ServerConnectivityCheckInterval > 0 {
-    var cancel context.CancelFunc
-    ctx, cancel = context.WithCancel(ctx)
-    defer cancel()
-    var tickerCtx context.Context
-    tickerCtx, tickerCancel = context.WithCancel(context.Background())
-    defer tickerCancel()
-    go func(ctx context.Context, cancel context.CancelFunc) {
-      ticker := time.NewTicker(thrift.ServerConnectivityCheckInterval)
-      defer ticker.Stop()
-      for {
-        select {
-        case <-ctx.Done():
-          return
-        case <-ticker.C:
-          if !iprot.Transport().IsOpen() {
-            cancel()
-            return
-          }
-        }
-      }
-    }(tickerCtx, cancel)
+  if err = args.Read(iprot); err != nil {
+    iprot.ReadMessageEnd()
+    x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err.Error())
+    oprot.WriteMessageBegin("addContainerIpPort", thrift.EXCEPTION, seqId)
+    x.Write(oprot)
+    oprot.WriteMessageEnd()
+    oprot.Flush()
+    return false, err
   }
 
+  iprot.ReadMessageEnd()
   result := KsScmcClientAddContainerIpPortResult{}
-  var retval int32
-  if retval, err2 = p.handler.AddContainerIpPort(ctx, args.NodeNameorip, args.ContainerName, args.IPAddr, args.Port, args.NetProto); err2 != nil {
-    tickerCancel()
-    if err2 == thrift.ErrAbandonRequest {
-      return false, thrift.WrapTException(err2)
-    }
+var retval int32
+  var err2 error
+  if retval, err2 = p.handler.AddContainerIpPort(args.NodeNameorip, args.ContainerName, args.IPAddr, args.Port, args.NetProto); err2 != nil {
     x := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing addContainerIpPort: " + err2.Error())
-    oprot.WriteMessageBegin(ctx, "addContainerIpPort", thrift.EXCEPTION, seqId)
-    x.Write(ctx, oprot)
-    oprot.WriteMessageEnd(ctx)
-    oprot.Flush(ctx)
-    return true, thrift.WrapTException(err2)
+    oprot.WriteMessageBegin("addContainerIpPort", thrift.EXCEPTION, seqId)
+    x.Write(oprot)
+    oprot.WriteMessageEnd()
+    oprot.Flush()
+    return true, err2
   } else {
     result.Success = &retval
+}
+  if err2 = oprot.WriteMessageBegin("addContainerIpPort", thrift.REPLY, seqId); err2 != nil {
+    err = err2
   }
-  tickerCancel()
-  if err2 = oprot.WriteMessageBegin(ctx, "addContainerIpPort", thrift.REPLY, seqId); err2 != nil {
-    err = thrift.WrapTException(err2)
+  if err2 = result.Write(oprot); err == nil && err2 != nil {
+    err = err2
   }
-  if err2 = result.Write(ctx, oprot); err == nil && err2 != nil {
-    err = thrift.WrapTException(err2)
+  if err2 = oprot.WriteMessageEnd(); err == nil && err2 != nil {
+    err = err2
   }
-  if err2 = oprot.WriteMessageEnd(ctx); err == nil && err2 != nil {
-    err = thrift.WrapTException(err2)
-  }
-  if err2 = oprot.Flush(ctx); err == nil && err2 != nil {
-    err = thrift.WrapTException(err2)
+  if err2 = oprot.Flush(); err == nil && err2 != nil {
+    err = err2
   }
   if err != nil {
     return
@@ -5616,74 +7812,43 @@ type ksScmcClientProcessorAddContainerReqIpPort struct {
   handler KsScmcClient
 }
 
-func (p *ksScmcClientProcessorAddContainerReqIpPort) Process(ctx context.Context, seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
+func (p *ksScmcClientProcessorAddContainerReqIpPort) Process(seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
   args := KsScmcClientAddContainerReqIpPortArgs{}
-  var err2 error
-  if err2 = args.Read(ctx, iprot); err2 != nil {
-    iprot.ReadMessageEnd(ctx)
-    x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err2.Error())
-    oprot.WriteMessageBegin(ctx, "addContainerReqIpPort", thrift.EXCEPTION, seqId)
-    x.Write(ctx, oprot)
-    oprot.WriteMessageEnd(ctx)
-    oprot.Flush(ctx)
-    return false, thrift.WrapTException(err2)
-  }
-  iprot.ReadMessageEnd(ctx)
-
-  tickerCancel := func() {}
-  // Start a goroutine to do server side connectivity check.
-  if thrift.ServerConnectivityCheckInterval > 0 {
-    var cancel context.CancelFunc
-    ctx, cancel = context.WithCancel(ctx)
-    defer cancel()
-    var tickerCtx context.Context
-    tickerCtx, tickerCancel = context.WithCancel(context.Background())
-    defer tickerCancel()
-    go func(ctx context.Context, cancel context.CancelFunc) {
-      ticker := time.NewTicker(thrift.ServerConnectivityCheckInterval)
-      defer ticker.Stop()
-      for {
-        select {
-        case <-ctx.Done():
-          return
-        case <-ticker.C:
-          if !iprot.Transport().IsOpen() {
-            cancel()
-            return
-          }
-        }
-      }
-    }(tickerCtx, cancel)
+  if err = args.Read(iprot); err != nil {
+    iprot.ReadMessageEnd()
+    x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err.Error())
+    oprot.WriteMessageBegin("addContainerReqIpPort", thrift.EXCEPTION, seqId)
+    x.Write(oprot)
+    oprot.WriteMessageEnd()
+    oprot.Flush()
+    return false, err
   }
 
+  iprot.ReadMessageEnd()
   result := KsScmcClientAddContainerReqIpPortResult{}
-  var retval int32
-  if retval, err2 = p.handler.AddContainerReqIpPort(ctx, args.NodeName, args.ContainerName, args.IPAddr, args.Port, args.NetProto); err2 != nil {
-    tickerCancel()
-    if err2 == thrift.ErrAbandonRequest {
-      return false, thrift.WrapTException(err2)
-    }
+var retval int32
+  var err2 error
+  if retval, err2 = p.handler.AddContainerReqIpPort(args.NodeName, args.ContainerName, args.IPAddr, args.Port, args.NetProto); err2 != nil {
     x := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing addContainerReqIpPort: " + err2.Error())
-    oprot.WriteMessageBegin(ctx, "addContainerReqIpPort", thrift.EXCEPTION, seqId)
-    x.Write(ctx, oprot)
-    oprot.WriteMessageEnd(ctx)
-    oprot.Flush(ctx)
-    return true, thrift.WrapTException(err2)
+    oprot.WriteMessageBegin("addContainerReqIpPort", thrift.EXCEPTION, seqId)
+    x.Write(oprot)
+    oprot.WriteMessageEnd()
+    oprot.Flush()
+    return true, err2
   } else {
     result.Success = &retval
+}
+  if err2 = oprot.WriteMessageBegin("addContainerReqIpPort", thrift.REPLY, seqId); err2 != nil {
+    err = err2
   }
-  tickerCancel()
-  if err2 = oprot.WriteMessageBegin(ctx, "addContainerReqIpPort", thrift.REPLY, seqId); err2 != nil {
-    err = thrift.WrapTException(err2)
+  if err2 = result.Write(oprot); err == nil && err2 != nil {
+    err = err2
   }
-  if err2 = result.Write(ctx, oprot); err == nil && err2 != nil {
-    err = thrift.WrapTException(err2)
+  if err2 = oprot.WriteMessageEnd(); err == nil && err2 != nil {
+    err = err2
   }
-  if err2 = oprot.WriteMessageEnd(ctx); err == nil && err2 != nil {
-    err = thrift.WrapTException(err2)
-  }
-  if err2 = oprot.Flush(ctx); err == nil && err2 != nil {
-    err = thrift.WrapTException(err2)
+  if err2 = oprot.Flush(); err == nil && err2 != nil {
+    err = err2
   }
   if err != nil {
     return
@@ -5695,74 +7860,43 @@ type ksScmcClientProcessorAddContainerEnv struct {
   handler KsScmcClient
 }
 
-func (p *ksScmcClientProcessorAddContainerEnv) Process(ctx context.Context, seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
+func (p *ksScmcClientProcessorAddContainerEnv) Process(seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
   args := KsScmcClientAddContainerEnvArgs{}
-  var err2 error
-  if err2 = args.Read(ctx, iprot); err2 != nil {
-    iprot.ReadMessageEnd(ctx)
-    x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err2.Error())
-    oprot.WriteMessageBegin(ctx, "addContainerEnv", thrift.EXCEPTION, seqId)
-    x.Write(ctx, oprot)
-    oprot.WriteMessageEnd(ctx)
-    oprot.Flush(ctx)
-    return false, thrift.WrapTException(err2)
-  }
-  iprot.ReadMessageEnd(ctx)
-
-  tickerCancel := func() {}
-  // Start a goroutine to do server side connectivity check.
-  if thrift.ServerConnectivityCheckInterval > 0 {
-    var cancel context.CancelFunc
-    ctx, cancel = context.WithCancel(ctx)
-    defer cancel()
-    var tickerCtx context.Context
-    tickerCtx, tickerCancel = context.WithCancel(context.Background())
-    defer tickerCancel()
-    go func(ctx context.Context, cancel context.CancelFunc) {
-      ticker := time.NewTicker(thrift.ServerConnectivityCheckInterval)
-      defer ticker.Stop()
-      for {
-        select {
-        case <-ctx.Done():
-          return
-        case <-ticker.C:
-          if !iprot.Transport().IsOpen() {
-            cancel()
-            return
-          }
-        }
-      }
-    }(tickerCtx, cancel)
+  if err = args.Read(iprot); err != nil {
+    iprot.ReadMessageEnd()
+    x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err.Error())
+    oprot.WriteMessageBegin("AddContainerEnv", thrift.EXCEPTION, seqId)
+    x.Write(oprot)
+    oprot.WriteMessageEnd()
+    oprot.Flush()
+    return false, err
   }
 
+  iprot.ReadMessageEnd()
   result := KsScmcClientAddContainerEnvResult{}
-  var retval int32
-  if retval, err2 = p.handler.AddContainerEnv(ctx, args.NodeNameorip, args.ContainerName, args.EnvName, args.EnvValue); err2 != nil {
-    tickerCancel()
-    if err2 == thrift.ErrAbandonRequest {
-      return false, thrift.WrapTException(err2)
-    }
-    x := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing addContainerEnv: " + err2.Error())
-    oprot.WriteMessageBegin(ctx, "addContainerEnv", thrift.EXCEPTION, seqId)
-    x.Write(ctx, oprot)
-    oprot.WriteMessageEnd(ctx)
-    oprot.Flush(ctx)
-    return true, thrift.WrapTException(err2)
+var retval string
+  var err2 error
+  if retval, err2 = p.handler.AddContainerEnv(args.NodeNameorip, args.ContainerName, args.EnvName, args.EnvValue); err2 != nil {
+    x := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing AddContainerEnv: " + err2.Error())
+    oprot.WriteMessageBegin("AddContainerEnv", thrift.EXCEPTION, seqId)
+    x.Write(oprot)
+    oprot.WriteMessageEnd()
+    oprot.Flush()
+    return true, err2
   } else {
     result.Success = &retval
+}
+  if err2 = oprot.WriteMessageBegin("AddContainerEnv", thrift.REPLY, seqId); err2 != nil {
+    err = err2
   }
-  tickerCancel()
-  if err2 = oprot.WriteMessageBegin(ctx, "addContainerEnv", thrift.REPLY, seqId); err2 != nil {
-    err = thrift.WrapTException(err2)
+  if err2 = result.Write(oprot); err == nil && err2 != nil {
+    err = err2
   }
-  if err2 = result.Write(ctx, oprot); err == nil && err2 != nil {
-    err = thrift.WrapTException(err2)
+  if err2 = oprot.WriteMessageEnd(); err == nil && err2 != nil {
+    err = err2
   }
-  if err2 = oprot.WriteMessageEnd(ctx); err == nil && err2 != nil {
-    err = thrift.WrapTException(err2)
-  }
-  if err2 = oprot.Flush(ctx); err == nil && err2 != nil {
-    err = thrift.WrapTException(err2)
+  if err2 = oprot.Flush(); err == nil && err2 != nil {
+    err = err2
   }
   if err != nil {
     return
@@ -5774,74 +7908,43 @@ type ksScmcClientProcessorAddContainerLocalVolume struct {
   handler KsScmcClient
 }
 
-func (p *ksScmcClientProcessorAddContainerLocalVolume) Process(ctx context.Context, seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
+func (p *ksScmcClientProcessorAddContainerLocalVolume) Process(seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
   args := KsScmcClientAddContainerLocalVolumeArgs{}
-  var err2 error
-  if err2 = args.Read(ctx, iprot); err2 != nil {
-    iprot.ReadMessageEnd(ctx)
-    x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err2.Error())
-    oprot.WriteMessageBegin(ctx, "addContainerLocalVolume", thrift.EXCEPTION, seqId)
-    x.Write(ctx, oprot)
-    oprot.WriteMessageEnd(ctx)
-    oprot.Flush(ctx)
-    return false, thrift.WrapTException(err2)
-  }
-  iprot.ReadMessageEnd(ctx)
-
-  tickerCancel := func() {}
-  // Start a goroutine to do server side connectivity check.
-  if thrift.ServerConnectivityCheckInterval > 0 {
-    var cancel context.CancelFunc
-    ctx, cancel = context.WithCancel(ctx)
-    defer cancel()
-    var tickerCtx context.Context
-    tickerCtx, tickerCancel = context.WithCancel(context.Background())
-    defer tickerCancel()
-    go func(ctx context.Context, cancel context.CancelFunc) {
-      ticker := time.NewTicker(thrift.ServerConnectivityCheckInterval)
-      defer ticker.Stop()
-      for {
-        select {
-        case <-ctx.Done():
-          return
-        case <-ticker.C:
-          if !iprot.Transport().IsOpen() {
-            cancel()
-            return
-          }
-        }
-      }
-    }(tickerCtx, cancel)
+  if err = args.Read(iprot); err != nil {
+    iprot.ReadMessageEnd()
+    x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err.Error())
+    oprot.WriteMessageBegin("addContainerLocalVolume", thrift.EXCEPTION, seqId)
+    x.Write(oprot)
+    oprot.WriteMessageEnd()
+    oprot.Flush()
+    return false, err
   }
 
+  iprot.ReadMessageEnd()
   result := KsScmcClientAddContainerLocalVolumeResult{}
-  var retval int32
-  if retval, err2 = p.handler.AddContainerLocalVolume(ctx, args.NodeNameorip, args.ContainerName, args.InDir, args.OutDir, args.AccessAuth); err2 != nil {
-    tickerCancel()
-    if err2 == thrift.ErrAbandonRequest {
-      return false, thrift.WrapTException(err2)
-    }
+var retval int32
+  var err2 error
+  if retval, err2 = p.handler.AddContainerLocalVolume(args.NodeNameorip, args.ContainerName, args.InDir, args.OutDir, args.AccessAuth); err2 != nil {
     x := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing addContainerLocalVolume: " + err2.Error())
-    oprot.WriteMessageBegin(ctx, "addContainerLocalVolume", thrift.EXCEPTION, seqId)
-    x.Write(ctx, oprot)
-    oprot.WriteMessageEnd(ctx)
-    oprot.Flush(ctx)
-    return true, thrift.WrapTException(err2)
+    oprot.WriteMessageBegin("addContainerLocalVolume", thrift.EXCEPTION, seqId)
+    x.Write(oprot)
+    oprot.WriteMessageEnd()
+    oprot.Flush()
+    return true, err2
   } else {
     result.Success = &retval
+}
+  if err2 = oprot.WriteMessageBegin("addContainerLocalVolume", thrift.REPLY, seqId); err2 != nil {
+    err = err2
   }
-  tickerCancel()
-  if err2 = oprot.WriteMessageBegin(ctx, "addContainerLocalVolume", thrift.REPLY, seqId); err2 != nil {
-    err = thrift.WrapTException(err2)
+  if err2 = result.Write(oprot); err == nil && err2 != nil {
+    err = err2
   }
-  if err2 = result.Write(ctx, oprot); err == nil && err2 != nil {
-    err = thrift.WrapTException(err2)
+  if err2 = oprot.WriteMessageEnd(); err == nil && err2 != nil {
+    err = err2
   }
-  if err2 = oprot.WriteMessageEnd(ctx); err == nil && err2 != nil {
-    err = thrift.WrapTException(err2)
-  }
-  if err2 = oprot.Flush(ctx); err == nil && err2 != nil {
-    err = thrift.WrapTException(err2)
+  if err2 = oprot.Flush(); err == nil && err2 != nil {
+    err = err2
   }
   if err != nil {
     return
@@ -5853,74 +7956,43 @@ type ksScmcClientProcessorSetContainerDisplayV2 struct {
   handler KsScmcClient
 }
 
-func (p *ksScmcClientProcessorSetContainerDisplayV2) Process(ctx context.Context, seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
+func (p *ksScmcClientProcessorSetContainerDisplayV2) Process(seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
   args := KsScmcClientSetContainerDisplayV2Args{}
-  var err2 error
-  if err2 = args.Read(ctx, iprot); err2 != nil {
-    iprot.ReadMessageEnd(ctx)
-    x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err2.Error())
-    oprot.WriteMessageBegin(ctx, "setContainerDisplayV2", thrift.EXCEPTION, seqId)
-    x.Write(ctx, oprot)
-    oprot.WriteMessageEnd(ctx)
-    oprot.Flush(ctx)
-    return false, thrift.WrapTException(err2)
-  }
-  iprot.ReadMessageEnd(ctx)
-
-  tickerCancel := func() {}
-  // Start a goroutine to do server side connectivity check.
-  if thrift.ServerConnectivityCheckInterval > 0 {
-    var cancel context.CancelFunc
-    ctx, cancel = context.WithCancel(ctx)
-    defer cancel()
-    var tickerCtx context.Context
-    tickerCtx, tickerCancel = context.WithCancel(context.Background())
-    defer tickerCancel()
-    go func(ctx context.Context, cancel context.CancelFunc) {
-      ticker := time.NewTicker(thrift.ServerConnectivityCheckInterval)
-      defer ticker.Stop()
-      for {
-        select {
-        case <-ctx.Done():
-          return
-        case <-ticker.C:
-          if !iprot.Transport().IsOpen() {
-            cancel()
-            return
-          }
-        }
-      }
-    }(tickerCtx, cancel)
+  if err = args.Read(iprot); err != nil {
+    iprot.ReadMessageEnd()
+    x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err.Error())
+    oprot.WriteMessageBegin("SetContainerDisplayV2", thrift.EXCEPTION, seqId)
+    x.Write(oprot)
+    oprot.WriteMessageEnd()
+    oprot.Flush()
+    return false, err
   }
 
+  iprot.ReadMessageEnd()
   result := KsScmcClientSetContainerDisplayV2Result{}
-  var retval int32
-  if retval, err2 = p.handler.SetContainerDisplayV2(ctx, args.NodeName, args.ContainerName, args.Enabled, args.Display); err2 != nil {
-    tickerCancel()
-    if err2 == thrift.ErrAbandonRequest {
-      return false, thrift.WrapTException(err2)
-    }
-    x := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing setContainerDisplayV2: " + err2.Error())
-    oprot.WriteMessageBegin(ctx, "setContainerDisplayV2", thrift.EXCEPTION, seqId)
-    x.Write(ctx, oprot)
-    oprot.WriteMessageEnd(ctx)
-    oprot.Flush(ctx)
-    return true, thrift.WrapTException(err2)
+var retval string
+  var err2 error
+  if retval, err2 = p.handler.SetContainerDisplayV2(args.NodeName, args.ContainerName, args.Enabled, args.Display); err2 != nil {
+    x := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing SetContainerDisplayV2: " + err2.Error())
+    oprot.WriteMessageBegin("SetContainerDisplayV2", thrift.EXCEPTION, seqId)
+    x.Write(oprot)
+    oprot.WriteMessageEnd()
+    oprot.Flush()
+    return true, err2
   } else {
     result.Success = &retval
+}
+  if err2 = oprot.WriteMessageBegin("SetContainerDisplayV2", thrift.REPLY, seqId); err2 != nil {
+    err = err2
   }
-  tickerCancel()
-  if err2 = oprot.WriteMessageBegin(ctx, "setContainerDisplayV2", thrift.REPLY, seqId); err2 != nil {
-    err = thrift.WrapTException(err2)
+  if err2 = result.Write(oprot); err == nil && err2 != nil {
+    err = err2
   }
-  if err2 = result.Write(ctx, oprot); err == nil && err2 != nil {
-    err = thrift.WrapTException(err2)
+  if err2 = oprot.WriteMessageEnd(); err == nil && err2 != nil {
+    err = err2
   }
-  if err2 = oprot.WriteMessageEnd(ctx); err == nil && err2 != nil {
-    err = thrift.WrapTException(err2)
-  }
-  if err2 = oprot.Flush(ctx); err == nil && err2 != nil {
-    err = thrift.WrapTException(err2)
+  if err2 = oprot.Flush(); err == nil && err2 != nil {
+    err = err2
   }
   if err != nil {
     return
@@ -5932,74 +8004,43 @@ type ksScmcClientProcessorSetContainerQuota struct {
   handler KsScmcClient
 }
 
-func (p *ksScmcClientProcessorSetContainerQuota) Process(ctx context.Context, seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
+func (p *ksScmcClientProcessorSetContainerQuota) Process(seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
   args := KsScmcClientSetContainerQuotaArgs{}
-  var err2 error
-  if err2 = args.Read(ctx, iprot); err2 != nil {
-    iprot.ReadMessageEnd(ctx)
-    x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err2.Error())
-    oprot.WriteMessageBegin(ctx, "setContainerQuota", thrift.EXCEPTION, seqId)
-    x.Write(ctx, oprot)
-    oprot.WriteMessageEnd(ctx)
-    oprot.Flush(ctx)
-    return false, thrift.WrapTException(err2)
-  }
-  iprot.ReadMessageEnd(ctx)
-
-  tickerCancel := func() {}
-  // Start a goroutine to do server side connectivity check.
-  if thrift.ServerConnectivityCheckInterval > 0 {
-    var cancel context.CancelFunc
-    ctx, cancel = context.WithCancel(ctx)
-    defer cancel()
-    var tickerCtx context.Context
-    tickerCtx, tickerCancel = context.WithCancel(context.Background())
-    defer tickerCancel()
-    go func(ctx context.Context, cancel context.CancelFunc) {
-      ticker := time.NewTicker(thrift.ServerConnectivityCheckInterval)
-      defer ticker.Stop()
-      for {
-        select {
-        case <-ctx.Done():
-          return
-        case <-ticker.C:
-          if !iprot.Transport().IsOpen() {
-            cancel()
-            return
-          }
-        }
-      }
-    }(tickerCtx, cancel)
+  if err = args.Read(iprot); err != nil {
+    iprot.ReadMessageEnd()
+    x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err.Error())
+    oprot.WriteMessageBegin("SetContainerQuota", thrift.EXCEPTION, seqId)
+    x.Write(oprot)
+    oprot.WriteMessageEnd()
+    oprot.Flush()
+    return false, err
   }
 
+  iprot.ReadMessageEnd()
   result := KsScmcClientSetContainerQuotaResult{}
-  var retval int32
-  if retval, err2 = p.handler.SetContainerQuota(ctx, args.NodeName, args.ContainerName, args.ContainerLimit); err2 != nil {
-    tickerCancel()
-    if err2 == thrift.ErrAbandonRequest {
-      return false, thrift.WrapTException(err2)
-    }
-    x := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing setContainerQuota: " + err2.Error())
-    oprot.WriteMessageBegin(ctx, "setContainerQuota", thrift.EXCEPTION, seqId)
-    x.Write(ctx, oprot)
-    oprot.WriteMessageEnd(ctx)
-    oprot.Flush(ctx)
-    return true, thrift.WrapTException(err2)
+var retval string
+  var err2 error
+  if retval, err2 = p.handler.SetContainerQuota(args.NodeName, args.ContainerName, args.ContainerLimit); err2 != nil {
+    x := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing SetContainerQuota: " + err2.Error())
+    oprot.WriteMessageBegin("SetContainerQuota", thrift.EXCEPTION, seqId)
+    x.Write(oprot)
+    oprot.WriteMessageEnd()
+    oprot.Flush()
+    return true, err2
   } else {
     result.Success = &retval
+}
+  if err2 = oprot.WriteMessageBegin("SetContainerQuota", thrift.REPLY, seqId); err2 != nil {
+    err = err2
   }
-  tickerCancel()
-  if err2 = oprot.WriteMessageBegin(ctx, "setContainerQuota", thrift.REPLY, seqId); err2 != nil {
-    err = thrift.WrapTException(err2)
+  if err2 = result.Write(oprot); err == nil && err2 != nil {
+    err = err2
   }
-  if err2 = result.Write(ctx, oprot); err == nil && err2 != nil {
-    err = thrift.WrapTException(err2)
+  if err2 = oprot.WriteMessageEnd(); err == nil && err2 != nil {
+    err = err2
   }
-  if err2 = oprot.WriteMessageEnd(ctx); err == nil && err2 != nil {
-    err = thrift.WrapTException(err2)
-  }
-  if err2 = oprot.Flush(ctx); err == nil && err2 != nil {
-    err = thrift.WrapTException(err2)
+  if err2 = oprot.Flush(); err == nil && err2 != nil {
+    err = err2
   }
   if err != nil {
     return
@@ -6011,74 +8052,43 @@ type ksScmcClientProcessorSetContainerPrivileged struct {
   handler KsScmcClient
 }
 
-func (p *ksScmcClientProcessorSetContainerPrivileged) Process(ctx context.Context, seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
+func (p *ksScmcClientProcessorSetContainerPrivileged) Process(seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
   args := KsScmcClientSetContainerPrivilegedArgs{}
-  var err2 error
-  if err2 = args.Read(ctx, iprot); err2 != nil {
-    iprot.ReadMessageEnd(ctx)
-    x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err2.Error())
-    oprot.WriteMessageBegin(ctx, "setContainerPrivileged", thrift.EXCEPTION, seqId)
-    x.Write(ctx, oprot)
-    oprot.WriteMessageEnd(ctx)
-    oprot.Flush(ctx)
-    return false, thrift.WrapTException(err2)
-  }
-  iprot.ReadMessageEnd(ctx)
-
-  tickerCancel := func() {}
-  // Start a goroutine to do server side connectivity check.
-  if thrift.ServerConnectivityCheckInterval > 0 {
-    var cancel context.CancelFunc
-    ctx, cancel = context.WithCancel(ctx)
-    defer cancel()
-    var tickerCtx context.Context
-    tickerCtx, tickerCancel = context.WithCancel(context.Background())
-    defer tickerCancel()
-    go func(ctx context.Context, cancel context.CancelFunc) {
-      ticker := time.NewTicker(thrift.ServerConnectivityCheckInterval)
-      defer ticker.Stop()
-      for {
-        select {
-        case <-ctx.Done():
-          return
-        case <-ticker.C:
-          if !iprot.Transport().IsOpen() {
-            cancel()
-            return
-          }
-        }
-      }
-    }(tickerCtx, cancel)
+  if err = args.Read(iprot); err != nil {
+    iprot.ReadMessageEnd()
+    x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err.Error())
+    oprot.WriteMessageBegin("setContainerPrivileged", thrift.EXCEPTION, seqId)
+    x.Write(oprot)
+    oprot.WriteMessageEnd()
+    oprot.Flush()
+    return false, err
   }
 
+  iprot.ReadMessageEnd()
   result := KsScmcClientSetContainerPrivilegedResult{}
-  var retval int32
-  if retval, err2 = p.handler.SetContainerPrivileged(ctx, args.NodeIP, args.ContainerName, args.IsPrivileged); err2 != nil {
-    tickerCancel()
-    if err2 == thrift.ErrAbandonRequest {
-      return false, thrift.WrapTException(err2)
-    }
+var retval int32
+  var err2 error
+  if retval, err2 = p.handler.SetContainerPrivileged(args.NodeIP, args.ContainerName, args.IsPrivileged); err2 != nil {
     x := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing setContainerPrivileged: " + err2.Error())
-    oprot.WriteMessageBegin(ctx, "setContainerPrivileged", thrift.EXCEPTION, seqId)
-    x.Write(ctx, oprot)
-    oprot.WriteMessageEnd(ctx)
-    oprot.Flush(ctx)
-    return true, thrift.WrapTException(err2)
+    oprot.WriteMessageBegin("setContainerPrivileged", thrift.EXCEPTION, seqId)
+    x.Write(oprot)
+    oprot.WriteMessageEnd()
+    oprot.Flush()
+    return true, err2
   } else {
     result.Success = &retval
+}
+  if err2 = oprot.WriteMessageBegin("setContainerPrivileged", thrift.REPLY, seqId); err2 != nil {
+    err = err2
   }
-  tickerCancel()
-  if err2 = oprot.WriteMessageBegin(ctx, "setContainerPrivileged", thrift.REPLY, seqId); err2 != nil {
-    err = thrift.WrapTException(err2)
+  if err2 = result.Write(oprot); err == nil && err2 != nil {
+    err = err2
   }
-  if err2 = result.Write(ctx, oprot); err == nil && err2 != nil {
-    err = thrift.WrapTException(err2)
+  if err2 = oprot.WriteMessageEnd(); err == nil && err2 != nil {
+    err = err2
   }
-  if err2 = oprot.WriteMessageEnd(ctx); err == nil && err2 != nil {
-    err = thrift.WrapTException(err2)
-  }
-  if err2 = oprot.Flush(ctx); err == nil && err2 != nil {
-    err = thrift.WrapTException(err2)
+  if err2 = oprot.Flush(); err == nil && err2 != nil {
+    err = err2
   }
   if err != nil {
     return
@@ -6090,74 +8100,43 @@ type ksScmcClientProcessorSetContainerSysctls struct {
   handler KsScmcClient
 }
 
-func (p *ksScmcClientProcessorSetContainerSysctls) Process(ctx context.Context, seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
+func (p *ksScmcClientProcessorSetContainerSysctls) Process(seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
   args := KsScmcClientSetContainerSysctlsArgs{}
-  var err2 error
-  if err2 = args.Read(ctx, iprot); err2 != nil {
-    iprot.ReadMessageEnd(ctx)
-    x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err2.Error())
-    oprot.WriteMessageBegin(ctx, "setContainerSysctls", thrift.EXCEPTION, seqId)
-    x.Write(ctx, oprot)
-    oprot.WriteMessageEnd(ctx)
-    oprot.Flush(ctx)
-    return false, thrift.WrapTException(err2)
-  }
-  iprot.ReadMessageEnd(ctx)
-
-  tickerCancel := func() {}
-  // Start a goroutine to do server side connectivity check.
-  if thrift.ServerConnectivityCheckInterval > 0 {
-    var cancel context.CancelFunc
-    ctx, cancel = context.WithCancel(ctx)
-    defer cancel()
-    var tickerCtx context.Context
-    tickerCtx, tickerCancel = context.WithCancel(context.Background())
-    defer tickerCancel()
-    go func(ctx context.Context, cancel context.CancelFunc) {
-      ticker := time.NewTicker(thrift.ServerConnectivityCheckInterval)
-      defer ticker.Stop()
-      for {
-        select {
-        case <-ctx.Done():
-          return
-        case <-ticker.C:
-          if !iprot.Transport().IsOpen() {
-            cancel()
-            return
-          }
-        }
-      }
-    }(tickerCtx, cancel)
+  if err = args.Read(iprot); err != nil {
+    iprot.ReadMessageEnd()
+    x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err.Error())
+    oprot.WriteMessageBegin("setContainerSysctls", thrift.EXCEPTION, seqId)
+    x.Write(oprot)
+    oprot.WriteMessageEnd()
+    oprot.Flush()
+    return false, err
   }
 
+  iprot.ReadMessageEnd()
   result := KsScmcClientSetContainerSysctlsResult{}
-  var retval int32
-  if retval, err2 = p.handler.SetContainerSysctls(ctx, args.NodeIP, args.ContainerName, args.SysctlName, args.SysctlValue); err2 != nil {
-    tickerCancel()
-    if err2 == thrift.ErrAbandonRequest {
-      return false, thrift.WrapTException(err2)
-    }
+var retval int32
+  var err2 error
+  if retval, err2 = p.handler.SetContainerSysctls(args.NodeIP, args.ContainerName, args.SysctlName, args.SysctlValue); err2 != nil {
     x := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing setContainerSysctls: " + err2.Error())
-    oprot.WriteMessageBegin(ctx, "setContainerSysctls", thrift.EXCEPTION, seqId)
-    x.Write(ctx, oprot)
-    oprot.WriteMessageEnd(ctx)
-    oprot.Flush(ctx)
-    return true, thrift.WrapTException(err2)
+    oprot.WriteMessageBegin("setContainerSysctls", thrift.EXCEPTION, seqId)
+    x.Write(oprot)
+    oprot.WriteMessageEnd()
+    oprot.Flush()
+    return true, err2
   } else {
     result.Success = &retval
+}
+  if err2 = oprot.WriteMessageBegin("setContainerSysctls", thrift.REPLY, seqId); err2 != nil {
+    err = err2
   }
-  tickerCancel()
-  if err2 = oprot.WriteMessageBegin(ctx, "setContainerSysctls", thrift.REPLY, seqId); err2 != nil {
-    err = thrift.WrapTException(err2)
+  if err2 = result.Write(oprot); err == nil && err2 != nil {
+    err = err2
   }
-  if err2 = result.Write(ctx, oprot); err == nil && err2 != nil {
-    err = thrift.WrapTException(err2)
+  if err2 = oprot.WriteMessageEnd(); err == nil && err2 != nil {
+    err = err2
   }
-  if err2 = oprot.WriteMessageEnd(ctx); err == nil && err2 != nil {
-    err = thrift.WrapTException(err2)
-  }
-  if err2 = oprot.Flush(ctx); err == nil && err2 != nil {
-    err = thrift.WrapTException(err2)
+  if err2 = oprot.Flush(); err == nil && err2 != nil {
+    err = err2
   }
   if err != nil {
     return
@@ -6169,74 +8148,43 @@ type ksScmcClientProcessorSetContainerExtraHosts struct {
   handler KsScmcClient
 }
 
-func (p *ksScmcClientProcessorSetContainerExtraHosts) Process(ctx context.Context, seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
+func (p *ksScmcClientProcessorSetContainerExtraHosts) Process(seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
   args := KsScmcClientSetContainerExtraHostsArgs{}
-  var err2 error
-  if err2 = args.Read(ctx, iprot); err2 != nil {
-    iprot.ReadMessageEnd(ctx)
-    x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err2.Error())
-    oprot.WriteMessageBegin(ctx, "setContainerExtraHosts", thrift.EXCEPTION, seqId)
-    x.Write(ctx, oprot)
-    oprot.WriteMessageEnd(ctx)
-    oprot.Flush(ctx)
-    return false, thrift.WrapTException(err2)
-  }
-  iprot.ReadMessageEnd(ctx)
-
-  tickerCancel := func() {}
-  // Start a goroutine to do server side connectivity check.
-  if thrift.ServerConnectivityCheckInterval > 0 {
-    var cancel context.CancelFunc
-    ctx, cancel = context.WithCancel(ctx)
-    defer cancel()
-    var tickerCtx context.Context
-    tickerCtx, tickerCancel = context.WithCancel(context.Background())
-    defer tickerCancel()
-    go func(ctx context.Context, cancel context.CancelFunc) {
-      ticker := time.NewTicker(thrift.ServerConnectivityCheckInterval)
-      defer ticker.Stop()
-      for {
-        select {
-        case <-ctx.Done():
-          return
-        case <-ticker.C:
-          if !iprot.Transport().IsOpen() {
-            cancel()
-            return
-          }
-        }
-      }
-    }(tickerCtx, cancel)
+  if err = args.Read(iprot); err != nil {
+    iprot.ReadMessageEnd()
+    x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err.Error())
+    oprot.WriteMessageBegin("setContainerExtraHosts", thrift.EXCEPTION, seqId)
+    x.Write(oprot)
+    oprot.WriteMessageEnd()
+    oprot.Flush()
+    return false, err
   }
 
+  iprot.ReadMessageEnd()
   result := KsScmcClientSetContainerExtraHostsResult{}
-  var retval int32
-  if retval, err2 = p.handler.SetContainerExtraHosts(ctx, args.NodeIP, args.ContainerName, args.ContainerExtrahosts); err2 != nil {
-    tickerCancel()
-    if err2 == thrift.ErrAbandonRequest {
-      return false, thrift.WrapTException(err2)
-    }
+var retval int32
+  var err2 error
+  if retval, err2 = p.handler.SetContainerExtraHosts(args.NodeIP, args.ContainerName, args.ContainerExtrahosts); err2 != nil {
     x := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing setContainerExtraHosts: " + err2.Error())
-    oprot.WriteMessageBegin(ctx, "setContainerExtraHosts", thrift.EXCEPTION, seqId)
-    x.Write(ctx, oprot)
-    oprot.WriteMessageEnd(ctx)
-    oprot.Flush(ctx)
-    return true, thrift.WrapTException(err2)
+    oprot.WriteMessageBegin("setContainerExtraHosts", thrift.EXCEPTION, seqId)
+    x.Write(oprot)
+    oprot.WriteMessageEnd()
+    oprot.Flush()
+    return true, err2
   } else {
     result.Success = &retval
+}
+  if err2 = oprot.WriteMessageBegin("setContainerExtraHosts", thrift.REPLY, seqId); err2 != nil {
+    err = err2
   }
-  tickerCancel()
-  if err2 = oprot.WriteMessageBegin(ctx, "setContainerExtraHosts", thrift.REPLY, seqId); err2 != nil {
-    err = thrift.WrapTException(err2)
+  if err2 = result.Write(oprot); err == nil && err2 != nil {
+    err = err2
   }
-  if err2 = result.Write(ctx, oprot); err == nil && err2 != nil {
-    err = thrift.WrapTException(err2)
+  if err2 = oprot.WriteMessageEnd(); err == nil && err2 != nil {
+    err = err2
   }
-  if err2 = oprot.WriteMessageEnd(ctx); err == nil && err2 != nil {
-    err = thrift.WrapTException(err2)
-  }
-  if err2 = oprot.Flush(ctx); err == nil && err2 != nil {
-    err = thrift.WrapTException(err2)
+  if err2 = oprot.Flush(); err == nil && err2 != nil {
+    err = err2
   }
   if err != nil {
     return
@@ -6248,74 +8196,43 @@ type ksScmcClientProcessorGetImagesList struct {
   handler KsScmcClient
 }
 
-func (p *ksScmcClientProcessorGetImagesList) Process(ctx context.Context, seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
+func (p *ksScmcClientProcessorGetImagesList) Process(seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
   args := KsScmcClientGetImagesListArgs{}
-  var err2 error
-  if err2 = args.Read(ctx, iprot); err2 != nil {
-    iprot.ReadMessageEnd(ctx)
-    x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err2.Error())
-    oprot.WriteMessageBegin(ctx, "getImagesList", thrift.EXCEPTION, seqId)
-    x.Write(ctx, oprot)
-    oprot.WriteMessageEnd(ctx)
-    oprot.Flush(ctx)
-    return false, thrift.WrapTException(err2)
-  }
-  iprot.ReadMessageEnd(ctx)
-
-  tickerCancel := func() {}
-  // Start a goroutine to do server side connectivity check.
-  if thrift.ServerConnectivityCheckInterval > 0 {
-    var cancel context.CancelFunc
-    ctx, cancel = context.WithCancel(ctx)
-    defer cancel()
-    var tickerCtx context.Context
-    tickerCtx, tickerCancel = context.WithCancel(context.Background())
-    defer tickerCancel()
-    go func(ctx context.Context, cancel context.CancelFunc) {
-      ticker := time.NewTicker(thrift.ServerConnectivityCheckInterval)
-      defer ticker.Stop()
-      for {
-        select {
-        case <-ctx.Done():
-          return
-        case <-ticker.C:
-          if !iprot.Transport().IsOpen() {
-            cancel()
-            return
-          }
-        }
-      }
-    }(tickerCtx, cancel)
+  if err = args.Read(iprot); err != nil {
+    iprot.ReadMessageEnd()
+    x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err.Error())
+    oprot.WriteMessageBegin("getImagesList", thrift.EXCEPTION, seqId)
+    x.Write(oprot)
+    oprot.WriteMessageEnd()
+    oprot.Flush()
+    return false, err
   }
 
+  iprot.ReadMessageEnd()
   result := KsScmcClientGetImagesListResult{}
-  var retval *GetImagesListResponse
-  if retval, err2 = p.handler.GetImagesList(ctx, args.NodeIP); err2 != nil {
-    tickerCancel()
-    if err2 == thrift.ErrAbandonRequest {
-      return false, thrift.WrapTException(err2)
-    }
+var retval *GetImagesListResponse
+  var err2 error
+  if retval, err2 = p.handler.GetImagesList(args.NodeIP); err2 != nil {
     x := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing getImagesList: " + err2.Error())
-    oprot.WriteMessageBegin(ctx, "getImagesList", thrift.EXCEPTION, seqId)
-    x.Write(ctx, oprot)
-    oprot.WriteMessageEnd(ctx)
-    oprot.Flush(ctx)
-    return true, thrift.WrapTException(err2)
+    oprot.WriteMessageBegin("getImagesList", thrift.EXCEPTION, seqId)
+    x.Write(oprot)
+    oprot.WriteMessageEnd()
+    oprot.Flush()
+    return true, err2
   } else {
     result.Success = retval
+}
+  if err2 = oprot.WriteMessageBegin("getImagesList", thrift.REPLY, seqId); err2 != nil {
+    err = err2
   }
-  tickerCancel()
-  if err2 = oprot.WriteMessageBegin(ctx, "getImagesList", thrift.REPLY, seqId); err2 != nil {
-    err = thrift.WrapTException(err2)
+  if err2 = result.Write(oprot); err == nil && err2 != nil {
+    err = err2
   }
-  if err2 = result.Write(ctx, oprot); err == nil && err2 != nil {
-    err = thrift.WrapTException(err2)
+  if err2 = oprot.WriteMessageEnd(); err == nil && err2 != nil {
+    err = err2
   }
-  if err2 = oprot.WriteMessageEnd(ctx); err == nil && err2 != nil {
-    err = thrift.WrapTException(err2)
-  }
-  if err2 = oprot.Flush(ctx); err == nil && err2 != nil {
-    err = thrift.WrapTException(err2)
+  if err2 = oprot.Flush(); err == nil && err2 != nil {
+    err = err2
   }
   if err != nil {
     return
@@ -6327,74 +8244,43 @@ type ksScmcClientProcessorLoadImage struct {
   handler KsScmcClient
 }
 
-func (p *ksScmcClientProcessorLoadImage) Process(ctx context.Context, seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
+func (p *ksScmcClientProcessorLoadImage) Process(seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
   args := KsScmcClientLoadImageArgs{}
-  var err2 error
-  if err2 = args.Read(ctx, iprot); err2 != nil {
-    iprot.ReadMessageEnd(ctx)
-    x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err2.Error())
-    oprot.WriteMessageBegin(ctx, "loadImage", thrift.EXCEPTION, seqId)
-    x.Write(ctx, oprot)
-    oprot.WriteMessageEnd(ctx)
-    oprot.Flush(ctx)
-    return false, thrift.WrapTException(err2)
-  }
-  iprot.ReadMessageEnd(ctx)
-
-  tickerCancel := func() {}
-  // Start a goroutine to do server side connectivity check.
-  if thrift.ServerConnectivityCheckInterval > 0 {
-    var cancel context.CancelFunc
-    ctx, cancel = context.WithCancel(ctx)
-    defer cancel()
-    var tickerCtx context.Context
-    tickerCtx, tickerCancel = context.WithCancel(context.Background())
-    defer tickerCancel()
-    go func(ctx context.Context, cancel context.CancelFunc) {
-      ticker := time.NewTicker(thrift.ServerConnectivityCheckInterval)
-      defer ticker.Stop()
-      for {
-        select {
-        case <-ctx.Done():
-          return
-        case <-ticker.C:
-          if !iprot.Transport().IsOpen() {
-            cancel()
-            return
-          }
-        }
-      }
-    }(tickerCtx, cancel)
+  if err = args.Read(iprot); err != nil {
+    iprot.ReadMessageEnd()
+    x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err.Error())
+    oprot.WriteMessageBegin("loadImage", thrift.EXCEPTION, seqId)
+    x.Write(oprot)
+    oprot.WriteMessageEnd()
+    oprot.Flush()
+    return false, err
   }
 
+  iprot.ReadMessageEnd()
   result := KsScmcClientLoadImageResult{}
-  var retval int32
-  if retval, err2 = p.handler.LoadImage(ctx, args.NodeIP, args.TarPath); err2 != nil {
-    tickerCancel()
-    if err2 == thrift.ErrAbandonRequest {
-      return false, thrift.WrapTException(err2)
-    }
+var retval int32
+  var err2 error
+  if retval, err2 = p.handler.LoadImage(args.NodeIP, args.TarPath); err2 != nil {
     x := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing loadImage: " + err2.Error())
-    oprot.WriteMessageBegin(ctx, "loadImage", thrift.EXCEPTION, seqId)
-    x.Write(ctx, oprot)
-    oprot.WriteMessageEnd(ctx)
-    oprot.Flush(ctx)
-    return true, thrift.WrapTException(err2)
+    oprot.WriteMessageBegin("loadImage", thrift.EXCEPTION, seqId)
+    x.Write(oprot)
+    oprot.WriteMessageEnd()
+    oprot.Flush()
+    return true, err2
   } else {
     result.Success = &retval
+}
+  if err2 = oprot.WriteMessageBegin("loadImage", thrift.REPLY, seqId); err2 != nil {
+    err = err2
   }
-  tickerCancel()
-  if err2 = oprot.WriteMessageBegin(ctx, "loadImage", thrift.REPLY, seqId); err2 != nil {
-    err = thrift.WrapTException(err2)
+  if err2 = result.Write(oprot); err == nil && err2 != nil {
+    err = err2
   }
-  if err2 = result.Write(ctx, oprot); err == nil && err2 != nil {
-    err = thrift.WrapTException(err2)
+  if err2 = oprot.WriteMessageEnd(); err == nil && err2 != nil {
+    err = err2
   }
-  if err2 = oprot.WriteMessageEnd(ctx); err == nil && err2 != nil {
-    err = thrift.WrapTException(err2)
-  }
-  if err2 = oprot.Flush(ctx); err == nil && err2 != nil {
-    err = thrift.WrapTException(err2)
+  if err2 = oprot.Flush(); err == nil && err2 != nil {
+    err = err2
   }
   if err != nil {
     return
@@ -6406,74 +8292,43 @@ type ksScmcClientProcessorPauseContainer struct {
   handler KsScmcClient
 }
 
-func (p *ksScmcClientProcessorPauseContainer) Process(ctx context.Context, seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
+func (p *ksScmcClientProcessorPauseContainer) Process(seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
   args := KsScmcClientPauseContainerArgs{}
-  var err2 error
-  if err2 = args.Read(ctx, iprot); err2 != nil {
-    iprot.ReadMessageEnd(ctx)
-    x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err2.Error())
-    oprot.WriteMessageBegin(ctx, "pauseContainer", thrift.EXCEPTION, seqId)
-    x.Write(ctx, oprot)
-    oprot.WriteMessageEnd(ctx)
-    oprot.Flush(ctx)
-    return false, thrift.WrapTException(err2)
-  }
-  iprot.ReadMessageEnd(ctx)
-
-  tickerCancel := func() {}
-  // Start a goroutine to do server side connectivity check.
-  if thrift.ServerConnectivityCheckInterval > 0 {
-    var cancel context.CancelFunc
-    ctx, cancel = context.WithCancel(ctx)
-    defer cancel()
-    var tickerCtx context.Context
-    tickerCtx, tickerCancel = context.WithCancel(context.Background())
-    defer tickerCancel()
-    go func(ctx context.Context, cancel context.CancelFunc) {
-      ticker := time.NewTicker(thrift.ServerConnectivityCheckInterval)
-      defer ticker.Stop()
-      for {
-        select {
-        case <-ctx.Done():
-          return
-        case <-ticker.C:
-          if !iprot.Transport().IsOpen() {
-            cancel()
-            return
-          }
-        }
-      }
-    }(tickerCtx, cancel)
+  if err = args.Read(iprot); err != nil {
+    iprot.ReadMessageEnd()
+    x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err.Error())
+    oprot.WriteMessageBegin("pauseContainer", thrift.EXCEPTION, seqId)
+    x.Write(oprot)
+    oprot.WriteMessageEnd()
+    oprot.Flush()
+    return false, err
   }
 
+  iprot.ReadMessageEnd()
   result := KsScmcClientPauseContainerResult{}
-  var retval int32
-  if retval, err2 = p.handler.PauseContainer(ctx, args.NodeIP, args.ContainerName); err2 != nil {
-    tickerCancel()
-    if err2 == thrift.ErrAbandonRequest {
-      return false, thrift.WrapTException(err2)
-    }
+var retval int32
+  var err2 error
+  if retval, err2 = p.handler.PauseContainer(args.NodeIP, args.ContainerName); err2 != nil {
     x := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing pauseContainer: " + err2.Error())
-    oprot.WriteMessageBegin(ctx, "pauseContainer", thrift.EXCEPTION, seqId)
-    x.Write(ctx, oprot)
-    oprot.WriteMessageEnd(ctx)
-    oprot.Flush(ctx)
-    return true, thrift.WrapTException(err2)
+    oprot.WriteMessageBegin("pauseContainer", thrift.EXCEPTION, seqId)
+    x.Write(oprot)
+    oprot.WriteMessageEnd()
+    oprot.Flush()
+    return true, err2
   } else {
     result.Success = &retval
+}
+  if err2 = oprot.WriteMessageBegin("pauseContainer", thrift.REPLY, seqId); err2 != nil {
+    err = err2
   }
-  tickerCancel()
-  if err2 = oprot.WriteMessageBegin(ctx, "pauseContainer", thrift.REPLY, seqId); err2 != nil {
-    err = thrift.WrapTException(err2)
+  if err2 = result.Write(oprot); err == nil && err2 != nil {
+    err = err2
   }
-  if err2 = result.Write(ctx, oprot); err == nil && err2 != nil {
-    err = thrift.WrapTException(err2)
+  if err2 = oprot.WriteMessageEnd(); err == nil && err2 != nil {
+    err = err2
   }
-  if err2 = oprot.WriteMessageEnd(ctx); err == nil && err2 != nil {
-    err = thrift.WrapTException(err2)
-  }
-  if err2 = oprot.Flush(ctx); err == nil && err2 != nil {
-    err = thrift.WrapTException(err2)
+  if err2 = oprot.Flush(); err == nil && err2 != nil {
+    err = err2
   }
   if err != nil {
     return
@@ -6485,74 +8340,43 @@ type ksScmcClientProcessorUnpauseContainer struct {
   handler KsScmcClient
 }
 
-func (p *ksScmcClientProcessorUnpauseContainer) Process(ctx context.Context, seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
+func (p *ksScmcClientProcessorUnpauseContainer) Process(seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
   args := KsScmcClientUnpauseContainerArgs{}
-  var err2 error
-  if err2 = args.Read(ctx, iprot); err2 != nil {
-    iprot.ReadMessageEnd(ctx)
-    x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err2.Error())
-    oprot.WriteMessageBegin(ctx, "unpauseContainer", thrift.EXCEPTION, seqId)
-    x.Write(ctx, oprot)
-    oprot.WriteMessageEnd(ctx)
-    oprot.Flush(ctx)
-    return false, thrift.WrapTException(err2)
-  }
-  iprot.ReadMessageEnd(ctx)
-
-  tickerCancel := func() {}
-  // Start a goroutine to do server side connectivity check.
-  if thrift.ServerConnectivityCheckInterval > 0 {
-    var cancel context.CancelFunc
-    ctx, cancel = context.WithCancel(ctx)
-    defer cancel()
-    var tickerCtx context.Context
-    tickerCtx, tickerCancel = context.WithCancel(context.Background())
-    defer tickerCancel()
-    go func(ctx context.Context, cancel context.CancelFunc) {
-      ticker := time.NewTicker(thrift.ServerConnectivityCheckInterval)
-      defer ticker.Stop()
-      for {
-        select {
-        case <-ctx.Done():
-          return
-        case <-ticker.C:
-          if !iprot.Transport().IsOpen() {
-            cancel()
-            return
-          }
-        }
-      }
-    }(tickerCtx, cancel)
+  if err = args.Read(iprot); err != nil {
+    iprot.ReadMessageEnd()
+    x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err.Error())
+    oprot.WriteMessageBegin("unpauseContainer", thrift.EXCEPTION, seqId)
+    x.Write(oprot)
+    oprot.WriteMessageEnd()
+    oprot.Flush()
+    return false, err
   }
 
+  iprot.ReadMessageEnd()
   result := KsScmcClientUnpauseContainerResult{}
-  var retval int32
-  if retval, err2 = p.handler.UnpauseContainer(ctx, args.NodeIP, args.ContainerName); err2 != nil {
-    tickerCancel()
-    if err2 == thrift.ErrAbandonRequest {
-      return false, thrift.WrapTException(err2)
-    }
+var retval int32
+  var err2 error
+  if retval, err2 = p.handler.UnpauseContainer(args.NodeIP, args.ContainerName); err2 != nil {
     x := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing unpauseContainer: " + err2.Error())
-    oprot.WriteMessageBegin(ctx, "unpauseContainer", thrift.EXCEPTION, seqId)
-    x.Write(ctx, oprot)
-    oprot.WriteMessageEnd(ctx)
-    oprot.Flush(ctx)
-    return true, thrift.WrapTException(err2)
+    oprot.WriteMessageBegin("unpauseContainer", thrift.EXCEPTION, seqId)
+    x.Write(oprot)
+    oprot.WriteMessageEnd()
+    oprot.Flush()
+    return true, err2
   } else {
     result.Success = &retval
+}
+  if err2 = oprot.WriteMessageBegin("unpauseContainer", thrift.REPLY, seqId); err2 != nil {
+    err = err2
   }
-  tickerCancel()
-  if err2 = oprot.WriteMessageBegin(ctx, "unpauseContainer", thrift.REPLY, seqId); err2 != nil {
-    err = thrift.WrapTException(err2)
+  if err2 = result.Write(oprot); err == nil && err2 != nil {
+    err = err2
   }
-  if err2 = result.Write(ctx, oprot); err == nil && err2 != nil {
-    err = thrift.WrapTException(err2)
+  if err2 = oprot.WriteMessageEnd(); err == nil && err2 != nil {
+    err = err2
   }
-  if err2 = oprot.WriteMessageEnd(ctx); err == nil && err2 != nil {
-    err = thrift.WrapTException(err2)
-  }
-  if err2 = oprot.Flush(ctx); err == nil && err2 != nil {
-    err = thrift.WrapTException(err2)
+  if err2 = oprot.Flush(); err == nil && err2 != nil {
+    err = err2
   }
   if err != nil {
     return
@@ -6589,66 +8413,48 @@ func (p *KsScmcClientLoginV3Args) GetPasswd() string {
 func (p *KsScmcClientLoginV3Args) GetNodeIP() string {
   return p.NodeIP
 }
-func (p *KsScmcClientLoginV3Args) Read(ctx context.Context, iprot thrift.TProtocol) error {
-  if _, err := iprot.ReadStructBegin(ctx); err != nil {
+func (p *KsScmcClientLoginV3Args) Read(iprot thrift.TProtocol) error {
+  if _, err := iprot.ReadStructBegin(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
   }
 
 
   for {
-    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin(ctx)
+    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin()
     if err != nil {
       return thrift.PrependError(fmt.Sprintf("%T field %d read error: ", p, fieldId), err)
     }
     if fieldTypeId == thrift.STOP { break; }
     switch fieldId {
     case 1:
-      if fieldTypeId == thrift.STRING {
-        if err := p.ReadField1(ctx, iprot); err != nil {
-          return err
-        }
-      } else {
-        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-          return err
-        }
+      if err := p.ReadField1(iprot); err != nil {
+        return err
       }
     case 2:
-      if fieldTypeId == thrift.STRING {
-        if err := p.ReadField2(ctx, iprot); err != nil {
-          return err
-        }
-      } else {
-        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-          return err
-        }
+      if err := p.ReadField2(iprot); err != nil {
+        return err
       }
     case 3:
-      if fieldTypeId == thrift.STRING {
-        if err := p.ReadField3(ctx, iprot); err != nil {
-          return err
-        }
-      } else {
-        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-          return err
-        }
+      if err := p.ReadField3(iprot); err != nil {
+        return err
       }
     default:
-      if err := iprot.Skip(ctx, fieldTypeId); err != nil {
+      if err := iprot.Skip(fieldTypeId); err != nil {
         return err
       }
     }
-    if err := iprot.ReadFieldEnd(ctx); err != nil {
+    if err := iprot.ReadFieldEnd(); err != nil {
       return err
     }
   }
-  if err := iprot.ReadStructEnd(ctx); err != nil {
+  if err := iprot.ReadStructEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
   }
   return nil
 }
 
-func (p *KsScmcClientLoginV3Args)  ReadField1(ctx context.Context, iprot thrift.TProtocol) error {
-  if v, err := iprot.ReadString(ctx); err != nil {
+func (p *KsScmcClientLoginV3Args)  ReadField1(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadString(); err != nil {
   return thrift.PrependError("error reading field 1: ", err)
 } else {
   p.User = v
@@ -6656,8 +8462,8 @@ func (p *KsScmcClientLoginV3Args)  ReadField1(ctx context.Context, iprot thrift.
   return nil
 }
 
-func (p *KsScmcClientLoginV3Args)  ReadField2(ctx context.Context, iprot thrift.TProtocol) error {
-  if v, err := iprot.ReadString(ctx); err != nil {
+func (p *KsScmcClientLoginV3Args)  ReadField2(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadString(); err != nil {
   return thrift.PrependError("error reading field 2: ", err)
 } else {
   p.Passwd = v
@@ -6665,8 +8471,8 @@ func (p *KsScmcClientLoginV3Args)  ReadField2(ctx context.Context, iprot thrift.
   return nil
 }
 
-func (p *KsScmcClientLoginV3Args)  ReadField3(ctx context.Context, iprot thrift.TProtocol) error {
-  if v, err := iprot.ReadString(ctx); err != nil {
+func (p *KsScmcClientLoginV3Args)  ReadField3(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadString(); err != nil {
   return thrift.PrependError("error reading field 3: ", err)
 } else {
   p.NodeIP = v
@@ -6674,47 +8480,47 @@ func (p *KsScmcClientLoginV3Args)  ReadField3(ctx context.Context, iprot thrift.
   return nil
 }
 
-func (p *KsScmcClientLoginV3Args) Write(ctx context.Context, oprot thrift.TProtocol) error {
-  if err := oprot.WriteStructBegin(ctx, "LoginV3_args"); err != nil {
+func (p *KsScmcClientLoginV3Args) Write(oprot thrift.TProtocol) error {
+  if err := oprot.WriteStructBegin("LoginV3_args"); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err) }
   if p != nil {
-    if err := p.writeField1(ctx, oprot); err != nil { return err }
-    if err := p.writeField2(ctx, oprot); err != nil { return err }
-    if err := p.writeField3(ctx, oprot); err != nil { return err }
+    if err := p.writeField1(oprot); err != nil { return err }
+    if err := p.writeField2(oprot); err != nil { return err }
+    if err := p.writeField3(oprot); err != nil { return err }
   }
-  if err := oprot.WriteFieldStop(ctx); err != nil {
+  if err := oprot.WriteFieldStop(); err != nil {
     return thrift.PrependError("write field stop error: ", err) }
-  if err := oprot.WriteStructEnd(ctx); err != nil {
+  if err := oprot.WriteStructEnd(); err != nil {
     return thrift.PrependError("write struct stop error: ", err) }
   return nil
 }
 
-func (p *KsScmcClientLoginV3Args) writeField1(ctx context.Context, oprot thrift.TProtocol) (err error) {
-  if err := oprot.WriteFieldBegin(ctx, "user", thrift.STRING, 1); err != nil {
+func (p *KsScmcClientLoginV3Args) writeField1(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("user", thrift.STRING, 1); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field begin error 1:user: ", p), err) }
-  if err := oprot.WriteString(ctx, string(p.User)); err != nil {
+  if err := oprot.WriteString(string(p.User)); err != nil {
   return thrift.PrependError(fmt.Sprintf("%T.user (1) field write error: ", p), err) }
-  if err := oprot.WriteFieldEnd(ctx); err != nil {
+  if err := oprot.WriteFieldEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field end error 1:user: ", p), err) }
   return err
 }
 
-func (p *KsScmcClientLoginV3Args) writeField2(ctx context.Context, oprot thrift.TProtocol) (err error) {
-  if err := oprot.WriteFieldBegin(ctx, "passwd", thrift.STRING, 2); err != nil {
+func (p *KsScmcClientLoginV3Args) writeField2(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("passwd", thrift.STRING, 2); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field begin error 2:passwd: ", p), err) }
-  if err := oprot.WriteString(ctx, string(p.Passwd)); err != nil {
+  if err := oprot.WriteString(string(p.Passwd)); err != nil {
   return thrift.PrependError(fmt.Sprintf("%T.passwd (2) field write error: ", p), err) }
-  if err := oprot.WriteFieldEnd(ctx); err != nil {
+  if err := oprot.WriteFieldEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field end error 2:passwd: ", p), err) }
   return err
 }
 
-func (p *KsScmcClientLoginV3Args) writeField3(ctx context.Context, oprot thrift.TProtocol) (err error) {
-  if err := oprot.WriteFieldBegin(ctx, "node_ip", thrift.STRING, 3); err != nil {
+func (p *KsScmcClientLoginV3Args) writeField3(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("node_ip", thrift.STRING, 3); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field begin error 3:node_ip: ", p), err) }
-  if err := oprot.WriteString(ctx, string(p.NodeIP)); err != nil {
+  if err := oprot.WriteString(string(p.NodeIP)); err != nil {
   return thrift.PrependError(fmt.Sprintf("%T.node_ip (3) field write error: ", p), err) }
-  if err := oprot.WriteFieldEnd(ctx); err != nil {
+  if err := oprot.WriteFieldEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field end error 3:node_ip: ", p), err) }
   return err
 }
@@ -6747,46 +8553,40 @@ func (p *KsScmcClientLoginV3Result) IsSetSuccess() bool {
   return p.Success != nil
 }
 
-func (p *KsScmcClientLoginV3Result) Read(ctx context.Context, iprot thrift.TProtocol) error {
-  if _, err := iprot.ReadStructBegin(ctx); err != nil {
+func (p *KsScmcClientLoginV3Result) Read(iprot thrift.TProtocol) error {
+  if _, err := iprot.ReadStructBegin(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
   }
 
 
   for {
-    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin(ctx)
+    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin()
     if err != nil {
       return thrift.PrependError(fmt.Sprintf("%T field %d read error: ", p, fieldId), err)
     }
     if fieldTypeId == thrift.STOP { break; }
     switch fieldId {
     case 0:
-      if fieldTypeId == thrift.STRING {
-        if err := p.ReadField0(ctx, iprot); err != nil {
-          return err
-        }
-      } else {
-        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-          return err
-        }
+      if err := p.ReadField0(iprot); err != nil {
+        return err
       }
     default:
-      if err := iprot.Skip(ctx, fieldTypeId); err != nil {
+      if err := iprot.Skip(fieldTypeId); err != nil {
         return err
       }
     }
-    if err := iprot.ReadFieldEnd(ctx); err != nil {
+    if err := iprot.ReadFieldEnd(); err != nil {
       return err
     }
   }
-  if err := iprot.ReadStructEnd(ctx); err != nil {
+  if err := iprot.ReadStructEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
   }
   return nil
 }
 
-func (p *KsScmcClientLoginV3Result)  ReadField0(ctx context.Context, iprot thrift.TProtocol) error {
-  if v, err := iprot.ReadString(ctx); err != nil {
+func (p *KsScmcClientLoginV3Result)  ReadField0(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadString(); err != nil {
   return thrift.PrependError("error reading field 0: ", err)
 } else {
   p.Success = &v
@@ -6794,26 +8594,26 @@ func (p *KsScmcClientLoginV3Result)  ReadField0(ctx context.Context, iprot thrif
   return nil
 }
 
-func (p *KsScmcClientLoginV3Result) Write(ctx context.Context, oprot thrift.TProtocol) error {
-  if err := oprot.WriteStructBegin(ctx, "LoginV3_result"); err != nil {
+func (p *KsScmcClientLoginV3Result) Write(oprot thrift.TProtocol) error {
+  if err := oprot.WriteStructBegin("LoginV3_result"); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err) }
   if p != nil {
-    if err := p.writeField0(ctx, oprot); err != nil { return err }
+    if err := p.writeField0(oprot); err != nil { return err }
   }
-  if err := oprot.WriteFieldStop(ctx); err != nil {
+  if err := oprot.WriteFieldStop(); err != nil {
     return thrift.PrependError("write field stop error: ", err) }
-  if err := oprot.WriteStructEnd(ctx); err != nil {
+  if err := oprot.WriteStructEnd(); err != nil {
     return thrift.PrependError("write struct stop error: ", err) }
   return nil
 }
 
-func (p *KsScmcClientLoginV3Result) writeField0(ctx context.Context, oprot thrift.TProtocol) (err error) {
+func (p *KsScmcClientLoginV3Result) writeField0(oprot thrift.TProtocol) (err error) {
   if p.IsSetSuccess() {
-    if err := oprot.WriteFieldBegin(ctx, "success", thrift.STRING, 0); err != nil {
+    if err := oprot.WriteFieldBegin("success", thrift.STRING, 0); err != nil {
       return thrift.PrependError(fmt.Sprintf("%T write field begin error 0:success: ", p), err) }
-    if err := oprot.WriteString(ctx, string(*p.Success)); err != nil {
+    if err := oprot.WriteString(string(*p.Success)); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T.success (0) field write error: ", p), err) }
-    if err := oprot.WriteFieldEnd(ctx); err != nil {
+    if err := oprot.WriteFieldEnd(); err != nil {
       return thrift.PrependError(fmt.Sprintf("%T write field end error 0:success: ", p), err) }
   }
   return err
@@ -6827,15 +8627,17 @@ func (p *KsScmcClientLoginV3Result) String() string {
 }
 
 // Attributes:
-//  - NodeNameorip
-//  - ImageName
-//  - ImageVer
-//  - ContainerName
+//  - NodeName
+//  - Image
+//  - Ver
+//  - Name
+//  - Desc
 type KsScmcClientInstallContainerArgs struct {
-  NodeNameorip string `thrift:"node_nameorip,1" db:"node_nameorip" json:"node_nameorip"`
-  ImageName string `thrift:"image_name,2" db:"image_name" json:"image_name"`
-  ImageVer string `thrift:"image_ver,3" db:"image_ver" json:"image_ver"`
-  ContainerName string `thrift:"container_name,4" db:"container_name" json:"container_name"`
+  NodeName string `thrift:"node_name,1" db:"node_name" json:"node_name"`
+  Image string `thrift:"image,2" db:"image" json:"image"`
+  Ver string `thrift:"ver,3" db:"ver" json:"ver"`
+  Name string `thrift:"name,4" db:"name" json:"name"`
+  Desc string `thrift:"desc,5" db:"desc" json:"desc"`
 }
 
 func NewKsScmcClientInstallContainerArgs() *KsScmcClientInstallContainerArgs {
@@ -6843,178 +8645,182 @@ func NewKsScmcClientInstallContainerArgs() *KsScmcClientInstallContainerArgs {
 }
 
 
-func (p *KsScmcClientInstallContainerArgs) GetNodeNameorip() string {
-  return p.NodeNameorip
+func (p *KsScmcClientInstallContainerArgs) GetNodeName() string {
+  return p.NodeName
 }
 
-func (p *KsScmcClientInstallContainerArgs) GetImageName() string {
-  return p.ImageName
+func (p *KsScmcClientInstallContainerArgs) GetImage() string {
+  return p.Image
 }
 
-func (p *KsScmcClientInstallContainerArgs) GetImageVer() string {
-  return p.ImageVer
+func (p *KsScmcClientInstallContainerArgs) GetVer() string {
+  return p.Ver
 }
 
-func (p *KsScmcClientInstallContainerArgs) GetContainerName() string {
-  return p.ContainerName
+func (p *KsScmcClientInstallContainerArgs) GetName() string {
+  return p.Name
 }
-func (p *KsScmcClientInstallContainerArgs) Read(ctx context.Context, iprot thrift.TProtocol) error {
-  if _, err := iprot.ReadStructBegin(ctx); err != nil {
+
+func (p *KsScmcClientInstallContainerArgs) GetDesc() string {
+  return p.Desc
+}
+func (p *KsScmcClientInstallContainerArgs) Read(iprot thrift.TProtocol) error {
+  if _, err := iprot.ReadStructBegin(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
   }
 
 
   for {
-    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin(ctx)
+    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin()
     if err != nil {
       return thrift.PrependError(fmt.Sprintf("%T field %d read error: ", p, fieldId), err)
     }
     if fieldTypeId == thrift.STOP { break; }
     switch fieldId {
     case 1:
-      if fieldTypeId == thrift.STRING {
-        if err := p.ReadField1(ctx, iprot); err != nil {
-          return err
-        }
-      } else {
-        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-          return err
-        }
+      if err := p.ReadField1(iprot); err != nil {
+        return err
       }
     case 2:
-      if fieldTypeId == thrift.STRING {
-        if err := p.ReadField2(ctx, iprot); err != nil {
-          return err
-        }
-      } else {
-        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-          return err
-        }
+      if err := p.ReadField2(iprot); err != nil {
+        return err
       }
     case 3:
-      if fieldTypeId == thrift.STRING {
-        if err := p.ReadField3(ctx, iprot); err != nil {
-          return err
-        }
-      } else {
-        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-          return err
-        }
+      if err := p.ReadField3(iprot); err != nil {
+        return err
       }
     case 4:
-      if fieldTypeId == thrift.STRING {
-        if err := p.ReadField4(ctx, iprot); err != nil {
-          return err
-        }
-      } else {
-        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-          return err
-        }
+      if err := p.ReadField4(iprot); err != nil {
+        return err
+      }
+    case 5:
+      if err := p.ReadField5(iprot); err != nil {
+        return err
       }
     default:
-      if err := iprot.Skip(ctx, fieldTypeId); err != nil {
+      if err := iprot.Skip(fieldTypeId); err != nil {
         return err
       }
     }
-    if err := iprot.ReadFieldEnd(ctx); err != nil {
+    if err := iprot.ReadFieldEnd(); err != nil {
       return err
     }
   }
-  if err := iprot.ReadStructEnd(ctx); err != nil {
+  if err := iprot.ReadStructEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
   }
   return nil
 }
 
-func (p *KsScmcClientInstallContainerArgs)  ReadField1(ctx context.Context, iprot thrift.TProtocol) error {
-  if v, err := iprot.ReadString(ctx); err != nil {
+func (p *KsScmcClientInstallContainerArgs)  ReadField1(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadString(); err != nil {
   return thrift.PrependError("error reading field 1: ", err)
 } else {
-  p.NodeNameorip = v
+  p.NodeName = v
 }
   return nil
 }
 
-func (p *KsScmcClientInstallContainerArgs)  ReadField2(ctx context.Context, iprot thrift.TProtocol) error {
-  if v, err := iprot.ReadString(ctx); err != nil {
+func (p *KsScmcClientInstallContainerArgs)  ReadField2(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadString(); err != nil {
   return thrift.PrependError("error reading field 2: ", err)
 } else {
-  p.ImageName = v
+  p.Image = v
 }
   return nil
 }
 
-func (p *KsScmcClientInstallContainerArgs)  ReadField3(ctx context.Context, iprot thrift.TProtocol) error {
-  if v, err := iprot.ReadString(ctx); err != nil {
+func (p *KsScmcClientInstallContainerArgs)  ReadField3(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadString(); err != nil {
   return thrift.PrependError("error reading field 3: ", err)
 } else {
-  p.ImageVer = v
+  p.Ver = v
 }
   return nil
 }
 
-func (p *KsScmcClientInstallContainerArgs)  ReadField4(ctx context.Context, iprot thrift.TProtocol) error {
-  if v, err := iprot.ReadString(ctx); err != nil {
+func (p *KsScmcClientInstallContainerArgs)  ReadField4(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadString(); err != nil {
   return thrift.PrependError("error reading field 4: ", err)
 } else {
-  p.ContainerName = v
+  p.Name = v
 }
   return nil
 }
 
-func (p *KsScmcClientInstallContainerArgs) Write(ctx context.Context, oprot thrift.TProtocol) error {
-  if err := oprot.WriteStructBegin(ctx, "installContainer_args"); err != nil {
+func (p *KsScmcClientInstallContainerArgs)  ReadField5(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadString(); err != nil {
+  return thrift.PrependError("error reading field 5: ", err)
+} else {
+  p.Desc = v
+}
+  return nil
+}
+
+func (p *KsScmcClientInstallContainerArgs) Write(oprot thrift.TProtocol) error {
+  if err := oprot.WriteStructBegin("InstallContainer_args"); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err) }
   if p != nil {
-    if err := p.writeField1(ctx, oprot); err != nil { return err }
-    if err := p.writeField2(ctx, oprot); err != nil { return err }
-    if err := p.writeField3(ctx, oprot); err != nil { return err }
-    if err := p.writeField4(ctx, oprot); err != nil { return err }
+    if err := p.writeField1(oprot); err != nil { return err }
+    if err := p.writeField2(oprot); err != nil { return err }
+    if err := p.writeField3(oprot); err != nil { return err }
+    if err := p.writeField4(oprot); err != nil { return err }
+    if err := p.writeField5(oprot); err != nil { return err }
   }
-  if err := oprot.WriteFieldStop(ctx); err != nil {
+  if err := oprot.WriteFieldStop(); err != nil {
     return thrift.PrependError("write field stop error: ", err) }
-  if err := oprot.WriteStructEnd(ctx); err != nil {
+  if err := oprot.WriteStructEnd(); err != nil {
     return thrift.PrependError("write struct stop error: ", err) }
   return nil
 }
 
-func (p *KsScmcClientInstallContainerArgs) writeField1(ctx context.Context, oprot thrift.TProtocol) (err error) {
-  if err := oprot.WriteFieldBegin(ctx, "node_nameorip", thrift.STRING, 1); err != nil {
-    return thrift.PrependError(fmt.Sprintf("%T write field begin error 1:node_nameorip: ", p), err) }
-  if err := oprot.WriteString(ctx, string(p.NodeNameorip)); err != nil {
-  return thrift.PrependError(fmt.Sprintf("%T.node_nameorip (1) field write error: ", p), err) }
-  if err := oprot.WriteFieldEnd(ctx); err != nil {
-    return thrift.PrependError(fmt.Sprintf("%T write field end error 1:node_nameorip: ", p), err) }
+func (p *KsScmcClientInstallContainerArgs) writeField1(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("node_name", thrift.STRING, 1); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write field begin error 1:node_name: ", p), err) }
+  if err := oprot.WriteString(string(p.NodeName)); err != nil {
+  return thrift.PrependError(fmt.Sprintf("%T.node_name (1) field write error: ", p), err) }
+  if err := oprot.WriteFieldEnd(); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write field end error 1:node_name: ", p), err) }
   return err
 }
 
-func (p *KsScmcClientInstallContainerArgs) writeField2(ctx context.Context, oprot thrift.TProtocol) (err error) {
-  if err := oprot.WriteFieldBegin(ctx, "image_name", thrift.STRING, 2); err != nil {
-    return thrift.PrependError(fmt.Sprintf("%T write field begin error 2:image_name: ", p), err) }
-  if err := oprot.WriteString(ctx, string(p.ImageName)); err != nil {
-  return thrift.PrependError(fmt.Sprintf("%T.image_name (2) field write error: ", p), err) }
-  if err := oprot.WriteFieldEnd(ctx); err != nil {
-    return thrift.PrependError(fmt.Sprintf("%T write field end error 2:image_name: ", p), err) }
+func (p *KsScmcClientInstallContainerArgs) writeField2(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("image", thrift.STRING, 2); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write field begin error 2:image: ", p), err) }
+  if err := oprot.WriteString(string(p.Image)); err != nil {
+  return thrift.PrependError(fmt.Sprintf("%T.image (2) field write error: ", p), err) }
+  if err := oprot.WriteFieldEnd(); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write field end error 2:image: ", p), err) }
   return err
 }
 
-func (p *KsScmcClientInstallContainerArgs) writeField3(ctx context.Context, oprot thrift.TProtocol) (err error) {
-  if err := oprot.WriteFieldBegin(ctx, "image_ver", thrift.STRING, 3); err != nil {
-    return thrift.PrependError(fmt.Sprintf("%T write field begin error 3:image_ver: ", p), err) }
-  if err := oprot.WriteString(ctx, string(p.ImageVer)); err != nil {
-  return thrift.PrependError(fmt.Sprintf("%T.image_ver (3) field write error: ", p), err) }
-  if err := oprot.WriteFieldEnd(ctx); err != nil {
-    return thrift.PrependError(fmt.Sprintf("%T write field end error 3:image_ver: ", p), err) }
+func (p *KsScmcClientInstallContainerArgs) writeField3(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("ver", thrift.STRING, 3); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write field begin error 3:ver: ", p), err) }
+  if err := oprot.WriteString(string(p.Ver)); err != nil {
+  return thrift.PrependError(fmt.Sprintf("%T.ver (3) field write error: ", p), err) }
+  if err := oprot.WriteFieldEnd(); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write field end error 3:ver: ", p), err) }
   return err
 }
 
-func (p *KsScmcClientInstallContainerArgs) writeField4(ctx context.Context, oprot thrift.TProtocol) (err error) {
-  if err := oprot.WriteFieldBegin(ctx, "container_name", thrift.STRING, 4); err != nil {
-    return thrift.PrependError(fmt.Sprintf("%T write field begin error 4:container_name: ", p), err) }
-  if err := oprot.WriteString(ctx, string(p.ContainerName)); err != nil {
-  return thrift.PrependError(fmt.Sprintf("%T.container_name (4) field write error: ", p), err) }
-  if err := oprot.WriteFieldEnd(ctx); err != nil {
-    return thrift.PrependError(fmt.Sprintf("%T write field end error 4:container_name: ", p), err) }
+func (p *KsScmcClientInstallContainerArgs) writeField4(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("name", thrift.STRING, 4); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write field begin error 4:name: ", p), err) }
+  if err := oprot.WriteString(string(p.Name)); err != nil {
+  return thrift.PrependError(fmt.Sprintf("%T.name (4) field write error: ", p), err) }
+  if err := oprot.WriteFieldEnd(); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write field end error 4:name: ", p), err) }
+  return err
+}
+
+func (p *KsScmcClientInstallContainerArgs) writeField5(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("desc", thrift.STRING, 5); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write field begin error 5:desc: ", p), err) }
+  if err := oprot.WriteString(string(p.Desc)); err != nil {
+  return thrift.PrependError(fmt.Sprintf("%T.desc (5) field write error: ", p), err) }
+  if err := oprot.WriteFieldEnd(); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write field end error 5:desc: ", p), err) }
   return err
 }
 
@@ -7028,15 +8834,15 @@ func (p *KsScmcClientInstallContainerArgs) String() string {
 // Attributes:
 //  - Success
 type KsScmcClientInstallContainerResult struct {
-  Success *int32 `thrift:"success,0" db:"success" json:"success,omitempty"`
+  Success *string `thrift:"success,0" db:"success" json:"success,omitempty"`
 }
 
 func NewKsScmcClientInstallContainerResult() *KsScmcClientInstallContainerResult {
   return &KsScmcClientInstallContainerResult{}
 }
 
-var KsScmcClientInstallContainerResult_Success_DEFAULT int32
-func (p *KsScmcClientInstallContainerResult) GetSuccess() int32 {
+var KsScmcClientInstallContainerResult_Success_DEFAULT string
+func (p *KsScmcClientInstallContainerResult) GetSuccess() string {
   if !p.IsSetSuccess() {
     return KsScmcClientInstallContainerResult_Success_DEFAULT
   }
@@ -7046,46 +8852,40 @@ func (p *KsScmcClientInstallContainerResult) IsSetSuccess() bool {
   return p.Success != nil
 }
 
-func (p *KsScmcClientInstallContainerResult) Read(ctx context.Context, iprot thrift.TProtocol) error {
-  if _, err := iprot.ReadStructBegin(ctx); err != nil {
+func (p *KsScmcClientInstallContainerResult) Read(iprot thrift.TProtocol) error {
+  if _, err := iprot.ReadStructBegin(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
   }
 
 
   for {
-    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin(ctx)
+    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin()
     if err != nil {
       return thrift.PrependError(fmt.Sprintf("%T field %d read error: ", p, fieldId), err)
     }
     if fieldTypeId == thrift.STOP { break; }
     switch fieldId {
     case 0:
-      if fieldTypeId == thrift.I32 {
-        if err := p.ReadField0(ctx, iprot); err != nil {
-          return err
-        }
-      } else {
-        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-          return err
-        }
+      if err := p.ReadField0(iprot); err != nil {
+        return err
       }
     default:
-      if err := iprot.Skip(ctx, fieldTypeId); err != nil {
+      if err := iprot.Skip(fieldTypeId); err != nil {
         return err
       }
     }
-    if err := iprot.ReadFieldEnd(ctx); err != nil {
+    if err := iprot.ReadFieldEnd(); err != nil {
       return err
     }
   }
-  if err := iprot.ReadStructEnd(ctx); err != nil {
+  if err := iprot.ReadStructEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
   }
   return nil
 }
 
-func (p *KsScmcClientInstallContainerResult)  ReadField0(ctx context.Context, iprot thrift.TProtocol) error {
-  if v, err := iprot.ReadI32(ctx); err != nil {
+func (p *KsScmcClientInstallContainerResult)  ReadField0(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadString(); err != nil {
   return thrift.PrependError("error reading field 0: ", err)
 } else {
   p.Success = &v
@@ -7093,26 +8893,26 @@ func (p *KsScmcClientInstallContainerResult)  ReadField0(ctx context.Context, ip
   return nil
 }
 
-func (p *KsScmcClientInstallContainerResult) Write(ctx context.Context, oprot thrift.TProtocol) error {
-  if err := oprot.WriteStructBegin(ctx, "installContainer_result"); err != nil {
+func (p *KsScmcClientInstallContainerResult) Write(oprot thrift.TProtocol) error {
+  if err := oprot.WriteStructBegin("InstallContainer_result"); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err) }
   if p != nil {
-    if err := p.writeField0(ctx, oprot); err != nil { return err }
+    if err := p.writeField0(oprot); err != nil { return err }
   }
-  if err := oprot.WriteFieldStop(ctx); err != nil {
+  if err := oprot.WriteFieldStop(); err != nil {
     return thrift.PrependError("write field stop error: ", err) }
-  if err := oprot.WriteStructEnd(ctx); err != nil {
+  if err := oprot.WriteStructEnd(); err != nil {
     return thrift.PrependError("write struct stop error: ", err) }
   return nil
 }
 
-func (p *KsScmcClientInstallContainerResult) writeField0(ctx context.Context, oprot thrift.TProtocol) (err error) {
+func (p *KsScmcClientInstallContainerResult) writeField0(oprot thrift.TProtocol) (err error) {
   if p.IsSetSuccess() {
-    if err := oprot.WriteFieldBegin(ctx, "success", thrift.I32, 0); err != nil {
+    if err := oprot.WriteFieldBegin("success", thrift.STRING, 0); err != nil {
       return thrift.PrependError(fmt.Sprintf("%T write field begin error 0:success: ", p), err) }
-    if err := oprot.WriteI32(ctx, int32(*p.Success)); err != nil {
+    if err := oprot.WriteString(string(*p.Success)); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T.success (0) field write error: ", p), err) }
-    if err := oprot.WriteFieldEnd(ctx); err != nil {
+    if err := oprot.WriteFieldEnd(); err != nil {
       return thrift.PrependError(fmt.Sprintf("%T write field end error 0:success: ", p), err) }
   }
   return err
@@ -7126,11 +8926,11 @@ func (p *KsScmcClientInstallContainerResult) String() string {
 }
 
 // Attributes:
-//  - NodeNameorip
-//  - ContainerName
+//  - NodeName
+//  - Name
 type KsScmcClientStartContainerArgs struct {
-  NodeNameorip string `thrift:"node_nameorip,1" db:"node_nameorip" json:"node_nameorip"`
-  ContainerName string `thrift:"container_name,2" db:"container_name" json:"container_name"`
+  NodeName string `thrift:"node_name,1" db:"node_name" json:"node_name"`
+  Name string `thrift:"name,2" db:"name" json:"name"`
 }
 
 func NewKsScmcClientStartContainerArgs() *KsScmcClientStartContainerArgs {
@@ -7138,110 +8938,98 @@ func NewKsScmcClientStartContainerArgs() *KsScmcClientStartContainerArgs {
 }
 
 
-func (p *KsScmcClientStartContainerArgs) GetNodeNameorip() string {
-  return p.NodeNameorip
+func (p *KsScmcClientStartContainerArgs) GetNodeName() string {
+  return p.NodeName
 }
 
-func (p *KsScmcClientStartContainerArgs) GetContainerName() string {
-  return p.ContainerName
+func (p *KsScmcClientStartContainerArgs) GetName() string {
+  return p.Name
 }
-func (p *KsScmcClientStartContainerArgs) Read(ctx context.Context, iprot thrift.TProtocol) error {
-  if _, err := iprot.ReadStructBegin(ctx); err != nil {
+func (p *KsScmcClientStartContainerArgs) Read(iprot thrift.TProtocol) error {
+  if _, err := iprot.ReadStructBegin(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
   }
 
 
   for {
-    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin(ctx)
+    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin()
     if err != nil {
       return thrift.PrependError(fmt.Sprintf("%T field %d read error: ", p, fieldId), err)
     }
     if fieldTypeId == thrift.STOP { break; }
     switch fieldId {
     case 1:
-      if fieldTypeId == thrift.STRING {
-        if err := p.ReadField1(ctx, iprot); err != nil {
-          return err
-        }
-      } else {
-        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-          return err
-        }
+      if err := p.ReadField1(iprot); err != nil {
+        return err
       }
     case 2:
-      if fieldTypeId == thrift.STRING {
-        if err := p.ReadField2(ctx, iprot); err != nil {
-          return err
-        }
-      } else {
-        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-          return err
-        }
+      if err := p.ReadField2(iprot); err != nil {
+        return err
       }
     default:
-      if err := iprot.Skip(ctx, fieldTypeId); err != nil {
+      if err := iprot.Skip(fieldTypeId); err != nil {
         return err
       }
     }
-    if err := iprot.ReadFieldEnd(ctx); err != nil {
+    if err := iprot.ReadFieldEnd(); err != nil {
       return err
     }
   }
-  if err := iprot.ReadStructEnd(ctx); err != nil {
+  if err := iprot.ReadStructEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
   }
   return nil
 }
 
-func (p *KsScmcClientStartContainerArgs)  ReadField1(ctx context.Context, iprot thrift.TProtocol) error {
-  if v, err := iprot.ReadString(ctx); err != nil {
+func (p *KsScmcClientStartContainerArgs)  ReadField1(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadString(); err != nil {
   return thrift.PrependError("error reading field 1: ", err)
 } else {
-  p.NodeNameorip = v
+  p.NodeName = v
 }
   return nil
 }
 
-func (p *KsScmcClientStartContainerArgs)  ReadField2(ctx context.Context, iprot thrift.TProtocol) error {
-  if v, err := iprot.ReadString(ctx); err != nil {
+func (p *KsScmcClientStartContainerArgs)  ReadField2(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadString(); err != nil {
   return thrift.PrependError("error reading field 2: ", err)
 } else {
-  p.ContainerName = v
+  p.Name = v
 }
   return nil
 }
 
-func (p *KsScmcClientStartContainerArgs) Write(ctx context.Context, oprot thrift.TProtocol) error {
-  if err := oprot.WriteStructBegin(ctx, "startContainer_args"); err != nil {
+func (p *KsScmcClientStartContainerArgs) Write(oprot thrift.TProtocol) error {
+  if err := oprot.WriteStructBegin("StartContainer_args"); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err) }
   if p != nil {
-    if err := p.writeField1(ctx, oprot); err != nil { return err }
-    if err := p.writeField2(ctx, oprot); err != nil { return err }
+    if err := p.writeField1(oprot); err != nil { return err }
+    if err := p.writeField2(oprot); err != nil { return err }
   }
-  if err := oprot.WriteFieldStop(ctx); err != nil {
+  if err := oprot.WriteFieldStop(); err != nil {
     return thrift.PrependError("write field stop error: ", err) }
-  if err := oprot.WriteStructEnd(ctx); err != nil {
+  if err := oprot.WriteStructEnd(); err != nil {
     return thrift.PrependError("write struct stop error: ", err) }
   return nil
 }
 
-func (p *KsScmcClientStartContainerArgs) writeField1(ctx context.Context, oprot thrift.TProtocol) (err error) {
-  if err := oprot.WriteFieldBegin(ctx, "node_nameorip", thrift.STRING, 1); err != nil {
-    return thrift.PrependError(fmt.Sprintf("%T write field begin error 1:node_nameorip: ", p), err) }
-  if err := oprot.WriteString(ctx, string(p.NodeNameorip)); err != nil {
-  return thrift.PrependError(fmt.Sprintf("%T.node_nameorip (1) field write error: ", p), err) }
-  if err := oprot.WriteFieldEnd(ctx); err != nil {
-    return thrift.PrependError(fmt.Sprintf("%T write field end error 1:node_nameorip: ", p), err) }
+func (p *KsScmcClientStartContainerArgs) writeField1(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("node_name", thrift.STRING, 1); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write field begin error 1:node_name: ", p), err) }
+  if err := oprot.WriteString(string(p.NodeName)); err != nil {
+  return thrift.PrependError(fmt.Sprintf("%T.node_name (1) field write error: ", p), err) }
+  if err := oprot.WriteFieldEnd(); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write field end error 1:node_name: ", p), err) }
   return err
 }
 
-func (p *KsScmcClientStartContainerArgs) writeField2(ctx context.Context, oprot thrift.TProtocol) (err error) {
-  if err := oprot.WriteFieldBegin(ctx, "container_name", thrift.STRING, 2); err != nil {
-    return thrift.PrependError(fmt.Sprintf("%T write field begin error 2:container_name: ", p), err) }
-  if err := oprot.WriteString(ctx, string(p.ContainerName)); err != nil {
-  return thrift.PrependError(fmt.Sprintf("%T.container_name (2) field write error: ", p), err) }
-  if err := oprot.WriteFieldEnd(ctx); err != nil {
-    return thrift.PrependError(fmt.Sprintf("%T write field end error 2:container_name: ", p), err) }
+func (p *KsScmcClientStartContainerArgs) writeField2(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("name", thrift.STRING, 2); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write field begin error 2:name: ", p), err) }
+  if err := oprot.WriteString(string(p.Name)); err != nil {
+  return thrift.PrependError(fmt.Sprintf("%T.name (2) field write error: ", p), err) }
+  if err := oprot.WriteFieldEnd(); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write field end error 2:name: ", p), err) }
   return err
 }
 
@@ -7255,15 +9043,15 @@ func (p *KsScmcClientStartContainerArgs) String() string {
 // Attributes:
 //  - Success
 type KsScmcClientStartContainerResult struct {
-  Success *int32 `thrift:"success,0" db:"success" json:"success,omitempty"`
+  Success *string `thrift:"success,0" db:"success" json:"success,omitempty"`
 }
 
 func NewKsScmcClientStartContainerResult() *KsScmcClientStartContainerResult {
   return &KsScmcClientStartContainerResult{}
 }
 
-var KsScmcClientStartContainerResult_Success_DEFAULT int32
-func (p *KsScmcClientStartContainerResult) GetSuccess() int32 {
+var KsScmcClientStartContainerResult_Success_DEFAULT string
+func (p *KsScmcClientStartContainerResult) GetSuccess() string {
   if !p.IsSetSuccess() {
     return KsScmcClientStartContainerResult_Success_DEFAULT
   }
@@ -7273,46 +9061,40 @@ func (p *KsScmcClientStartContainerResult) IsSetSuccess() bool {
   return p.Success != nil
 }
 
-func (p *KsScmcClientStartContainerResult) Read(ctx context.Context, iprot thrift.TProtocol) error {
-  if _, err := iprot.ReadStructBegin(ctx); err != nil {
+func (p *KsScmcClientStartContainerResult) Read(iprot thrift.TProtocol) error {
+  if _, err := iprot.ReadStructBegin(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
   }
 
 
   for {
-    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin(ctx)
+    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin()
     if err != nil {
       return thrift.PrependError(fmt.Sprintf("%T field %d read error: ", p, fieldId), err)
     }
     if fieldTypeId == thrift.STOP { break; }
     switch fieldId {
     case 0:
-      if fieldTypeId == thrift.I32 {
-        if err := p.ReadField0(ctx, iprot); err != nil {
-          return err
-        }
-      } else {
-        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-          return err
-        }
+      if err := p.ReadField0(iprot); err != nil {
+        return err
       }
     default:
-      if err := iprot.Skip(ctx, fieldTypeId); err != nil {
+      if err := iprot.Skip(fieldTypeId); err != nil {
         return err
       }
     }
-    if err := iprot.ReadFieldEnd(ctx); err != nil {
+    if err := iprot.ReadFieldEnd(); err != nil {
       return err
     }
   }
-  if err := iprot.ReadStructEnd(ctx); err != nil {
+  if err := iprot.ReadStructEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
   }
   return nil
 }
 
-func (p *KsScmcClientStartContainerResult)  ReadField0(ctx context.Context, iprot thrift.TProtocol) error {
-  if v, err := iprot.ReadI32(ctx); err != nil {
+func (p *KsScmcClientStartContainerResult)  ReadField0(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadString(); err != nil {
   return thrift.PrependError("error reading field 0: ", err)
 } else {
   p.Success = &v
@@ -7320,26 +9102,26 @@ func (p *KsScmcClientStartContainerResult)  ReadField0(ctx context.Context, ipro
   return nil
 }
 
-func (p *KsScmcClientStartContainerResult) Write(ctx context.Context, oprot thrift.TProtocol) error {
-  if err := oprot.WriteStructBegin(ctx, "startContainer_result"); err != nil {
+func (p *KsScmcClientStartContainerResult) Write(oprot thrift.TProtocol) error {
+  if err := oprot.WriteStructBegin("StartContainer_result"); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err) }
   if p != nil {
-    if err := p.writeField0(ctx, oprot); err != nil { return err }
+    if err := p.writeField0(oprot); err != nil { return err }
   }
-  if err := oprot.WriteFieldStop(ctx); err != nil {
+  if err := oprot.WriteFieldStop(); err != nil {
     return thrift.PrependError("write field stop error: ", err) }
-  if err := oprot.WriteStructEnd(ctx); err != nil {
+  if err := oprot.WriteStructEnd(); err != nil {
     return thrift.PrependError("write struct stop error: ", err) }
   return nil
 }
 
-func (p *KsScmcClientStartContainerResult) writeField0(ctx context.Context, oprot thrift.TProtocol) (err error) {
+func (p *KsScmcClientStartContainerResult) writeField0(oprot thrift.TProtocol) (err error) {
   if p.IsSetSuccess() {
-    if err := oprot.WriteFieldBegin(ctx, "success", thrift.I32, 0); err != nil {
+    if err := oprot.WriteFieldBegin("success", thrift.STRING, 0); err != nil {
       return thrift.PrependError(fmt.Sprintf("%T write field begin error 0:success: ", p), err) }
-    if err := oprot.WriteI32(ctx, int32(*p.Success)); err != nil {
+    if err := oprot.WriteString(string(*p.Success)); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T.success (0) field write error: ", p), err) }
-    if err := oprot.WriteFieldEnd(ctx); err != nil {
+    if err := oprot.WriteFieldEnd(); err != nil {
       return thrift.PrependError(fmt.Sprintf("%T write field end error 0:success: ", p), err) }
   }
   return err
@@ -7353,11 +9135,11 @@ func (p *KsScmcClientStartContainerResult) String() string {
 }
 
 // Attributes:
-//  - NodeNameorip
-//  - ContainerName
+//  - NodeName
+//  - Name
 type KsScmcClientStopContainerArgs struct {
-  NodeNameorip string `thrift:"node_nameorip,1" db:"node_nameorip" json:"node_nameorip"`
-  ContainerName string `thrift:"container_name,2" db:"container_name" json:"container_name"`
+  NodeName string `thrift:"node_name,1" db:"node_name" json:"node_name"`
+  Name string `thrift:"name,2" db:"name" json:"name"`
 }
 
 func NewKsScmcClientStopContainerArgs() *KsScmcClientStopContainerArgs {
@@ -7365,110 +9147,98 @@ func NewKsScmcClientStopContainerArgs() *KsScmcClientStopContainerArgs {
 }
 
 
-func (p *KsScmcClientStopContainerArgs) GetNodeNameorip() string {
-  return p.NodeNameorip
+func (p *KsScmcClientStopContainerArgs) GetNodeName() string {
+  return p.NodeName
 }
 
-func (p *KsScmcClientStopContainerArgs) GetContainerName() string {
-  return p.ContainerName
+func (p *KsScmcClientStopContainerArgs) GetName() string {
+  return p.Name
 }
-func (p *KsScmcClientStopContainerArgs) Read(ctx context.Context, iprot thrift.TProtocol) error {
-  if _, err := iprot.ReadStructBegin(ctx); err != nil {
+func (p *KsScmcClientStopContainerArgs) Read(iprot thrift.TProtocol) error {
+  if _, err := iprot.ReadStructBegin(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
   }
 
 
   for {
-    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin(ctx)
+    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin()
     if err != nil {
       return thrift.PrependError(fmt.Sprintf("%T field %d read error: ", p, fieldId), err)
     }
     if fieldTypeId == thrift.STOP { break; }
     switch fieldId {
     case 1:
-      if fieldTypeId == thrift.STRING {
-        if err := p.ReadField1(ctx, iprot); err != nil {
-          return err
-        }
-      } else {
-        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-          return err
-        }
+      if err := p.ReadField1(iprot); err != nil {
+        return err
       }
     case 2:
-      if fieldTypeId == thrift.STRING {
-        if err := p.ReadField2(ctx, iprot); err != nil {
-          return err
-        }
-      } else {
-        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-          return err
-        }
+      if err := p.ReadField2(iprot); err != nil {
+        return err
       }
     default:
-      if err := iprot.Skip(ctx, fieldTypeId); err != nil {
+      if err := iprot.Skip(fieldTypeId); err != nil {
         return err
       }
     }
-    if err := iprot.ReadFieldEnd(ctx); err != nil {
+    if err := iprot.ReadFieldEnd(); err != nil {
       return err
     }
   }
-  if err := iprot.ReadStructEnd(ctx); err != nil {
+  if err := iprot.ReadStructEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
   }
   return nil
 }
 
-func (p *KsScmcClientStopContainerArgs)  ReadField1(ctx context.Context, iprot thrift.TProtocol) error {
-  if v, err := iprot.ReadString(ctx); err != nil {
+func (p *KsScmcClientStopContainerArgs)  ReadField1(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadString(); err != nil {
   return thrift.PrependError("error reading field 1: ", err)
 } else {
-  p.NodeNameorip = v
+  p.NodeName = v
 }
   return nil
 }
 
-func (p *KsScmcClientStopContainerArgs)  ReadField2(ctx context.Context, iprot thrift.TProtocol) error {
-  if v, err := iprot.ReadString(ctx); err != nil {
+func (p *KsScmcClientStopContainerArgs)  ReadField2(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadString(); err != nil {
   return thrift.PrependError("error reading field 2: ", err)
 } else {
-  p.ContainerName = v
+  p.Name = v
 }
   return nil
 }
 
-func (p *KsScmcClientStopContainerArgs) Write(ctx context.Context, oprot thrift.TProtocol) error {
-  if err := oprot.WriteStructBegin(ctx, "stopContainer_args"); err != nil {
+func (p *KsScmcClientStopContainerArgs) Write(oprot thrift.TProtocol) error {
+  if err := oprot.WriteStructBegin("StopContainer_args"); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err) }
   if p != nil {
-    if err := p.writeField1(ctx, oprot); err != nil { return err }
-    if err := p.writeField2(ctx, oprot); err != nil { return err }
+    if err := p.writeField1(oprot); err != nil { return err }
+    if err := p.writeField2(oprot); err != nil { return err }
   }
-  if err := oprot.WriteFieldStop(ctx); err != nil {
+  if err := oprot.WriteFieldStop(); err != nil {
     return thrift.PrependError("write field stop error: ", err) }
-  if err := oprot.WriteStructEnd(ctx); err != nil {
+  if err := oprot.WriteStructEnd(); err != nil {
     return thrift.PrependError("write struct stop error: ", err) }
   return nil
 }
 
-func (p *KsScmcClientStopContainerArgs) writeField1(ctx context.Context, oprot thrift.TProtocol) (err error) {
-  if err := oprot.WriteFieldBegin(ctx, "node_nameorip", thrift.STRING, 1); err != nil {
-    return thrift.PrependError(fmt.Sprintf("%T write field begin error 1:node_nameorip: ", p), err) }
-  if err := oprot.WriteString(ctx, string(p.NodeNameorip)); err != nil {
-  return thrift.PrependError(fmt.Sprintf("%T.node_nameorip (1) field write error: ", p), err) }
-  if err := oprot.WriteFieldEnd(ctx); err != nil {
-    return thrift.PrependError(fmt.Sprintf("%T write field end error 1:node_nameorip: ", p), err) }
+func (p *KsScmcClientStopContainerArgs) writeField1(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("node_name", thrift.STRING, 1); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write field begin error 1:node_name: ", p), err) }
+  if err := oprot.WriteString(string(p.NodeName)); err != nil {
+  return thrift.PrependError(fmt.Sprintf("%T.node_name (1) field write error: ", p), err) }
+  if err := oprot.WriteFieldEnd(); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write field end error 1:node_name: ", p), err) }
   return err
 }
 
-func (p *KsScmcClientStopContainerArgs) writeField2(ctx context.Context, oprot thrift.TProtocol) (err error) {
-  if err := oprot.WriteFieldBegin(ctx, "container_name", thrift.STRING, 2); err != nil {
-    return thrift.PrependError(fmt.Sprintf("%T write field begin error 2:container_name: ", p), err) }
-  if err := oprot.WriteString(ctx, string(p.ContainerName)); err != nil {
-  return thrift.PrependError(fmt.Sprintf("%T.container_name (2) field write error: ", p), err) }
-  if err := oprot.WriteFieldEnd(ctx); err != nil {
-    return thrift.PrependError(fmt.Sprintf("%T write field end error 2:container_name: ", p), err) }
+func (p *KsScmcClientStopContainerArgs) writeField2(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("name", thrift.STRING, 2); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write field begin error 2:name: ", p), err) }
+  if err := oprot.WriteString(string(p.Name)); err != nil {
+  return thrift.PrependError(fmt.Sprintf("%T.name (2) field write error: ", p), err) }
+  if err := oprot.WriteFieldEnd(); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write field end error 2:name: ", p), err) }
   return err
 }
 
@@ -7482,15 +9252,15 @@ func (p *KsScmcClientStopContainerArgs) String() string {
 // Attributes:
 //  - Success
 type KsScmcClientStopContainerResult struct {
-  Success *int32 `thrift:"success,0" db:"success" json:"success,omitempty"`
+  Success *string `thrift:"success,0" db:"success" json:"success,omitempty"`
 }
 
 func NewKsScmcClientStopContainerResult() *KsScmcClientStopContainerResult {
   return &KsScmcClientStopContainerResult{}
 }
 
-var KsScmcClientStopContainerResult_Success_DEFAULT int32
-func (p *KsScmcClientStopContainerResult) GetSuccess() int32 {
+var KsScmcClientStopContainerResult_Success_DEFAULT string
+func (p *KsScmcClientStopContainerResult) GetSuccess() string {
   if !p.IsSetSuccess() {
     return KsScmcClientStopContainerResult_Success_DEFAULT
   }
@@ -7500,46 +9270,40 @@ func (p *KsScmcClientStopContainerResult) IsSetSuccess() bool {
   return p.Success != nil
 }
 
-func (p *KsScmcClientStopContainerResult) Read(ctx context.Context, iprot thrift.TProtocol) error {
-  if _, err := iprot.ReadStructBegin(ctx); err != nil {
+func (p *KsScmcClientStopContainerResult) Read(iprot thrift.TProtocol) error {
+  if _, err := iprot.ReadStructBegin(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
   }
 
 
   for {
-    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin(ctx)
+    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin()
     if err != nil {
       return thrift.PrependError(fmt.Sprintf("%T field %d read error: ", p, fieldId), err)
     }
     if fieldTypeId == thrift.STOP { break; }
     switch fieldId {
     case 0:
-      if fieldTypeId == thrift.I32 {
-        if err := p.ReadField0(ctx, iprot); err != nil {
-          return err
-        }
-      } else {
-        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-          return err
-        }
+      if err := p.ReadField0(iprot); err != nil {
+        return err
       }
     default:
-      if err := iprot.Skip(ctx, fieldTypeId); err != nil {
+      if err := iprot.Skip(fieldTypeId); err != nil {
         return err
       }
     }
-    if err := iprot.ReadFieldEnd(ctx); err != nil {
+    if err := iprot.ReadFieldEnd(); err != nil {
       return err
     }
   }
-  if err := iprot.ReadStructEnd(ctx); err != nil {
+  if err := iprot.ReadStructEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
   }
   return nil
 }
 
-func (p *KsScmcClientStopContainerResult)  ReadField0(ctx context.Context, iprot thrift.TProtocol) error {
-  if v, err := iprot.ReadI32(ctx); err != nil {
+func (p *KsScmcClientStopContainerResult)  ReadField0(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadString(); err != nil {
   return thrift.PrependError("error reading field 0: ", err)
 } else {
   p.Success = &v
@@ -7547,26 +9311,26 @@ func (p *KsScmcClientStopContainerResult)  ReadField0(ctx context.Context, iprot
   return nil
 }
 
-func (p *KsScmcClientStopContainerResult) Write(ctx context.Context, oprot thrift.TProtocol) error {
-  if err := oprot.WriteStructBegin(ctx, "stopContainer_result"); err != nil {
+func (p *KsScmcClientStopContainerResult) Write(oprot thrift.TProtocol) error {
+  if err := oprot.WriteStructBegin("StopContainer_result"); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err) }
   if p != nil {
-    if err := p.writeField0(ctx, oprot); err != nil { return err }
+    if err := p.writeField0(oprot); err != nil { return err }
   }
-  if err := oprot.WriteFieldStop(ctx); err != nil {
+  if err := oprot.WriteFieldStop(); err != nil {
     return thrift.PrependError("write field stop error: ", err) }
-  if err := oprot.WriteStructEnd(ctx); err != nil {
+  if err := oprot.WriteStructEnd(); err != nil {
     return thrift.PrependError("write struct stop error: ", err) }
   return nil
 }
 
-func (p *KsScmcClientStopContainerResult) writeField0(ctx context.Context, oprot thrift.TProtocol) (err error) {
+func (p *KsScmcClientStopContainerResult) writeField0(oprot thrift.TProtocol) (err error) {
   if p.IsSetSuccess() {
-    if err := oprot.WriteFieldBegin(ctx, "success", thrift.I32, 0); err != nil {
+    if err := oprot.WriteFieldBegin("success", thrift.STRING, 0); err != nil {
       return thrift.PrependError(fmt.Sprintf("%T write field begin error 0:success: ", p), err) }
-    if err := oprot.WriteI32(ctx, int32(*p.Success)); err != nil {
+    if err := oprot.WriteString(string(*p.Success)); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T.success (0) field write error: ", p), err) }
-    if err := oprot.WriteFieldEnd(ctx); err != nil {
+    if err := oprot.WriteFieldEnd(); err != nil {
       return thrift.PrependError(fmt.Sprintf("%T write field end error 0:success: ", p), err) }
   }
   return err
@@ -7580,11 +9344,11 @@ func (p *KsScmcClientStopContainerResult) String() string {
 }
 
 // Attributes:
-//  - NodeNameorip
-//  - ContainerName
+//  - NodeName
+//  - Name
 type KsScmcClientUninstallContainerArgs struct {
-  NodeNameorip string `thrift:"node_nameorip,1" db:"node_nameorip" json:"node_nameorip"`
-  ContainerName string `thrift:"container_name,2" db:"container_name" json:"container_name"`
+  NodeName string `thrift:"node_name,1" db:"node_name" json:"node_name"`
+  Name string `thrift:"name,2" db:"name" json:"name"`
 }
 
 func NewKsScmcClientUninstallContainerArgs() *KsScmcClientUninstallContainerArgs {
@@ -7592,110 +9356,98 @@ func NewKsScmcClientUninstallContainerArgs() *KsScmcClientUninstallContainerArgs
 }
 
 
-func (p *KsScmcClientUninstallContainerArgs) GetNodeNameorip() string {
-  return p.NodeNameorip
+func (p *KsScmcClientUninstallContainerArgs) GetNodeName() string {
+  return p.NodeName
 }
 
-func (p *KsScmcClientUninstallContainerArgs) GetContainerName() string {
-  return p.ContainerName
+func (p *KsScmcClientUninstallContainerArgs) GetName() string {
+  return p.Name
 }
-func (p *KsScmcClientUninstallContainerArgs) Read(ctx context.Context, iprot thrift.TProtocol) error {
-  if _, err := iprot.ReadStructBegin(ctx); err != nil {
+func (p *KsScmcClientUninstallContainerArgs) Read(iprot thrift.TProtocol) error {
+  if _, err := iprot.ReadStructBegin(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
   }
 
 
   for {
-    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin(ctx)
+    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin()
     if err != nil {
       return thrift.PrependError(fmt.Sprintf("%T field %d read error: ", p, fieldId), err)
     }
     if fieldTypeId == thrift.STOP { break; }
     switch fieldId {
     case 1:
-      if fieldTypeId == thrift.STRING {
-        if err := p.ReadField1(ctx, iprot); err != nil {
-          return err
-        }
-      } else {
-        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-          return err
-        }
+      if err := p.ReadField1(iprot); err != nil {
+        return err
       }
     case 2:
-      if fieldTypeId == thrift.STRING {
-        if err := p.ReadField2(ctx, iprot); err != nil {
-          return err
-        }
-      } else {
-        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-          return err
-        }
+      if err := p.ReadField2(iprot); err != nil {
+        return err
       }
     default:
-      if err := iprot.Skip(ctx, fieldTypeId); err != nil {
+      if err := iprot.Skip(fieldTypeId); err != nil {
         return err
       }
     }
-    if err := iprot.ReadFieldEnd(ctx); err != nil {
+    if err := iprot.ReadFieldEnd(); err != nil {
       return err
     }
   }
-  if err := iprot.ReadStructEnd(ctx); err != nil {
+  if err := iprot.ReadStructEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
   }
   return nil
 }
 
-func (p *KsScmcClientUninstallContainerArgs)  ReadField1(ctx context.Context, iprot thrift.TProtocol) error {
-  if v, err := iprot.ReadString(ctx); err != nil {
+func (p *KsScmcClientUninstallContainerArgs)  ReadField1(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadString(); err != nil {
   return thrift.PrependError("error reading field 1: ", err)
 } else {
-  p.NodeNameorip = v
+  p.NodeName = v
 }
   return nil
 }
 
-func (p *KsScmcClientUninstallContainerArgs)  ReadField2(ctx context.Context, iprot thrift.TProtocol) error {
-  if v, err := iprot.ReadString(ctx); err != nil {
+func (p *KsScmcClientUninstallContainerArgs)  ReadField2(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadString(); err != nil {
   return thrift.PrependError("error reading field 2: ", err)
 } else {
-  p.ContainerName = v
+  p.Name = v
 }
   return nil
 }
 
-func (p *KsScmcClientUninstallContainerArgs) Write(ctx context.Context, oprot thrift.TProtocol) error {
-  if err := oprot.WriteStructBegin(ctx, "uninstallContainer_args"); err != nil {
+func (p *KsScmcClientUninstallContainerArgs) Write(oprot thrift.TProtocol) error {
+  if err := oprot.WriteStructBegin("UninstallContainer_args"); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err) }
   if p != nil {
-    if err := p.writeField1(ctx, oprot); err != nil { return err }
-    if err := p.writeField2(ctx, oprot); err != nil { return err }
+    if err := p.writeField1(oprot); err != nil { return err }
+    if err := p.writeField2(oprot); err != nil { return err }
   }
-  if err := oprot.WriteFieldStop(ctx); err != nil {
+  if err := oprot.WriteFieldStop(); err != nil {
     return thrift.PrependError("write field stop error: ", err) }
-  if err := oprot.WriteStructEnd(ctx); err != nil {
+  if err := oprot.WriteStructEnd(); err != nil {
     return thrift.PrependError("write struct stop error: ", err) }
   return nil
 }
 
-func (p *KsScmcClientUninstallContainerArgs) writeField1(ctx context.Context, oprot thrift.TProtocol) (err error) {
-  if err := oprot.WriteFieldBegin(ctx, "node_nameorip", thrift.STRING, 1); err != nil {
-    return thrift.PrependError(fmt.Sprintf("%T write field begin error 1:node_nameorip: ", p), err) }
-  if err := oprot.WriteString(ctx, string(p.NodeNameorip)); err != nil {
-  return thrift.PrependError(fmt.Sprintf("%T.node_nameorip (1) field write error: ", p), err) }
-  if err := oprot.WriteFieldEnd(ctx); err != nil {
-    return thrift.PrependError(fmt.Sprintf("%T write field end error 1:node_nameorip: ", p), err) }
+func (p *KsScmcClientUninstallContainerArgs) writeField1(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("node_name", thrift.STRING, 1); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write field begin error 1:node_name: ", p), err) }
+  if err := oprot.WriteString(string(p.NodeName)); err != nil {
+  return thrift.PrependError(fmt.Sprintf("%T.node_name (1) field write error: ", p), err) }
+  if err := oprot.WriteFieldEnd(); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write field end error 1:node_name: ", p), err) }
   return err
 }
 
-func (p *KsScmcClientUninstallContainerArgs) writeField2(ctx context.Context, oprot thrift.TProtocol) (err error) {
-  if err := oprot.WriteFieldBegin(ctx, "container_name", thrift.STRING, 2); err != nil {
-    return thrift.PrependError(fmt.Sprintf("%T write field begin error 2:container_name: ", p), err) }
-  if err := oprot.WriteString(ctx, string(p.ContainerName)); err != nil {
-  return thrift.PrependError(fmt.Sprintf("%T.container_name (2) field write error: ", p), err) }
-  if err := oprot.WriteFieldEnd(ctx); err != nil {
-    return thrift.PrependError(fmt.Sprintf("%T write field end error 2:container_name: ", p), err) }
+func (p *KsScmcClientUninstallContainerArgs) writeField2(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("name", thrift.STRING, 2); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write field begin error 2:name: ", p), err) }
+  if err := oprot.WriteString(string(p.Name)); err != nil {
+  return thrift.PrependError(fmt.Sprintf("%T.name (2) field write error: ", p), err) }
+  if err := oprot.WriteFieldEnd(); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write field end error 2:name: ", p), err) }
   return err
 }
 
@@ -7709,15 +9461,15 @@ func (p *KsScmcClientUninstallContainerArgs) String() string {
 // Attributes:
 //  - Success
 type KsScmcClientUninstallContainerResult struct {
-  Success *int32 `thrift:"success,0" db:"success" json:"success,omitempty"`
+  Success *string `thrift:"success,0" db:"success" json:"success,omitempty"`
 }
 
 func NewKsScmcClientUninstallContainerResult() *KsScmcClientUninstallContainerResult {
   return &KsScmcClientUninstallContainerResult{}
 }
 
-var KsScmcClientUninstallContainerResult_Success_DEFAULT int32
-func (p *KsScmcClientUninstallContainerResult) GetSuccess() int32 {
+var KsScmcClientUninstallContainerResult_Success_DEFAULT string
+func (p *KsScmcClientUninstallContainerResult) GetSuccess() string {
   if !p.IsSetSuccess() {
     return KsScmcClientUninstallContainerResult_Success_DEFAULT
   }
@@ -7727,46 +9479,40 @@ func (p *KsScmcClientUninstallContainerResult) IsSetSuccess() bool {
   return p.Success != nil
 }
 
-func (p *KsScmcClientUninstallContainerResult) Read(ctx context.Context, iprot thrift.TProtocol) error {
-  if _, err := iprot.ReadStructBegin(ctx); err != nil {
+func (p *KsScmcClientUninstallContainerResult) Read(iprot thrift.TProtocol) error {
+  if _, err := iprot.ReadStructBegin(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
   }
 
 
   for {
-    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin(ctx)
+    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin()
     if err != nil {
       return thrift.PrependError(fmt.Sprintf("%T field %d read error: ", p, fieldId), err)
     }
     if fieldTypeId == thrift.STOP { break; }
     switch fieldId {
     case 0:
-      if fieldTypeId == thrift.I32 {
-        if err := p.ReadField0(ctx, iprot); err != nil {
-          return err
-        }
-      } else {
-        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-          return err
-        }
+      if err := p.ReadField0(iprot); err != nil {
+        return err
       }
     default:
-      if err := iprot.Skip(ctx, fieldTypeId); err != nil {
+      if err := iprot.Skip(fieldTypeId); err != nil {
         return err
       }
     }
-    if err := iprot.ReadFieldEnd(ctx); err != nil {
+    if err := iprot.ReadFieldEnd(); err != nil {
       return err
     }
   }
-  if err := iprot.ReadStructEnd(ctx); err != nil {
+  if err := iprot.ReadStructEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
   }
   return nil
 }
 
-func (p *KsScmcClientUninstallContainerResult)  ReadField0(ctx context.Context, iprot thrift.TProtocol) error {
-  if v, err := iprot.ReadI32(ctx); err != nil {
+func (p *KsScmcClientUninstallContainerResult)  ReadField0(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadString(); err != nil {
   return thrift.PrependError("error reading field 0: ", err)
 } else {
   p.Success = &v
@@ -7774,26 +9520,26 @@ func (p *KsScmcClientUninstallContainerResult)  ReadField0(ctx context.Context, 
   return nil
 }
 
-func (p *KsScmcClientUninstallContainerResult) Write(ctx context.Context, oprot thrift.TProtocol) error {
-  if err := oprot.WriteStructBegin(ctx, "uninstallContainer_result"); err != nil {
+func (p *KsScmcClientUninstallContainerResult) Write(oprot thrift.TProtocol) error {
+  if err := oprot.WriteStructBegin("UninstallContainer_result"); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err) }
   if p != nil {
-    if err := p.writeField0(ctx, oprot); err != nil { return err }
+    if err := p.writeField0(oprot); err != nil { return err }
   }
-  if err := oprot.WriteFieldStop(ctx); err != nil {
+  if err := oprot.WriteFieldStop(); err != nil {
     return thrift.PrependError("write field stop error: ", err) }
-  if err := oprot.WriteStructEnd(ctx); err != nil {
+  if err := oprot.WriteStructEnd(); err != nil {
     return thrift.PrependError("write struct stop error: ", err) }
   return nil
 }
 
-func (p *KsScmcClientUninstallContainerResult) writeField0(ctx context.Context, oprot thrift.TProtocol) (err error) {
+func (p *KsScmcClientUninstallContainerResult) writeField0(oprot thrift.TProtocol) (err error) {
   if p.IsSetSuccess() {
-    if err := oprot.WriteFieldBegin(ctx, "success", thrift.I32, 0); err != nil {
+    if err := oprot.WriteFieldBegin("success", thrift.STRING, 0); err != nil {
       return thrift.PrependError(fmt.Sprintf("%T write field begin error 0:success: ", p), err) }
-    if err := oprot.WriteI32(ctx, int32(*p.Success)); err != nil {
+    if err := oprot.WriteString(string(*p.Success)); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T.success (0) field write error: ", p), err) }
-    if err := oprot.WriteFieldEnd(ctx); err != nil {
+    if err := oprot.WriteFieldEnd(); err != nil {
       return thrift.PrependError(fmt.Sprintf("%T write field end error 0:success: ", p), err) }
   }
   return err
@@ -7826,56 +9572,44 @@ func (p *KsScmcClientGetContainerStatusArgs) GetNodeNameorip() string {
 func (p *KsScmcClientGetContainerStatusArgs) GetContainerName() string {
   return p.ContainerName
 }
-func (p *KsScmcClientGetContainerStatusArgs) Read(ctx context.Context, iprot thrift.TProtocol) error {
-  if _, err := iprot.ReadStructBegin(ctx); err != nil {
+func (p *KsScmcClientGetContainerStatusArgs) Read(iprot thrift.TProtocol) error {
+  if _, err := iprot.ReadStructBegin(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
   }
 
 
   for {
-    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin(ctx)
+    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin()
     if err != nil {
       return thrift.PrependError(fmt.Sprintf("%T field %d read error: ", p, fieldId), err)
     }
     if fieldTypeId == thrift.STOP { break; }
     switch fieldId {
     case 1:
-      if fieldTypeId == thrift.STRING {
-        if err := p.ReadField1(ctx, iprot); err != nil {
-          return err
-        }
-      } else {
-        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-          return err
-        }
+      if err := p.ReadField1(iprot); err != nil {
+        return err
       }
     case 2:
-      if fieldTypeId == thrift.STRING {
-        if err := p.ReadField2(ctx, iprot); err != nil {
-          return err
-        }
-      } else {
-        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-          return err
-        }
+      if err := p.ReadField2(iprot); err != nil {
+        return err
       }
     default:
-      if err := iprot.Skip(ctx, fieldTypeId); err != nil {
+      if err := iprot.Skip(fieldTypeId); err != nil {
         return err
       }
     }
-    if err := iprot.ReadFieldEnd(ctx); err != nil {
+    if err := iprot.ReadFieldEnd(); err != nil {
       return err
     }
   }
-  if err := iprot.ReadStructEnd(ctx); err != nil {
+  if err := iprot.ReadStructEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
   }
   return nil
 }
 
-func (p *KsScmcClientGetContainerStatusArgs)  ReadField1(ctx context.Context, iprot thrift.TProtocol) error {
-  if v, err := iprot.ReadString(ctx); err != nil {
+func (p *KsScmcClientGetContainerStatusArgs)  ReadField1(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadString(); err != nil {
   return thrift.PrependError("error reading field 1: ", err)
 } else {
   p.NodeNameorip = v
@@ -7883,8 +9617,8 @@ func (p *KsScmcClientGetContainerStatusArgs)  ReadField1(ctx context.Context, ip
   return nil
 }
 
-func (p *KsScmcClientGetContainerStatusArgs)  ReadField2(ctx context.Context, iprot thrift.TProtocol) error {
-  if v, err := iprot.ReadString(ctx); err != nil {
+func (p *KsScmcClientGetContainerStatusArgs)  ReadField2(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadString(); err != nil {
   return thrift.PrependError("error reading field 2: ", err)
 } else {
   p.ContainerName = v
@@ -7892,36 +9626,36 @@ func (p *KsScmcClientGetContainerStatusArgs)  ReadField2(ctx context.Context, ip
   return nil
 }
 
-func (p *KsScmcClientGetContainerStatusArgs) Write(ctx context.Context, oprot thrift.TProtocol) error {
-  if err := oprot.WriteStructBegin(ctx, "getContainerStatus_args"); err != nil {
+func (p *KsScmcClientGetContainerStatusArgs) Write(oprot thrift.TProtocol) error {
+  if err := oprot.WriteStructBegin("getContainerStatus_args"); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err) }
   if p != nil {
-    if err := p.writeField1(ctx, oprot); err != nil { return err }
-    if err := p.writeField2(ctx, oprot); err != nil { return err }
+    if err := p.writeField1(oprot); err != nil { return err }
+    if err := p.writeField2(oprot); err != nil { return err }
   }
-  if err := oprot.WriteFieldStop(ctx); err != nil {
+  if err := oprot.WriteFieldStop(); err != nil {
     return thrift.PrependError("write field stop error: ", err) }
-  if err := oprot.WriteStructEnd(ctx); err != nil {
+  if err := oprot.WriteStructEnd(); err != nil {
     return thrift.PrependError("write struct stop error: ", err) }
   return nil
 }
 
-func (p *KsScmcClientGetContainerStatusArgs) writeField1(ctx context.Context, oprot thrift.TProtocol) (err error) {
-  if err := oprot.WriteFieldBegin(ctx, "node_nameorip", thrift.STRING, 1); err != nil {
+func (p *KsScmcClientGetContainerStatusArgs) writeField1(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("node_nameorip", thrift.STRING, 1); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field begin error 1:node_nameorip: ", p), err) }
-  if err := oprot.WriteString(ctx, string(p.NodeNameorip)); err != nil {
+  if err := oprot.WriteString(string(p.NodeNameorip)); err != nil {
   return thrift.PrependError(fmt.Sprintf("%T.node_nameorip (1) field write error: ", p), err) }
-  if err := oprot.WriteFieldEnd(ctx); err != nil {
+  if err := oprot.WriteFieldEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field end error 1:node_nameorip: ", p), err) }
   return err
 }
 
-func (p *KsScmcClientGetContainerStatusArgs) writeField2(ctx context.Context, oprot thrift.TProtocol) (err error) {
-  if err := oprot.WriteFieldBegin(ctx, "container_name", thrift.STRING, 2); err != nil {
+func (p *KsScmcClientGetContainerStatusArgs) writeField2(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("container_name", thrift.STRING, 2); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field begin error 2:container_name: ", p), err) }
-  if err := oprot.WriteString(ctx, string(p.ContainerName)); err != nil {
+  if err := oprot.WriteString(string(p.ContainerName)); err != nil {
   return thrift.PrependError(fmt.Sprintf("%T.container_name (2) field write error: ", p), err) }
-  if err := oprot.WriteFieldEnd(ctx); err != nil {
+  if err := oprot.WriteFieldEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field end error 2:container_name: ", p), err) }
   return err
 }
@@ -7954,46 +9688,40 @@ func (p *KsScmcClientGetContainerStatusResult) IsSetSuccess() bool {
   return p.Success != nil
 }
 
-func (p *KsScmcClientGetContainerStatusResult) Read(ctx context.Context, iprot thrift.TProtocol) error {
-  if _, err := iprot.ReadStructBegin(ctx); err != nil {
+func (p *KsScmcClientGetContainerStatusResult) Read(iprot thrift.TProtocol) error {
+  if _, err := iprot.ReadStructBegin(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
   }
 
 
   for {
-    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin(ctx)
+    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin()
     if err != nil {
       return thrift.PrependError(fmt.Sprintf("%T field %d read error: ", p, fieldId), err)
     }
     if fieldTypeId == thrift.STOP { break; }
     switch fieldId {
     case 0:
-      if fieldTypeId == thrift.I32 {
-        if err := p.ReadField0(ctx, iprot); err != nil {
-          return err
-        }
-      } else {
-        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-          return err
-        }
+      if err := p.ReadField0(iprot); err != nil {
+        return err
       }
     default:
-      if err := iprot.Skip(ctx, fieldTypeId); err != nil {
+      if err := iprot.Skip(fieldTypeId); err != nil {
         return err
       }
     }
-    if err := iprot.ReadFieldEnd(ctx); err != nil {
+    if err := iprot.ReadFieldEnd(); err != nil {
       return err
     }
   }
-  if err := iprot.ReadStructEnd(ctx); err != nil {
+  if err := iprot.ReadStructEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
   }
   return nil
 }
 
-func (p *KsScmcClientGetContainerStatusResult)  ReadField0(ctx context.Context, iprot thrift.TProtocol) error {
-  if v, err := iprot.ReadI32(ctx); err != nil {
+func (p *KsScmcClientGetContainerStatusResult)  ReadField0(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadI32(); err != nil {
   return thrift.PrependError("error reading field 0: ", err)
 } else {
   p.Success = &v
@@ -8001,26 +9729,26 @@ func (p *KsScmcClientGetContainerStatusResult)  ReadField0(ctx context.Context, 
   return nil
 }
 
-func (p *KsScmcClientGetContainerStatusResult) Write(ctx context.Context, oprot thrift.TProtocol) error {
-  if err := oprot.WriteStructBegin(ctx, "getContainerStatus_result"); err != nil {
+func (p *KsScmcClientGetContainerStatusResult) Write(oprot thrift.TProtocol) error {
+  if err := oprot.WriteStructBegin("getContainerStatus_result"); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err) }
   if p != nil {
-    if err := p.writeField0(ctx, oprot); err != nil { return err }
+    if err := p.writeField0(oprot); err != nil { return err }
   }
-  if err := oprot.WriteFieldStop(ctx); err != nil {
+  if err := oprot.WriteFieldStop(); err != nil {
     return thrift.PrependError("write field stop error: ", err) }
-  if err := oprot.WriteStructEnd(ctx); err != nil {
+  if err := oprot.WriteStructEnd(); err != nil {
     return thrift.PrependError("write struct stop error: ", err) }
   return nil
 }
 
-func (p *KsScmcClientGetContainerStatusResult) writeField0(ctx context.Context, oprot thrift.TProtocol) (err error) {
+func (p *KsScmcClientGetContainerStatusResult) writeField0(oprot thrift.TProtocol) (err error) {
   if p.IsSetSuccess() {
-    if err := oprot.WriteFieldBegin(ctx, "success", thrift.I32, 0); err != nil {
+    if err := oprot.WriteFieldBegin("success", thrift.I32, 0); err != nil {
       return thrift.PrependError(fmt.Sprintf("%T write field begin error 0:success: ", p), err) }
-    if err := oprot.WriteI32(ctx, int32(*p.Success)); err != nil {
+    if err := oprot.WriteI32(int32(*p.Success)); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T.success (0) field write error: ", p), err) }
-    if err := oprot.WriteFieldEnd(ctx); err != nil {
+    if err := oprot.WriteFieldEnd(); err != nil {
       return thrift.PrependError(fmt.Sprintf("%T write field end error 0:success: ", p), err) }
   }
   return err
@@ -8053,56 +9781,44 @@ func (p *KsScmcClientGetContainerMetricsArgs) GetNodeNameorip() string {
 func (p *KsScmcClientGetContainerMetricsArgs) GetContainerName() string {
   return p.ContainerName
 }
-func (p *KsScmcClientGetContainerMetricsArgs) Read(ctx context.Context, iprot thrift.TProtocol) error {
-  if _, err := iprot.ReadStructBegin(ctx); err != nil {
+func (p *KsScmcClientGetContainerMetricsArgs) Read(iprot thrift.TProtocol) error {
+  if _, err := iprot.ReadStructBegin(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
   }
 
 
   for {
-    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin(ctx)
+    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin()
     if err != nil {
       return thrift.PrependError(fmt.Sprintf("%T field %d read error: ", p, fieldId), err)
     }
     if fieldTypeId == thrift.STOP { break; }
     switch fieldId {
     case 1:
-      if fieldTypeId == thrift.STRING {
-        if err := p.ReadField1(ctx, iprot); err != nil {
-          return err
-        }
-      } else {
-        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-          return err
-        }
+      if err := p.ReadField1(iprot); err != nil {
+        return err
       }
     case 2:
-      if fieldTypeId == thrift.STRING {
-        if err := p.ReadField2(ctx, iprot); err != nil {
-          return err
-        }
-      } else {
-        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-          return err
-        }
+      if err := p.ReadField2(iprot); err != nil {
+        return err
       }
     default:
-      if err := iprot.Skip(ctx, fieldTypeId); err != nil {
+      if err := iprot.Skip(fieldTypeId); err != nil {
         return err
       }
     }
-    if err := iprot.ReadFieldEnd(ctx); err != nil {
+    if err := iprot.ReadFieldEnd(); err != nil {
       return err
     }
   }
-  if err := iprot.ReadStructEnd(ctx); err != nil {
+  if err := iprot.ReadStructEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
   }
   return nil
 }
 
-func (p *KsScmcClientGetContainerMetricsArgs)  ReadField1(ctx context.Context, iprot thrift.TProtocol) error {
-  if v, err := iprot.ReadString(ctx); err != nil {
+func (p *KsScmcClientGetContainerMetricsArgs)  ReadField1(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadString(); err != nil {
   return thrift.PrependError("error reading field 1: ", err)
 } else {
   p.NodeNameorip = v
@@ -8110,8 +9826,8 @@ func (p *KsScmcClientGetContainerMetricsArgs)  ReadField1(ctx context.Context, i
   return nil
 }
 
-func (p *KsScmcClientGetContainerMetricsArgs)  ReadField2(ctx context.Context, iprot thrift.TProtocol) error {
-  if v, err := iprot.ReadString(ctx); err != nil {
+func (p *KsScmcClientGetContainerMetricsArgs)  ReadField2(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadString(); err != nil {
   return thrift.PrependError("error reading field 2: ", err)
 } else {
   p.ContainerName = v
@@ -8119,36 +9835,36 @@ func (p *KsScmcClientGetContainerMetricsArgs)  ReadField2(ctx context.Context, i
   return nil
 }
 
-func (p *KsScmcClientGetContainerMetricsArgs) Write(ctx context.Context, oprot thrift.TProtocol) error {
-  if err := oprot.WriteStructBegin(ctx, "getContainerMetrics_args"); err != nil {
+func (p *KsScmcClientGetContainerMetricsArgs) Write(oprot thrift.TProtocol) error {
+  if err := oprot.WriteStructBegin("getContainerMetrics_args"); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err) }
   if p != nil {
-    if err := p.writeField1(ctx, oprot); err != nil { return err }
-    if err := p.writeField2(ctx, oprot); err != nil { return err }
+    if err := p.writeField1(oprot); err != nil { return err }
+    if err := p.writeField2(oprot); err != nil { return err }
   }
-  if err := oprot.WriteFieldStop(ctx); err != nil {
+  if err := oprot.WriteFieldStop(); err != nil {
     return thrift.PrependError("write field stop error: ", err) }
-  if err := oprot.WriteStructEnd(ctx); err != nil {
+  if err := oprot.WriteStructEnd(); err != nil {
     return thrift.PrependError("write struct stop error: ", err) }
   return nil
 }
 
-func (p *KsScmcClientGetContainerMetricsArgs) writeField1(ctx context.Context, oprot thrift.TProtocol) (err error) {
-  if err := oprot.WriteFieldBegin(ctx, "node_nameorip", thrift.STRING, 1); err != nil {
+func (p *KsScmcClientGetContainerMetricsArgs) writeField1(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("node_nameorip", thrift.STRING, 1); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field begin error 1:node_nameorip: ", p), err) }
-  if err := oprot.WriteString(ctx, string(p.NodeNameorip)); err != nil {
+  if err := oprot.WriteString(string(p.NodeNameorip)); err != nil {
   return thrift.PrependError(fmt.Sprintf("%T.node_nameorip (1) field write error: ", p), err) }
-  if err := oprot.WriteFieldEnd(ctx); err != nil {
+  if err := oprot.WriteFieldEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field end error 1:node_nameorip: ", p), err) }
   return err
 }
 
-func (p *KsScmcClientGetContainerMetricsArgs) writeField2(ctx context.Context, oprot thrift.TProtocol) (err error) {
-  if err := oprot.WriteFieldBegin(ctx, "container_name", thrift.STRING, 2); err != nil {
+func (p *KsScmcClientGetContainerMetricsArgs) writeField2(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("container_name", thrift.STRING, 2); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field begin error 2:container_name: ", p), err) }
-  if err := oprot.WriteString(ctx, string(p.ContainerName)); err != nil {
+  if err := oprot.WriteString(string(p.ContainerName)); err != nil {
   return thrift.PrependError(fmt.Sprintf("%T.container_name (2) field write error: ", p), err) }
-  if err := oprot.WriteFieldEnd(ctx); err != nil {
+  if err := oprot.WriteFieldEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field end error 2:container_name: ", p), err) }
   return err
 }
@@ -8181,73 +9897,67 @@ func (p *KsScmcClientGetContainerMetricsResult) IsSetSuccess() bool {
   return p.Success != nil
 }
 
-func (p *KsScmcClientGetContainerMetricsResult) Read(ctx context.Context, iprot thrift.TProtocol) error {
-  if _, err := iprot.ReadStructBegin(ctx); err != nil {
+func (p *KsScmcClientGetContainerMetricsResult) Read(iprot thrift.TProtocol) error {
+  if _, err := iprot.ReadStructBegin(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
   }
 
 
   for {
-    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin(ctx)
+    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin()
     if err != nil {
       return thrift.PrependError(fmt.Sprintf("%T field %d read error: ", p, fieldId), err)
     }
     if fieldTypeId == thrift.STOP { break; }
     switch fieldId {
     case 0:
-      if fieldTypeId == thrift.STRUCT {
-        if err := p.ReadField0(ctx, iprot); err != nil {
-          return err
-        }
-      } else {
-        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-          return err
-        }
+      if err := p.ReadField0(iprot); err != nil {
+        return err
       }
     default:
-      if err := iprot.Skip(ctx, fieldTypeId); err != nil {
+      if err := iprot.Skip(fieldTypeId); err != nil {
         return err
       }
     }
-    if err := iprot.ReadFieldEnd(ctx); err != nil {
+    if err := iprot.ReadFieldEnd(); err != nil {
       return err
     }
   }
-  if err := iprot.ReadStructEnd(ctx); err != nil {
+  if err := iprot.ReadStructEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
   }
   return nil
 }
 
-func (p *KsScmcClientGetContainerMetricsResult)  ReadField0(ctx context.Context, iprot thrift.TProtocol) error {
+func (p *KsScmcClientGetContainerMetricsResult)  ReadField0(iprot thrift.TProtocol) error {
   p.Success = &GetContainerMetricsResponse{}
-  if err := p.Success.Read(ctx, iprot); err != nil {
+  if err := p.Success.Read(iprot); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", p.Success), err)
   }
   return nil
 }
 
-func (p *KsScmcClientGetContainerMetricsResult) Write(ctx context.Context, oprot thrift.TProtocol) error {
-  if err := oprot.WriteStructBegin(ctx, "getContainerMetrics_result"); err != nil {
+func (p *KsScmcClientGetContainerMetricsResult) Write(oprot thrift.TProtocol) error {
+  if err := oprot.WriteStructBegin("getContainerMetrics_result"); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err) }
   if p != nil {
-    if err := p.writeField0(ctx, oprot); err != nil { return err }
+    if err := p.writeField0(oprot); err != nil { return err }
   }
-  if err := oprot.WriteFieldStop(ctx); err != nil {
+  if err := oprot.WriteFieldStop(); err != nil {
     return thrift.PrependError("write field stop error: ", err) }
-  if err := oprot.WriteStructEnd(ctx); err != nil {
+  if err := oprot.WriteStructEnd(); err != nil {
     return thrift.PrependError("write struct stop error: ", err) }
   return nil
 }
 
-func (p *KsScmcClientGetContainerMetricsResult) writeField0(ctx context.Context, oprot thrift.TProtocol) (err error) {
+func (p *KsScmcClientGetContainerMetricsResult) writeField0(oprot thrift.TProtocol) (err error) {
   if p.IsSetSuccess() {
-    if err := oprot.WriteFieldBegin(ctx, "success", thrift.STRUCT, 0); err != nil {
+    if err := oprot.WriteFieldBegin("success", thrift.STRUCT, 0); err != nil {
       return thrift.PrependError(fmt.Sprintf("%T write field begin error 0:success: ", p), err) }
-    if err := p.Success.Write(ctx, oprot); err != nil {
+    if err := p.Success.Write(oprot); err != nil {
       return thrift.PrependError(fmt.Sprintf("%T error writing struct: ", p.Success), err)
     }
-    if err := oprot.WriteFieldEnd(ctx); err != nil {
+    if err := oprot.WriteFieldEnd(); err != nil {
       return thrift.PrependError(fmt.Sprintf("%T write field end error 0:success: ", p), err) }
   }
   return err
@@ -8258,6 +9968,215 @@ func (p *KsScmcClientGetContainerMetricsResult) String() string {
     return "<nil>"
   }
   return fmt.Sprintf("KsScmcClientGetContainerMetricsResult(%+v)", *p)
+}
+
+// Attributes:
+//  - NodeName
+//  - Name
+type KsScmcClientGetContainerImageVersArgs struct {
+  NodeName string `thrift:"node_name,1" db:"node_name" json:"node_name"`
+  Name string `thrift:"name,2" db:"name" json:"name"`
+}
+
+func NewKsScmcClientGetContainerImageVersArgs() *KsScmcClientGetContainerImageVersArgs {
+  return &KsScmcClientGetContainerImageVersArgs{}
+}
+
+
+func (p *KsScmcClientGetContainerImageVersArgs) GetNodeName() string {
+  return p.NodeName
+}
+
+func (p *KsScmcClientGetContainerImageVersArgs) GetName() string {
+  return p.Name
+}
+func (p *KsScmcClientGetContainerImageVersArgs) Read(iprot thrift.TProtocol) error {
+  if _, err := iprot.ReadStructBegin(); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
+  }
+
+
+  for {
+    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin()
+    if err != nil {
+      return thrift.PrependError(fmt.Sprintf("%T field %d read error: ", p, fieldId), err)
+    }
+    if fieldTypeId == thrift.STOP { break; }
+    switch fieldId {
+    case 1:
+      if err := p.ReadField1(iprot); err != nil {
+        return err
+      }
+    case 2:
+      if err := p.ReadField2(iprot); err != nil {
+        return err
+      }
+    default:
+      if err := iprot.Skip(fieldTypeId); err != nil {
+        return err
+      }
+    }
+    if err := iprot.ReadFieldEnd(); err != nil {
+      return err
+    }
+  }
+  if err := iprot.ReadStructEnd(); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+  }
+  return nil
+}
+
+func (p *KsScmcClientGetContainerImageVersArgs)  ReadField1(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadString(); err != nil {
+  return thrift.PrependError("error reading field 1: ", err)
+} else {
+  p.NodeName = v
+}
+  return nil
+}
+
+func (p *KsScmcClientGetContainerImageVersArgs)  ReadField2(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadString(); err != nil {
+  return thrift.PrependError("error reading field 2: ", err)
+} else {
+  p.Name = v
+}
+  return nil
+}
+
+func (p *KsScmcClientGetContainerImageVersArgs) Write(oprot thrift.TProtocol) error {
+  if err := oprot.WriteStructBegin("GetContainerImageVers_args"); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err) }
+  if p != nil {
+    if err := p.writeField1(oprot); err != nil { return err }
+    if err := p.writeField2(oprot); err != nil { return err }
+  }
+  if err := oprot.WriteFieldStop(); err != nil {
+    return thrift.PrependError("write field stop error: ", err) }
+  if err := oprot.WriteStructEnd(); err != nil {
+    return thrift.PrependError("write struct stop error: ", err) }
+  return nil
+}
+
+func (p *KsScmcClientGetContainerImageVersArgs) writeField1(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("node_name", thrift.STRING, 1); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write field begin error 1:node_name: ", p), err) }
+  if err := oprot.WriteString(string(p.NodeName)); err != nil {
+  return thrift.PrependError(fmt.Sprintf("%T.node_name (1) field write error: ", p), err) }
+  if err := oprot.WriteFieldEnd(); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write field end error 1:node_name: ", p), err) }
+  return err
+}
+
+func (p *KsScmcClientGetContainerImageVersArgs) writeField2(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("name", thrift.STRING, 2); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write field begin error 2:name: ", p), err) }
+  if err := oprot.WriteString(string(p.Name)); err != nil {
+  return thrift.PrependError(fmt.Sprintf("%T.name (2) field write error: ", p), err) }
+  if err := oprot.WriteFieldEnd(); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write field end error 2:name: ", p), err) }
+  return err
+}
+
+func (p *KsScmcClientGetContainerImageVersArgs) String() string {
+  if p == nil {
+    return "<nil>"
+  }
+  return fmt.Sprintf("KsScmcClientGetContainerImageVersArgs(%+v)", *p)
+}
+
+// Attributes:
+//  - Success
+type KsScmcClientGetContainerImageVersResult struct {
+  Success *string `thrift:"success,0" db:"success" json:"success,omitempty"`
+}
+
+func NewKsScmcClientGetContainerImageVersResult() *KsScmcClientGetContainerImageVersResult {
+  return &KsScmcClientGetContainerImageVersResult{}
+}
+
+var KsScmcClientGetContainerImageVersResult_Success_DEFAULT string
+func (p *KsScmcClientGetContainerImageVersResult) GetSuccess() string {
+  if !p.IsSetSuccess() {
+    return KsScmcClientGetContainerImageVersResult_Success_DEFAULT
+  }
+return *p.Success
+}
+func (p *KsScmcClientGetContainerImageVersResult) IsSetSuccess() bool {
+  return p.Success != nil
+}
+
+func (p *KsScmcClientGetContainerImageVersResult) Read(iprot thrift.TProtocol) error {
+  if _, err := iprot.ReadStructBegin(); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
+  }
+
+
+  for {
+    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin()
+    if err != nil {
+      return thrift.PrependError(fmt.Sprintf("%T field %d read error: ", p, fieldId), err)
+    }
+    if fieldTypeId == thrift.STOP { break; }
+    switch fieldId {
+    case 0:
+      if err := p.ReadField0(iprot); err != nil {
+        return err
+      }
+    default:
+      if err := iprot.Skip(fieldTypeId); err != nil {
+        return err
+      }
+    }
+    if err := iprot.ReadFieldEnd(); err != nil {
+      return err
+    }
+  }
+  if err := iprot.ReadStructEnd(); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+  }
+  return nil
+}
+
+func (p *KsScmcClientGetContainerImageVersResult)  ReadField0(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadString(); err != nil {
+  return thrift.PrependError("error reading field 0: ", err)
+} else {
+  p.Success = &v
+}
+  return nil
+}
+
+func (p *KsScmcClientGetContainerImageVersResult) Write(oprot thrift.TProtocol) error {
+  if err := oprot.WriteStructBegin("GetContainerImageVers_result"); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err) }
+  if p != nil {
+    if err := p.writeField0(oprot); err != nil { return err }
+  }
+  if err := oprot.WriteFieldStop(); err != nil {
+    return thrift.PrependError("write field stop error: ", err) }
+  if err := oprot.WriteStructEnd(); err != nil {
+    return thrift.PrependError("write struct stop error: ", err) }
+  return nil
+}
+
+func (p *KsScmcClientGetContainerImageVersResult) writeField0(oprot thrift.TProtocol) (err error) {
+  if p.IsSetSuccess() {
+    if err := oprot.WriteFieldBegin("success", thrift.STRING, 0); err != nil {
+      return thrift.PrependError(fmt.Sprintf("%T write field begin error 0:success: ", p), err) }
+    if err := oprot.WriteString(string(*p.Success)); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T.success (0) field write error: ", p), err) }
+    if err := oprot.WriteFieldEnd(); err != nil {
+      return thrift.PrependError(fmt.Sprintf("%T write field end error 0:success: ", p), err) }
+  }
+  return err
+}
+
+func (p *KsScmcClientGetContainerImageVersResult) String() string {
+  if p == nil {
+    return "<nil>"
+  }
+  return fmt.Sprintf("KsScmcClientGetContainerImageVersResult(%+v)", *p)
 }
 
 // Attributes:
@@ -8280,56 +10199,44 @@ func (p *KsScmcClientGetImageVer4ContainerArgs) GetNodeNameorip() string {
 func (p *KsScmcClientGetImageVer4ContainerArgs) GetContainerName() string {
   return p.ContainerName
 }
-func (p *KsScmcClientGetImageVer4ContainerArgs) Read(ctx context.Context, iprot thrift.TProtocol) error {
-  if _, err := iprot.ReadStructBegin(ctx); err != nil {
+func (p *KsScmcClientGetImageVer4ContainerArgs) Read(iprot thrift.TProtocol) error {
+  if _, err := iprot.ReadStructBegin(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
   }
 
 
   for {
-    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin(ctx)
+    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin()
     if err != nil {
       return thrift.PrependError(fmt.Sprintf("%T field %d read error: ", p, fieldId), err)
     }
     if fieldTypeId == thrift.STOP { break; }
     switch fieldId {
     case 1:
-      if fieldTypeId == thrift.STRING {
-        if err := p.ReadField1(ctx, iprot); err != nil {
-          return err
-        }
-      } else {
-        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-          return err
-        }
+      if err := p.ReadField1(iprot); err != nil {
+        return err
       }
     case 2:
-      if fieldTypeId == thrift.STRING {
-        if err := p.ReadField2(ctx, iprot); err != nil {
-          return err
-        }
-      } else {
-        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-          return err
-        }
+      if err := p.ReadField2(iprot); err != nil {
+        return err
       }
     default:
-      if err := iprot.Skip(ctx, fieldTypeId); err != nil {
+      if err := iprot.Skip(fieldTypeId); err != nil {
         return err
       }
     }
-    if err := iprot.ReadFieldEnd(ctx); err != nil {
+    if err := iprot.ReadFieldEnd(); err != nil {
       return err
     }
   }
-  if err := iprot.ReadStructEnd(ctx); err != nil {
+  if err := iprot.ReadStructEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
   }
   return nil
 }
 
-func (p *KsScmcClientGetImageVer4ContainerArgs)  ReadField1(ctx context.Context, iprot thrift.TProtocol) error {
-  if v, err := iprot.ReadString(ctx); err != nil {
+func (p *KsScmcClientGetImageVer4ContainerArgs)  ReadField1(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadString(); err != nil {
   return thrift.PrependError("error reading field 1: ", err)
 } else {
   p.NodeNameorip = v
@@ -8337,8 +10244,8 @@ func (p *KsScmcClientGetImageVer4ContainerArgs)  ReadField1(ctx context.Context,
   return nil
 }
 
-func (p *KsScmcClientGetImageVer4ContainerArgs)  ReadField2(ctx context.Context, iprot thrift.TProtocol) error {
-  if v, err := iprot.ReadString(ctx); err != nil {
+func (p *KsScmcClientGetImageVer4ContainerArgs)  ReadField2(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadString(); err != nil {
   return thrift.PrependError("error reading field 2: ", err)
 } else {
   p.ContainerName = v
@@ -8346,36 +10253,36 @@ func (p *KsScmcClientGetImageVer4ContainerArgs)  ReadField2(ctx context.Context,
   return nil
 }
 
-func (p *KsScmcClientGetImageVer4ContainerArgs) Write(ctx context.Context, oprot thrift.TProtocol) error {
-  if err := oprot.WriteStructBegin(ctx, "getImageVer4Container_args"); err != nil {
+func (p *KsScmcClientGetImageVer4ContainerArgs) Write(oprot thrift.TProtocol) error {
+  if err := oprot.WriteStructBegin("getImageVer4Container_args"); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err) }
   if p != nil {
-    if err := p.writeField1(ctx, oprot); err != nil { return err }
-    if err := p.writeField2(ctx, oprot); err != nil { return err }
+    if err := p.writeField1(oprot); err != nil { return err }
+    if err := p.writeField2(oprot); err != nil { return err }
   }
-  if err := oprot.WriteFieldStop(ctx); err != nil {
+  if err := oprot.WriteFieldStop(); err != nil {
     return thrift.PrependError("write field stop error: ", err) }
-  if err := oprot.WriteStructEnd(ctx); err != nil {
+  if err := oprot.WriteStructEnd(); err != nil {
     return thrift.PrependError("write struct stop error: ", err) }
   return nil
 }
 
-func (p *KsScmcClientGetImageVer4ContainerArgs) writeField1(ctx context.Context, oprot thrift.TProtocol) (err error) {
-  if err := oprot.WriteFieldBegin(ctx, "node_nameorip", thrift.STRING, 1); err != nil {
+func (p *KsScmcClientGetImageVer4ContainerArgs) writeField1(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("node_nameorip", thrift.STRING, 1); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field begin error 1:node_nameorip: ", p), err) }
-  if err := oprot.WriteString(ctx, string(p.NodeNameorip)); err != nil {
+  if err := oprot.WriteString(string(p.NodeNameorip)); err != nil {
   return thrift.PrependError(fmt.Sprintf("%T.node_nameorip (1) field write error: ", p), err) }
-  if err := oprot.WriteFieldEnd(ctx); err != nil {
+  if err := oprot.WriteFieldEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field end error 1:node_nameorip: ", p), err) }
   return err
 }
 
-func (p *KsScmcClientGetImageVer4ContainerArgs) writeField2(ctx context.Context, oprot thrift.TProtocol) (err error) {
-  if err := oprot.WriteFieldBegin(ctx, "container_name", thrift.STRING, 2); err != nil {
+func (p *KsScmcClientGetImageVer4ContainerArgs) writeField2(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("container_name", thrift.STRING, 2); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field begin error 2:container_name: ", p), err) }
-  if err := oprot.WriteString(ctx, string(p.ContainerName)); err != nil {
+  if err := oprot.WriteString(string(p.ContainerName)); err != nil {
   return thrift.PrependError(fmt.Sprintf("%T.container_name (2) field write error: ", p), err) }
-  if err := oprot.WriteFieldEnd(ctx); err != nil {
+  if err := oprot.WriteFieldEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field end error 2:container_name: ", p), err) }
   return err
 }
@@ -8408,73 +10315,67 @@ func (p *KsScmcClientGetImageVer4ContainerResult) IsSetSuccess() bool {
   return p.Success != nil
 }
 
-func (p *KsScmcClientGetImageVer4ContainerResult) Read(ctx context.Context, iprot thrift.TProtocol) error {
-  if _, err := iprot.ReadStructBegin(ctx); err != nil {
+func (p *KsScmcClientGetImageVer4ContainerResult) Read(iprot thrift.TProtocol) error {
+  if _, err := iprot.ReadStructBegin(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
   }
 
 
   for {
-    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin(ctx)
+    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin()
     if err != nil {
       return thrift.PrependError(fmt.Sprintf("%T field %d read error: ", p, fieldId), err)
     }
     if fieldTypeId == thrift.STOP { break; }
     switch fieldId {
     case 0:
-      if fieldTypeId == thrift.STRUCT {
-        if err := p.ReadField0(ctx, iprot); err != nil {
-          return err
-        }
-      } else {
-        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-          return err
-        }
+      if err := p.ReadField0(iprot); err != nil {
+        return err
       }
     default:
-      if err := iprot.Skip(ctx, fieldTypeId); err != nil {
+      if err := iprot.Skip(fieldTypeId); err != nil {
         return err
       }
     }
-    if err := iprot.ReadFieldEnd(ctx); err != nil {
+    if err := iprot.ReadFieldEnd(); err != nil {
       return err
     }
   }
-  if err := iprot.ReadStructEnd(ctx); err != nil {
+  if err := iprot.ReadStructEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
   }
   return nil
 }
 
-func (p *KsScmcClientGetImageVer4ContainerResult)  ReadField0(ctx context.Context, iprot thrift.TProtocol) error {
+func (p *KsScmcClientGetImageVer4ContainerResult)  ReadField0(iprot thrift.TProtocol) error {
   p.Success = &GetImageVer4ContainerResponse{}
-  if err := p.Success.Read(ctx, iprot); err != nil {
+  if err := p.Success.Read(iprot); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", p.Success), err)
   }
   return nil
 }
 
-func (p *KsScmcClientGetImageVer4ContainerResult) Write(ctx context.Context, oprot thrift.TProtocol) error {
-  if err := oprot.WriteStructBegin(ctx, "getImageVer4Container_result"); err != nil {
+func (p *KsScmcClientGetImageVer4ContainerResult) Write(oprot thrift.TProtocol) error {
+  if err := oprot.WriteStructBegin("getImageVer4Container_result"); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err) }
   if p != nil {
-    if err := p.writeField0(ctx, oprot); err != nil { return err }
+    if err := p.writeField0(oprot); err != nil { return err }
   }
-  if err := oprot.WriteFieldStop(ctx); err != nil {
+  if err := oprot.WriteFieldStop(); err != nil {
     return thrift.PrependError("write field stop error: ", err) }
-  if err := oprot.WriteStructEnd(ctx); err != nil {
+  if err := oprot.WriteStructEnd(); err != nil {
     return thrift.PrependError("write struct stop error: ", err) }
   return nil
 }
 
-func (p *KsScmcClientGetImageVer4ContainerResult) writeField0(ctx context.Context, oprot thrift.TProtocol) (err error) {
+func (p *KsScmcClientGetImageVer4ContainerResult) writeField0(oprot thrift.TProtocol) (err error) {
   if p.IsSetSuccess() {
-    if err := oprot.WriteFieldBegin(ctx, "success", thrift.STRUCT, 0); err != nil {
+    if err := oprot.WriteFieldBegin("success", thrift.STRUCT, 0); err != nil {
       return thrift.PrependError(fmt.Sprintf("%T write field begin error 0:success: ", p), err) }
-    if err := p.Success.Write(ctx, oprot); err != nil {
+    if err := p.Success.Write(oprot); err != nil {
       return thrift.PrependError(fmt.Sprintf("%T error writing struct: ", p.Success), err)
     }
-    if err := oprot.WriteFieldEnd(ctx); err != nil {
+    if err := oprot.WriteFieldEnd(); err != nil {
       return thrift.PrependError(fmt.Sprintf("%T write field end error 0:success: ", p), err) }
   }
   return err
@@ -8507,56 +10408,44 @@ func (p *KsScmcClientGetContainerArgs) GetNodeName() string {
 func (p *KsScmcClientGetContainerArgs) GetContainerName() string {
   return p.ContainerName
 }
-func (p *KsScmcClientGetContainerArgs) Read(ctx context.Context, iprot thrift.TProtocol) error {
-  if _, err := iprot.ReadStructBegin(ctx); err != nil {
+func (p *KsScmcClientGetContainerArgs) Read(iprot thrift.TProtocol) error {
+  if _, err := iprot.ReadStructBegin(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
   }
 
 
   for {
-    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin(ctx)
+    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin()
     if err != nil {
       return thrift.PrependError(fmt.Sprintf("%T field %d read error: ", p, fieldId), err)
     }
     if fieldTypeId == thrift.STOP { break; }
     switch fieldId {
     case 1:
-      if fieldTypeId == thrift.STRING {
-        if err := p.ReadField1(ctx, iprot); err != nil {
-          return err
-        }
-      } else {
-        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-          return err
-        }
+      if err := p.ReadField1(iprot); err != nil {
+        return err
       }
     case 2:
-      if fieldTypeId == thrift.STRING {
-        if err := p.ReadField2(ctx, iprot); err != nil {
-          return err
-        }
-      } else {
-        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-          return err
-        }
+      if err := p.ReadField2(iprot); err != nil {
+        return err
       }
     default:
-      if err := iprot.Skip(ctx, fieldTypeId); err != nil {
+      if err := iprot.Skip(fieldTypeId); err != nil {
         return err
       }
     }
-    if err := iprot.ReadFieldEnd(ctx); err != nil {
+    if err := iprot.ReadFieldEnd(); err != nil {
       return err
     }
   }
-  if err := iprot.ReadStructEnd(ctx); err != nil {
+  if err := iprot.ReadStructEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
   }
   return nil
 }
 
-func (p *KsScmcClientGetContainerArgs)  ReadField1(ctx context.Context, iprot thrift.TProtocol) error {
-  if v, err := iprot.ReadString(ctx); err != nil {
+func (p *KsScmcClientGetContainerArgs)  ReadField1(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadString(); err != nil {
   return thrift.PrependError("error reading field 1: ", err)
 } else {
   p.NodeName = v
@@ -8564,8 +10453,8 @@ func (p *KsScmcClientGetContainerArgs)  ReadField1(ctx context.Context, iprot th
   return nil
 }
 
-func (p *KsScmcClientGetContainerArgs)  ReadField2(ctx context.Context, iprot thrift.TProtocol) error {
-  if v, err := iprot.ReadString(ctx); err != nil {
+func (p *KsScmcClientGetContainerArgs)  ReadField2(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadString(); err != nil {
   return thrift.PrependError("error reading field 2: ", err)
 } else {
   p.ContainerName = v
@@ -8573,36 +10462,36 @@ func (p *KsScmcClientGetContainerArgs)  ReadField2(ctx context.Context, iprot th
   return nil
 }
 
-func (p *KsScmcClientGetContainerArgs) Write(ctx context.Context, oprot thrift.TProtocol) error {
-  if err := oprot.WriteStructBegin(ctx, "getContainer_args"); err != nil {
+func (p *KsScmcClientGetContainerArgs) Write(oprot thrift.TProtocol) error {
+  if err := oprot.WriteStructBegin("getContainer_args"); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err) }
   if p != nil {
-    if err := p.writeField1(ctx, oprot); err != nil { return err }
-    if err := p.writeField2(ctx, oprot); err != nil { return err }
+    if err := p.writeField1(oprot); err != nil { return err }
+    if err := p.writeField2(oprot); err != nil { return err }
   }
-  if err := oprot.WriteFieldStop(ctx); err != nil {
+  if err := oprot.WriteFieldStop(); err != nil {
     return thrift.PrependError("write field stop error: ", err) }
-  if err := oprot.WriteStructEnd(ctx); err != nil {
+  if err := oprot.WriteStructEnd(); err != nil {
     return thrift.PrependError("write struct stop error: ", err) }
   return nil
 }
 
-func (p *KsScmcClientGetContainerArgs) writeField1(ctx context.Context, oprot thrift.TProtocol) (err error) {
-  if err := oprot.WriteFieldBegin(ctx, "node_name", thrift.STRING, 1); err != nil {
+func (p *KsScmcClientGetContainerArgs) writeField1(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("node_name", thrift.STRING, 1); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field begin error 1:node_name: ", p), err) }
-  if err := oprot.WriteString(ctx, string(p.NodeName)); err != nil {
+  if err := oprot.WriteString(string(p.NodeName)); err != nil {
   return thrift.PrependError(fmt.Sprintf("%T.node_name (1) field write error: ", p), err) }
-  if err := oprot.WriteFieldEnd(ctx); err != nil {
+  if err := oprot.WriteFieldEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field end error 1:node_name: ", p), err) }
   return err
 }
 
-func (p *KsScmcClientGetContainerArgs) writeField2(ctx context.Context, oprot thrift.TProtocol) (err error) {
-  if err := oprot.WriteFieldBegin(ctx, "container_name", thrift.STRING, 2); err != nil {
+func (p *KsScmcClientGetContainerArgs) writeField2(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("container_name", thrift.STRING, 2); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field begin error 2:container_name: ", p), err) }
-  if err := oprot.WriteString(ctx, string(p.ContainerName)); err != nil {
+  if err := oprot.WriteString(string(p.ContainerName)); err != nil {
   return thrift.PrependError(fmt.Sprintf("%T.container_name (2) field write error: ", p), err) }
-  if err := oprot.WriteFieldEnd(ctx); err != nil {
+  if err := oprot.WriteFieldEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field end error 2:container_name: ", p), err) }
   return err
 }
@@ -8635,46 +10524,40 @@ func (p *KsScmcClientGetContainerResult) IsSetSuccess() bool {
   return p.Success != nil
 }
 
-func (p *KsScmcClientGetContainerResult) Read(ctx context.Context, iprot thrift.TProtocol) error {
-  if _, err := iprot.ReadStructBegin(ctx); err != nil {
+func (p *KsScmcClientGetContainerResult) Read(iprot thrift.TProtocol) error {
+  if _, err := iprot.ReadStructBegin(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
   }
 
 
   for {
-    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin(ctx)
+    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin()
     if err != nil {
       return thrift.PrependError(fmt.Sprintf("%T field %d read error: ", p, fieldId), err)
     }
     if fieldTypeId == thrift.STOP { break; }
     switch fieldId {
     case 0:
-      if fieldTypeId == thrift.I32 {
-        if err := p.ReadField0(ctx, iprot); err != nil {
-          return err
-        }
-      } else {
-        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-          return err
-        }
+      if err := p.ReadField0(iprot); err != nil {
+        return err
       }
     default:
-      if err := iprot.Skip(ctx, fieldTypeId); err != nil {
+      if err := iprot.Skip(fieldTypeId); err != nil {
         return err
       }
     }
-    if err := iprot.ReadFieldEnd(ctx); err != nil {
+    if err := iprot.ReadFieldEnd(); err != nil {
       return err
     }
   }
-  if err := iprot.ReadStructEnd(ctx); err != nil {
+  if err := iprot.ReadStructEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
   }
   return nil
 }
 
-func (p *KsScmcClientGetContainerResult)  ReadField0(ctx context.Context, iprot thrift.TProtocol) error {
-  if v, err := iprot.ReadI32(ctx); err != nil {
+func (p *KsScmcClientGetContainerResult)  ReadField0(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadI32(); err != nil {
   return thrift.PrependError("error reading field 0: ", err)
 } else {
   p.Success = &v
@@ -8682,26 +10565,26 @@ func (p *KsScmcClientGetContainerResult)  ReadField0(ctx context.Context, iprot 
   return nil
 }
 
-func (p *KsScmcClientGetContainerResult) Write(ctx context.Context, oprot thrift.TProtocol) error {
-  if err := oprot.WriteStructBegin(ctx, "getContainer_result"); err != nil {
+func (p *KsScmcClientGetContainerResult) Write(oprot thrift.TProtocol) error {
+  if err := oprot.WriteStructBegin("getContainer_result"); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err) }
   if p != nil {
-    if err := p.writeField0(ctx, oprot); err != nil { return err }
+    if err := p.writeField0(oprot); err != nil { return err }
   }
-  if err := oprot.WriteFieldStop(ctx); err != nil {
+  if err := oprot.WriteFieldStop(); err != nil {
     return thrift.PrependError("write field stop error: ", err) }
-  if err := oprot.WriteStructEnd(ctx); err != nil {
+  if err := oprot.WriteStructEnd(); err != nil {
     return thrift.PrependError("write struct stop error: ", err) }
   return nil
 }
 
-func (p *KsScmcClientGetContainerResult) writeField0(ctx context.Context, oprot thrift.TProtocol) (err error) {
+func (p *KsScmcClientGetContainerResult) writeField0(oprot thrift.TProtocol) (err error) {
   if p.IsSetSuccess() {
-    if err := oprot.WriteFieldBegin(ctx, "success", thrift.I32, 0); err != nil {
+    if err := oprot.WriteFieldBegin("success", thrift.I32, 0); err != nil {
       return thrift.PrependError(fmt.Sprintf("%T write field begin error 0:success: ", p), err) }
-    if err := oprot.WriteI32(ctx, int32(*p.Success)); err != nil {
+    if err := oprot.WriteI32(int32(*p.Success)); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T.success (0) field write error: ", p), err) }
-    if err := oprot.WriteFieldEnd(ctx); err != nil {
+    if err := oprot.WriteFieldEnd(); err != nil {
       return thrift.PrependError(fmt.Sprintf("%T write field end error 0:success: ", p), err) }
   }
   return err
@@ -8740,66 +10623,48 @@ func (p *KsScmcClientUpdateContainerArgs) GetContainerName() string {
 func (p *KsScmcClientUpdateContainerArgs) GetNewVer_() string {
   return p.NewVer_
 }
-func (p *KsScmcClientUpdateContainerArgs) Read(ctx context.Context, iprot thrift.TProtocol) error {
-  if _, err := iprot.ReadStructBegin(ctx); err != nil {
+func (p *KsScmcClientUpdateContainerArgs) Read(iprot thrift.TProtocol) error {
+  if _, err := iprot.ReadStructBegin(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
   }
 
 
   for {
-    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin(ctx)
+    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin()
     if err != nil {
       return thrift.PrependError(fmt.Sprintf("%T field %d read error: ", p, fieldId), err)
     }
     if fieldTypeId == thrift.STOP { break; }
     switch fieldId {
     case 1:
-      if fieldTypeId == thrift.STRING {
-        if err := p.ReadField1(ctx, iprot); err != nil {
-          return err
-        }
-      } else {
-        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-          return err
-        }
+      if err := p.ReadField1(iprot); err != nil {
+        return err
       }
     case 2:
-      if fieldTypeId == thrift.STRING {
-        if err := p.ReadField2(ctx, iprot); err != nil {
-          return err
-        }
-      } else {
-        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-          return err
-        }
+      if err := p.ReadField2(iprot); err != nil {
+        return err
       }
     case 3:
-      if fieldTypeId == thrift.STRING {
-        if err := p.ReadField3(ctx, iprot); err != nil {
-          return err
-        }
-      } else {
-        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-          return err
-        }
+      if err := p.ReadField3(iprot); err != nil {
+        return err
       }
     default:
-      if err := iprot.Skip(ctx, fieldTypeId); err != nil {
+      if err := iprot.Skip(fieldTypeId); err != nil {
         return err
       }
     }
-    if err := iprot.ReadFieldEnd(ctx); err != nil {
+    if err := iprot.ReadFieldEnd(); err != nil {
       return err
     }
   }
-  if err := iprot.ReadStructEnd(ctx); err != nil {
+  if err := iprot.ReadStructEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
   }
   return nil
 }
 
-func (p *KsScmcClientUpdateContainerArgs)  ReadField1(ctx context.Context, iprot thrift.TProtocol) error {
-  if v, err := iprot.ReadString(ctx); err != nil {
+func (p *KsScmcClientUpdateContainerArgs)  ReadField1(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadString(); err != nil {
   return thrift.PrependError("error reading field 1: ", err)
 } else {
   p.NodeName = v
@@ -8807,8 +10672,8 @@ func (p *KsScmcClientUpdateContainerArgs)  ReadField1(ctx context.Context, iprot
   return nil
 }
 
-func (p *KsScmcClientUpdateContainerArgs)  ReadField2(ctx context.Context, iprot thrift.TProtocol) error {
-  if v, err := iprot.ReadString(ctx); err != nil {
+func (p *KsScmcClientUpdateContainerArgs)  ReadField2(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadString(); err != nil {
   return thrift.PrependError("error reading field 2: ", err)
 } else {
   p.ContainerName = v
@@ -8816,8 +10681,8 @@ func (p *KsScmcClientUpdateContainerArgs)  ReadField2(ctx context.Context, iprot
   return nil
 }
 
-func (p *KsScmcClientUpdateContainerArgs)  ReadField3(ctx context.Context, iprot thrift.TProtocol) error {
-  if v, err := iprot.ReadString(ctx); err != nil {
+func (p *KsScmcClientUpdateContainerArgs)  ReadField3(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadString(); err != nil {
   return thrift.PrependError("error reading field 3: ", err)
 } else {
   p.NewVer_ = v
@@ -8825,47 +10690,47 @@ func (p *KsScmcClientUpdateContainerArgs)  ReadField3(ctx context.Context, iprot
   return nil
 }
 
-func (p *KsScmcClientUpdateContainerArgs) Write(ctx context.Context, oprot thrift.TProtocol) error {
-  if err := oprot.WriteStructBegin(ctx, "updateContainer_args"); err != nil {
+func (p *KsScmcClientUpdateContainerArgs) Write(oprot thrift.TProtocol) error {
+  if err := oprot.WriteStructBegin("UpdateContainer_args"); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err) }
   if p != nil {
-    if err := p.writeField1(ctx, oprot); err != nil { return err }
-    if err := p.writeField2(ctx, oprot); err != nil { return err }
-    if err := p.writeField3(ctx, oprot); err != nil { return err }
+    if err := p.writeField1(oprot); err != nil { return err }
+    if err := p.writeField2(oprot); err != nil { return err }
+    if err := p.writeField3(oprot); err != nil { return err }
   }
-  if err := oprot.WriteFieldStop(ctx); err != nil {
+  if err := oprot.WriteFieldStop(); err != nil {
     return thrift.PrependError("write field stop error: ", err) }
-  if err := oprot.WriteStructEnd(ctx); err != nil {
+  if err := oprot.WriteStructEnd(); err != nil {
     return thrift.PrependError("write struct stop error: ", err) }
   return nil
 }
 
-func (p *KsScmcClientUpdateContainerArgs) writeField1(ctx context.Context, oprot thrift.TProtocol) (err error) {
-  if err := oprot.WriteFieldBegin(ctx, "node_name", thrift.STRING, 1); err != nil {
+func (p *KsScmcClientUpdateContainerArgs) writeField1(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("node_name", thrift.STRING, 1); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field begin error 1:node_name: ", p), err) }
-  if err := oprot.WriteString(ctx, string(p.NodeName)); err != nil {
+  if err := oprot.WriteString(string(p.NodeName)); err != nil {
   return thrift.PrependError(fmt.Sprintf("%T.node_name (1) field write error: ", p), err) }
-  if err := oprot.WriteFieldEnd(ctx); err != nil {
+  if err := oprot.WriteFieldEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field end error 1:node_name: ", p), err) }
   return err
 }
 
-func (p *KsScmcClientUpdateContainerArgs) writeField2(ctx context.Context, oprot thrift.TProtocol) (err error) {
-  if err := oprot.WriteFieldBegin(ctx, "container_name", thrift.STRING, 2); err != nil {
+func (p *KsScmcClientUpdateContainerArgs) writeField2(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("container_name", thrift.STRING, 2); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field begin error 2:container_name: ", p), err) }
-  if err := oprot.WriteString(ctx, string(p.ContainerName)); err != nil {
+  if err := oprot.WriteString(string(p.ContainerName)); err != nil {
   return thrift.PrependError(fmt.Sprintf("%T.container_name (2) field write error: ", p), err) }
-  if err := oprot.WriteFieldEnd(ctx); err != nil {
+  if err := oprot.WriteFieldEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field end error 2:container_name: ", p), err) }
   return err
 }
 
-func (p *KsScmcClientUpdateContainerArgs) writeField3(ctx context.Context, oprot thrift.TProtocol) (err error) {
-  if err := oprot.WriteFieldBegin(ctx, "new_ver", thrift.STRING, 3); err != nil {
+func (p *KsScmcClientUpdateContainerArgs) writeField3(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("new_ver", thrift.STRING, 3); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field begin error 3:new_ver: ", p), err) }
-  if err := oprot.WriteString(ctx, string(p.NewVer_)); err != nil {
+  if err := oprot.WriteString(string(p.NewVer_)); err != nil {
   return thrift.PrependError(fmt.Sprintf("%T.new_ver (3) field write error: ", p), err) }
-  if err := oprot.WriteFieldEnd(ctx); err != nil {
+  if err := oprot.WriteFieldEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field end error 3:new_ver: ", p), err) }
   return err
 }
@@ -8880,15 +10745,15 @@ func (p *KsScmcClientUpdateContainerArgs) String() string {
 // Attributes:
 //  - Success
 type KsScmcClientUpdateContainerResult struct {
-  Success *int32 `thrift:"success,0" db:"success" json:"success,omitempty"`
+  Success *string `thrift:"success,0" db:"success" json:"success,omitempty"`
 }
 
 func NewKsScmcClientUpdateContainerResult() *KsScmcClientUpdateContainerResult {
   return &KsScmcClientUpdateContainerResult{}
 }
 
-var KsScmcClientUpdateContainerResult_Success_DEFAULT int32
-func (p *KsScmcClientUpdateContainerResult) GetSuccess() int32 {
+var KsScmcClientUpdateContainerResult_Success_DEFAULT string
+func (p *KsScmcClientUpdateContainerResult) GetSuccess() string {
   if !p.IsSetSuccess() {
     return KsScmcClientUpdateContainerResult_Success_DEFAULT
   }
@@ -8898,46 +10763,40 @@ func (p *KsScmcClientUpdateContainerResult) IsSetSuccess() bool {
   return p.Success != nil
 }
 
-func (p *KsScmcClientUpdateContainerResult) Read(ctx context.Context, iprot thrift.TProtocol) error {
-  if _, err := iprot.ReadStructBegin(ctx); err != nil {
+func (p *KsScmcClientUpdateContainerResult) Read(iprot thrift.TProtocol) error {
+  if _, err := iprot.ReadStructBegin(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
   }
 
 
   for {
-    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin(ctx)
+    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin()
     if err != nil {
       return thrift.PrependError(fmt.Sprintf("%T field %d read error: ", p, fieldId), err)
     }
     if fieldTypeId == thrift.STOP { break; }
     switch fieldId {
     case 0:
-      if fieldTypeId == thrift.I32 {
-        if err := p.ReadField0(ctx, iprot); err != nil {
-          return err
-        }
-      } else {
-        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-          return err
-        }
+      if err := p.ReadField0(iprot); err != nil {
+        return err
       }
     default:
-      if err := iprot.Skip(ctx, fieldTypeId); err != nil {
+      if err := iprot.Skip(fieldTypeId); err != nil {
         return err
       }
     }
-    if err := iprot.ReadFieldEnd(ctx); err != nil {
+    if err := iprot.ReadFieldEnd(); err != nil {
       return err
     }
   }
-  if err := iprot.ReadStructEnd(ctx); err != nil {
+  if err := iprot.ReadStructEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
   }
   return nil
 }
 
-func (p *KsScmcClientUpdateContainerResult)  ReadField0(ctx context.Context, iprot thrift.TProtocol) error {
-  if v, err := iprot.ReadI32(ctx); err != nil {
+func (p *KsScmcClientUpdateContainerResult)  ReadField0(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadString(); err != nil {
   return thrift.PrependError("error reading field 0: ", err)
 } else {
   p.Success = &v
@@ -8945,26 +10804,26 @@ func (p *KsScmcClientUpdateContainerResult)  ReadField0(ctx context.Context, ipr
   return nil
 }
 
-func (p *KsScmcClientUpdateContainerResult) Write(ctx context.Context, oprot thrift.TProtocol) error {
-  if err := oprot.WriteStructBegin(ctx, "updateContainer_result"); err != nil {
+func (p *KsScmcClientUpdateContainerResult) Write(oprot thrift.TProtocol) error {
+  if err := oprot.WriteStructBegin("UpdateContainer_result"); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err) }
   if p != nil {
-    if err := p.writeField0(ctx, oprot); err != nil { return err }
+    if err := p.writeField0(oprot); err != nil { return err }
   }
-  if err := oprot.WriteFieldStop(ctx); err != nil {
+  if err := oprot.WriteFieldStop(); err != nil {
     return thrift.PrependError("write field stop error: ", err) }
-  if err := oprot.WriteStructEnd(ctx); err != nil {
+  if err := oprot.WriteStructEnd(); err != nil {
     return thrift.PrependError("write struct stop error: ", err) }
   return nil
 }
 
-func (p *KsScmcClientUpdateContainerResult) writeField0(ctx context.Context, oprot thrift.TProtocol) (err error) {
+func (p *KsScmcClientUpdateContainerResult) writeField0(oprot thrift.TProtocol) (err error) {
   if p.IsSetSuccess() {
-    if err := oprot.WriteFieldBegin(ctx, "success", thrift.I32, 0); err != nil {
+    if err := oprot.WriteFieldBegin("success", thrift.STRING, 0); err != nil {
       return thrift.PrependError(fmt.Sprintf("%T write field begin error 0:success: ", p), err) }
-    if err := oprot.WriteI32(ctx, int32(*p.Success)); err != nil {
+    if err := oprot.WriteString(string(*p.Success)); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T.success (0) field write error: ", p), err) }
-    if err := oprot.WriteFieldEnd(ctx); err != nil {
+    if err := oprot.WriteFieldEnd(); err != nil {
       return thrift.PrependError(fmt.Sprintf("%T write field end error 0:success: ", p), err) }
   }
   return err
@@ -8991,46 +10850,40 @@ func NewKsScmcClientGetAlarmListArgs() *KsScmcClientGetAlarmListArgs {
 func (p *KsScmcClientGetAlarmListArgs) GetNodeName() string {
   return p.NodeName
 }
-func (p *KsScmcClientGetAlarmListArgs) Read(ctx context.Context, iprot thrift.TProtocol) error {
-  if _, err := iprot.ReadStructBegin(ctx); err != nil {
+func (p *KsScmcClientGetAlarmListArgs) Read(iprot thrift.TProtocol) error {
+  if _, err := iprot.ReadStructBegin(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
   }
 
 
   for {
-    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin(ctx)
+    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin()
     if err != nil {
       return thrift.PrependError(fmt.Sprintf("%T field %d read error: ", p, fieldId), err)
     }
     if fieldTypeId == thrift.STOP { break; }
     switch fieldId {
     case 1:
-      if fieldTypeId == thrift.STRING {
-        if err := p.ReadField1(ctx, iprot); err != nil {
-          return err
-        }
-      } else {
-        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-          return err
-        }
+      if err := p.ReadField1(iprot); err != nil {
+        return err
       }
     default:
-      if err := iprot.Skip(ctx, fieldTypeId); err != nil {
+      if err := iprot.Skip(fieldTypeId); err != nil {
         return err
       }
     }
-    if err := iprot.ReadFieldEnd(ctx); err != nil {
+    if err := iprot.ReadFieldEnd(); err != nil {
       return err
     }
   }
-  if err := iprot.ReadStructEnd(ctx); err != nil {
+  if err := iprot.ReadStructEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
   }
   return nil
 }
 
-func (p *KsScmcClientGetAlarmListArgs)  ReadField1(ctx context.Context, iprot thrift.TProtocol) error {
-  if v, err := iprot.ReadString(ctx); err != nil {
+func (p *KsScmcClientGetAlarmListArgs)  ReadField1(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadString(); err != nil {
   return thrift.PrependError("error reading field 1: ", err)
 } else {
   p.NodeName = v
@@ -9038,25 +10891,25 @@ func (p *KsScmcClientGetAlarmListArgs)  ReadField1(ctx context.Context, iprot th
   return nil
 }
 
-func (p *KsScmcClientGetAlarmListArgs) Write(ctx context.Context, oprot thrift.TProtocol) error {
-  if err := oprot.WriteStructBegin(ctx, "getAlarmList_args"); err != nil {
+func (p *KsScmcClientGetAlarmListArgs) Write(oprot thrift.TProtocol) error {
+  if err := oprot.WriteStructBegin("GetAlarmList_args"); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err) }
   if p != nil {
-    if err := p.writeField1(ctx, oprot); err != nil { return err }
+    if err := p.writeField1(oprot); err != nil { return err }
   }
-  if err := oprot.WriteFieldStop(ctx); err != nil {
+  if err := oprot.WriteFieldStop(); err != nil {
     return thrift.PrependError("write field stop error: ", err) }
-  if err := oprot.WriteStructEnd(ctx); err != nil {
+  if err := oprot.WriteStructEnd(); err != nil {
     return thrift.PrependError("write struct stop error: ", err) }
   return nil
 }
 
-func (p *KsScmcClientGetAlarmListArgs) writeField1(ctx context.Context, oprot thrift.TProtocol) (err error) {
-  if err := oprot.WriteFieldBegin(ctx, "node_name", thrift.STRING, 1); err != nil {
+func (p *KsScmcClientGetAlarmListArgs) writeField1(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("node_name", thrift.STRING, 1); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field begin error 1:node_name: ", p), err) }
-  if err := oprot.WriteString(ctx, string(p.NodeName)); err != nil {
+  if err := oprot.WriteString(string(p.NodeName)); err != nil {
   return thrift.PrependError(fmt.Sprintf("%T.node_name (1) field write error: ", p), err) }
-  if err := oprot.WriteFieldEnd(ctx); err != nil {
+  if err := oprot.WriteFieldEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field end error 1:node_name: ", p), err) }
   return err
 }
@@ -9071,91 +10924,85 @@ func (p *KsScmcClientGetAlarmListArgs) String() string {
 // Attributes:
 //  - Success
 type KsScmcClientGetAlarmListResult struct {
-  Success *GetAlarmListResponse `thrift:"success,0" db:"success" json:"success,omitempty"`
+  Success *string `thrift:"success,0" db:"success" json:"success,omitempty"`
 }
 
 func NewKsScmcClientGetAlarmListResult() *KsScmcClientGetAlarmListResult {
   return &KsScmcClientGetAlarmListResult{}
 }
 
-var KsScmcClientGetAlarmListResult_Success_DEFAULT *GetAlarmListResponse
-func (p *KsScmcClientGetAlarmListResult) GetSuccess() *GetAlarmListResponse {
+var KsScmcClientGetAlarmListResult_Success_DEFAULT string
+func (p *KsScmcClientGetAlarmListResult) GetSuccess() string {
   if !p.IsSetSuccess() {
     return KsScmcClientGetAlarmListResult_Success_DEFAULT
   }
-return p.Success
+return *p.Success
 }
 func (p *KsScmcClientGetAlarmListResult) IsSetSuccess() bool {
   return p.Success != nil
 }
 
-func (p *KsScmcClientGetAlarmListResult) Read(ctx context.Context, iprot thrift.TProtocol) error {
-  if _, err := iprot.ReadStructBegin(ctx); err != nil {
+func (p *KsScmcClientGetAlarmListResult) Read(iprot thrift.TProtocol) error {
+  if _, err := iprot.ReadStructBegin(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
   }
 
 
   for {
-    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin(ctx)
+    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin()
     if err != nil {
       return thrift.PrependError(fmt.Sprintf("%T field %d read error: ", p, fieldId), err)
     }
     if fieldTypeId == thrift.STOP { break; }
     switch fieldId {
     case 0:
-      if fieldTypeId == thrift.STRUCT {
-        if err := p.ReadField0(ctx, iprot); err != nil {
-          return err
-        }
-      } else {
-        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-          return err
-        }
+      if err := p.ReadField0(iprot); err != nil {
+        return err
       }
     default:
-      if err := iprot.Skip(ctx, fieldTypeId); err != nil {
+      if err := iprot.Skip(fieldTypeId); err != nil {
         return err
       }
     }
-    if err := iprot.ReadFieldEnd(ctx); err != nil {
+    if err := iprot.ReadFieldEnd(); err != nil {
       return err
     }
   }
-  if err := iprot.ReadStructEnd(ctx); err != nil {
+  if err := iprot.ReadStructEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
   }
   return nil
 }
 
-func (p *KsScmcClientGetAlarmListResult)  ReadField0(ctx context.Context, iprot thrift.TProtocol) error {
-  p.Success = &GetAlarmListResponse{}
-  if err := p.Success.Read(ctx, iprot); err != nil {
-    return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", p.Success), err)
-  }
+func (p *KsScmcClientGetAlarmListResult)  ReadField0(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadString(); err != nil {
+  return thrift.PrependError("error reading field 0: ", err)
+} else {
+  p.Success = &v
+}
   return nil
 }
 
-func (p *KsScmcClientGetAlarmListResult) Write(ctx context.Context, oprot thrift.TProtocol) error {
-  if err := oprot.WriteStructBegin(ctx, "getAlarmList_result"); err != nil {
+func (p *KsScmcClientGetAlarmListResult) Write(oprot thrift.TProtocol) error {
+  if err := oprot.WriteStructBegin("GetAlarmList_result"); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err) }
   if p != nil {
-    if err := p.writeField0(ctx, oprot); err != nil { return err }
+    if err := p.writeField0(oprot); err != nil { return err }
   }
-  if err := oprot.WriteFieldStop(ctx); err != nil {
+  if err := oprot.WriteFieldStop(); err != nil {
     return thrift.PrependError("write field stop error: ", err) }
-  if err := oprot.WriteStructEnd(ctx); err != nil {
+  if err := oprot.WriteStructEnd(); err != nil {
     return thrift.PrependError("write struct stop error: ", err) }
   return nil
 }
 
-func (p *KsScmcClientGetAlarmListResult) writeField0(ctx context.Context, oprot thrift.TProtocol) (err error) {
+func (p *KsScmcClientGetAlarmListResult) writeField0(oprot thrift.TProtocol) (err error) {
   if p.IsSetSuccess() {
-    if err := oprot.WriteFieldBegin(ctx, "success", thrift.STRUCT, 0); err != nil {
+    if err := oprot.WriteFieldBegin("success", thrift.STRING, 0); err != nil {
       return thrift.PrependError(fmt.Sprintf("%T write field begin error 0:success: ", p), err) }
-    if err := p.Success.Write(ctx, oprot); err != nil {
-      return thrift.PrependError(fmt.Sprintf("%T error writing struct: ", p.Success), err)
-    }
-    if err := oprot.WriteFieldEnd(ctx); err != nil {
+    if err := oprot.WriteString(string(*p.Success)); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T.success (0) field write error: ", p), err) }
+    if err := oprot.WriteFieldEnd(); err != nil {
       return thrift.PrependError(fmt.Sprintf("%T write field end error 0:success: ", p), err) }
   }
   return err
@@ -9175,39 +11022,39 @@ func NewKsScmcClientGetAllNodeListArgs() *KsScmcClientGetAllNodeListArgs {
   return &KsScmcClientGetAllNodeListArgs{}
 }
 
-func (p *KsScmcClientGetAllNodeListArgs) Read(ctx context.Context, iprot thrift.TProtocol) error {
-  if _, err := iprot.ReadStructBegin(ctx); err != nil {
+func (p *KsScmcClientGetAllNodeListArgs) Read(iprot thrift.TProtocol) error {
+  if _, err := iprot.ReadStructBegin(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
   }
 
 
   for {
-    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin(ctx)
+    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin()
     if err != nil {
       return thrift.PrependError(fmt.Sprintf("%T field %d read error: ", p, fieldId), err)
     }
     if fieldTypeId == thrift.STOP { break; }
-    if err := iprot.Skip(ctx, fieldTypeId); err != nil {
+    if err := iprot.Skip(fieldTypeId); err != nil {
       return err
     }
-    if err := iprot.ReadFieldEnd(ctx); err != nil {
+    if err := iprot.ReadFieldEnd(); err != nil {
       return err
     }
   }
-  if err := iprot.ReadStructEnd(ctx); err != nil {
+  if err := iprot.ReadStructEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
   }
   return nil
 }
 
-func (p *KsScmcClientGetAllNodeListArgs) Write(ctx context.Context, oprot thrift.TProtocol) error {
-  if err := oprot.WriteStructBegin(ctx, "getAllNodeList_args"); err != nil {
+func (p *KsScmcClientGetAllNodeListArgs) Write(oprot thrift.TProtocol) error {
+  if err := oprot.WriteStructBegin("getAllNodeList_args"); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err) }
   if p != nil {
   }
-  if err := oprot.WriteFieldStop(ctx); err != nil {
+  if err := oprot.WriteFieldStop(); err != nil {
     return thrift.PrependError("write field stop error: ", err) }
-  if err := oprot.WriteStructEnd(ctx); err != nil {
+  if err := oprot.WriteStructEnd(); err != nil {
     return thrift.PrependError("write struct stop error: ", err) }
   return nil
 }
@@ -9240,73 +11087,67 @@ func (p *KsScmcClientGetAllNodeListResult) IsSetSuccess() bool {
   return p.Success != nil
 }
 
-func (p *KsScmcClientGetAllNodeListResult) Read(ctx context.Context, iprot thrift.TProtocol) error {
-  if _, err := iprot.ReadStructBegin(ctx); err != nil {
+func (p *KsScmcClientGetAllNodeListResult) Read(iprot thrift.TProtocol) error {
+  if _, err := iprot.ReadStructBegin(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
   }
 
 
   for {
-    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin(ctx)
+    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin()
     if err != nil {
       return thrift.PrependError(fmt.Sprintf("%T field %d read error: ", p, fieldId), err)
     }
     if fieldTypeId == thrift.STOP { break; }
     switch fieldId {
     case 0:
-      if fieldTypeId == thrift.STRUCT {
-        if err := p.ReadField0(ctx, iprot); err != nil {
-          return err
-        }
-      } else {
-        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-          return err
-        }
+      if err := p.ReadField0(iprot); err != nil {
+        return err
       }
     default:
-      if err := iprot.Skip(ctx, fieldTypeId); err != nil {
+      if err := iprot.Skip(fieldTypeId); err != nil {
         return err
       }
     }
-    if err := iprot.ReadFieldEnd(ctx); err != nil {
+    if err := iprot.ReadFieldEnd(); err != nil {
       return err
     }
   }
-  if err := iprot.ReadStructEnd(ctx); err != nil {
+  if err := iprot.ReadStructEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
   }
   return nil
 }
 
-func (p *KsScmcClientGetAllNodeListResult)  ReadField0(ctx context.Context, iprot thrift.TProtocol) error {
+func (p *KsScmcClientGetAllNodeListResult)  ReadField0(iprot thrift.TProtocol) error {
   p.Success = &GetAllNodeListResponse{}
-  if err := p.Success.Read(ctx, iprot); err != nil {
+  if err := p.Success.Read(iprot); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", p.Success), err)
   }
   return nil
 }
 
-func (p *KsScmcClientGetAllNodeListResult) Write(ctx context.Context, oprot thrift.TProtocol) error {
-  if err := oprot.WriteStructBegin(ctx, "getAllNodeList_result"); err != nil {
+func (p *KsScmcClientGetAllNodeListResult) Write(oprot thrift.TProtocol) error {
+  if err := oprot.WriteStructBegin("getAllNodeList_result"); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err) }
   if p != nil {
-    if err := p.writeField0(ctx, oprot); err != nil { return err }
+    if err := p.writeField0(oprot); err != nil { return err }
   }
-  if err := oprot.WriteFieldStop(ctx); err != nil {
+  if err := oprot.WriteFieldStop(); err != nil {
     return thrift.PrependError("write field stop error: ", err) }
-  if err := oprot.WriteStructEnd(ctx); err != nil {
+  if err := oprot.WriteStructEnd(); err != nil {
     return thrift.PrependError("write struct stop error: ", err) }
   return nil
 }
 
-func (p *KsScmcClientGetAllNodeListResult) writeField0(ctx context.Context, oprot thrift.TProtocol) (err error) {
+func (p *KsScmcClientGetAllNodeListResult) writeField0(oprot thrift.TProtocol) (err error) {
   if p.IsSetSuccess() {
-    if err := oprot.WriteFieldBegin(ctx, "success", thrift.STRUCT, 0); err != nil {
+    if err := oprot.WriteFieldBegin("success", thrift.STRUCT, 0); err != nil {
       return thrift.PrependError(fmt.Sprintf("%T write field begin error 0:success: ", p), err) }
-    if err := p.Success.Write(ctx, oprot); err != nil {
+    if err := p.Success.Write(oprot); err != nil {
       return thrift.PrependError(fmt.Sprintf("%T error writing struct: ", p.Success), err)
     }
-    if err := oprot.WriteFieldEnd(ctx); err != nil {
+    if err := oprot.WriteFieldEnd(); err != nil {
       return thrift.PrependError(fmt.Sprintf("%T write field end error 0:success: ", p), err) }
   }
   return err
@@ -9319,48 +11160,440 @@ func (p *KsScmcClientGetAllNodeListResult) String() string {
   return fmt.Sprintf("KsScmcClientGetAllNodeListResult(%+v)", *p)
 }
 
+// Attributes:
+//  - NodeName
+type KsScmcClientGetAllContainersArgs struct {
+  NodeName string `thrift:"node_name,1" db:"node_name" json:"node_name"`
+}
+
+func NewKsScmcClientGetAllContainersArgs() *KsScmcClientGetAllContainersArgs {
+  return &KsScmcClientGetAllContainersArgs{}
+}
+
+
+func (p *KsScmcClientGetAllContainersArgs) GetNodeName() string {
+  return p.NodeName
+}
+func (p *KsScmcClientGetAllContainersArgs) Read(iprot thrift.TProtocol) error {
+  if _, err := iprot.ReadStructBegin(); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
+  }
+
+
+  for {
+    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin()
+    if err != nil {
+      return thrift.PrependError(fmt.Sprintf("%T field %d read error: ", p, fieldId), err)
+    }
+    if fieldTypeId == thrift.STOP { break; }
+    switch fieldId {
+    case 1:
+      if err := p.ReadField1(iprot); err != nil {
+        return err
+      }
+    default:
+      if err := iprot.Skip(fieldTypeId); err != nil {
+        return err
+      }
+    }
+    if err := iprot.ReadFieldEnd(); err != nil {
+      return err
+    }
+  }
+  if err := iprot.ReadStructEnd(); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+  }
+  return nil
+}
+
+func (p *KsScmcClientGetAllContainersArgs)  ReadField1(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadString(); err != nil {
+  return thrift.PrependError("error reading field 1: ", err)
+} else {
+  p.NodeName = v
+}
+  return nil
+}
+
+func (p *KsScmcClientGetAllContainersArgs) Write(oprot thrift.TProtocol) error {
+  if err := oprot.WriteStructBegin("GetAllContainers_args"); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err) }
+  if p != nil {
+    if err := p.writeField1(oprot); err != nil { return err }
+  }
+  if err := oprot.WriteFieldStop(); err != nil {
+    return thrift.PrependError("write field stop error: ", err) }
+  if err := oprot.WriteStructEnd(); err != nil {
+    return thrift.PrependError("write struct stop error: ", err) }
+  return nil
+}
+
+func (p *KsScmcClientGetAllContainersArgs) writeField1(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("node_name", thrift.STRING, 1); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write field begin error 1:node_name: ", p), err) }
+  if err := oprot.WriteString(string(p.NodeName)); err != nil {
+  return thrift.PrependError(fmt.Sprintf("%T.node_name (1) field write error: ", p), err) }
+  if err := oprot.WriteFieldEnd(); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write field end error 1:node_name: ", p), err) }
+  return err
+}
+
+func (p *KsScmcClientGetAllContainersArgs) String() string {
+  if p == nil {
+    return "<nil>"
+  }
+  return fmt.Sprintf("KsScmcClientGetAllContainersArgs(%+v)", *p)
+}
+
+// Attributes:
+//  - Success
+type KsScmcClientGetAllContainersResult struct {
+  Success *string `thrift:"success,0" db:"success" json:"success,omitempty"`
+}
+
+func NewKsScmcClientGetAllContainersResult() *KsScmcClientGetAllContainersResult {
+  return &KsScmcClientGetAllContainersResult{}
+}
+
+var KsScmcClientGetAllContainersResult_Success_DEFAULT string
+func (p *KsScmcClientGetAllContainersResult) GetSuccess() string {
+  if !p.IsSetSuccess() {
+    return KsScmcClientGetAllContainersResult_Success_DEFAULT
+  }
+return *p.Success
+}
+func (p *KsScmcClientGetAllContainersResult) IsSetSuccess() bool {
+  return p.Success != nil
+}
+
+func (p *KsScmcClientGetAllContainersResult) Read(iprot thrift.TProtocol) error {
+  if _, err := iprot.ReadStructBegin(); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
+  }
+
+
+  for {
+    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin()
+    if err != nil {
+      return thrift.PrependError(fmt.Sprintf("%T field %d read error: ", p, fieldId), err)
+    }
+    if fieldTypeId == thrift.STOP { break; }
+    switch fieldId {
+    case 0:
+      if err := p.ReadField0(iprot); err != nil {
+        return err
+      }
+    default:
+      if err := iprot.Skip(fieldTypeId); err != nil {
+        return err
+      }
+    }
+    if err := iprot.ReadFieldEnd(); err != nil {
+      return err
+    }
+  }
+  if err := iprot.ReadStructEnd(); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+  }
+  return nil
+}
+
+func (p *KsScmcClientGetAllContainersResult)  ReadField0(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadString(); err != nil {
+  return thrift.PrependError("error reading field 0: ", err)
+} else {
+  p.Success = &v
+}
+  return nil
+}
+
+func (p *KsScmcClientGetAllContainersResult) Write(oprot thrift.TProtocol) error {
+  if err := oprot.WriteStructBegin("GetAllContainers_result"); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err) }
+  if p != nil {
+    if err := p.writeField0(oprot); err != nil { return err }
+  }
+  if err := oprot.WriteFieldStop(); err != nil {
+    return thrift.PrependError("write field stop error: ", err) }
+  if err := oprot.WriteStructEnd(); err != nil {
+    return thrift.PrependError("write struct stop error: ", err) }
+  return nil
+}
+
+func (p *KsScmcClientGetAllContainersResult) writeField0(oprot thrift.TProtocol) (err error) {
+  if p.IsSetSuccess() {
+    if err := oprot.WriteFieldBegin("success", thrift.STRING, 0); err != nil {
+      return thrift.PrependError(fmt.Sprintf("%T write field begin error 0:success: ", p), err) }
+    if err := oprot.WriteString(string(*p.Success)); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T.success (0) field write error: ", p), err) }
+    if err := oprot.WriteFieldEnd(); err != nil {
+      return thrift.PrependError(fmt.Sprintf("%T write field end error 0:success: ", p), err) }
+  }
+  return err
+}
+
+func (p *KsScmcClientGetAllContainersResult) String() string {
+  if p == nil {
+    return "<nil>"
+  }
+  return fmt.Sprintf("KsScmcClientGetAllContainersResult(%+v)", *p)
+}
+
+// Attributes:
+//  - Nid
+type KsScmcClientGetAllContainersV2Args struct {
+  Nid string `thrift:"nid,1" db:"nid" json:"nid"`
+}
+
+func NewKsScmcClientGetAllContainersV2Args() *KsScmcClientGetAllContainersV2Args {
+  return &KsScmcClientGetAllContainersV2Args{}
+}
+
+
+func (p *KsScmcClientGetAllContainersV2Args) GetNid() string {
+  return p.Nid
+}
+func (p *KsScmcClientGetAllContainersV2Args) Read(iprot thrift.TProtocol) error {
+  if _, err := iprot.ReadStructBegin(); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
+  }
+
+
+  for {
+    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin()
+    if err != nil {
+      return thrift.PrependError(fmt.Sprintf("%T field %d read error: ", p, fieldId), err)
+    }
+    if fieldTypeId == thrift.STOP { break; }
+    switch fieldId {
+    case 1:
+      if err := p.ReadField1(iprot); err != nil {
+        return err
+      }
+    default:
+      if err := iprot.Skip(fieldTypeId); err != nil {
+        return err
+      }
+    }
+    if err := iprot.ReadFieldEnd(); err != nil {
+      return err
+    }
+  }
+  if err := iprot.ReadStructEnd(); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+  }
+  return nil
+}
+
+func (p *KsScmcClientGetAllContainersV2Args)  ReadField1(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadString(); err != nil {
+  return thrift.PrependError("error reading field 1: ", err)
+} else {
+  p.Nid = v
+}
+  return nil
+}
+
+func (p *KsScmcClientGetAllContainersV2Args) Write(oprot thrift.TProtocol) error {
+  if err := oprot.WriteStructBegin("GetAllContainersV2_args"); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err) }
+  if p != nil {
+    if err := p.writeField1(oprot); err != nil { return err }
+  }
+  if err := oprot.WriteFieldStop(); err != nil {
+    return thrift.PrependError("write field stop error: ", err) }
+  if err := oprot.WriteStructEnd(); err != nil {
+    return thrift.PrependError("write struct stop error: ", err) }
+  return nil
+}
+
+func (p *KsScmcClientGetAllContainersV2Args) writeField1(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("nid", thrift.STRING, 1); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write field begin error 1:nid: ", p), err) }
+  if err := oprot.WriteString(string(p.Nid)); err != nil {
+  return thrift.PrependError(fmt.Sprintf("%T.nid (1) field write error: ", p), err) }
+  if err := oprot.WriteFieldEnd(); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write field end error 1:nid: ", p), err) }
+  return err
+}
+
+func (p *KsScmcClientGetAllContainersV2Args) String() string {
+  if p == nil {
+    return "<nil>"
+  }
+  return fmt.Sprintf("KsScmcClientGetAllContainersV2Args(%+v)", *p)
+}
+
+// Attributes:
+//  - Success
+type KsScmcClientGetAllContainersV2Result struct {
+  Success *string `thrift:"success,0" db:"success" json:"success,omitempty"`
+}
+
+func NewKsScmcClientGetAllContainersV2Result() *KsScmcClientGetAllContainersV2Result {
+  return &KsScmcClientGetAllContainersV2Result{}
+}
+
+var KsScmcClientGetAllContainersV2Result_Success_DEFAULT string
+func (p *KsScmcClientGetAllContainersV2Result) GetSuccess() string {
+  if !p.IsSetSuccess() {
+    return KsScmcClientGetAllContainersV2Result_Success_DEFAULT
+  }
+return *p.Success
+}
+func (p *KsScmcClientGetAllContainersV2Result) IsSetSuccess() bool {
+  return p.Success != nil
+}
+
+func (p *KsScmcClientGetAllContainersV2Result) Read(iprot thrift.TProtocol) error {
+  if _, err := iprot.ReadStructBegin(); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
+  }
+
+
+  for {
+    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin()
+    if err != nil {
+      return thrift.PrependError(fmt.Sprintf("%T field %d read error: ", p, fieldId), err)
+    }
+    if fieldTypeId == thrift.STOP { break; }
+    switch fieldId {
+    case 0:
+      if err := p.ReadField0(iprot); err != nil {
+        return err
+      }
+    default:
+      if err := iprot.Skip(fieldTypeId); err != nil {
+        return err
+      }
+    }
+    if err := iprot.ReadFieldEnd(); err != nil {
+      return err
+    }
+  }
+  if err := iprot.ReadStructEnd(); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+  }
+  return nil
+}
+
+func (p *KsScmcClientGetAllContainersV2Result)  ReadField0(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadString(); err != nil {
+  return thrift.PrependError("error reading field 0: ", err)
+} else {
+  p.Success = &v
+}
+  return nil
+}
+
+func (p *KsScmcClientGetAllContainersV2Result) Write(oprot thrift.TProtocol) error {
+  if err := oprot.WriteStructBegin("GetAllContainersV2_result"); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err) }
+  if p != nil {
+    if err := p.writeField0(oprot); err != nil { return err }
+  }
+  if err := oprot.WriteFieldStop(); err != nil {
+    return thrift.PrependError("write field stop error: ", err) }
+  if err := oprot.WriteStructEnd(); err != nil {
+    return thrift.PrependError("write struct stop error: ", err) }
+  return nil
+}
+
+func (p *KsScmcClientGetAllContainersV2Result) writeField0(oprot thrift.TProtocol) (err error) {
+  if p.IsSetSuccess() {
+    if err := oprot.WriteFieldBegin("success", thrift.STRING, 0); err != nil {
+      return thrift.PrependError(fmt.Sprintf("%T write field begin error 0:success: ", p), err) }
+    if err := oprot.WriteString(string(*p.Success)); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T.success (0) field write error: ", p), err) }
+    if err := oprot.WriteFieldEnd(); err != nil {
+      return thrift.PrependError(fmt.Sprintf("%T write field end error 0:success: ", p), err) }
+  }
+  return err
+}
+
+func (p *KsScmcClientGetAllContainersV2Result) String() string {
+  if p == nil {
+    return "<nil>"
+  }
+  return fmt.Sprintf("KsScmcClientGetAllContainersV2Result(%+v)", *p)
+}
+
+// Attributes:
+//  - NodeName
 type KsScmcClientGetAllContainerListArgs struct {
+  NodeName string `thrift:"node_name,1" db:"node_name" json:"node_name"`
 }
 
 func NewKsScmcClientGetAllContainerListArgs() *KsScmcClientGetAllContainerListArgs {
   return &KsScmcClientGetAllContainerListArgs{}
 }
 
-func (p *KsScmcClientGetAllContainerListArgs) Read(ctx context.Context, iprot thrift.TProtocol) error {
-  if _, err := iprot.ReadStructBegin(ctx); err != nil {
+
+func (p *KsScmcClientGetAllContainerListArgs) GetNodeName() string {
+  return p.NodeName
+}
+func (p *KsScmcClientGetAllContainerListArgs) Read(iprot thrift.TProtocol) error {
+  if _, err := iprot.ReadStructBegin(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
   }
 
 
   for {
-    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin(ctx)
+    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin()
     if err != nil {
       return thrift.PrependError(fmt.Sprintf("%T field %d read error: ", p, fieldId), err)
     }
     if fieldTypeId == thrift.STOP { break; }
-    if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-      return err
+    switch fieldId {
+    case 1:
+      if err := p.ReadField1(iprot); err != nil {
+        return err
+      }
+    default:
+      if err := iprot.Skip(fieldTypeId); err != nil {
+        return err
+      }
     }
-    if err := iprot.ReadFieldEnd(ctx); err != nil {
+    if err := iprot.ReadFieldEnd(); err != nil {
       return err
     }
   }
-  if err := iprot.ReadStructEnd(ctx); err != nil {
+  if err := iprot.ReadStructEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
   }
   return nil
 }
 
-func (p *KsScmcClientGetAllContainerListArgs) Write(ctx context.Context, oprot thrift.TProtocol) error {
-  if err := oprot.WriteStructBegin(ctx, "getAllContainerList_args"); err != nil {
+func (p *KsScmcClientGetAllContainerListArgs)  ReadField1(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadString(); err != nil {
+  return thrift.PrependError("error reading field 1: ", err)
+} else {
+  p.NodeName = v
+}
+  return nil
+}
+
+func (p *KsScmcClientGetAllContainerListArgs) Write(oprot thrift.TProtocol) error {
+  if err := oprot.WriteStructBegin("getAllContainerList_args"); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err) }
   if p != nil {
+    if err := p.writeField1(oprot); err != nil { return err }
   }
-  if err := oprot.WriteFieldStop(ctx); err != nil {
+  if err := oprot.WriteFieldStop(); err != nil {
     return thrift.PrependError("write field stop error: ", err) }
-  if err := oprot.WriteStructEnd(ctx); err != nil {
+  if err := oprot.WriteStructEnd(); err != nil {
     return thrift.PrependError("write struct stop error: ", err) }
   return nil
+}
+
+func (p *KsScmcClientGetAllContainerListArgs) writeField1(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("node_name", thrift.STRING, 1); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write field begin error 1:node_name: ", p), err) }
+  if err := oprot.WriteString(string(p.NodeName)); err != nil {
+  return thrift.PrependError(fmt.Sprintf("%T.node_name (1) field write error: ", p), err) }
+  if err := oprot.WriteFieldEnd(); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write field end error 1:node_name: ", p), err) }
+  return err
 }
 
 func (p *KsScmcClientGetAllContainerListArgs) String() string {
@@ -9391,73 +11624,67 @@ func (p *KsScmcClientGetAllContainerListResult) IsSetSuccess() bool {
   return p.Success != nil
 }
 
-func (p *KsScmcClientGetAllContainerListResult) Read(ctx context.Context, iprot thrift.TProtocol) error {
-  if _, err := iprot.ReadStructBegin(ctx); err != nil {
+func (p *KsScmcClientGetAllContainerListResult) Read(iprot thrift.TProtocol) error {
+  if _, err := iprot.ReadStructBegin(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
   }
 
 
   for {
-    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin(ctx)
+    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin()
     if err != nil {
       return thrift.PrependError(fmt.Sprintf("%T field %d read error: ", p, fieldId), err)
     }
     if fieldTypeId == thrift.STOP { break; }
     switch fieldId {
     case 0:
-      if fieldTypeId == thrift.STRUCT {
-        if err := p.ReadField0(ctx, iprot); err != nil {
-          return err
-        }
-      } else {
-        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-          return err
-        }
+      if err := p.ReadField0(iprot); err != nil {
+        return err
       }
     default:
-      if err := iprot.Skip(ctx, fieldTypeId); err != nil {
+      if err := iprot.Skip(fieldTypeId); err != nil {
         return err
       }
     }
-    if err := iprot.ReadFieldEnd(ctx); err != nil {
+    if err := iprot.ReadFieldEnd(); err != nil {
       return err
     }
   }
-  if err := iprot.ReadStructEnd(ctx); err != nil {
+  if err := iprot.ReadStructEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
   }
   return nil
 }
 
-func (p *KsScmcClientGetAllContainerListResult)  ReadField0(ctx context.Context, iprot thrift.TProtocol) error {
+func (p *KsScmcClientGetAllContainerListResult)  ReadField0(iprot thrift.TProtocol) error {
   p.Success = &GetAllContainerListResponse{}
-  if err := p.Success.Read(ctx, iprot); err != nil {
+  if err := p.Success.Read(iprot); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", p.Success), err)
   }
   return nil
 }
 
-func (p *KsScmcClientGetAllContainerListResult) Write(ctx context.Context, oprot thrift.TProtocol) error {
-  if err := oprot.WriteStructBegin(ctx, "getAllContainerList_result"); err != nil {
+func (p *KsScmcClientGetAllContainerListResult) Write(oprot thrift.TProtocol) error {
+  if err := oprot.WriteStructBegin("getAllContainerList_result"); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err) }
   if p != nil {
-    if err := p.writeField0(ctx, oprot); err != nil { return err }
+    if err := p.writeField0(oprot); err != nil { return err }
   }
-  if err := oprot.WriteFieldStop(ctx); err != nil {
+  if err := oprot.WriteFieldStop(); err != nil {
     return thrift.PrependError("write field stop error: ", err) }
-  if err := oprot.WriteStructEnd(ctx); err != nil {
+  if err := oprot.WriteStructEnd(); err != nil {
     return thrift.PrependError("write struct stop error: ", err) }
   return nil
 }
 
-func (p *KsScmcClientGetAllContainerListResult) writeField0(ctx context.Context, oprot thrift.TProtocol) (err error) {
+func (p *KsScmcClientGetAllContainerListResult) writeField0(oprot thrift.TProtocol) (err error) {
   if p.IsSetSuccess() {
-    if err := oprot.WriteFieldBegin(ctx, "success", thrift.STRUCT, 0); err != nil {
+    if err := oprot.WriteFieldBegin("success", thrift.STRUCT, 0); err != nil {
       return thrift.PrependError(fmt.Sprintf("%T write field begin error 0:success: ", p), err) }
-    if err := p.Success.Write(ctx, oprot); err != nil {
+    if err := p.Success.Write(oprot); err != nil {
       return thrift.PrependError(fmt.Sprintf("%T error writing struct: ", p.Success), err)
     }
-    if err := oprot.WriteFieldEnd(ctx); err != nil {
+    if err := oprot.WriteFieldEnd(); err != nil {
       return thrift.PrependError(fmt.Sprintf("%T write field end error 0:success: ", p), err) }
   }
   return err
@@ -9490,56 +11717,44 @@ func (p *KsScmcClientGetContainerNetworkArgs) GetNodeNameorip() string {
 func (p *KsScmcClientGetContainerNetworkArgs) GetContainerName() string {
   return p.ContainerName
 }
-func (p *KsScmcClientGetContainerNetworkArgs) Read(ctx context.Context, iprot thrift.TProtocol) error {
-  if _, err := iprot.ReadStructBegin(ctx); err != nil {
+func (p *KsScmcClientGetContainerNetworkArgs) Read(iprot thrift.TProtocol) error {
+  if _, err := iprot.ReadStructBegin(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
   }
 
 
   for {
-    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin(ctx)
+    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin()
     if err != nil {
       return thrift.PrependError(fmt.Sprintf("%T field %d read error: ", p, fieldId), err)
     }
     if fieldTypeId == thrift.STOP { break; }
     switch fieldId {
     case 1:
-      if fieldTypeId == thrift.STRING {
-        if err := p.ReadField1(ctx, iprot); err != nil {
-          return err
-        }
-      } else {
-        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-          return err
-        }
+      if err := p.ReadField1(iprot); err != nil {
+        return err
       }
     case 2:
-      if fieldTypeId == thrift.STRING {
-        if err := p.ReadField2(ctx, iprot); err != nil {
-          return err
-        }
-      } else {
-        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-          return err
-        }
+      if err := p.ReadField2(iprot); err != nil {
+        return err
       }
     default:
-      if err := iprot.Skip(ctx, fieldTypeId); err != nil {
+      if err := iprot.Skip(fieldTypeId); err != nil {
         return err
       }
     }
-    if err := iprot.ReadFieldEnd(ctx); err != nil {
+    if err := iprot.ReadFieldEnd(); err != nil {
       return err
     }
   }
-  if err := iprot.ReadStructEnd(ctx); err != nil {
+  if err := iprot.ReadStructEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
   }
   return nil
 }
 
-func (p *KsScmcClientGetContainerNetworkArgs)  ReadField1(ctx context.Context, iprot thrift.TProtocol) error {
-  if v, err := iprot.ReadString(ctx); err != nil {
+func (p *KsScmcClientGetContainerNetworkArgs)  ReadField1(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadString(); err != nil {
   return thrift.PrependError("error reading field 1: ", err)
 } else {
   p.NodeNameorip = v
@@ -9547,8 +11762,8 @@ func (p *KsScmcClientGetContainerNetworkArgs)  ReadField1(ctx context.Context, i
   return nil
 }
 
-func (p *KsScmcClientGetContainerNetworkArgs)  ReadField2(ctx context.Context, iprot thrift.TProtocol) error {
-  if v, err := iprot.ReadString(ctx); err != nil {
+func (p *KsScmcClientGetContainerNetworkArgs)  ReadField2(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadString(); err != nil {
   return thrift.PrependError("error reading field 2: ", err)
 } else {
   p.ContainerName = v
@@ -9556,36 +11771,36 @@ func (p *KsScmcClientGetContainerNetworkArgs)  ReadField2(ctx context.Context, i
   return nil
 }
 
-func (p *KsScmcClientGetContainerNetworkArgs) Write(ctx context.Context, oprot thrift.TProtocol) error {
-  if err := oprot.WriteStructBegin(ctx, "getContainerNetwork_args"); err != nil {
+func (p *KsScmcClientGetContainerNetworkArgs) Write(oprot thrift.TProtocol) error {
+  if err := oprot.WriteStructBegin("GetContainerNetwork_args"); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err) }
   if p != nil {
-    if err := p.writeField1(ctx, oprot); err != nil { return err }
-    if err := p.writeField2(ctx, oprot); err != nil { return err }
+    if err := p.writeField1(oprot); err != nil { return err }
+    if err := p.writeField2(oprot); err != nil { return err }
   }
-  if err := oprot.WriteFieldStop(ctx); err != nil {
+  if err := oprot.WriteFieldStop(); err != nil {
     return thrift.PrependError("write field stop error: ", err) }
-  if err := oprot.WriteStructEnd(ctx); err != nil {
+  if err := oprot.WriteStructEnd(); err != nil {
     return thrift.PrependError("write struct stop error: ", err) }
   return nil
 }
 
-func (p *KsScmcClientGetContainerNetworkArgs) writeField1(ctx context.Context, oprot thrift.TProtocol) (err error) {
-  if err := oprot.WriteFieldBegin(ctx, "node_nameorip", thrift.STRING, 1); err != nil {
+func (p *KsScmcClientGetContainerNetworkArgs) writeField1(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("node_nameorip", thrift.STRING, 1); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field begin error 1:node_nameorip: ", p), err) }
-  if err := oprot.WriteString(ctx, string(p.NodeNameorip)); err != nil {
+  if err := oprot.WriteString(string(p.NodeNameorip)); err != nil {
   return thrift.PrependError(fmt.Sprintf("%T.node_nameorip (1) field write error: ", p), err) }
-  if err := oprot.WriteFieldEnd(ctx); err != nil {
+  if err := oprot.WriteFieldEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field end error 1:node_nameorip: ", p), err) }
   return err
 }
 
-func (p *KsScmcClientGetContainerNetworkArgs) writeField2(ctx context.Context, oprot thrift.TProtocol) (err error) {
-  if err := oprot.WriteFieldBegin(ctx, "container_name", thrift.STRING, 2); err != nil {
+func (p *KsScmcClientGetContainerNetworkArgs) writeField2(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("container_name", thrift.STRING, 2); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field begin error 2:container_name: ", p), err) }
-  if err := oprot.WriteString(ctx, string(p.ContainerName)); err != nil {
+  if err := oprot.WriteString(string(p.ContainerName)); err != nil {
   return thrift.PrependError(fmt.Sprintf("%T.container_name (2) field write error: ", p), err) }
-  if err := oprot.WriteFieldEnd(ctx); err != nil {
+  if err := oprot.WriteFieldEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field end error 2:container_name: ", p), err) }
   return err
 }
@@ -9600,91 +11815,85 @@ func (p *KsScmcClientGetContainerNetworkArgs) String() string {
 // Attributes:
 //  - Success
 type KsScmcClientGetContainerNetworkResult struct {
-  Success *GetContainerNetworkResponse `thrift:"success,0" db:"success" json:"success,omitempty"`
+  Success *string `thrift:"success,0" db:"success" json:"success,omitempty"`
 }
 
 func NewKsScmcClientGetContainerNetworkResult() *KsScmcClientGetContainerNetworkResult {
   return &KsScmcClientGetContainerNetworkResult{}
 }
 
-var KsScmcClientGetContainerNetworkResult_Success_DEFAULT *GetContainerNetworkResponse
-func (p *KsScmcClientGetContainerNetworkResult) GetSuccess() *GetContainerNetworkResponse {
+var KsScmcClientGetContainerNetworkResult_Success_DEFAULT string
+func (p *KsScmcClientGetContainerNetworkResult) GetSuccess() string {
   if !p.IsSetSuccess() {
     return KsScmcClientGetContainerNetworkResult_Success_DEFAULT
   }
-return p.Success
+return *p.Success
 }
 func (p *KsScmcClientGetContainerNetworkResult) IsSetSuccess() bool {
   return p.Success != nil
 }
 
-func (p *KsScmcClientGetContainerNetworkResult) Read(ctx context.Context, iprot thrift.TProtocol) error {
-  if _, err := iprot.ReadStructBegin(ctx); err != nil {
+func (p *KsScmcClientGetContainerNetworkResult) Read(iprot thrift.TProtocol) error {
+  if _, err := iprot.ReadStructBegin(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
   }
 
 
   for {
-    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin(ctx)
+    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin()
     if err != nil {
       return thrift.PrependError(fmt.Sprintf("%T field %d read error: ", p, fieldId), err)
     }
     if fieldTypeId == thrift.STOP { break; }
     switch fieldId {
     case 0:
-      if fieldTypeId == thrift.STRUCT {
-        if err := p.ReadField0(ctx, iprot); err != nil {
-          return err
-        }
-      } else {
-        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-          return err
-        }
+      if err := p.ReadField0(iprot); err != nil {
+        return err
       }
     default:
-      if err := iprot.Skip(ctx, fieldTypeId); err != nil {
+      if err := iprot.Skip(fieldTypeId); err != nil {
         return err
       }
     }
-    if err := iprot.ReadFieldEnd(ctx); err != nil {
+    if err := iprot.ReadFieldEnd(); err != nil {
       return err
     }
   }
-  if err := iprot.ReadStructEnd(ctx); err != nil {
+  if err := iprot.ReadStructEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
   }
   return nil
 }
 
-func (p *KsScmcClientGetContainerNetworkResult)  ReadField0(ctx context.Context, iprot thrift.TProtocol) error {
-  p.Success = &GetContainerNetworkResponse{}
-  if err := p.Success.Read(ctx, iprot); err != nil {
-    return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", p.Success), err)
-  }
+func (p *KsScmcClientGetContainerNetworkResult)  ReadField0(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadString(); err != nil {
+  return thrift.PrependError("error reading field 0: ", err)
+} else {
+  p.Success = &v
+}
   return nil
 }
 
-func (p *KsScmcClientGetContainerNetworkResult) Write(ctx context.Context, oprot thrift.TProtocol) error {
-  if err := oprot.WriteStructBegin(ctx, "getContainerNetwork_result"); err != nil {
+func (p *KsScmcClientGetContainerNetworkResult) Write(oprot thrift.TProtocol) error {
+  if err := oprot.WriteStructBegin("GetContainerNetwork_result"); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err) }
   if p != nil {
-    if err := p.writeField0(ctx, oprot); err != nil { return err }
+    if err := p.writeField0(oprot); err != nil { return err }
   }
-  if err := oprot.WriteFieldStop(ctx); err != nil {
+  if err := oprot.WriteFieldStop(); err != nil {
     return thrift.PrependError("write field stop error: ", err) }
-  if err := oprot.WriteStructEnd(ctx); err != nil {
+  if err := oprot.WriteStructEnd(); err != nil {
     return thrift.PrependError("write struct stop error: ", err) }
   return nil
 }
 
-func (p *KsScmcClientGetContainerNetworkResult) writeField0(ctx context.Context, oprot thrift.TProtocol) (err error) {
+func (p *KsScmcClientGetContainerNetworkResult) writeField0(oprot thrift.TProtocol) (err error) {
   if p.IsSetSuccess() {
-    if err := oprot.WriteFieldBegin(ctx, "success", thrift.STRUCT, 0); err != nil {
+    if err := oprot.WriteFieldBegin("success", thrift.STRING, 0); err != nil {
       return thrift.PrependError(fmt.Sprintf("%T write field begin error 0:success: ", p), err) }
-    if err := p.Success.Write(ctx, oprot); err != nil {
-      return thrift.PrependError(fmt.Sprintf("%T error writing struct: ", p.Success), err)
-    }
-    if err := oprot.WriteFieldEnd(ctx); err != nil {
+    if err := oprot.WriteString(string(*p.Success)); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T.success (0) field write error: ", p), err) }
+    if err := oprot.WriteFieldEnd(); err != nil {
       return thrift.PrependError(fmt.Sprintf("%T write field end error 0:success: ", p), err) }
   }
   return err
@@ -9717,56 +11926,44 @@ func (p *KsScmcClientGetContainerNetRulesArgs) GetNodeName() string {
 func (p *KsScmcClientGetContainerNetRulesArgs) GetContainerName() string {
   return p.ContainerName
 }
-func (p *KsScmcClientGetContainerNetRulesArgs) Read(ctx context.Context, iprot thrift.TProtocol) error {
-  if _, err := iprot.ReadStructBegin(ctx); err != nil {
+func (p *KsScmcClientGetContainerNetRulesArgs) Read(iprot thrift.TProtocol) error {
+  if _, err := iprot.ReadStructBegin(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
   }
 
 
   for {
-    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin(ctx)
+    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin()
     if err != nil {
       return thrift.PrependError(fmt.Sprintf("%T field %d read error: ", p, fieldId), err)
     }
     if fieldTypeId == thrift.STOP { break; }
     switch fieldId {
     case 1:
-      if fieldTypeId == thrift.STRING {
-        if err := p.ReadField1(ctx, iprot); err != nil {
-          return err
-        }
-      } else {
-        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-          return err
-        }
+      if err := p.ReadField1(iprot); err != nil {
+        return err
       }
     case 2:
-      if fieldTypeId == thrift.STRING {
-        if err := p.ReadField2(ctx, iprot); err != nil {
-          return err
-        }
-      } else {
-        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-          return err
-        }
+      if err := p.ReadField2(iprot); err != nil {
+        return err
       }
     default:
-      if err := iprot.Skip(ctx, fieldTypeId); err != nil {
+      if err := iprot.Skip(fieldTypeId); err != nil {
         return err
       }
     }
-    if err := iprot.ReadFieldEnd(ctx); err != nil {
+    if err := iprot.ReadFieldEnd(); err != nil {
       return err
     }
   }
-  if err := iprot.ReadStructEnd(ctx); err != nil {
+  if err := iprot.ReadStructEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
   }
   return nil
 }
 
-func (p *KsScmcClientGetContainerNetRulesArgs)  ReadField1(ctx context.Context, iprot thrift.TProtocol) error {
-  if v, err := iprot.ReadString(ctx); err != nil {
+func (p *KsScmcClientGetContainerNetRulesArgs)  ReadField1(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadString(); err != nil {
   return thrift.PrependError("error reading field 1: ", err)
 } else {
   p.NodeName = v
@@ -9774,8 +11971,8 @@ func (p *KsScmcClientGetContainerNetRulesArgs)  ReadField1(ctx context.Context, 
   return nil
 }
 
-func (p *KsScmcClientGetContainerNetRulesArgs)  ReadField2(ctx context.Context, iprot thrift.TProtocol) error {
-  if v, err := iprot.ReadString(ctx); err != nil {
+func (p *KsScmcClientGetContainerNetRulesArgs)  ReadField2(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadString(); err != nil {
   return thrift.PrependError("error reading field 2: ", err)
 } else {
   p.ContainerName = v
@@ -9783,36 +11980,36 @@ func (p *KsScmcClientGetContainerNetRulesArgs)  ReadField2(ctx context.Context, 
   return nil
 }
 
-func (p *KsScmcClientGetContainerNetRulesArgs) Write(ctx context.Context, oprot thrift.TProtocol) error {
-  if err := oprot.WriteStructBegin(ctx, "getContainerNetRules_args"); err != nil {
+func (p *KsScmcClientGetContainerNetRulesArgs) Write(oprot thrift.TProtocol) error {
+  if err := oprot.WriteStructBegin("getContainerNetRules_args"); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err) }
   if p != nil {
-    if err := p.writeField1(ctx, oprot); err != nil { return err }
-    if err := p.writeField2(ctx, oprot); err != nil { return err }
+    if err := p.writeField1(oprot); err != nil { return err }
+    if err := p.writeField2(oprot); err != nil { return err }
   }
-  if err := oprot.WriteFieldStop(ctx); err != nil {
+  if err := oprot.WriteFieldStop(); err != nil {
     return thrift.PrependError("write field stop error: ", err) }
-  if err := oprot.WriteStructEnd(ctx); err != nil {
+  if err := oprot.WriteStructEnd(); err != nil {
     return thrift.PrependError("write struct stop error: ", err) }
   return nil
 }
 
-func (p *KsScmcClientGetContainerNetRulesArgs) writeField1(ctx context.Context, oprot thrift.TProtocol) (err error) {
-  if err := oprot.WriteFieldBegin(ctx, "node_name", thrift.STRING, 1); err != nil {
+func (p *KsScmcClientGetContainerNetRulesArgs) writeField1(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("node_name", thrift.STRING, 1); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field begin error 1:node_name: ", p), err) }
-  if err := oprot.WriteString(ctx, string(p.NodeName)); err != nil {
+  if err := oprot.WriteString(string(p.NodeName)); err != nil {
   return thrift.PrependError(fmt.Sprintf("%T.node_name (1) field write error: ", p), err) }
-  if err := oprot.WriteFieldEnd(ctx); err != nil {
+  if err := oprot.WriteFieldEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field end error 1:node_name: ", p), err) }
   return err
 }
 
-func (p *KsScmcClientGetContainerNetRulesArgs) writeField2(ctx context.Context, oprot thrift.TProtocol) (err error) {
-  if err := oprot.WriteFieldBegin(ctx, "container_name", thrift.STRING, 2); err != nil {
+func (p *KsScmcClientGetContainerNetRulesArgs) writeField2(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("container_name", thrift.STRING, 2); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field begin error 2:container_name: ", p), err) }
-  if err := oprot.WriteString(ctx, string(p.ContainerName)); err != nil {
+  if err := oprot.WriteString(string(p.ContainerName)); err != nil {
   return thrift.PrependError(fmt.Sprintf("%T.container_name (2) field write error: ", p), err) }
-  if err := oprot.WriteFieldEnd(ctx); err != nil {
+  if err := oprot.WriteFieldEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field end error 2:container_name: ", p), err) }
   return err
 }
@@ -9845,73 +12042,67 @@ func (p *KsScmcClientGetContainerNetRulesResult) IsSetSuccess() bool {
   return p.Success != nil
 }
 
-func (p *KsScmcClientGetContainerNetRulesResult) Read(ctx context.Context, iprot thrift.TProtocol) error {
-  if _, err := iprot.ReadStructBegin(ctx); err != nil {
+func (p *KsScmcClientGetContainerNetRulesResult) Read(iprot thrift.TProtocol) error {
+  if _, err := iprot.ReadStructBegin(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
   }
 
 
   for {
-    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin(ctx)
+    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin()
     if err != nil {
       return thrift.PrependError(fmt.Sprintf("%T field %d read error: ", p, fieldId), err)
     }
     if fieldTypeId == thrift.STOP { break; }
     switch fieldId {
     case 0:
-      if fieldTypeId == thrift.STRUCT {
-        if err := p.ReadField0(ctx, iprot); err != nil {
-          return err
-        }
-      } else {
-        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-          return err
-        }
+      if err := p.ReadField0(iprot); err != nil {
+        return err
       }
     default:
-      if err := iprot.Skip(ctx, fieldTypeId); err != nil {
+      if err := iprot.Skip(fieldTypeId); err != nil {
         return err
       }
     }
-    if err := iprot.ReadFieldEnd(ctx); err != nil {
+    if err := iprot.ReadFieldEnd(); err != nil {
       return err
     }
   }
-  if err := iprot.ReadStructEnd(ctx); err != nil {
+  if err := iprot.ReadStructEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
   }
   return nil
 }
 
-func (p *KsScmcClientGetContainerNetRulesResult)  ReadField0(ctx context.Context, iprot thrift.TProtocol) error {
+func (p *KsScmcClientGetContainerNetRulesResult)  ReadField0(iprot thrift.TProtocol) error {
   p.Success = &GetContainerNetRulesResponse{}
-  if err := p.Success.Read(ctx, iprot); err != nil {
+  if err := p.Success.Read(iprot); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", p.Success), err)
   }
   return nil
 }
 
-func (p *KsScmcClientGetContainerNetRulesResult) Write(ctx context.Context, oprot thrift.TProtocol) error {
-  if err := oprot.WriteStructBegin(ctx, "getContainerNetRules_result"); err != nil {
+func (p *KsScmcClientGetContainerNetRulesResult) Write(oprot thrift.TProtocol) error {
+  if err := oprot.WriteStructBegin("getContainerNetRules_result"); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err) }
   if p != nil {
-    if err := p.writeField0(ctx, oprot); err != nil { return err }
+    if err := p.writeField0(oprot); err != nil { return err }
   }
-  if err := oprot.WriteFieldStop(ctx); err != nil {
+  if err := oprot.WriteFieldStop(); err != nil {
     return thrift.PrependError("write field stop error: ", err) }
-  if err := oprot.WriteStructEnd(ctx); err != nil {
+  if err := oprot.WriteStructEnd(); err != nil {
     return thrift.PrependError("write struct stop error: ", err) }
   return nil
 }
 
-func (p *KsScmcClientGetContainerNetRulesResult) writeField0(ctx context.Context, oprot thrift.TProtocol) (err error) {
+func (p *KsScmcClientGetContainerNetRulesResult) writeField0(oprot thrift.TProtocol) (err error) {
   if p.IsSetSuccess() {
-    if err := oprot.WriteFieldBegin(ctx, "success", thrift.STRUCT, 0); err != nil {
+    if err := oprot.WriteFieldBegin("success", thrift.STRUCT, 0); err != nil {
       return thrift.PrependError(fmt.Sprintf("%T write field begin error 0:success: ", p), err) }
-    if err := p.Success.Write(ctx, oprot); err != nil {
+    if err := p.Success.Write(oprot); err != nil {
       return thrift.PrependError(fmt.Sprintf("%T error writing struct: ", p.Success), err)
     }
-    if err := oprot.WriteFieldEnd(ctx); err != nil {
+    if err := oprot.WriteFieldEnd(); err != nil {
       return thrift.PrependError(fmt.Sprintf("%T write field end error 0:success: ", p), err) }
   }
   return err
@@ -9962,86 +12153,56 @@ func (p *KsScmcClientAddContainerIpPortArgs) GetPort() int32 {
 func (p *KsScmcClientAddContainerIpPortArgs) GetNetProto() string {
   return p.NetProto
 }
-func (p *KsScmcClientAddContainerIpPortArgs) Read(ctx context.Context, iprot thrift.TProtocol) error {
-  if _, err := iprot.ReadStructBegin(ctx); err != nil {
+func (p *KsScmcClientAddContainerIpPortArgs) Read(iprot thrift.TProtocol) error {
+  if _, err := iprot.ReadStructBegin(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
   }
 
 
   for {
-    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin(ctx)
+    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin()
     if err != nil {
       return thrift.PrependError(fmt.Sprintf("%T field %d read error: ", p, fieldId), err)
     }
     if fieldTypeId == thrift.STOP { break; }
     switch fieldId {
     case 1:
-      if fieldTypeId == thrift.STRING {
-        if err := p.ReadField1(ctx, iprot); err != nil {
-          return err
-        }
-      } else {
-        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-          return err
-        }
+      if err := p.ReadField1(iprot); err != nil {
+        return err
       }
     case 2:
-      if fieldTypeId == thrift.STRING {
-        if err := p.ReadField2(ctx, iprot); err != nil {
-          return err
-        }
-      } else {
-        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-          return err
-        }
+      if err := p.ReadField2(iprot); err != nil {
+        return err
       }
     case 3:
-      if fieldTypeId == thrift.STRING {
-        if err := p.ReadField3(ctx, iprot); err != nil {
-          return err
-        }
-      } else {
-        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-          return err
-        }
+      if err := p.ReadField3(iprot); err != nil {
+        return err
       }
     case 4:
-      if fieldTypeId == thrift.I32 {
-        if err := p.ReadField4(ctx, iprot); err != nil {
-          return err
-        }
-      } else {
-        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-          return err
-        }
+      if err := p.ReadField4(iprot); err != nil {
+        return err
       }
     case 5:
-      if fieldTypeId == thrift.STRING {
-        if err := p.ReadField5(ctx, iprot); err != nil {
-          return err
-        }
-      } else {
-        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-          return err
-        }
+      if err := p.ReadField5(iprot); err != nil {
+        return err
       }
     default:
-      if err := iprot.Skip(ctx, fieldTypeId); err != nil {
+      if err := iprot.Skip(fieldTypeId); err != nil {
         return err
       }
     }
-    if err := iprot.ReadFieldEnd(ctx); err != nil {
+    if err := iprot.ReadFieldEnd(); err != nil {
       return err
     }
   }
-  if err := iprot.ReadStructEnd(ctx); err != nil {
+  if err := iprot.ReadStructEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
   }
   return nil
 }
 
-func (p *KsScmcClientAddContainerIpPortArgs)  ReadField1(ctx context.Context, iprot thrift.TProtocol) error {
-  if v, err := iprot.ReadString(ctx); err != nil {
+func (p *KsScmcClientAddContainerIpPortArgs)  ReadField1(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadString(); err != nil {
   return thrift.PrependError("error reading field 1: ", err)
 } else {
   p.NodeNameorip = v
@@ -10049,8 +12210,8 @@ func (p *KsScmcClientAddContainerIpPortArgs)  ReadField1(ctx context.Context, ip
   return nil
 }
 
-func (p *KsScmcClientAddContainerIpPortArgs)  ReadField2(ctx context.Context, iprot thrift.TProtocol) error {
-  if v, err := iprot.ReadString(ctx); err != nil {
+func (p *KsScmcClientAddContainerIpPortArgs)  ReadField2(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadString(); err != nil {
   return thrift.PrependError("error reading field 2: ", err)
 } else {
   p.ContainerName = v
@@ -10058,8 +12219,8 @@ func (p *KsScmcClientAddContainerIpPortArgs)  ReadField2(ctx context.Context, ip
   return nil
 }
 
-func (p *KsScmcClientAddContainerIpPortArgs)  ReadField3(ctx context.Context, iprot thrift.TProtocol) error {
-  if v, err := iprot.ReadString(ctx); err != nil {
+func (p *KsScmcClientAddContainerIpPortArgs)  ReadField3(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadString(); err != nil {
   return thrift.PrependError("error reading field 3: ", err)
 } else {
   p.IPAddr = v
@@ -10067,8 +12228,8 @@ func (p *KsScmcClientAddContainerIpPortArgs)  ReadField3(ctx context.Context, ip
   return nil
 }
 
-func (p *KsScmcClientAddContainerIpPortArgs)  ReadField4(ctx context.Context, iprot thrift.TProtocol) error {
-  if v, err := iprot.ReadI32(ctx); err != nil {
+func (p *KsScmcClientAddContainerIpPortArgs)  ReadField4(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadI32(); err != nil {
   return thrift.PrependError("error reading field 4: ", err)
 } else {
   p.Port = v
@@ -10076,8 +12237,8 @@ func (p *KsScmcClientAddContainerIpPortArgs)  ReadField4(ctx context.Context, ip
   return nil
 }
 
-func (p *KsScmcClientAddContainerIpPortArgs)  ReadField5(ctx context.Context, iprot thrift.TProtocol) error {
-  if v, err := iprot.ReadString(ctx); err != nil {
+func (p *KsScmcClientAddContainerIpPortArgs)  ReadField5(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadString(); err != nil {
   return thrift.PrependError("error reading field 5: ", err)
 } else {
   p.NetProto = v
@@ -10085,69 +12246,69 @@ func (p *KsScmcClientAddContainerIpPortArgs)  ReadField5(ctx context.Context, ip
   return nil
 }
 
-func (p *KsScmcClientAddContainerIpPortArgs) Write(ctx context.Context, oprot thrift.TProtocol) error {
-  if err := oprot.WriteStructBegin(ctx, "addContainerIpPort_args"); err != nil {
+func (p *KsScmcClientAddContainerIpPortArgs) Write(oprot thrift.TProtocol) error {
+  if err := oprot.WriteStructBegin("addContainerIpPort_args"); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err) }
   if p != nil {
-    if err := p.writeField1(ctx, oprot); err != nil { return err }
-    if err := p.writeField2(ctx, oprot); err != nil { return err }
-    if err := p.writeField3(ctx, oprot); err != nil { return err }
-    if err := p.writeField4(ctx, oprot); err != nil { return err }
-    if err := p.writeField5(ctx, oprot); err != nil { return err }
+    if err := p.writeField1(oprot); err != nil { return err }
+    if err := p.writeField2(oprot); err != nil { return err }
+    if err := p.writeField3(oprot); err != nil { return err }
+    if err := p.writeField4(oprot); err != nil { return err }
+    if err := p.writeField5(oprot); err != nil { return err }
   }
-  if err := oprot.WriteFieldStop(ctx); err != nil {
+  if err := oprot.WriteFieldStop(); err != nil {
     return thrift.PrependError("write field stop error: ", err) }
-  if err := oprot.WriteStructEnd(ctx); err != nil {
+  if err := oprot.WriteStructEnd(); err != nil {
     return thrift.PrependError("write struct stop error: ", err) }
   return nil
 }
 
-func (p *KsScmcClientAddContainerIpPortArgs) writeField1(ctx context.Context, oprot thrift.TProtocol) (err error) {
-  if err := oprot.WriteFieldBegin(ctx, "node_nameorip", thrift.STRING, 1); err != nil {
+func (p *KsScmcClientAddContainerIpPortArgs) writeField1(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("node_nameorip", thrift.STRING, 1); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field begin error 1:node_nameorip: ", p), err) }
-  if err := oprot.WriteString(ctx, string(p.NodeNameorip)); err != nil {
+  if err := oprot.WriteString(string(p.NodeNameorip)); err != nil {
   return thrift.PrependError(fmt.Sprintf("%T.node_nameorip (1) field write error: ", p), err) }
-  if err := oprot.WriteFieldEnd(ctx); err != nil {
+  if err := oprot.WriteFieldEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field end error 1:node_nameorip: ", p), err) }
   return err
 }
 
-func (p *KsScmcClientAddContainerIpPortArgs) writeField2(ctx context.Context, oprot thrift.TProtocol) (err error) {
-  if err := oprot.WriteFieldBegin(ctx, "container_name", thrift.STRING, 2); err != nil {
+func (p *KsScmcClientAddContainerIpPortArgs) writeField2(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("container_name", thrift.STRING, 2); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field begin error 2:container_name: ", p), err) }
-  if err := oprot.WriteString(ctx, string(p.ContainerName)); err != nil {
+  if err := oprot.WriteString(string(p.ContainerName)); err != nil {
   return thrift.PrependError(fmt.Sprintf("%T.container_name (2) field write error: ", p), err) }
-  if err := oprot.WriteFieldEnd(ctx); err != nil {
+  if err := oprot.WriteFieldEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field end error 2:container_name: ", p), err) }
   return err
 }
 
-func (p *KsScmcClientAddContainerIpPortArgs) writeField3(ctx context.Context, oprot thrift.TProtocol) (err error) {
-  if err := oprot.WriteFieldBegin(ctx, "ip_addr", thrift.STRING, 3); err != nil {
+func (p *KsScmcClientAddContainerIpPortArgs) writeField3(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("ip_addr", thrift.STRING, 3); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field begin error 3:ip_addr: ", p), err) }
-  if err := oprot.WriteString(ctx, string(p.IPAddr)); err != nil {
+  if err := oprot.WriteString(string(p.IPAddr)); err != nil {
   return thrift.PrependError(fmt.Sprintf("%T.ip_addr (3) field write error: ", p), err) }
-  if err := oprot.WriteFieldEnd(ctx); err != nil {
+  if err := oprot.WriteFieldEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field end error 3:ip_addr: ", p), err) }
   return err
 }
 
-func (p *KsScmcClientAddContainerIpPortArgs) writeField4(ctx context.Context, oprot thrift.TProtocol) (err error) {
-  if err := oprot.WriteFieldBegin(ctx, "port", thrift.I32, 4); err != nil {
+func (p *KsScmcClientAddContainerIpPortArgs) writeField4(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("port", thrift.I32, 4); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field begin error 4:port: ", p), err) }
-  if err := oprot.WriteI32(ctx, int32(p.Port)); err != nil {
+  if err := oprot.WriteI32(int32(p.Port)); err != nil {
   return thrift.PrependError(fmt.Sprintf("%T.port (4) field write error: ", p), err) }
-  if err := oprot.WriteFieldEnd(ctx); err != nil {
+  if err := oprot.WriteFieldEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field end error 4:port: ", p), err) }
   return err
 }
 
-func (p *KsScmcClientAddContainerIpPortArgs) writeField5(ctx context.Context, oprot thrift.TProtocol) (err error) {
-  if err := oprot.WriteFieldBegin(ctx, "net_proto", thrift.STRING, 5); err != nil {
+func (p *KsScmcClientAddContainerIpPortArgs) writeField5(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("net_proto", thrift.STRING, 5); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field begin error 5:net_proto: ", p), err) }
-  if err := oprot.WriteString(ctx, string(p.NetProto)); err != nil {
+  if err := oprot.WriteString(string(p.NetProto)); err != nil {
   return thrift.PrependError(fmt.Sprintf("%T.net_proto (5) field write error: ", p), err) }
-  if err := oprot.WriteFieldEnd(ctx); err != nil {
+  if err := oprot.WriteFieldEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field end error 5:net_proto: ", p), err) }
   return err
 }
@@ -10180,46 +12341,40 @@ func (p *KsScmcClientAddContainerIpPortResult) IsSetSuccess() bool {
   return p.Success != nil
 }
 
-func (p *KsScmcClientAddContainerIpPortResult) Read(ctx context.Context, iprot thrift.TProtocol) error {
-  if _, err := iprot.ReadStructBegin(ctx); err != nil {
+func (p *KsScmcClientAddContainerIpPortResult) Read(iprot thrift.TProtocol) error {
+  if _, err := iprot.ReadStructBegin(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
   }
 
 
   for {
-    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin(ctx)
+    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin()
     if err != nil {
       return thrift.PrependError(fmt.Sprintf("%T field %d read error: ", p, fieldId), err)
     }
     if fieldTypeId == thrift.STOP { break; }
     switch fieldId {
     case 0:
-      if fieldTypeId == thrift.I32 {
-        if err := p.ReadField0(ctx, iprot); err != nil {
-          return err
-        }
-      } else {
-        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-          return err
-        }
+      if err := p.ReadField0(iprot); err != nil {
+        return err
       }
     default:
-      if err := iprot.Skip(ctx, fieldTypeId); err != nil {
+      if err := iprot.Skip(fieldTypeId); err != nil {
         return err
       }
     }
-    if err := iprot.ReadFieldEnd(ctx); err != nil {
+    if err := iprot.ReadFieldEnd(); err != nil {
       return err
     }
   }
-  if err := iprot.ReadStructEnd(ctx); err != nil {
+  if err := iprot.ReadStructEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
   }
   return nil
 }
 
-func (p *KsScmcClientAddContainerIpPortResult)  ReadField0(ctx context.Context, iprot thrift.TProtocol) error {
-  if v, err := iprot.ReadI32(ctx); err != nil {
+func (p *KsScmcClientAddContainerIpPortResult)  ReadField0(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadI32(); err != nil {
   return thrift.PrependError("error reading field 0: ", err)
 } else {
   p.Success = &v
@@ -10227,26 +12382,26 @@ func (p *KsScmcClientAddContainerIpPortResult)  ReadField0(ctx context.Context, 
   return nil
 }
 
-func (p *KsScmcClientAddContainerIpPortResult) Write(ctx context.Context, oprot thrift.TProtocol) error {
-  if err := oprot.WriteStructBegin(ctx, "addContainerIpPort_result"); err != nil {
+func (p *KsScmcClientAddContainerIpPortResult) Write(oprot thrift.TProtocol) error {
+  if err := oprot.WriteStructBegin("addContainerIpPort_result"); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err) }
   if p != nil {
-    if err := p.writeField0(ctx, oprot); err != nil { return err }
+    if err := p.writeField0(oprot); err != nil { return err }
   }
-  if err := oprot.WriteFieldStop(ctx); err != nil {
+  if err := oprot.WriteFieldStop(); err != nil {
     return thrift.PrependError("write field stop error: ", err) }
-  if err := oprot.WriteStructEnd(ctx); err != nil {
+  if err := oprot.WriteStructEnd(); err != nil {
     return thrift.PrependError("write struct stop error: ", err) }
   return nil
 }
 
-func (p *KsScmcClientAddContainerIpPortResult) writeField0(ctx context.Context, oprot thrift.TProtocol) (err error) {
+func (p *KsScmcClientAddContainerIpPortResult) writeField0(oprot thrift.TProtocol) (err error) {
   if p.IsSetSuccess() {
-    if err := oprot.WriteFieldBegin(ctx, "success", thrift.I32, 0); err != nil {
+    if err := oprot.WriteFieldBegin("success", thrift.I32, 0); err != nil {
       return thrift.PrependError(fmt.Sprintf("%T write field begin error 0:success: ", p), err) }
-    if err := oprot.WriteI32(ctx, int32(*p.Success)); err != nil {
+    if err := oprot.WriteI32(int32(*p.Success)); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T.success (0) field write error: ", p), err) }
-    if err := oprot.WriteFieldEnd(ctx); err != nil {
+    if err := oprot.WriteFieldEnd(); err != nil {
       return thrift.PrependError(fmt.Sprintf("%T write field end error 0:success: ", p), err) }
   }
   return err
@@ -10297,86 +12452,56 @@ func (p *KsScmcClientAddContainerReqIpPortArgs) GetPort() int32 {
 func (p *KsScmcClientAddContainerReqIpPortArgs) GetNetProto() string {
   return p.NetProto
 }
-func (p *KsScmcClientAddContainerReqIpPortArgs) Read(ctx context.Context, iprot thrift.TProtocol) error {
-  if _, err := iprot.ReadStructBegin(ctx); err != nil {
+func (p *KsScmcClientAddContainerReqIpPortArgs) Read(iprot thrift.TProtocol) error {
+  if _, err := iprot.ReadStructBegin(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
   }
 
 
   for {
-    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin(ctx)
+    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin()
     if err != nil {
       return thrift.PrependError(fmt.Sprintf("%T field %d read error: ", p, fieldId), err)
     }
     if fieldTypeId == thrift.STOP { break; }
     switch fieldId {
     case 1:
-      if fieldTypeId == thrift.STRING {
-        if err := p.ReadField1(ctx, iprot); err != nil {
-          return err
-        }
-      } else {
-        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-          return err
-        }
+      if err := p.ReadField1(iprot); err != nil {
+        return err
       }
     case 2:
-      if fieldTypeId == thrift.STRING {
-        if err := p.ReadField2(ctx, iprot); err != nil {
-          return err
-        }
-      } else {
-        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-          return err
-        }
+      if err := p.ReadField2(iprot); err != nil {
+        return err
       }
     case 3:
-      if fieldTypeId == thrift.STRING {
-        if err := p.ReadField3(ctx, iprot); err != nil {
-          return err
-        }
-      } else {
-        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-          return err
-        }
+      if err := p.ReadField3(iprot); err != nil {
+        return err
       }
     case 4:
-      if fieldTypeId == thrift.I32 {
-        if err := p.ReadField4(ctx, iprot); err != nil {
-          return err
-        }
-      } else {
-        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-          return err
-        }
+      if err := p.ReadField4(iprot); err != nil {
+        return err
       }
     case 5:
-      if fieldTypeId == thrift.STRING {
-        if err := p.ReadField5(ctx, iprot); err != nil {
-          return err
-        }
-      } else {
-        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-          return err
-        }
+      if err := p.ReadField5(iprot); err != nil {
+        return err
       }
     default:
-      if err := iprot.Skip(ctx, fieldTypeId); err != nil {
+      if err := iprot.Skip(fieldTypeId); err != nil {
         return err
       }
     }
-    if err := iprot.ReadFieldEnd(ctx); err != nil {
+    if err := iprot.ReadFieldEnd(); err != nil {
       return err
     }
   }
-  if err := iprot.ReadStructEnd(ctx); err != nil {
+  if err := iprot.ReadStructEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
   }
   return nil
 }
 
-func (p *KsScmcClientAddContainerReqIpPortArgs)  ReadField1(ctx context.Context, iprot thrift.TProtocol) error {
-  if v, err := iprot.ReadString(ctx); err != nil {
+func (p *KsScmcClientAddContainerReqIpPortArgs)  ReadField1(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadString(); err != nil {
   return thrift.PrependError("error reading field 1: ", err)
 } else {
   p.NodeName = v
@@ -10384,8 +12509,8 @@ func (p *KsScmcClientAddContainerReqIpPortArgs)  ReadField1(ctx context.Context,
   return nil
 }
 
-func (p *KsScmcClientAddContainerReqIpPortArgs)  ReadField2(ctx context.Context, iprot thrift.TProtocol) error {
-  if v, err := iprot.ReadString(ctx); err != nil {
+func (p *KsScmcClientAddContainerReqIpPortArgs)  ReadField2(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadString(); err != nil {
   return thrift.PrependError("error reading field 2: ", err)
 } else {
   p.ContainerName = v
@@ -10393,8 +12518,8 @@ func (p *KsScmcClientAddContainerReqIpPortArgs)  ReadField2(ctx context.Context,
   return nil
 }
 
-func (p *KsScmcClientAddContainerReqIpPortArgs)  ReadField3(ctx context.Context, iprot thrift.TProtocol) error {
-  if v, err := iprot.ReadString(ctx); err != nil {
+func (p *KsScmcClientAddContainerReqIpPortArgs)  ReadField3(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadString(); err != nil {
   return thrift.PrependError("error reading field 3: ", err)
 } else {
   p.IPAddr = v
@@ -10402,8 +12527,8 @@ func (p *KsScmcClientAddContainerReqIpPortArgs)  ReadField3(ctx context.Context,
   return nil
 }
 
-func (p *KsScmcClientAddContainerReqIpPortArgs)  ReadField4(ctx context.Context, iprot thrift.TProtocol) error {
-  if v, err := iprot.ReadI32(ctx); err != nil {
+func (p *KsScmcClientAddContainerReqIpPortArgs)  ReadField4(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadI32(); err != nil {
   return thrift.PrependError("error reading field 4: ", err)
 } else {
   p.Port = v
@@ -10411,8 +12536,8 @@ func (p *KsScmcClientAddContainerReqIpPortArgs)  ReadField4(ctx context.Context,
   return nil
 }
 
-func (p *KsScmcClientAddContainerReqIpPortArgs)  ReadField5(ctx context.Context, iprot thrift.TProtocol) error {
-  if v, err := iprot.ReadString(ctx); err != nil {
+func (p *KsScmcClientAddContainerReqIpPortArgs)  ReadField5(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadString(); err != nil {
   return thrift.PrependError("error reading field 5: ", err)
 } else {
   p.NetProto = v
@@ -10420,69 +12545,69 @@ func (p *KsScmcClientAddContainerReqIpPortArgs)  ReadField5(ctx context.Context,
   return nil
 }
 
-func (p *KsScmcClientAddContainerReqIpPortArgs) Write(ctx context.Context, oprot thrift.TProtocol) error {
-  if err := oprot.WriteStructBegin(ctx, "addContainerReqIpPort_args"); err != nil {
+func (p *KsScmcClientAddContainerReqIpPortArgs) Write(oprot thrift.TProtocol) error {
+  if err := oprot.WriteStructBegin("addContainerReqIpPort_args"); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err) }
   if p != nil {
-    if err := p.writeField1(ctx, oprot); err != nil { return err }
-    if err := p.writeField2(ctx, oprot); err != nil { return err }
-    if err := p.writeField3(ctx, oprot); err != nil { return err }
-    if err := p.writeField4(ctx, oprot); err != nil { return err }
-    if err := p.writeField5(ctx, oprot); err != nil { return err }
+    if err := p.writeField1(oprot); err != nil { return err }
+    if err := p.writeField2(oprot); err != nil { return err }
+    if err := p.writeField3(oprot); err != nil { return err }
+    if err := p.writeField4(oprot); err != nil { return err }
+    if err := p.writeField5(oprot); err != nil { return err }
   }
-  if err := oprot.WriteFieldStop(ctx); err != nil {
+  if err := oprot.WriteFieldStop(); err != nil {
     return thrift.PrependError("write field stop error: ", err) }
-  if err := oprot.WriteStructEnd(ctx); err != nil {
+  if err := oprot.WriteStructEnd(); err != nil {
     return thrift.PrependError("write struct stop error: ", err) }
   return nil
 }
 
-func (p *KsScmcClientAddContainerReqIpPortArgs) writeField1(ctx context.Context, oprot thrift.TProtocol) (err error) {
-  if err := oprot.WriteFieldBegin(ctx, "node_name", thrift.STRING, 1); err != nil {
+func (p *KsScmcClientAddContainerReqIpPortArgs) writeField1(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("node_name", thrift.STRING, 1); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field begin error 1:node_name: ", p), err) }
-  if err := oprot.WriteString(ctx, string(p.NodeName)); err != nil {
+  if err := oprot.WriteString(string(p.NodeName)); err != nil {
   return thrift.PrependError(fmt.Sprintf("%T.node_name (1) field write error: ", p), err) }
-  if err := oprot.WriteFieldEnd(ctx); err != nil {
+  if err := oprot.WriteFieldEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field end error 1:node_name: ", p), err) }
   return err
 }
 
-func (p *KsScmcClientAddContainerReqIpPortArgs) writeField2(ctx context.Context, oprot thrift.TProtocol) (err error) {
-  if err := oprot.WriteFieldBegin(ctx, "container_name", thrift.STRING, 2); err != nil {
+func (p *KsScmcClientAddContainerReqIpPortArgs) writeField2(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("container_name", thrift.STRING, 2); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field begin error 2:container_name: ", p), err) }
-  if err := oprot.WriteString(ctx, string(p.ContainerName)); err != nil {
+  if err := oprot.WriteString(string(p.ContainerName)); err != nil {
   return thrift.PrependError(fmt.Sprintf("%T.container_name (2) field write error: ", p), err) }
-  if err := oprot.WriteFieldEnd(ctx); err != nil {
+  if err := oprot.WriteFieldEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field end error 2:container_name: ", p), err) }
   return err
 }
 
-func (p *KsScmcClientAddContainerReqIpPortArgs) writeField3(ctx context.Context, oprot thrift.TProtocol) (err error) {
-  if err := oprot.WriteFieldBegin(ctx, "ip_addr", thrift.STRING, 3); err != nil {
+func (p *KsScmcClientAddContainerReqIpPortArgs) writeField3(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("ip_addr", thrift.STRING, 3); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field begin error 3:ip_addr: ", p), err) }
-  if err := oprot.WriteString(ctx, string(p.IPAddr)); err != nil {
+  if err := oprot.WriteString(string(p.IPAddr)); err != nil {
   return thrift.PrependError(fmt.Sprintf("%T.ip_addr (3) field write error: ", p), err) }
-  if err := oprot.WriteFieldEnd(ctx); err != nil {
+  if err := oprot.WriteFieldEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field end error 3:ip_addr: ", p), err) }
   return err
 }
 
-func (p *KsScmcClientAddContainerReqIpPortArgs) writeField4(ctx context.Context, oprot thrift.TProtocol) (err error) {
-  if err := oprot.WriteFieldBegin(ctx, "port", thrift.I32, 4); err != nil {
+func (p *KsScmcClientAddContainerReqIpPortArgs) writeField4(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("port", thrift.I32, 4); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field begin error 4:port: ", p), err) }
-  if err := oprot.WriteI32(ctx, int32(p.Port)); err != nil {
+  if err := oprot.WriteI32(int32(p.Port)); err != nil {
   return thrift.PrependError(fmt.Sprintf("%T.port (4) field write error: ", p), err) }
-  if err := oprot.WriteFieldEnd(ctx); err != nil {
+  if err := oprot.WriteFieldEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field end error 4:port: ", p), err) }
   return err
 }
 
-func (p *KsScmcClientAddContainerReqIpPortArgs) writeField5(ctx context.Context, oprot thrift.TProtocol) (err error) {
-  if err := oprot.WriteFieldBegin(ctx, "net_proto", thrift.STRING, 5); err != nil {
+func (p *KsScmcClientAddContainerReqIpPortArgs) writeField5(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("net_proto", thrift.STRING, 5); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field begin error 5:net_proto: ", p), err) }
-  if err := oprot.WriteString(ctx, string(p.NetProto)); err != nil {
+  if err := oprot.WriteString(string(p.NetProto)); err != nil {
   return thrift.PrependError(fmt.Sprintf("%T.net_proto (5) field write error: ", p), err) }
-  if err := oprot.WriteFieldEnd(ctx); err != nil {
+  if err := oprot.WriteFieldEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field end error 5:net_proto: ", p), err) }
   return err
 }
@@ -10515,46 +12640,40 @@ func (p *KsScmcClientAddContainerReqIpPortResult) IsSetSuccess() bool {
   return p.Success != nil
 }
 
-func (p *KsScmcClientAddContainerReqIpPortResult) Read(ctx context.Context, iprot thrift.TProtocol) error {
-  if _, err := iprot.ReadStructBegin(ctx); err != nil {
+func (p *KsScmcClientAddContainerReqIpPortResult) Read(iprot thrift.TProtocol) error {
+  if _, err := iprot.ReadStructBegin(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
   }
 
 
   for {
-    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin(ctx)
+    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin()
     if err != nil {
       return thrift.PrependError(fmt.Sprintf("%T field %d read error: ", p, fieldId), err)
     }
     if fieldTypeId == thrift.STOP { break; }
     switch fieldId {
     case 0:
-      if fieldTypeId == thrift.I32 {
-        if err := p.ReadField0(ctx, iprot); err != nil {
-          return err
-        }
-      } else {
-        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-          return err
-        }
+      if err := p.ReadField0(iprot); err != nil {
+        return err
       }
     default:
-      if err := iprot.Skip(ctx, fieldTypeId); err != nil {
+      if err := iprot.Skip(fieldTypeId); err != nil {
         return err
       }
     }
-    if err := iprot.ReadFieldEnd(ctx); err != nil {
+    if err := iprot.ReadFieldEnd(); err != nil {
       return err
     }
   }
-  if err := iprot.ReadStructEnd(ctx); err != nil {
+  if err := iprot.ReadStructEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
   }
   return nil
 }
 
-func (p *KsScmcClientAddContainerReqIpPortResult)  ReadField0(ctx context.Context, iprot thrift.TProtocol) error {
-  if v, err := iprot.ReadI32(ctx); err != nil {
+func (p *KsScmcClientAddContainerReqIpPortResult)  ReadField0(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadI32(); err != nil {
   return thrift.PrependError("error reading field 0: ", err)
 } else {
   p.Success = &v
@@ -10562,26 +12681,26 @@ func (p *KsScmcClientAddContainerReqIpPortResult)  ReadField0(ctx context.Contex
   return nil
 }
 
-func (p *KsScmcClientAddContainerReqIpPortResult) Write(ctx context.Context, oprot thrift.TProtocol) error {
-  if err := oprot.WriteStructBegin(ctx, "addContainerReqIpPort_result"); err != nil {
+func (p *KsScmcClientAddContainerReqIpPortResult) Write(oprot thrift.TProtocol) error {
+  if err := oprot.WriteStructBegin("addContainerReqIpPort_result"); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err) }
   if p != nil {
-    if err := p.writeField0(ctx, oprot); err != nil { return err }
+    if err := p.writeField0(oprot); err != nil { return err }
   }
-  if err := oprot.WriteFieldStop(ctx); err != nil {
+  if err := oprot.WriteFieldStop(); err != nil {
     return thrift.PrependError("write field stop error: ", err) }
-  if err := oprot.WriteStructEnd(ctx); err != nil {
+  if err := oprot.WriteStructEnd(); err != nil {
     return thrift.PrependError("write struct stop error: ", err) }
   return nil
 }
 
-func (p *KsScmcClientAddContainerReqIpPortResult) writeField0(ctx context.Context, oprot thrift.TProtocol) (err error) {
+func (p *KsScmcClientAddContainerReqIpPortResult) writeField0(oprot thrift.TProtocol) (err error) {
   if p.IsSetSuccess() {
-    if err := oprot.WriteFieldBegin(ctx, "success", thrift.I32, 0); err != nil {
+    if err := oprot.WriteFieldBegin("success", thrift.I32, 0); err != nil {
       return thrift.PrependError(fmt.Sprintf("%T write field begin error 0:success: ", p), err) }
-    if err := oprot.WriteI32(ctx, int32(*p.Success)); err != nil {
+    if err := oprot.WriteI32(int32(*p.Success)); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T.success (0) field write error: ", p), err) }
-    if err := oprot.WriteFieldEnd(ctx); err != nil {
+    if err := oprot.WriteFieldEnd(); err != nil {
       return thrift.PrependError(fmt.Sprintf("%T write field end error 0:success: ", p), err) }
   }
   return err
@@ -10626,76 +12745,52 @@ func (p *KsScmcClientAddContainerEnvArgs) GetEnvName() string {
 func (p *KsScmcClientAddContainerEnvArgs) GetEnvValue() string {
   return p.EnvValue
 }
-func (p *KsScmcClientAddContainerEnvArgs) Read(ctx context.Context, iprot thrift.TProtocol) error {
-  if _, err := iprot.ReadStructBegin(ctx); err != nil {
+func (p *KsScmcClientAddContainerEnvArgs) Read(iprot thrift.TProtocol) error {
+  if _, err := iprot.ReadStructBegin(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
   }
 
 
   for {
-    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin(ctx)
+    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin()
     if err != nil {
       return thrift.PrependError(fmt.Sprintf("%T field %d read error: ", p, fieldId), err)
     }
     if fieldTypeId == thrift.STOP { break; }
     switch fieldId {
     case 1:
-      if fieldTypeId == thrift.STRING {
-        if err := p.ReadField1(ctx, iprot); err != nil {
-          return err
-        }
-      } else {
-        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-          return err
-        }
+      if err := p.ReadField1(iprot); err != nil {
+        return err
       }
     case 2:
-      if fieldTypeId == thrift.STRING {
-        if err := p.ReadField2(ctx, iprot); err != nil {
-          return err
-        }
-      } else {
-        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-          return err
-        }
+      if err := p.ReadField2(iprot); err != nil {
+        return err
       }
     case 3:
-      if fieldTypeId == thrift.STRING {
-        if err := p.ReadField3(ctx, iprot); err != nil {
-          return err
-        }
-      } else {
-        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-          return err
-        }
+      if err := p.ReadField3(iprot); err != nil {
+        return err
       }
     case 4:
-      if fieldTypeId == thrift.STRING {
-        if err := p.ReadField4(ctx, iprot); err != nil {
-          return err
-        }
-      } else {
-        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-          return err
-        }
+      if err := p.ReadField4(iprot); err != nil {
+        return err
       }
     default:
-      if err := iprot.Skip(ctx, fieldTypeId); err != nil {
+      if err := iprot.Skip(fieldTypeId); err != nil {
         return err
       }
     }
-    if err := iprot.ReadFieldEnd(ctx); err != nil {
+    if err := iprot.ReadFieldEnd(); err != nil {
       return err
     }
   }
-  if err := iprot.ReadStructEnd(ctx); err != nil {
+  if err := iprot.ReadStructEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
   }
   return nil
 }
 
-func (p *KsScmcClientAddContainerEnvArgs)  ReadField1(ctx context.Context, iprot thrift.TProtocol) error {
-  if v, err := iprot.ReadString(ctx); err != nil {
+func (p *KsScmcClientAddContainerEnvArgs)  ReadField1(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadString(); err != nil {
   return thrift.PrependError("error reading field 1: ", err)
 } else {
   p.NodeNameorip = v
@@ -10703,8 +12798,8 @@ func (p *KsScmcClientAddContainerEnvArgs)  ReadField1(ctx context.Context, iprot
   return nil
 }
 
-func (p *KsScmcClientAddContainerEnvArgs)  ReadField2(ctx context.Context, iprot thrift.TProtocol) error {
-  if v, err := iprot.ReadString(ctx); err != nil {
+func (p *KsScmcClientAddContainerEnvArgs)  ReadField2(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadString(); err != nil {
   return thrift.PrependError("error reading field 2: ", err)
 } else {
   p.ContainerName = v
@@ -10712,8 +12807,8 @@ func (p *KsScmcClientAddContainerEnvArgs)  ReadField2(ctx context.Context, iprot
   return nil
 }
 
-func (p *KsScmcClientAddContainerEnvArgs)  ReadField3(ctx context.Context, iprot thrift.TProtocol) error {
-  if v, err := iprot.ReadString(ctx); err != nil {
+func (p *KsScmcClientAddContainerEnvArgs)  ReadField3(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadString(); err != nil {
   return thrift.PrependError("error reading field 3: ", err)
 } else {
   p.EnvName = v
@@ -10721,8 +12816,8 @@ func (p *KsScmcClientAddContainerEnvArgs)  ReadField3(ctx context.Context, iprot
   return nil
 }
 
-func (p *KsScmcClientAddContainerEnvArgs)  ReadField4(ctx context.Context, iprot thrift.TProtocol) error {
-  if v, err := iprot.ReadString(ctx); err != nil {
+func (p *KsScmcClientAddContainerEnvArgs)  ReadField4(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadString(); err != nil {
   return thrift.PrependError("error reading field 4: ", err)
 } else {
   p.EnvValue = v
@@ -10730,58 +12825,58 @@ func (p *KsScmcClientAddContainerEnvArgs)  ReadField4(ctx context.Context, iprot
   return nil
 }
 
-func (p *KsScmcClientAddContainerEnvArgs) Write(ctx context.Context, oprot thrift.TProtocol) error {
-  if err := oprot.WriteStructBegin(ctx, "addContainerEnv_args"); err != nil {
+func (p *KsScmcClientAddContainerEnvArgs) Write(oprot thrift.TProtocol) error {
+  if err := oprot.WriteStructBegin("AddContainerEnv_args"); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err) }
   if p != nil {
-    if err := p.writeField1(ctx, oprot); err != nil { return err }
-    if err := p.writeField2(ctx, oprot); err != nil { return err }
-    if err := p.writeField3(ctx, oprot); err != nil { return err }
-    if err := p.writeField4(ctx, oprot); err != nil { return err }
+    if err := p.writeField1(oprot); err != nil { return err }
+    if err := p.writeField2(oprot); err != nil { return err }
+    if err := p.writeField3(oprot); err != nil { return err }
+    if err := p.writeField4(oprot); err != nil { return err }
   }
-  if err := oprot.WriteFieldStop(ctx); err != nil {
+  if err := oprot.WriteFieldStop(); err != nil {
     return thrift.PrependError("write field stop error: ", err) }
-  if err := oprot.WriteStructEnd(ctx); err != nil {
+  if err := oprot.WriteStructEnd(); err != nil {
     return thrift.PrependError("write struct stop error: ", err) }
   return nil
 }
 
-func (p *KsScmcClientAddContainerEnvArgs) writeField1(ctx context.Context, oprot thrift.TProtocol) (err error) {
-  if err := oprot.WriteFieldBegin(ctx, "node_nameorip", thrift.STRING, 1); err != nil {
+func (p *KsScmcClientAddContainerEnvArgs) writeField1(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("node_nameorip", thrift.STRING, 1); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field begin error 1:node_nameorip: ", p), err) }
-  if err := oprot.WriteString(ctx, string(p.NodeNameorip)); err != nil {
+  if err := oprot.WriteString(string(p.NodeNameorip)); err != nil {
   return thrift.PrependError(fmt.Sprintf("%T.node_nameorip (1) field write error: ", p), err) }
-  if err := oprot.WriteFieldEnd(ctx); err != nil {
+  if err := oprot.WriteFieldEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field end error 1:node_nameorip: ", p), err) }
   return err
 }
 
-func (p *KsScmcClientAddContainerEnvArgs) writeField2(ctx context.Context, oprot thrift.TProtocol) (err error) {
-  if err := oprot.WriteFieldBegin(ctx, "container_name", thrift.STRING, 2); err != nil {
+func (p *KsScmcClientAddContainerEnvArgs) writeField2(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("container_name", thrift.STRING, 2); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field begin error 2:container_name: ", p), err) }
-  if err := oprot.WriteString(ctx, string(p.ContainerName)); err != nil {
+  if err := oprot.WriteString(string(p.ContainerName)); err != nil {
   return thrift.PrependError(fmt.Sprintf("%T.container_name (2) field write error: ", p), err) }
-  if err := oprot.WriteFieldEnd(ctx); err != nil {
+  if err := oprot.WriteFieldEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field end error 2:container_name: ", p), err) }
   return err
 }
 
-func (p *KsScmcClientAddContainerEnvArgs) writeField3(ctx context.Context, oprot thrift.TProtocol) (err error) {
-  if err := oprot.WriteFieldBegin(ctx, "env_name", thrift.STRING, 3); err != nil {
+func (p *KsScmcClientAddContainerEnvArgs) writeField3(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("env_name", thrift.STRING, 3); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field begin error 3:env_name: ", p), err) }
-  if err := oprot.WriteString(ctx, string(p.EnvName)); err != nil {
+  if err := oprot.WriteString(string(p.EnvName)); err != nil {
   return thrift.PrependError(fmt.Sprintf("%T.env_name (3) field write error: ", p), err) }
-  if err := oprot.WriteFieldEnd(ctx); err != nil {
+  if err := oprot.WriteFieldEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field end error 3:env_name: ", p), err) }
   return err
 }
 
-func (p *KsScmcClientAddContainerEnvArgs) writeField4(ctx context.Context, oprot thrift.TProtocol) (err error) {
-  if err := oprot.WriteFieldBegin(ctx, "env_value", thrift.STRING, 4); err != nil {
+func (p *KsScmcClientAddContainerEnvArgs) writeField4(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("env_value", thrift.STRING, 4); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field begin error 4:env_value: ", p), err) }
-  if err := oprot.WriteString(ctx, string(p.EnvValue)); err != nil {
+  if err := oprot.WriteString(string(p.EnvValue)); err != nil {
   return thrift.PrependError(fmt.Sprintf("%T.env_value (4) field write error: ", p), err) }
-  if err := oprot.WriteFieldEnd(ctx); err != nil {
+  if err := oprot.WriteFieldEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field end error 4:env_value: ", p), err) }
   return err
 }
@@ -10796,15 +12891,15 @@ func (p *KsScmcClientAddContainerEnvArgs) String() string {
 // Attributes:
 //  - Success
 type KsScmcClientAddContainerEnvResult struct {
-  Success *int32 `thrift:"success,0" db:"success" json:"success,omitempty"`
+  Success *string `thrift:"success,0" db:"success" json:"success,omitempty"`
 }
 
 func NewKsScmcClientAddContainerEnvResult() *KsScmcClientAddContainerEnvResult {
   return &KsScmcClientAddContainerEnvResult{}
 }
 
-var KsScmcClientAddContainerEnvResult_Success_DEFAULT int32
-func (p *KsScmcClientAddContainerEnvResult) GetSuccess() int32 {
+var KsScmcClientAddContainerEnvResult_Success_DEFAULT string
+func (p *KsScmcClientAddContainerEnvResult) GetSuccess() string {
   if !p.IsSetSuccess() {
     return KsScmcClientAddContainerEnvResult_Success_DEFAULT
   }
@@ -10814,46 +12909,40 @@ func (p *KsScmcClientAddContainerEnvResult) IsSetSuccess() bool {
   return p.Success != nil
 }
 
-func (p *KsScmcClientAddContainerEnvResult) Read(ctx context.Context, iprot thrift.TProtocol) error {
-  if _, err := iprot.ReadStructBegin(ctx); err != nil {
+func (p *KsScmcClientAddContainerEnvResult) Read(iprot thrift.TProtocol) error {
+  if _, err := iprot.ReadStructBegin(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
   }
 
 
   for {
-    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin(ctx)
+    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin()
     if err != nil {
       return thrift.PrependError(fmt.Sprintf("%T field %d read error: ", p, fieldId), err)
     }
     if fieldTypeId == thrift.STOP { break; }
     switch fieldId {
     case 0:
-      if fieldTypeId == thrift.I32 {
-        if err := p.ReadField0(ctx, iprot); err != nil {
-          return err
-        }
-      } else {
-        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-          return err
-        }
+      if err := p.ReadField0(iprot); err != nil {
+        return err
       }
     default:
-      if err := iprot.Skip(ctx, fieldTypeId); err != nil {
+      if err := iprot.Skip(fieldTypeId); err != nil {
         return err
       }
     }
-    if err := iprot.ReadFieldEnd(ctx); err != nil {
+    if err := iprot.ReadFieldEnd(); err != nil {
       return err
     }
   }
-  if err := iprot.ReadStructEnd(ctx); err != nil {
+  if err := iprot.ReadStructEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
   }
   return nil
 }
 
-func (p *KsScmcClientAddContainerEnvResult)  ReadField0(ctx context.Context, iprot thrift.TProtocol) error {
-  if v, err := iprot.ReadI32(ctx); err != nil {
+func (p *KsScmcClientAddContainerEnvResult)  ReadField0(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadString(); err != nil {
   return thrift.PrependError("error reading field 0: ", err)
 } else {
   p.Success = &v
@@ -10861,26 +12950,26 @@ func (p *KsScmcClientAddContainerEnvResult)  ReadField0(ctx context.Context, ipr
   return nil
 }
 
-func (p *KsScmcClientAddContainerEnvResult) Write(ctx context.Context, oprot thrift.TProtocol) error {
-  if err := oprot.WriteStructBegin(ctx, "addContainerEnv_result"); err != nil {
+func (p *KsScmcClientAddContainerEnvResult) Write(oprot thrift.TProtocol) error {
+  if err := oprot.WriteStructBegin("AddContainerEnv_result"); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err) }
   if p != nil {
-    if err := p.writeField0(ctx, oprot); err != nil { return err }
+    if err := p.writeField0(oprot); err != nil { return err }
   }
-  if err := oprot.WriteFieldStop(ctx); err != nil {
+  if err := oprot.WriteFieldStop(); err != nil {
     return thrift.PrependError("write field stop error: ", err) }
-  if err := oprot.WriteStructEnd(ctx); err != nil {
+  if err := oprot.WriteStructEnd(); err != nil {
     return thrift.PrependError("write struct stop error: ", err) }
   return nil
 }
 
-func (p *KsScmcClientAddContainerEnvResult) writeField0(ctx context.Context, oprot thrift.TProtocol) (err error) {
+func (p *KsScmcClientAddContainerEnvResult) writeField0(oprot thrift.TProtocol) (err error) {
   if p.IsSetSuccess() {
-    if err := oprot.WriteFieldBegin(ctx, "success", thrift.I32, 0); err != nil {
+    if err := oprot.WriteFieldBegin("success", thrift.STRING, 0); err != nil {
       return thrift.PrependError(fmt.Sprintf("%T write field begin error 0:success: ", p), err) }
-    if err := oprot.WriteI32(ctx, int32(*p.Success)); err != nil {
+    if err := oprot.WriteString(string(*p.Success)); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T.success (0) field write error: ", p), err) }
-    if err := oprot.WriteFieldEnd(ctx); err != nil {
+    if err := oprot.WriteFieldEnd(); err != nil {
       return thrift.PrependError(fmt.Sprintf("%T write field end error 0:success: ", p), err) }
   }
   return err
@@ -10931,86 +13020,56 @@ func (p *KsScmcClientAddContainerLocalVolumeArgs) GetOutDir() string {
 func (p *KsScmcClientAddContainerLocalVolumeArgs) GetAccessAuth() AccessAuth {
   return p.AccessAuth
 }
-func (p *KsScmcClientAddContainerLocalVolumeArgs) Read(ctx context.Context, iprot thrift.TProtocol) error {
-  if _, err := iprot.ReadStructBegin(ctx); err != nil {
+func (p *KsScmcClientAddContainerLocalVolumeArgs) Read(iprot thrift.TProtocol) error {
+  if _, err := iprot.ReadStructBegin(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
   }
 
 
   for {
-    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin(ctx)
+    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin()
     if err != nil {
       return thrift.PrependError(fmt.Sprintf("%T field %d read error: ", p, fieldId), err)
     }
     if fieldTypeId == thrift.STOP { break; }
     switch fieldId {
     case 1:
-      if fieldTypeId == thrift.STRING {
-        if err := p.ReadField1(ctx, iprot); err != nil {
-          return err
-        }
-      } else {
-        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-          return err
-        }
+      if err := p.ReadField1(iprot); err != nil {
+        return err
       }
     case 2:
-      if fieldTypeId == thrift.STRING {
-        if err := p.ReadField2(ctx, iprot); err != nil {
-          return err
-        }
-      } else {
-        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-          return err
-        }
+      if err := p.ReadField2(iprot); err != nil {
+        return err
       }
     case 3:
-      if fieldTypeId == thrift.STRING {
-        if err := p.ReadField3(ctx, iprot); err != nil {
-          return err
-        }
-      } else {
-        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-          return err
-        }
+      if err := p.ReadField3(iprot); err != nil {
+        return err
       }
     case 4:
-      if fieldTypeId == thrift.STRING {
-        if err := p.ReadField4(ctx, iprot); err != nil {
-          return err
-        }
-      } else {
-        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-          return err
-        }
+      if err := p.ReadField4(iprot); err != nil {
+        return err
       }
     case 5:
-      if fieldTypeId == thrift.I32 {
-        if err := p.ReadField5(ctx, iprot); err != nil {
-          return err
-        }
-      } else {
-        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-          return err
-        }
+      if err := p.ReadField5(iprot); err != nil {
+        return err
       }
     default:
-      if err := iprot.Skip(ctx, fieldTypeId); err != nil {
+      if err := iprot.Skip(fieldTypeId); err != nil {
         return err
       }
     }
-    if err := iprot.ReadFieldEnd(ctx); err != nil {
+    if err := iprot.ReadFieldEnd(); err != nil {
       return err
     }
   }
-  if err := iprot.ReadStructEnd(ctx); err != nil {
+  if err := iprot.ReadStructEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
   }
   return nil
 }
 
-func (p *KsScmcClientAddContainerLocalVolumeArgs)  ReadField1(ctx context.Context, iprot thrift.TProtocol) error {
-  if v, err := iprot.ReadString(ctx); err != nil {
+func (p *KsScmcClientAddContainerLocalVolumeArgs)  ReadField1(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadString(); err != nil {
   return thrift.PrependError("error reading field 1: ", err)
 } else {
   p.NodeNameorip = v
@@ -11018,8 +13077,8 @@ func (p *KsScmcClientAddContainerLocalVolumeArgs)  ReadField1(ctx context.Contex
   return nil
 }
 
-func (p *KsScmcClientAddContainerLocalVolumeArgs)  ReadField2(ctx context.Context, iprot thrift.TProtocol) error {
-  if v, err := iprot.ReadString(ctx); err != nil {
+func (p *KsScmcClientAddContainerLocalVolumeArgs)  ReadField2(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadString(); err != nil {
   return thrift.PrependError("error reading field 2: ", err)
 } else {
   p.ContainerName = v
@@ -11027,8 +13086,8 @@ func (p *KsScmcClientAddContainerLocalVolumeArgs)  ReadField2(ctx context.Contex
   return nil
 }
 
-func (p *KsScmcClientAddContainerLocalVolumeArgs)  ReadField3(ctx context.Context, iprot thrift.TProtocol) error {
-  if v, err := iprot.ReadString(ctx); err != nil {
+func (p *KsScmcClientAddContainerLocalVolumeArgs)  ReadField3(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadString(); err != nil {
   return thrift.PrependError("error reading field 3: ", err)
 } else {
   p.InDir = v
@@ -11036,8 +13095,8 @@ func (p *KsScmcClientAddContainerLocalVolumeArgs)  ReadField3(ctx context.Contex
   return nil
 }
 
-func (p *KsScmcClientAddContainerLocalVolumeArgs)  ReadField4(ctx context.Context, iprot thrift.TProtocol) error {
-  if v, err := iprot.ReadString(ctx); err != nil {
+func (p *KsScmcClientAddContainerLocalVolumeArgs)  ReadField4(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadString(); err != nil {
   return thrift.PrependError("error reading field 4: ", err)
 } else {
   p.OutDir = v
@@ -11045,8 +13104,8 @@ func (p *KsScmcClientAddContainerLocalVolumeArgs)  ReadField4(ctx context.Contex
   return nil
 }
 
-func (p *KsScmcClientAddContainerLocalVolumeArgs)  ReadField5(ctx context.Context, iprot thrift.TProtocol) error {
-  if v, err := iprot.ReadI32(ctx); err != nil {
+func (p *KsScmcClientAddContainerLocalVolumeArgs)  ReadField5(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadI32(); err != nil {
   return thrift.PrependError("error reading field 5: ", err)
 } else {
   temp := AccessAuth(v)
@@ -11055,69 +13114,69 @@ func (p *KsScmcClientAddContainerLocalVolumeArgs)  ReadField5(ctx context.Contex
   return nil
 }
 
-func (p *KsScmcClientAddContainerLocalVolumeArgs) Write(ctx context.Context, oprot thrift.TProtocol) error {
-  if err := oprot.WriteStructBegin(ctx, "addContainerLocalVolume_args"); err != nil {
+func (p *KsScmcClientAddContainerLocalVolumeArgs) Write(oprot thrift.TProtocol) error {
+  if err := oprot.WriteStructBegin("addContainerLocalVolume_args"); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err) }
   if p != nil {
-    if err := p.writeField1(ctx, oprot); err != nil { return err }
-    if err := p.writeField2(ctx, oprot); err != nil { return err }
-    if err := p.writeField3(ctx, oprot); err != nil { return err }
-    if err := p.writeField4(ctx, oprot); err != nil { return err }
-    if err := p.writeField5(ctx, oprot); err != nil { return err }
+    if err := p.writeField1(oprot); err != nil { return err }
+    if err := p.writeField2(oprot); err != nil { return err }
+    if err := p.writeField3(oprot); err != nil { return err }
+    if err := p.writeField4(oprot); err != nil { return err }
+    if err := p.writeField5(oprot); err != nil { return err }
   }
-  if err := oprot.WriteFieldStop(ctx); err != nil {
+  if err := oprot.WriteFieldStop(); err != nil {
     return thrift.PrependError("write field stop error: ", err) }
-  if err := oprot.WriteStructEnd(ctx); err != nil {
+  if err := oprot.WriteStructEnd(); err != nil {
     return thrift.PrependError("write struct stop error: ", err) }
   return nil
 }
 
-func (p *KsScmcClientAddContainerLocalVolumeArgs) writeField1(ctx context.Context, oprot thrift.TProtocol) (err error) {
-  if err := oprot.WriteFieldBegin(ctx, "node_nameorip", thrift.STRING, 1); err != nil {
+func (p *KsScmcClientAddContainerLocalVolumeArgs) writeField1(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("node_nameorip", thrift.STRING, 1); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field begin error 1:node_nameorip: ", p), err) }
-  if err := oprot.WriteString(ctx, string(p.NodeNameorip)); err != nil {
+  if err := oprot.WriteString(string(p.NodeNameorip)); err != nil {
   return thrift.PrependError(fmt.Sprintf("%T.node_nameorip (1) field write error: ", p), err) }
-  if err := oprot.WriteFieldEnd(ctx); err != nil {
+  if err := oprot.WriteFieldEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field end error 1:node_nameorip: ", p), err) }
   return err
 }
 
-func (p *KsScmcClientAddContainerLocalVolumeArgs) writeField2(ctx context.Context, oprot thrift.TProtocol) (err error) {
-  if err := oprot.WriteFieldBegin(ctx, "container_name", thrift.STRING, 2); err != nil {
+func (p *KsScmcClientAddContainerLocalVolumeArgs) writeField2(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("container_name", thrift.STRING, 2); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field begin error 2:container_name: ", p), err) }
-  if err := oprot.WriteString(ctx, string(p.ContainerName)); err != nil {
+  if err := oprot.WriteString(string(p.ContainerName)); err != nil {
   return thrift.PrependError(fmt.Sprintf("%T.container_name (2) field write error: ", p), err) }
-  if err := oprot.WriteFieldEnd(ctx); err != nil {
+  if err := oprot.WriteFieldEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field end error 2:container_name: ", p), err) }
   return err
 }
 
-func (p *KsScmcClientAddContainerLocalVolumeArgs) writeField3(ctx context.Context, oprot thrift.TProtocol) (err error) {
-  if err := oprot.WriteFieldBegin(ctx, "in_dir", thrift.STRING, 3); err != nil {
+func (p *KsScmcClientAddContainerLocalVolumeArgs) writeField3(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("in_dir", thrift.STRING, 3); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field begin error 3:in_dir: ", p), err) }
-  if err := oprot.WriteString(ctx, string(p.InDir)); err != nil {
+  if err := oprot.WriteString(string(p.InDir)); err != nil {
   return thrift.PrependError(fmt.Sprintf("%T.in_dir (3) field write error: ", p), err) }
-  if err := oprot.WriteFieldEnd(ctx); err != nil {
+  if err := oprot.WriteFieldEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field end error 3:in_dir: ", p), err) }
   return err
 }
 
-func (p *KsScmcClientAddContainerLocalVolumeArgs) writeField4(ctx context.Context, oprot thrift.TProtocol) (err error) {
-  if err := oprot.WriteFieldBegin(ctx, "out_dir", thrift.STRING, 4); err != nil {
+func (p *KsScmcClientAddContainerLocalVolumeArgs) writeField4(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("out_dir", thrift.STRING, 4); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field begin error 4:out_dir: ", p), err) }
-  if err := oprot.WriteString(ctx, string(p.OutDir)); err != nil {
+  if err := oprot.WriteString(string(p.OutDir)); err != nil {
   return thrift.PrependError(fmt.Sprintf("%T.out_dir (4) field write error: ", p), err) }
-  if err := oprot.WriteFieldEnd(ctx); err != nil {
+  if err := oprot.WriteFieldEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field end error 4:out_dir: ", p), err) }
   return err
 }
 
-func (p *KsScmcClientAddContainerLocalVolumeArgs) writeField5(ctx context.Context, oprot thrift.TProtocol) (err error) {
-  if err := oprot.WriteFieldBegin(ctx, "access_auth", thrift.I32, 5); err != nil {
+func (p *KsScmcClientAddContainerLocalVolumeArgs) writeField5(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("access_auth", thrift.I32, 5); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field begin error 5:access_auth: ", p), err) }
-  if err := oprot.WriteI32(ctx, int32(p.AccessAuth)); err != nil {
+  if err := oprot.WriteI32(int32(p.AccessAuth)); err != nil {
   return thrift.PrependError(fmt.Sprintf("%T.access_auth (5) field write error: ", p), err) }
-  if err := oprot.WriteFieldEnd(ctx); err != nil {
+  if err := oprot.WriteFieldEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field end error 5:access_auth: ", p), err) }
   return err
 }
@@ -11150,46 +13209,40 @@ func (p *KsScmcClientAddContainerLocalVolumeResult) IsSetSuccess() bool {
   return p.Success != nil
 }
 
-func (p *KsScmcClientAddContainerLocalVolumeResult) Read(ctx context.Context, iprot thrift.TProtocol) error {
-  if _, err := iprot.ReadStructBegin(ctx); err != nil {
+func (p *KsScmcClientAddContainerLocalVolumeResult) Read(iprot thrift.TProtocol) error {
+  if _, err := iprot.ReadStructBegin(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
   }
 
 
   for {
-    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin(ctx)
+    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin()
     if err != nil {
       return thrift.PrependError(fmt.Sprintf("%T field %d read error: ", p, fieldId), err)
     }
     if fieldTypeId == thrift.STOP { break; }
     switch fieldId {
     case 0:
-      if fieldTypeId == thrift.I32 {
-        if err := p.ReadField0(ctx, iprot); err != nil {
-          return err
-        }
-      } else {
-        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-          return err
-        }
+      if err := p.ReadField0(iprot); err != nil {
+        return err
       }
     default:
-      if err := iprot.Skip(ctx, fieldTypeId); err != nil {
+      if err := iprot.Skip(fieldTypeId); err != nil {
         return err
       }
     }
-    if err := iprot.ReadFieldEnd(ctx); err != nil {
+    if err := iprot.ReadFieldEnd(); err != nil {
       return err
     }
   }
-  if err := iprot.ReadStructEnd(ctx); err != nil {
+  if err := iprot.ReadStructEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
   }
   return nil
 }
 
-func (p *KsScmcClientAddContainerLocalVolumeResult)  ReadField0(ctx context.Context, iprot thrift.TProtocol) error {
-  if v, err := iprot.ReadI32(ctx); err != nil {
+func (p *KsScmcClientAddContainerLocalVolumeResult)  ReadField0(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadI32(); err != nil {
   return thrift.PrependError("error reading field 0: ", err)
 } else {
   p.Success = &v
@@ -11197,26 +13250,26 @@ func (p *KsScmcClientAddContainerLocalVolumeResult)  ReadField0(ctx context.Cont
   return nil
 }
 
-func (p *KsScmcClientAddContainerLocalVolumeResult) Write(ctx context.Context, oprot thrift.TProtocol) error {
-  if err := oprot.WriteStructBegin(ctx, "addContainerLocalVolume_result"); err != nil {
+func (p *KsScmcClientAddContainerLocalVolumeResult) Write(oprot thrift.TProtocol) error {
+  if err := oprot.WriteStructBegin("addContainerLocalVolume_result"); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err) }
   if p != nil {
-    if err := p.writeField0(ctx, oprot); err != nil { return err }
+    if err := p.writeField0(oprot); err != nil { return err }
   }
-  if err := oprot.WriteFieldStop(ctx); err != nil {
+  if err := oprot.WriteFieldStop(); err != nil {
     return thrift.PrependError("write field stop error: ", err) }
-  if err := oprot.WriteStructEnd(ctx); err != nil {
+  if err := oprot.WriteStructEnd(); err != nil {
     return thrift.PrependError("write struct stop error: ", err) }
   return nil
 }
 
-func (p *KsScmcClientAddContainerLocalVolumeResult) writeField0(ctx context.Context, oprot thrift.TProtocol) (err error) {
+func (p *KsScmcClientAddContainerLocalVolumeResult) writeField0(oprot thrift.TProtocol) (err error) {
   if p.IsSetSuccess() {
-    if err := oprot.WriteFieldBegin(ctx, "success", thrift.I32, 0); err != nil {
+    if err := oprot.WriteFieldBegin("success", thrift.I32, 0); err != nil {
       return thrift.PrependError(fmt.Sprintf("%T write field begin error 0:success: ", p), err) }
-    if err := oprot.WriteI32(ctx, int32(*p.Success)); err != nil {
+    if err := oprot.WriteI32(int32(*p.Success)); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T.success (0) field write error: ", p), err) }
-    if err := oprot.WriteFieldEnd(ctx); err != nil {
+    if err := oprot.WriteFieldEnd(); err != nil {
       return thrift.PrependError(fmt.Sprintf("%T write field end error 0:success: ", p), err) }
   }
   return err
@@ -11261,76 +13314,52 @@ func (p *KsScmcClientSetContainerDisplayV2Args) GetEnabled() bool {
 func (p *KsScmcClientSetContainerDisplayV2Args) GetDisplay() string {
   return p.Display
 }
-func (p *KsScmcClientSetContainerDisplayV2Args) Read(ctx context.Context, iprot thrift.TProtocol) error {
-  if _, err := iprot.ReadStructBegin(ctx); err != nil {
+func (p *KsScmcClientSetContainerDisplayV2Args) Read(iprot thrift.TProtocol) error {
+  if _, err := iprot.ReadStructBegin(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
   }
 
 
   for {
-    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin(ctx)
+    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin()
     if err != nil {
       return thrift.PrependError(fmt.Sprintf("%T field %d read error: ", p, fieldId), err)
     }
     if fieldTypeId == thrift.STOP { break; }
     switch fieldId {
     case 1:
-      if fieldTypeId == thrift.STRING {
-        if err := p.ReadField1(ctx, iprot); err != nil {
-          return err
-        }
-      } else {
-        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-          return err
-        }
+      if err := p.ReadField1(iprot); err != nil {
+        return err
       }
     case 2:
-      if fieldTypeId == thrift.STRING {
-        if err := p.ReadField2(ctx, iprot); err != nil {
-          return err
-        }
-      } else {
-        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-          return err
-        }
+      if err := p.ReadField2(iprot); err != nil {
+        return err
       }
     case 3:
-      if fieldTypeId == thrift.BOOL {
-        if err := p.ReadField3(ctx, iprot); err != nil {
-          return err
-        }
-      } else {
-        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-          return err
-        }
+      if err := p.ReadField3(iprot); err != nil {
+        return err
       }
     case 4:
-      if fieldTypeId == thrift.STRING {
-        if err := p.ReadField4(ctx, iprot); err != nil {
-          return err
-        }
-      } else {
-        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-          return err
-        }
+      if err := p.ReadField4(iprot); err != nil {
+        return err
       }
     default:
-      if err := iprot.Skip(ctx, fieldTypeId); err != nil {
+      if err := iprot.Skip(fieldTypeId); err != nil {
         return err
       }
     }
-    if err := iprot.ReadFieldEnd(ctx); err != nil {
+    if err := iprot.ReadFieldEnd(); err != nil {
       return err
     }
   }
-  if err := iprot.ReadStructEnd(ctx); err != nil {
+  if err := iprot.ReadStructEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
   }
   return nil
 }
 
-func (p *KsScmcClientSetContainerDisplayV2Args)  ReadField1(ctx context.Context, iprot thrift.TProtocol) error {
-  if v, err := iprot.ReadString(ctx); err != nil {
+func (p *KsScmcClientSetContainerDisplayV2Args)  ReadField1(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadString(); err != nil {
   return thrift.PrependError("error reading field 1: ", err)
 } else {
   p.NodeName = v
@@ -11338,8 +13367,8 @@ func (p *KsScmcClientSetContainerDisplayV2Args)  ReadField1(ctx context.Context,
   return nil
 }
 
-func (p *KsScmcClientSetContainerDisplayV2Args)  ReadField2(ctx context.Context, iprot thrift.TProtocol) error {
-  if v, err := iprot.ReadString(ctx); err != nil {
+func (p *KsScmcClientSetContainerDisplayV2Args)  ReadField2(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadString(); err != nil {
   return thrift.PrependError("error reading field 2: ", err)
 } else {
   p.ContainerName = v
@@ -11347,8 +13376,8 @@ func (p *KsScmcClientSetContainerDisplayV2Args)  ReadField2(ctx context.Context,
   return nil
 }
 
-func (p *KsScmcClientSetContainerDisplayV2Args)  ReadField3(ctx context.Context, iprot thrift.TProtocol) error {
-  if v, err := iprot.ReadBool(ctx); err != nil {
+func (p *KsScmcClientSetContainerDisplayV2Args)  ReadField3(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadBool(); err != nil {
   return thrift.PrependError("error reading field 3: ", err)
 } else {
   p.Enabled = v
@@ -11356,8 +13385,8 @@ func (p *KsScmcClientSetContainerDisplayV2Args)  ReadField3(ctx context.Context,
   return nil
 }
 
-func (p *KsScmcClientSetContainerDisplayV2Args)  ReadField4(ctx context.Context, iprot thrift.TProtocol) error {
-  if v, err := iprot.ReadString(ctx); err != nil {
+func (p *KsScmcClientSetContainerDisplayV2Args)  ReadField4(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadString(); err != nil {
   return thrift.PrependError("error reading field 4: ", err)
 } else {
   p.Display = v
@@ -11365,58 +13394,58 @@ func (p *KsScmcClientSetContainerDisplayV2Args)  ReadField4(ctx context.Context,
   return nil
 }
 
-func (p *KsScmcClientSetContainerDisplayV2Args) Write(ctx context.Context, oprot thrift.TProtocol) error {
-  if err := oprot.WriteStructBegin(ctx, "setContainerDisplayV2_args"); err != nil {
+func (p *KsScmcClientSetContainerDisplayV2Args) Write(oprot thrift.TProtocol) error {
+  if err := oprot.WriteStructBegin("SetContainerDisplayV2_args"); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err) }
   if p != nil {
-    if err := p.writeField1(ctx, oprot); err != nil { return err }
-    if err := p.writeField2(ctx, oprot); err != nil { return err }
-    if err := p.writeField3(ctx, oprot); err != nil { return err }
-    if err := p.writeField4(ctx, oprot); err != nil { return err }
+    if err := p.writeField1(oprot); err != nil { return err }
+    if err := p.writeField2(oprot); err != nil { return err }
+    if err := p.writeField3(oprot); err != nil { return err }
+    if err := p.writeField4(oprot); err != nil { return err }
   }
-  if err := oprot.WriteFieldStop(ctx); err != nil {
+  if err := oprot.WriteFieldStop(); err != nil {
     return thrift.PrependError("write field stop error: ", err) }
-  if err := oprot.WriteStructEnd(ctx); err != nil {
+  if err := oprot.WriteStructEnd(); err != nil {
     return thrift.PrependError("write struct stop error: ", err) }
   return nil
 }
 
-func (p *KsScmcClientSetContainerDisplayV2Args) writeField1(ctx context.Context, oprot thrift.TProtocol) (err error) {
-  if err := oprot.WriteFieldBegin(ctx, "node_name", thrift.STRING, 1); err != nil {
+func (p *KsScmcClientSetContainerDisplayV2Args) writeField1(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("node_name", thrift.STRING, 1); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field begin error 1:node_name: ", p), err) }
-  if err := oprot.WriteString(ctx, string(p.NodeName)); err != nil {
+  if err := oprot.WriteString(string(p.NodeName)); err != nil {
   return thrift.PrependError(fmt.Sprintf("%T.node_name (1) field write error: ", p), err) }
-  if err := oprot.WriteFieldEnd(ctx); err != nil {
+  if err := oprot.WriteFieldEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field end error 1:node_name: ", p), err) }
   return err
 }
 
-func (p *KsScmcClientSetContainerDisplayV2Args) writeField2(ctx context.Context, oprot thrift.TProtocol) (err error) {
-  if err := oprot.WriteFieldBegin(ctx, "container_name", thrift.STRING, 2); err != nil {
+func (p *KsScmcClientSetContainerDisplayV2Args) writeField2(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("container_name", thrift.STRING, 2); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field begin error 2:container_name: ", p), err) }
-  if err := oprot.WriteString(ctx, string(p.ContainerName)); err != nil {
+  if err := oprot.WriteString(string(p.ContainerName)); err != nil {
   return thrift.PrependError(fmt.Sprintf("%T.container_name (2) field write error: ", p), err) }
-  if err := oprot.WriteFieldEnd(ctx); err != nil {
+  if err := oprot.WriteFieldEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field end error 2:container_name: ", p), err) }
   return err
 }
 
-func (p *KsScmcClientSetContainerDisplayV2Args) writeField3(ctx context.Context, oprot thrift.TProtocol) (err error) {
-  if err := oprot.WriteFieldBegin(ctx, "enabled", thrift.BOOL, 3); err != nil {
+func (p *KsScmcClientSetContainerDisplayV2Args) writeField3(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("enabled", thrift.BOOL, 3); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field begin error 3:enabled: ", p), err) }
-  if err := oprot.WriteBool(ctx, bool(p.Enabled)); err != nil {
+  if err := oprot.WriteBool(bool(p.Enabled)); err != nil {
   return thrift.PrependError(fmt.Sprintf("%T.enabled (3) field write error: ", p), err) }
-  if err := oprot.WriteFieldEnd(ctx); err != nil {
+  if err := oprot.WriteFieldEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field end error 3:enabled: ", p), err) }
   return err
 }
 
-func (p *KsScmcClientSetContainerDisplayV2Args) writeField4(ctx context.Context, oprot thrift.TProtocol) (err error) {
-  if err := oprot.WriteFieldBegin(ctx, "display", thrift.STRING, 4); err != nil {
+func (p *KsScmcClientSetContainerDisplayV2Args) writeField4(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("display", thrift.STRING, 4); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field begin error 4:display: ", p), err) }
-  if err := oprot.WriteString(ctx, string(p.Display)); err != nil {
+  if err := oprot.WriteString(string(p.Display)); err != nil {
   return thrift.PrependError(fmt.Sprintf("%T.display (4) field write error: ", p), err) }
-  if err := oprot.WriteFieldEnd(ctx); err != nil {
+  if err := oprot.WriteFieldEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field end error 4:display: ", p), err) }
   return err
 }
@@ -11431,15 +13460,15 @@ func (p *KsScmcClientSetContainerDisplayV2Args) String() string {
 // Attributes:
 //  - Success
 type KsScmcClientSetContainerDisplayV2Result struct {
-  Success *int32 `thrift:"success,0" db:"success" json:"success,omitempty"`
+  Success *string `thrift:"success,0" db:"success" json:"success,omitempty"`
 }
 
 func NewKsScmcClientSetContainerDisplayV2Result() *KsScmcClientSetContainerDisplayV2Result {
   return &KsScmcClientSetContainerDisplayV2Result{}
 }
 
-var KsScmcClientSetContainerDisplayV2Result_Success_DEFAULT int32
-func (p *KsScmcClientSetContainerDisplayV2Result) GetSuccess() int32 {
+var KsScmcClientSetContainerDisplayV2Result_Success_DEFAULT string
+func (p *KsScmcClientSetContainerDisplayV2Result) GetSuccess() string {
   if !p.IsSetSuccess() {
     return KsScmcClientSetContainerDisplayV2Result_Success_DEFAULT
   }
@@ -11449,46 +13478,40 @@ func (p *KsScmcClientSetContainerDisplayV2Result) IsSetSuccess() bool {
   return p.Success != nil
 }
 
-func (p *KsScmcClientSetContainerDisplayV2Result) Read(ctx context.Context, iprot thrift.TProtocol) error {
-  if _, err := iprot.ReadStructBegin(ctx); err != nil {
+func (p *KsScmcClientSetContainerDisplayV2Result) Read(iprot thrift.TProtocol) error {
+  if _, err := iprot.ReadStructBegin(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
   }
 
 
   for {
-    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin(ctx)
+    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin()
     if err != nil {
       return thrift.PrependError(fmt.Sprintf("%T field %d read error: ", p, fieldId), err)
     }
     if fieldTypeId == thrift.STOP { break; }
     switch fieldId {
     case 0:
-      if fieldTypeId == thrift.I32 {
-        if err := p.ReadField0(ctx, iprot); err != nil {
-          return err
-        }
-      } else {
-        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-          return err
-        }
+      if err := p.ReadField0(iprot); err != nil {
+        return err
       }
     default:
-      if err := iprot.Skip(ctx, fieldTypeId); err != nil {
+      if err := iprot.Skip(fieldTypeId); err != nil {
         return err
       }
     }
-    if err := iprot.ReadFieldEnd(ctx); err != nil {
+    if err := iprot.ReadFieldEnd(); err != nil {
       return err
     }
   }
-  if err := iprot.ReadStructEnd(ctx); err != nil {
+  if err := iprot.ReadStructEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
   }
   return nil
 }
 
-func (p *KsScmcClientSetContainerDisplayV2Result)  ReadField0(ctx context.Context, iprot thrift.TProtocol) error {
-  if v, err := iprot.ReadI32(ctx); err != nil {
+func (p *KsScmcClientSetContainerDisplayV2Result)  ReadField0(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadString(); err != nil {
   return thrift.PrependError("error reading field 0: ", err)
 } else {
   p.Success = &v
@@ -11496,26 +13519,26 @@ func (p *KsScmcClientSetContainerDisplayV2Result)  ReadField0(ctx context.Contex
   return nil
 }
 
-func (p *KsScmcClientSetContainerDisplayV2Result) Write(ctx context.Context, oprot thrift.TProtocol) error {
-  if err := oprot.WriteStructBegin(ctx, "setContainerDisplayV2_result"); err != nil {
+func (p *KsScmcClientSetContainerDisplayV2Result) Write(oprot thrift.TProtocol) error {
+  if err := oprot.WriteStructBegin("SetContainerDisplayV2_result"); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err) }
   if p != nil {
-    if err := p.writeField0(ctx, oprot); err != nil { return err }
+    if err := p.writeField0(oprot); err != nil { return err }
   }
-  if err := oprot.WriteFieldStop(ctx); err != nil {
+  if err := oprot.WriteFieldStop(); err != nil {
     return thrift.PrependError("write field stop error: ", err) }
-  if err := oprot.WriteStructEnd(ctx); err != nil {
+  if err := oprot.WriteStructEnd(); err != nil {
     return thrift.PrependError("write struct stop error: ", err) }
   return nil
 }
 
-func (p *KsScmcClientSetContainerDisplayV2Result) writeField0(ctx context.Context, oprot thrift.TProtocol) (err error) {
+func (p *KsScmcClientSetContainerDisplayV2Result) writeField0(oprot thrift.TProtocol) (err error) {
   if p.IsSetSuccess() {
-    if err := oprot.WriteFieldBegin(ctx, "success", thrift.I32, 0); err != nil {
+    if err := oprot.WriteFieldBegin("success", thrift.STRING, 0); err != nil {
       return thrift.PrependError(fmt.Sprintf("%T write field begin error 0:success: ", p), err) }
-    if err := oprot.WriteI32(ctx, int32(*p.Success)); err != nil {
+    if err := oprot.WriteString(string(*p.Success)); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T.success (0) field write error: ", p), err) }
-    if err := oprot.WriteFieldEnd(ctx); err != nil {
+    if err := oprot.WriteFieldEnd(); err != nil {
       return thrift.PrependError(fmt.Sprintf("%T write field end error 0:success: ", p), err) }
   }
   return err
@@ -11561,66 +13584,48 @@ func (p *KsScmcClientSetContainerQuotaArgs) IsSetContainerLimit() bool {
   return p.ContainerLimit != nil
 }
 
-func (p *KsScmcClientSetContainerQuotaArgs) Read(ctx context.Context, iprot thrift.TProtocol) error {
-  if _, err := iprot.ReadStructBegin(ctx); err != nil {
+func (p *KsScmcClientSetContainerQuotaArgs) Read(iprot thrift.TProtocol) error {
+  if _, err := iprot.ReadStructBegin(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
   }
 
 
   for {
-    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin(ctx)
+    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin()
     if err != nil {
       return thrift.PrependError(fmt.Sprintf("%T field %d read error: ", p, fieldId), err)
     }
     if fieldTypeId == thrift.STOP { break; }
     switch fieldId {
     case 1:
-      if fieldTypeId == thrift.STRING {
-        if err := p.ReadField1(ctx, iprot); err != nil {
-          return err
-        }
-      } else {
-        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-          return err
-        }
+      if err := p.ReadField1(iprot); err != nil {
+        return err
       }
     case 2:
-      if fieldTypeId == thrift.STRING {
-        if err := p.ReadField2(ctx, iprot); err != nil {
-          return err
-        }
-      } else {
-        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-          return err
-        }
+      if err := p.ReadField2(iprot); err != nil {
+        return err
       }
     case 3:
-      if fieldTypeId == thrift.STRUCT {
-        if err := p.ReadField3(ctx, iprot); err != nil {
-          return err
-        }
-      } else {
-        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-          return err
-        }
+      if err := p.ReadField3(iprot); err != nil {
+        return err
       }
     default:
-      if err := iprot.Skip(ctx, fieldTypeId); err != nil {
+      if err := iprot.Skip(fieldTypeId); err != nil {
         return err
       }
     }
-    if err := iprot.ReadFieldEnd(ctx); err != nil {
+    if err := iprot.ReadFieldEnd(); err != nil {
       return err
     }
   }
-  if err := iprot.ReadStructEnd(ctx); err != nil {
+  if err := iprot.ReadStructEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
   }
   return nil
 }
 
-func (p *KsScmcClientSetContainerQuotaArgs)  ReadField1(ctx context.Context, iprot thrift.TProtocol) error {
-  if v, err := iprot.ReadString(ctx); err != nil {
+func (p *KsScmcClientSetContainerQuotaArgs)  ReadField1(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadString(); err != nil {
   return thrift.PrependError("error reading field 1: ", err)
 } else {
   p.NodeName = v
@@ -11628,8 +13633,8 @@ func (p *KsScmcClientSetContainerQuotaArgs)  ReadField1(ctx context.Context, ipr
   return nil
 }
 
-func (p *KsScmcClientSetContainerQuotaArgs)  ReadField2(ctx context.Context, iprot thrift.TProtocol) error {
-  if v, err := iprot.ReadString(ctx); err != nil {
+func (p *KsScmcClientSetContainerQuotaArgs)  ReadField2(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadString(); err != nil {
   return thrift.PrependError("error reading field 2: ", err)
 } else {
   p.ContainerName = v
@@ -11637,56 +13642,56 @@ func (p *KsScmcClientSetContainerQuotaArgs)  ReadField2(ctx context.Context, ipr
   return nil
 }
 
-func (p *KsScmcClientSetContainerQuotaArgs)  ReadField3(ctx context.Context, iprot thrift.TProtocol) error {
+func (p *KsScmcClientSetContainerQuotaArgs)  ReadField3(iprot thrift.TProtocol) error {
   p.ContainerLimit = &ContainerLimit{}
-  if err := p.ContainerLimit.Read(ctx, iprot); err != nil {
+  if err := p.ContainerLimit.Read(iprot); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", p.ContainerLimit), err)
   }
   return nil
 }
 
-func (p *KsScmcClientSetContainerQuotaArgs) Write(ctx context.Context, oprot thrift.TProtocol) error {
-  if err := oprot.WriteStructBegin(ctx, "setContainerQuota_args"); err != nil {
+func (p *KsScmcClientSetContainerQuotaArgs) Write(oprot thrift.TProtocol) error {
+  if err := oprot.WriteStructBegin("SetContainerQuota_args"); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err) }
   if p != nil {
-    if err := p.writeField1(ctx, oprot); err != nil { return err }
-    if err := p.writeField2(ctx, oprot); err != nil { return err }
-    if err := p.writeField3(ctx, oprot); err != nil { return err }
+    if err := p.writeField1(oprot); err != nil { return err }
+    if err := p.writeField2(oprot); err != nil { return err }
+    if err := p.writeField3(oprot); err != nil { return err }
   }
-  if err := oprot.WriteFieldStop(ctx); err != nil {
+  if err := oprot.WriteFieldStop(); err != nil {
     return thrift.PrependError("write field stop error: ", err) }
-  if err := oprot.WriteStructEnd(ctx); err != nil {
+  if err := oprot.WriteStructEnd(); err != nil {
     return thrift.PrependError("write struct stop error: ", err) }
   return nil
 }
 
-func (p *KsScmcClientSetContainerQuotaArgs) writeField1(ctx context.Context, oprot thrift.TProtocol) (err error) {
-  if err := oprot.WriteFieldBegin(ctx, "node_name", thrift.STRING, 1); err != nil {
+func (p *KsScmcClientSetContainerQuotaArgs) writeField1(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("node_name", thrift.STRING, 1); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field begin error 1:node_name: ", p), err) }
-  if err := oprot.WriteString(ctx, string(p.NodeName)); err != nil {
+  if err := oprot.WriteString(string(p.NodeName)); err != nil {
   return thrift.PrependError(fmt.Sprintf("%T.node_name (1) field write error: ", p), err) }
-  if err := oprot.WriteFieldEnd(ctx); err != nil {
+  if err := oprot.WriteFieldEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field end error 1:node_name: ", p), err) }
   return err
 }
 
-func (p *KsScmcClientSetContainerQuotaArgs) writeField2(ctx context.Context, oprot thrift.TProtocol) (err error) {
-  if err := oprot.WriteFieldBegin(ctx, "container_name", thrift.STRING, 2); err != nil {
+func (p *KsScmcClientSetContainerQuotaArgs) writeField2(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("container_name", thrift.STRING, 2); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field begin error 2:container_name: ", p), err) }
-  if err := oprot.WriteString(ctx, string(p.ContainerName)); err != nil {
+  if err := oprot.WriteString(string(p.ContainerName)); err != nil {
   return thrift.PrependError(fmt.Sprintf("%T.container_name (2) field write error: ", p), err) }
-  if err := oprot.WriteFieldEnd(ctx); err != nil {
+  if err := oprot.WriteFieldEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field end error 2:container_name: ", p), err) }
   return err
 }
 
-func (p *KsScmcClientSetContainerQuotaArgs) writeField3(ctx context.Context, oprot thrift.TProtocol) (err error) {
-  if err := oprot.WriteFieldBegin(ctx, "containerLimit", thrift.STRUCT, 3); err != nil {
+func (p *KsScmcClientSetContainerQuotaArgs) writeField3(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("containerLimit", thrift.STRUCT, 3); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field begin error 3:containerLimit: ", p), err) }
-  if err := p.ContainerLimit.Write(ctx, oprot); err != nil {
+  if err := p.ContainerLimit.Write(oprot); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T error writing struct: ", p.ContainerLimit), err)
   }
-  if err := oprot.WriteFieldEnd(ctx); err != nil {
+  if err := oprot.WriteFieldEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field end error 3:containerLimit: ", p), err) }
   return err
 }
@@ -11701,15 +13706,15 @@ func (p *KsScmcClientSetContainerQuotaArgs) String() string {
 // Attributes:
 //  - Success
 type KsScmcClientSetContainerQuotaResult struct {
-  Success *int32 `thrift:"success,0" db:"success" json:"success,omitempty"`
+  Success *string `thrift:"success,0" db:"success" json:"success,omitempty"`
 }
 
 func NewKsScmcClientSetContainerQuotaResult() *KsScmcClientSetContainerQuotaResult {
   return &KsScmcClientSetContainerQuotaResult{}
 }
 
-var KsScmcClientSetContainerQuotaResult_Success_DEFAULT int32
-func (p *KsScmcClientSetContainerQuotaResult) GetSuccess() int32 {
+var KsScmcClientSetContainerQuotaResult_Success_DEFAULT string
+func (p *KsScmcClientSetContainerQuotaResult) GetSuccess() string {
   if !p.IsSetSuccess() {
     return KsScmcClientSetContainerQuotaResult_Success_DEFAULT
   }
@@ -11719,46 +13724,40 @@ func (p *KsScmcClientSetContainerQuotaResult) IsSetSuccess() bool {
   return p.Success != nil
 }
 
-func (p *KsScmcClientSetContainerQuotaResult) Read(ctx context.Context, iprot thrift.TProtocol) error {
-  if _, err := iprot.ReadStructBegin(ctx); err != nil {
+func (p *KsScmcClientSetContainerQuotaResult) Read(iprot thrift.TProtocol) error {
+  if _, err := iprot.ReadStructBegin(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
   }
 
 
   for {
-    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin(ctx)
+    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin()
     if err != nil {
       return thrift.PrependError(fmt.Sprintf("%T field %d read error: ", p, fieldId), err)
     }
     if fieldTypeId == thrift.STOP { break; }
     switch fieldId {
     case 0:
-      if fieldTypeId == thrift.I32 {
-        if err := p.ReadField0(ctx, iprot); err != nil {
-          return err
-        }
-      } else {
-        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-          return err
-        }
+      if err := p.ReadField0(iprot); err != nil {
+        return err
       }
     default:
-      if err := iprot.Skip(ctx, fieldTypeId); err != nil {
+      if err := iprot.Skip(fieldTypeId); err != nil {
         return err
       }
     }
-    if err := iprot.ReadFieldEnd(ctx); err != nil {
+    if err := iprot.ReadFieldEnd(); err != nil {
       return err
     }
   }
-  if err := iprot.ReadStructEnd(ctx); err != nil {
+  if err := iprot.ReadStructEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
   }
   return nil
 }
 
-func (p *KsScmcClientSetContainerQuotaResult)  ReadField0(ctx context.Context, iprot thrift.TProtocol) error {
-  if v, err := iprot.ReadI32(ctx); err != nil {
+func (p *KsScmcClientSetContainerQuotaResult)  ReadField0(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadString(); err != nil {
   return thrift.PrependError("error reading field 0: ", err)
 } else {
   p.Success = &v
@@ -11766,26 +13765,26 @@ func (p *KsScmcClientSetContainerQuotaResult)  ReadField0(ctx context.Context, i
   return nil
 }
 
-func (p *KsScmcClientSetContainerQuotaResult) Write(ctx context.Context, oprot thrift.TProtocol) error {
-  if err := oprot.WriteStructBegin(ctx, "setContainerQuota_result"); err != nil {
+func (p *KsScmcClientSetContainerQuotaResult) Write(oprot thrift.TProtocol) error {
+  if err := oprot.WriteStructBegin("SetContainerQuota_result"); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err) }
   if p != nil {
-    if err := p.writeField0(ctx, oprot); err != nil { return err }
+    if err := p.writeField0(oprot); err != nil { return err }
   }
-  if err := oprot.WriteFieldStop(ctx); err != nil {
+  if err := oprot.WriteFieldStop(); err != nil {
     return thrift.PrependError("write field stop error: ", err) }
-  if err := oprot.WriteStructEnd(ctx); err != nil {
+  if err := oprot.WriteStructEnd(); err != nil {
     return thrift.PrependError("write struct stop error: ", err) }
   return nil
 }
 
-func (p *KsScmcClientSetContainerQuotaResult) writeField0(ctx context.Context, oprot thrift.TProtocol) (err error) {
+func (p *KsScmcClientSetContainerQuotaResult) writeField0(oprot thrift.TProtocol) (err error) {
   if p.IsSetSuccess() {
-    if err := oprot.WriteFieldBegin(ctx, "success", thrift.I32, 0); err != nil {
+    if err := oprot.WriteFieldBegin("success", thrift.STRING, 0); err != nil {
       return thrift.PrependError(fmt.Sprintf("%T write field begin error 0:success: ", p), err) }
-    if err := oprot.WriteI32(ctx, int32(*p.Success)); err != nil {
+    if err := oprot.WriteString(string(*p.Success)); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T.success (0) field write error: ", p), err) }
-    if err := oprot.WriteFieldEnd(ctx); err != nil {
+    if err := oprot.WriteFieldEnd(); err != nil {
       return thrift.PrependError(fmt.Sprintf("%T write field end error 0:success: ", p), err) }
   }
   return err
@@ -11824,66 +13823,48 @@ func (p *KsScmcClientSetContainerPrivilegedArgs) GetContainerName() string {
 func (p *KsScmcClientSetContainerPrivilegedArgs) GetIsPrivileged() bool {
   return p.IsPrivileged
 }
-func (p *KsScmcClientSetContainerPrivilegedArgs) Read(ctx context.Context, iprot thrift.TProtocol) error {
-  if _, err := iprot.ReadStructBegin(ctx); err != nil {
+func (p *KsScmcClientSetContainerPrivilegedArgs) Read(iprot thrift.TProtocol) error {
+  if _, err := iprot.ReadStructBegin(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
   }
 
 
   for {
-    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin(ctx)
+    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin()
     if err != nil {
       return thrift.PrependError(fmt.Sprintf("%T field %d read error: ", p, fieldId), err)
     }
     if fieldTypeId == thrift.STOP { break; }
     switch fieldId {
     case 1:
-      if fieldTypeId == thrift.STRING {
-        if err := p.ReadField1(ctx, iprot); err != nil {
-          return err
-        }
-      } else {
-        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-          return err
-        }
+      if err := p.ReadField1(iprot); err != nil {
+        return err
       }
     case 2:
-      if fieldTypeId == thrift.STRING {
-        if err := p.ReadField2(ctx, iprot); err != nil {
-          return err
-        }
-      } else {
-        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-          return err
-        }
+      if err := p.ReadField2(iprot); err != nil {
+        return err
       }
     case 3:
-      if fieldTypeId == thrift.BOOL {
-        if err := p.ReadField3(ctx, iprot); err != nil {
-          return err
-        }
-      } else {
-        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-          return err
-        }
+      if err := p.ReadField3(iprot); err != nil {
+        return err
       }
     default:
-      if err := iprot.Skip(ctx, fieldTypeId); err != nil {
+      if err := iprot.Skip(fieldTypeId); err != nil {
         return err
       }
     }
-    if err := iprot.ReadFieldEnd(ctx); err != nil {
+    if err := iprot.ReadFieldEnd(); err != nil {
       return err
     }
   }
-  if err := iprot.ReadStructEnd(ctx); err != nil {
+  if err := iprot.ReadStructEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
   }
   return nil
 }
 
-func (p *KsScmcClientSetContainerPrivilegedArgs)  ReadField1(ctx context.Context, iprot thrift.TProtocol) error {
-  if v, err := iprot.ReadString(ctx); err != nil {
+func (p *KsScmcClientSetContainerPrivilegedArgs)  ReadField1(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadString(); err != nil {
   return thrift.PrependError("error reading field 1: ", err)
 } else {
   p.NodeIP = v
@@ -11891,8 +13872,8 @@ func (p *KsScmcClientSetContainerPrivilegedArgs)  ReadField1(ctx context.Context
   return nil
 }
 
-func (p *KsScmcClientSetContainerPrivilegedArgs)  ReadField2(ctx context.Context, iprot thrift.TProtocol) error {
-  if v, err := iprot.ReadString(ctx); err != nil {
+func (p *KsScmcClientSetContainerPrivilegedArgs)  ReadField2(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadString(); err != nil {
   return thrift.PrependError("error reading field 2: ", err)
 } else {
   p.ContainerName = v
@@ -11900,8 +13881,8 @@ func (p *KsScmcClientSetContainerPrivilegedArgs)  ReadField2(ctx context.Context
   return nil
 }
 
-func (p *KsScmcClientSetContainerPrivilegedArgs)  ReadField3(ctx context.Context, iprot thrift.TProtocol) error {
-  if v, err := iprot.ReadBool(ctx); err != nil {
+func (p *KsScmcClientSetContainerPrivilegedArgs)  ReadField3(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadBool(); err != nil {
   return thrift.PrependError("error reading field 3: ", err)
 } else {
   p.IsPrivileged = v
@@ -11909,47 +13890,47 @@ func (p *KsScmcClientSetContainerPrivilegedArgs)  ReadField3(ctx context.Context
   return nil
 }
 
-func (p *KsScmcClientSetContainerPrivilegedArgs) Write(ctx context.Context, oprot thrift.TProtocol) error {
-  if err := oprot.WriteStructBegin(ctx, "setContainerPrivileged_args"); err != nil {
+func (p *KsScmcClientSetContainerPrivilegedArgs) Write(oprot thrift.TProtocol) error {
+  if err := oprot.WriteStructBegin("setContainerPrivileged_args"); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err) }
   if p != nil {
-    if err := p.writeField1(ctx, oprot); err != nil { return err }
-    if err := p.writeField2(ctx, oprot); err != nil { return err }
-    if err := p.writeField3(ctx, oprot); err != nil { return err }
+    if err := p.writeField1(oprot); err != nil { return err }
+    if err := p.writeField2(oprot); err != nil { return err }
+    if err := p.writeField3(oprot); err != nil { return err }
   }
-  if err := oprot.WriteFieldStop(ctx); err != nil {
+  if err := oprot.WriteFieldStop(); err != nil {
     return thrift.PrependError("write field stop error: ", err) }
-  if err := oprot.WriteStructEnd(ctx); err != nil {
+  if err := oprot.WriteStructEnd(); err != nil {
     return thrift.PrependError("write struct stop error: ", err) }
   return nil
 }
 
-func (p *KsScmcClientSetContainerPrivilegedArgs) writeField1(ctx context.Context, oprot thrift.TProtocol) (err error) {
-  if err := oprot.WriteFieldBegin(ctx, "node_ip", thrift.STRING, 1); err != nil {
+func (p *KsScmcClientSetContainerPrivilegedArgs) writeField1(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("node_ip", thrift.STRING, 1); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field begin error 1:node_ip: ", p), err) }
-  if err := oprot.WriteString(ctx, string(p.NodeIP)); err != nil {
+  if err := oprot.WriteString(string(p.NodeIP)); err != nil {
   return thrift.PrependError(fmt.Sprintf("%T.node_ip (1) field write error: ", p), err) }
-  if err := oprot.WriteFieldEnd(ctx); err != nil {
+  if err := oprot.WriteFieldEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field end error 1:node_ip: ", p), err) }
   return err
 }
 
-func (p *KsScmcClientSetContainerPrivilegedArgs) writeField2(ctx context.Context, oprot thrift.TProtocol) (err error) {
-  if err := oprot.WriteFieldBegin(ctx, "container_name", thrift.STRING, 2); err != nil {
+func (p *KsScmcClientSetContainerPrivilegedArgs) writeField2(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("container_name", thrift.STRING, 2); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field begin error 2:container_name: ", p), err) }
-  if err := oprot.WriteString(ctx, string(p.ContainerName)); err != nil {
+  if err := oprot.WriteString(string(p.ContainerName)); err != nil {
   return thrift.PrependError(fmt.Sprintf("%T.container_name (2) field write error: ", p), err) }
-  if err := oprot.WriteFieldEnd(ctx); err != nil {
+  if err := oprot.WriteFieldEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field end error 2:container_name: ", p), err) }
   return err
 }
 
-func (p *KsScmcClientSetContainerPrivilegedArgs) writeField3(ctx context.Context, oprot thrift.TProtocol) (err error) {
-  if err := oprot.WriteFieldBegin(ctx, "isPrivileged", thrift.BOOL, 3); err != nil {
+func (p *KsScmcClientSetContainerPrivilegedArgs) writeField3(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("isPrivileged", thrift.BOOL, 3); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field begin error 3:isPrivileged: ", p), err) }
-  if err := oprot.WriteBool(ctx, bool(p.IsPrivileged)); err != nil {
+  if err := oprot.WriteBool(bool(p.IsPrivileged)); err != nil {
   return thrift.PrependError(fmt.Sprintf("%T.isPrivileged (3) field write error: ", p), err) }
-  if err := oprot.WriteFieldEnd(ctx); err != nil {
+  if err := oprot.WriteFieldEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field end error 3:isPrivileged: ", p), err) }
   return err
 }
@@ -11982,46 +13963,40 @@ func (p *KsScmcClientSetContainerPrivilegedResult) IsSetSuccess() bool {
   return p.Success != nil
 }
 
-func (p *KsScmcClientSetContainerPrivilegedResult) Read(ctx context.Context, iprot thrift.TProtocol) error {
-  if _, err := iprot.ReadStructBegin(ctx); err != nil {
+func (p *KsScmcClientSetContainerPrivilegedResult) Read(iprot thrift.TProtocol) error {
+  if _, err := iprot.ReadStructBegin(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
   }
 
 
   for {
-    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin(ctx)
+    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin()
     if err != nil {
       return thrift.PrependError(fmt.Sprintf("%T field %d read error: ", p, fieldId), err)
     }
     if fieldTypeId == thrift.STOP { break; }
     switch fieldId {
     case 0:
-      if fieldTypeId == thrift.I32 {
-        if err := p.ReadField0(ctx, iprot); err != nil {
-          return err
-        }
-      } else {
-        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-          return err
-        }
+      if err := p.ReadField0(iprot); err != nil {
+        return err
       }
     default:
-      if err := iprot.Skip(ctx, fieldTypeId); err != nil {
+      if err := iprot.Skip(fieldTypeId); err != nil {
         return err
       }
     }
-    if err := iprot.ReadFieldEnd(ctx); err != nil {
+    if err := iprot.ReadFieldEnd(); err != nil {
       return err
     }
   }
-  if err := iprot.ReadStructEnd(ctx); err != nil {
+  if err := iprot.ReadStructEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
   }
   return nil
 }
 
-func (p *KsScmcClientSetContainerPrivilegedResult)  ReadField0(ctx context.Context, iprot thrift.TProtocol) error {
-  if v, err := iprot.ReadI32(ctx); err != nil {
+func (p *KsScmcClientSetContainerPrivilegedResult)  ReadField0(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadI32(); err != nil {
   return thrift.PrependError("error reading field 0: ", err)
 } else {
   p.Success = &v
@@ -12029,26 +14004,26 @@ func (p *KsScmcClientSetContainerPrivilegedResult)  ReadField0(ctx context.Conte
   return nil
 }
 
-func (p *KsScmcClientSetContainerPrivilegedResult) Write(ctx context.Context, oprot thrift.TProtocol) error {
-  if err := oprot.WriteStructBegin(ctx, "setContainerPrivileged_result"); err != nil {
+func (p *KsScmcClientSetContainerPrivilegedResult) Write(oprot thrift.TProtocol) error {
+  if err := oprot.WriteStructBegin("setContainerPrivileged_result"); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err) }
   if p != nil {
-    if err := p.writeField0(ctx, oprot); err != nil { return err }
+    if err := p.writeField0(oprot); err != nil { return err }
   }
-  if err := oprot.WriteFieldStop(ctx); err != nil {
+  if err := oprot.WriteFieldStop(); err != nil {
     return thrift.PrependError("write field stop error: ", err) }
-  if err := oprot.WriteStructEnd(ctx); err != nil {
+  if err := oprot.WriteStructEnd(); err != nil {
     return thrift.PrependError("write struct stop error: ", err) }
   return nil
 }
 
-func (p *KsScmcClientSetContainerPrivilegedResult) writeField0(ctx context.Context, oprot thrift.TProtocol) (err error) {
+func (p *KsScmcClientSetContainerPrivilegedResult) writeField0(oprot thrift.TProtocol) (err error) {
   if p.IsSetSuccess() {
-    if err := oprot.WriteFieldBegin(ctx, "success", thrift.I32, 0); err != nil {
+    if err := oprot.WriteFieldBegin("success", thrift.I32, 0); err != nil {
       return thrift.PrependError(fmt.Sprintf("%T write field begin error 0:success: ", p), err) }
-    if err := oprot.WriteI32(ctx, int32(*p.Success)); err != nil {
+    if err := oprot.WriteI32(int32(*p.Success)); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T.success (0) field write error: ", p), err) }
-    if err := oprot.WriteFieldEnd(ctx); err != nil {
+    if err := oprot.WriteFieldEnd(); err != nil {
       return thrift.PrependError(fmt.Sprintf("%T write field end error 0:success: ", p), err) }
   }
   return err
@@ -12093,76 +14068,52 @@ func (p *KsScmcClientSetContainerSysctlsArgs) GetSysctlName() string {
 func (p *KsScmcClientSetContainerSysctlsArgs) GetSysctlValue() string {
   return p.SysctlValue
 }
-func (p *KsScmcClientSetContainerSysctlsArgs) Read(ctx context.Context, iprot thrift.TProtocol) error {
-  if _, err := iprot.ReadStructBegin(ctx); err != nil {
+func (p *KsScmcClientSetContainerSysctlsArgs) Read(iprot thrift.TProtocol) error {
+  if _, err := iprot.ReadStructBegin(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
   }
 
 
   for {
-    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin(ctx)
+    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin()
     if err != nil {
       return thrift.PrependError(fmt.Sprintf("%T field %d read error: ", p, fieldId), err)
     }
     if fieldTypeId == thrift.STOP { break; }
     switch fieldId {
     case 1:
-      if fieldTypeId == thrift.STRING {
-        if err := p.ReadField1(ctx, iprot); err != nil {
-          return err
-        }
-      } else {
-        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-          return err
-        }
+      if err := p.ReadField1(iprot); err != nil {
+        return err
       }
     case 2:
-      if fieldTypeId == thrift.STRING {
-        if err := p.ReadField2(ctx, iprot); err != nil {
-          return err
-        }
-      } else {
-        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-          return err
-        }
+      if err := p.ReadField2(iprot); err != nil {
+        return err
       }
     case 3:
-      if fieldTypeId == thrift.STRING {
-        if err := p.ReadField3(ctx, iprot); err != nil {
-          return err
-        }
-      } else {
-        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-          return err
-        }
+      if err := p.ReadField3(iprot); err != nil {
+        return err
       }
     case 4:
-      if fieldTypeId == thrift.STRING {
-        if err := p.ReadField4(ctx, iprot); err != nil {
-          return err
-        }
-      } else {
-        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-          return err
-        }
+      if err := p.ReadField4(iprot); err != nil {
+        return err
       }
     default:
-      if err := iprot.Skip(ctx, fieldTypeId); err != nil {
+      if err := iprot.Skip(fieldTypeId); err != nil {
         return err
       }
     }
-    if err := iprot.ReadFieldEnd(ctx); err != nil {
+    if err := iprot.ReadFieldEnd(); err != nil {
       return err
     }
   }
-  if err := iprot.ReadStructEnd(ctx); err != nil {
+  if err := iprot.ReadStructEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
   }
   return nil
 }
 
-func (p *KsScmcClientSetContainerSysctlsArgs)  ReadField1(ctx context.Context, iprot thrift.TProtocol) error {
-  if v, err := iprot.ReadString(ctx); err != nil {
+func (p *KsScmcClientSetContainerSysctlsArgs)  ReadField1(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadString(); err != nil {
   return thrift.PrependError("error reading field 1: ", err)
 } else {
   p.NodeIP = v
@@ -12170,8 +14121,8 @@ func (p *KsScmcClientSetContainerSysctlsArgs)  ReadField1(ctx context.Context, i
   return nil
 }
 
-func (p *KsScmcClientSetContainerSysctlsArgs)  ReadField2(ctx context.Context, iprot thrift.TProtocol) error {
-  if v, err := iprot.ReadString(ctx); err != nil {
+func (p *KsScmcClientSetContainerSysctlsArgs)  ReadField2(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadString(); err != nil {
   return thrift.PrependError("error reading field 2: ", err)
 } else {
   p.ContainerName = v
@@ -12179,8 +14130,8 @@ func (p *KsScmcClientSetContainerSysctlsArgs)  ReadField2(ctx context.Context, i
   return nil
 }
 
-func (p *KsScmcClientSetContainerSysctlsArgs)  ReadField3(ctx context.Context, iprot thrift.TProtocol) error {
-  if v, err := iprot.ReadString(ctx); err != nil {
+func (p *KsScmcClientSetContainerSysctlsArgs)  ReadField3(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadString(); err != nil {
   return thrift.PrependError("error reading field 3: ", err)
 } else {
   p.SysctlName = v
@@ -12188,8 +14139,8 @@ func (p *KsScmcClientSetContainerSysctlsArgs)  ReadField3(ctx context.Context, i
   return nil
 }
 
-func (p *KsScmcClientSetContainerSysctlsArgs)  ReadField4(ctx context.Context, iprot thrift.TProtocol) error {
-  if v, err := iprot.ReadString(ctx); err != nil {
+func (p *KsScmcClientSetContainerSysctlsArgs)  ReadField4(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadString(); err != nil {
   return thrift.PrependError("error reading field 4: ", err)
 } else {
   p.SysctlValue = v
@@ -12197,58 +14148,58 @@ func (p *KsScmcClientSetContainerSysctlsArgs)  ReadField4(ctx context.Context, i
   return nil
 }
 
-func (p *KsScmcClientSetContainerSysctlsArgs) Write(ctx context.Context, oprot thrift.TProtocol) error {
-  if err := oprot.WriteStructBegin(ctx, "setContainerSysctls_args"); err != nil {
+func (p *KsScmcClientSetContainerSysctlsArgs) Write(oprot thrift.TProtocol) error {
+  if err := oprot.WriteStructBegin("setContainerSysctls_args"); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err) }
   if p != nil {
-    if err := p.writeField1(ctx, oprot); err != nil { return err }
-    if err := p.writeField2(ctx, oprot); err != nil { return err }
-    if err := p.writeField3(ctx, oprot); err != nil { return err }
-    if err := p.writeField4(ctx, oprot); err != nil { return err }
+    if err := p.writeField1(oprot); err != nil { return err }
+    if err := p.writeField2(oprot); err != nil { return err }
+    if err := p.writeField3(oprot); err != nil { return err }
+    if err := p.writeField4(oprot); err != nil { return err }
   }
-  if err := oprot.WriteFieldStop(ctx); err != nil {
+  if err := oprot.WriteFieldStop(); err != nil {
     return thrift.PrependError("write field stop error: ", err) }
-  if err := oprot.WriteStructEnd(ctx); err != nil {
+  if err := oprot.WriteStructEnd(); err != nil {
     return thrift.PrependError("write struct stop error: ", err) }
   return nil
 }
 
-func (p *KsScmcClientSetContainerSysctlsArgs) writeField1(ctx context.Context, oprot thrift.TProtocol) (err error) {
-  if err := oprot.WriteFieldBegin(ctx, "node_ip", thrift.STRING, 1); err != nil {
+func (p *KsScmcClientSetContainerSysctlsArgs) writeField1(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("node_ip", thrift.STRING, 1); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field begin error 1:node_ip: ", p), err) }
-  if err := oprot.WriteString(ctx, string(p.NodeIP)); err != nil {
+  if err := oprot.WriteString(string(p.NodeIP)); err != nil {
   return thrift.PrependError(fmt.Sprintf("%T.node_ip (1) field write error: ", p), err) }
-  if err := oprot.WriteFieldEnd(ctx); err != nil {
+  if err := oprot.WriteFieldEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field end error 1:node_ip: ", p), err) }
   return err
 }
 
-func (p *KsScmcClientSetContainerSysctlsArgs) writeField2(ctx context.Context, oprot thrift.TProtocol) (err error) {
-  if err := oprot.WriteFieldBegin(ctx, "container_name", thrift.STRING, 2); err != nil {
+func (p *KsScmcClientSetContainerSysctlsArgs) writeField2(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("container_name", thrift.STRING, 2); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field begin error 2:container_name: ", p), err) }
-  if err := oprot.WriteString(ctx, string(p.ContainerName)); err != nil {
+  if err := oprot.WriteString(string(p.ContainerName)); err != nil {
   return thrift.PrependError(fmt.Sprintf("%T.container_name (2) field write error: ", p), err) }
-  if err := oprot.WriteFieldEnd(ctx); err != nil {
+  if err := oprot.WriteFieldEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field end error 2:container_name: ", p), err) }
   return err
 }
 
-func (p *KsScmcClientSetContainerSysctlsArgs) writeField3(ctx context.Context, oprot thrift.TProtocol) (err error) {
-  if err := oprot.WriteFieldBegin(ctx, "sysctl_name", thrift.STRING, 3); err != nil {
+func (p *KsScmcClientSetContainerSysctlsArgs) writeField3(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("sysctl_name", thrift.STRING, 3); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field begin error 3:sysctl_name: ", p), err) }
-  if err := oprot.WriteString(ctx, string(p.SysctlName)); err != nil {
+  if err := oprot.WriteString(string(p.SysctlName)); err != nil {
   return thrift.PrependError(fmt.Sprintf("%T.sysctl_name (3) field write error: ", p), err) }
-  if err := oprot.WriteFieldEnd(ctx); err != nil {
+  if err := oprot.WriteFieldEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field end error 3:sysctl_name: ", p), err) }
   return err
 }
 
-func (p *KsScmcClientSetContainerSysctlsArgs) writeField4(ctx context.Context, oprot thrift.TProtocol) (err error) {
-  if err := oprot.WriteFieldBegin(ctx, "sysctl_value", thrift.STRING, 4); err != nil {
+func (p *KsScmcClientSetContainerSysctlsArgs) writeField4(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("sysctl_value", thrift.STRING, 4); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field begin error 4:sysctl_value: ", p), err) }
-  if err := oprot.WriteString(ctx, string(p.SysctlValue)); err != nil {
+  if err := oprot.WriteString(string(p.SysctlValue)); err != nil {
   return thrift.PrependError(fmt.Sprintf("%T.sysctl_value (4) field write error: ", p), err) }
-  if err := oprot.WriteFieldEnd(ctx); err != nil {
+  if err := oprot.WriteFieldEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field end error 4:sysctl_value: ", p), err) }
   return err
 }
@@ -12281,46 +14232,40 @@ func (p *KsScmcClientSetContainerSysctlsResult) IsSetSuccess() bool {
   return p.Success != nil
 }
 
-func (p *KsScmcClientSetContainerSysctlsResult) Read(ctx context.Context, iprot thrift.TProtocol) error {
-  if _, err := iprot.ReadStructBegin(ctx); err != nil {
+func (p *KsScmcClientSetContainerSysctlsResult) Read(iprot thrift.TProtocol) error {
+  if _, err := iprot.ReadStructBegin(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
   }
 
 
   for {
-    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin(ctx)
+    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin()
     if err != nil {
       return thrift.PrependError(fmt.Sprintf("%T field %d read error: ", p, fieldId), err)
     }
     if fieldTypeId == thrift.STOP { break; }
     switch fieldId {
     case 0:
-      if fieldTypeId == thrift.I32 {
-        if err := p.ReadField0(ctx, iprot); err != nil {
-          return err
-        }
-      } else {
-        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-          return err
-        }
+      if err := p.ReadField0(iprot); err != nil {
+        return err
       }
     default:
-      if err := iprot.Skip(ctx, fieldTypeId); err != nil {
+      if err := iprot.Skip(fieldTypeId); err != nil {
         return err
       }
     }
-    if err := iprot.ReadFieldEnd(ctx); err != nil {
+    if err := iprot.ReadFieldEnd(); err != nil {
       return err
     }
   }
-  if err := iprot.ReadStructEnd(ctx); err != nil {
+  if err := iprot.ReadStructEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
   }
   return nil
 }
 
-func (p *KsScmcClientSetContainerSysctlsResult)  ReadField0(ctx context.Context, iprot thrift.TProtocol) error {
-  if v, err := iprot.ReadI32(ctx); err != nil {
+func (p *KsScmcClientSetContainerSysctlsResult)  ReadField0(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadI32(); err != nil {
   return thrift.PrependError("error reading field 0: ", err)
 } else {
   p.Success = &v
@@ -12328,26 +14273,26 @@ func (p *KsScmcClientSetContainerSysctlsResult)  ReadField0(ctx context.Context,
   return nil
 }
 
-func (p *KsScmcClientSetContainerSysctlsResult) Write(ctx context.Context, oprot thrift.TProtocol) error {
-  if err := oprot.WriteStructBegin(ctx, "setContainerSysctls_result"); err != nil {
+func (p *KsScmcClientSetContainerSysctlsResult) Write(oprot thrift.TProtocol) error {
+  if err := oprot.WriteStructBegin("setContainerSysctls_result"); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err) }
   if p != nil {
-    if err := p.writeField0(ctx, oprot); err != nil { return err }
+    if err := p.writeField0(oprot); err != nil { return err }
   }
-  if err := oprot.WriteFieldStop(ctx); err != nil {
+  if err := oprot.WriteFieldStop(); err != nil {
     return thrift.PrependError("write field stop error: ", err) }
-  if err := oprot.WriteStructEnd(ctx); err != nil {
+  if err := oprot.WriteStructEnd(); err != nil {
     return thrift.PrependError("write struct stop error: ", err) }
   return nil
 }
 
-func (p *KsScmcClientSetContainerSysctlsResult) writeField0(ctx context.Context, oprot thrift.TProtocol) (err error) {
+func (p *KsScmcClientSetContainerSysctlsResult) writeField0(oprot thrift.TProtocol) (err error) {
   if p.IsSetSuccess() {
-    if err := oprot.WriteFieldBegin(ctx, "success", thrift.I32, 0); err != nil {
+    if err := oprot.WriteFieldBegin("success", thrift.I32, 0); err != nil {
       return thrift.PrependError(fmt.Sprintf("%T write field begin error 0:success: ", p), err) }
-    if err := oprot.WriteI32(ctx, int32(*p.Success)); err != nil {
+    if err := oprot.WriteI32(int32(*p.Success)); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T.success (0) field write error: ", p), err) }
-    if err := oprot.WriteFieldEnd(ctx); err != nil {
+    if err := oprot.WriteFieldEnd(); err != nil {
       return thrift.PrependError(fmt.Sprintf("%T write field end error 0:success: ", p), err) }
   }
   return err
@@ -12386,66 +14331,48 @@ func (p *KsScmcClientSetContainerExtraHostsArgs) GetContainerName() string {
 func (p *KsScmcClientSetContainerExtraHostsArgs) GetContainerExtrahosts() []string {
   return p.ContainerExtrahosts
 }
-func (p *KsScmcClientSetContainerExtraHostsArgs) Read(ctx context.Context, iprot thrift.TProtocol) error {
-  if _, err := iprot.ReadStructBegin(ctx); err != nil {
+func (p *KsScmcClientSetContainerExtraHostsArgs) Read(iprot thrift.TProtocol) error {
+  if _, err := iprot.ReadStructBegin(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
   }
 
 
   for {
-    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin(ctx)
+    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin()
     if err != nil {
       return thrift.PrependError(fmt.Sprintf("%T field %d read error: ", p, fieldId), err)
     }
     if fieldTypeId == thrift.STOP { break; }
     switch fieldId {
     case 1:
-      if fieldTypeId == thrift.STRING {
-        if err := p.ReadField1(ctx, iprot); err != nil {
-          return err
-        }
-      } else {
-        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-          return err
-        }
+      if err := p.ReadField1(iprot); err != nil {
+        return err
       }
     case 2:
-      if fieldTypeId == thrift.STRING {
-        if err := p.ReadField2(ctx, iprot); err != nil {
-          return err
-        }
-      } else {
-        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-          return err
-        }
+      if err := p.ReadField2(iprot); err != nil {
+        return err
       }
     case 3:
-      if fieldTypeId == thrift.LIST {
-        if err := p.ReadField3(ctx, iprot); err != nil {
-          return err
-        }
-      } else {
-        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-          return err
-        }
+      if err := p.ReadField3(iprot); err != nil {
+        return err
       }
     default:
-      if err := iprot.Skip(ctx, fieldTypeId); err != nil {
+      if err := iprot.Skip(fieldTypeId); err != nil {
         return err
       }
     }
-    if err := iprot.ReadFieldEnd(ctx); err != nil {
+    if err := iprot.ReadFieldEnd(); err != nil {
       return err
     }
   }
-  if err := iprot.ReadStructEnd(ctx); err != nil {
+  if err := iprot.ReadStructEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
   }
   return nil
 }
 
-func (p *KsScmcClientSetContainerExtraHostsArgs)  ReadField1(ctx context.Context, iprot thrift.TProtocol) error {
-  if v, err := iprot.ReadString(ctx); err != nil {
+func (p *KsScmcClientSetContainerExtraHostsArgs)  ReadField1(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadString(); err != nil {
   return thrift.PrependError("error reading field 1: ", err)
 } else {
   p.NodeIP = v
@@ -12453,8 +14380,8 @@ func (p *KsScmcClientSetContainerExtraHostsArgs)  ReadField1(ctx context.Context
   return nil
 }
 
-func (p *KsScmcClientSetContainerExtraHostsArgs)  ReadField2(ctx context.Context, iprot thrift.TProtocol) error {
-  if v, err := iprot.ReadString(ctx); err != nil {
+func (p *KsScmcClientSetContainerExtraHostsArgs)  ReadField2(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadString(); err != nil {
   return thrift.PrependError("error reading field 2: ", err)
 } else {
   p.ContainerName = v
@@ -12462,77 +14389,77 @@ func (p *KsScmcClientSetContainerExtraHostsArgs)  ReadField2(ctx context.Context
   return nil
 }
 
-func (p *KsScmcClientSetContainerExtraHostsArgs)  ReadField3(ctx context.Context, iprot thrift.TProtocol) error {
-  _, size, err := iprot.ReadListBegin(ctx)
+func (p *KsScmcClientSetContainerExtraHostsArgs)  ReadField3(iprot thrift.TProtocol) error {
+  _, size, err := iprot.ReadListBegin()
   if err != nil {
     return thrift.PrependError("error reading list begin: ", err)
   }
   tSlice := make([]string, 0, size)
   p.ContainerExtrahosts =  tSlice
   for i := 0; i < size; i ++ {
-var _elem68 string
-    if v, err := iprot.ReadString(ctx); err != nil {
+var _elem70 string
+    if v, err := iprot.ReadString(); err != nil {
     return thrift.PrependError("error reading field 0: ", err)
 } else {
-    _elem68 = v
+    _elem70 = v
 }
-    p.ContainerExtrahosts = append(p.ContainerExtrahosts, _elem68)
+    p.ContainerExtrahosts = append(p.ContainerExtrahosts, _elem70)
   }
-  if err := iprot.ReadListEnd(ctx); err != nil {
+  if err := iprot.ReadListEnd(); err != nil {
     return thrift.PrependError("error reading list end: ", err)
   }
   return nil
 }
 
-func (p *KsScmcClientSetContainerExtraHostsArgs) Write(ctx context.Context, oprot thrift.TProtocol) error {
-  if err := oprot.WriteStructBegin(ctx, "setContainerExtraHosts_args"); err != nil {
+func (p *KsScmcClientSetContainerExtraHostsArgs) Write(oprot thrift.TProtocol) error {
+  if err := oprot.WriteStructBegin("setContainerExtraHosts_args"); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err) }
   if p != nil {
-    if err := p.writeField1(ctx, oprot); err != nil { return err }
-    if err := p.writeField2(ctx, oprot); err != nil { return err }
-    if err := p.writeField3(ctx, oprot); err != nil { return err }
+    if err := p.writeField1(oprot); err != nil { return err }
+    if err := p.writeField2(oprot); err != nil { return err }
+    if err := p.writeField3(oprot); err != nil { return err }
   }
-  if err := oprot.WriteFieldStop(ctx); err != nil {
+  if err := oprot.WriteFieldStop(); err != nil {
     return thrift.PrependError("write field stop error: ", err) }
-  if err := oprot.WriteStructEnd(ctx); err != nil {
+  if err := oprot.WriteStructEnd(); err != nil {
     return thrift.PrependError("write struct stop error: ", err) }
   return nil
 }
 
-func (p *KsScmcClientSetContainerExtraHostsArgs) writeField1(ctx context.Context, oprot thrift.TProtocol) (err error) {
-  if err := oprot.WriteFieldBegin(ctx, "node_ip", thrift.STRING, 1); err != nil {
+func (p *KsScmcClientSetContainerExtraHostsArgs) writeField1(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("node_ip", thrift.STRING, 1); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field begin error 1:node_ip: ", p), err) }
-  if err := oprot.WriteString(ctx, string(p.NodeIP)); err != nil {
+  if err := oprot.WriteString(string(p.NodeIP)); err != nil {
   return thrift.PrependError(fmt.Sprintf("%T.node_ip (1) field write error: ", p), err) }
-  if err := oprot.WriteFieldEnd(ctx); err != nil {
+  if err := oprot.WriteFieldEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field end error 1:node_ip: ", p), err) }
   return err
 }
 
-func (p *KsScmcClientSetContainerExtraHostsArgs) writeField2(ctx context.Context, oprot thrift.TProtocol) (err error) {
-  if err := oprot.WriteFieldBegin(ctx, "container_name", thrift.STRING, 2); err != nil {
+func (p *KsScmcClientSetContainerExtraHostsArgs) writeField2(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("container_name", thrift.STRING, 2); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field begin error 2:container_name: ", p), err) }
-  if err := oprot.WriteString(ctx, string(p.ContainerName)); err != nil {
+  if err := oprot.WriteString(string(p.ContainerName)); err != nil {
   return thrift.PrependError(fmt.Sprintf("%T.container_name (2) field write error: ", p), err) }
-  if err := oprot.WriteFieldEnd(ctx); err != nil {
+  if err := oprot.WriteFieldEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field end error 2:container_name: ", p), err) }
   return err
 }
 
-func (p *KsScmcClientSetContainerExtraHostsArgs) writeField3(ctx context.Context, oprot thrift.TProtocol) (err error) {
-  if err := oprot.WriteFieldBegin(ctx, "container_extrahosts", thrift.LIST, 3); err != nil {
+func (p *KsScmcClientSetContainerExtraHostsArgs) writeField3(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("container_extrahosts", thrift.LIST, 3); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field begin error 3:container_extrahosts: ", p), err) }
-  if err := oprot.WriteListBegin(ctx, thrift.STRING, len(p.ContainerExtrahosts)); err != nil {
+  if err := oprot.WriteListBegin(thrift.STRING, len(p.ContainerExtrahosts)); err != nil {
     return thrift.PrependError("error writing list begin: ", err)
   }
   for _, v := range p.ContainerExtrahosts {
-    if err := oprot.WriteString(ctx, string(v)); err != nil {
+    if err := oprot.WriteString(string(v)); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T. (0) field write error: ", p), err) }
   }
-  if err := oprot.WriteListEnd(ctx); err != nil {
+  if err := oprot.WriteListEnd(); err != nil {
     return thrift.PrependError("error writing list end: ", err)
   }
-  if err := oprot.WriteFieldEnd(ctx); err != nil {
+  if err := oprot.WriteFieldEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field end error 3:container_extrahosts: ", p), err) }
   return err
 }
@@ -12565,46 +14492,40 @@ func (p *KsScmcClientSetContainerExtraHostsResult) IsSetSuccess() bool {
   return p.Success != nil
 }
 
-func (p *KsScmcClientSetContainerExtraHostsResult) Read(ctx context.Context, iprot thrift.TProtocol) error {
-  if _, err := iprot.ReadStructBegin(ctx); err != nil {
+func (p *KsScmcClientSetContainerExtraHostsResult) Read(iprot thrift.TProtocol) error {
+  if _, err := iprot.ReadStructBegin(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
   }
 
 
   for {
-    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin(ctx)
+    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin()
     if err != nil {
       return thrift.PrependError(fmt.Sprintf("%T field %d read error: ", p, fieldId), err)
     }
     if fieldTypeId == thrift.STOP { break; }
     switch fieldId {
     case 0:
-      if fieldTypeId == thrift.I32 {
-        if err := p.ReadField0(ctx, iprot); err != nil {
-          return err
-        }
-      } else {
-        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-          return err
-        }
+      if err := p.ReadField0(iprot); err != nil {
+        return err
       }
     default:
-      if err := iprot.Skip(ctx, fieldTypeId); err != nil {
+      if err := iprot.Skip(fieldTypeId); err != nil {
         return err
       }
     }
-    if err := iprot.ReadFieldEnd(ctx); err != nil {
+    if err := iprot.ReadFieldEnd(); err != nil {
       return err
     }
   }
-  if err := iprot.ReadStructEnd(ctx); err != nil {
+  if err := iprot.ReadStructEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
   }
   return nil
 }
 
-func (p *KsScmcClientSetContainerExtraHostsResult)  ReadField0(ctx context.Context, iprot thrift.TProtocol) error {
-  if v, err := iprot.ReadI32(ctx); err != nil {
+func (p *KsScmcClientSetContainerExtraHostsResult)  ReadField0(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadI32(); err != nil {
   return thrift.PrependError("error reading field 0: ", err)
 } else {
   p.Success = &v
@@ -12612,26 +14533,26 @@ func (p *KsScmcClientSetContainerExtraHostsResult)  ReadField0(ctx context.Conte
   return nil
 }
 
-func (p *KsScmcClientSetContainerExtraHostsResult) Write(ctx context.Context, oprot thrift.TProtocol) error {
-  if err := oprot.WriteStructBegin(ctx, "setContainerExtraHosts_result"); err != nil {
+func (p *KsScmcClientSetContainerExtraHostsResult) Write(oprot thrift.TProtocol) error {
+  if err := oprot.WriteStructBegin("setContainerExtraHosts_result"); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err) }
   if p != nil {
-    if err := p.writeField0(ctx, oprot); err != nil { return err }
+    if err := p.writeField0(oprot); err != nil { return err }
   }
-  if err := oprot.WriteFieldStop(ctx); err != nil {
+  if err := oprot.WriteFieldStop(); err != nil {
     return thrift.PrependError("write field stop error: ", err) }
-  if err := oprot.WriteStructEnd(ctx); err != nil {
+  if err := oprot.WriteStructEnd(); err != nil {
     return thrift.PrependError("write struct stop error: ", err) }
   return nil
 }
 
-func (p *KsScmcClientSetContainerExtraHostsResult) writeField0(ctx context.Context, oprot thrift.TProtocol) (err error) {
+func (p *KsScmcClientSetContainerExtraHostsResult) writeField0(oprot thrift.TProtocol) (err error) {
   if p.IsSetSuccess() {
-    if err := oprot.WriteFieldBegin(ctx, "success", thrift.I32, 0); err != nil {
+    if err := oprot.WriteFieldBegin("success", thrift.I32, 0); err != nil {
       return thrift.PrependError(fmt.Sprintf("%T write field begin error 0:success: ", p), err) }
-    if err := oprot.WriteI32(ctx, int32(*p.Success)); err != nil {
+    if err := oprot.WriteI32(int32(*p.Success)); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T.success (0) field write error: ", p), err) }
-    if err := oprot.WriteFieldEnd(ctx); err != nil {
+    if err := oprot.WriteFieldEnd(); err != nil {
       return thrift.PrependError(fmt.Sprintf("%T write field end error 0:success: ", p), err) }
   }
   return err
@@ -12658,46 +14579,40 @@ func NewKsScmcClientGetImagesListArgs() *KsScmcClientGetImagesListArgs {
 func (p *KsScmcClientGetImagesListArgs) GetNodeIP() string {
   return p.NodeIP
 }
-func (p *KsScmcClientGetImagesListArgs) Read(ctx context.Context, iprot thrift.TProtocol) error {
-  if _, err := iprot.ReadStructBegin(ctx); err != nil {
+func (p *KsScmcClientGetImagesListArgs) Read(iprot thrift.TProtocol) error {
+  if _, err := iprot.ReadStructBegin(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
   }
 
 
   for {
-    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin(ctx)
+    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin()
     if err != nil {
       return thrift.PrependError(fmt.Sprintf("%T field %d read error: ", p, fieldId), err)
     }
     if fieldTypeId == thrift.STOP { break; }
     switch fieldId {
     case 1:
-      if fieldTypeId == thrift.STRING {
-        if err := p.ReadField1(ctx, iprot); err != nil {
-          return err
-        }
-      } else {
-        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-          return err
-        }
+      if err := p.ReadField1(iprot); err != nil {
+        return err
       }
     default:
-      if err := iprot.Skip(ctx, fieldTypeId); err != nil {
+      if err := iprot.Skip(fieldTypeId); err != nil {
         return err
       }
     }
-    if err := iprot.ReadFieldEnd(ctx); err != nil {
+    if err := iprot.ReadFieldEnd(); err != nil {
       return err
     }
   }
-  if err := iprot.ReadStructEnd(ctx); err != nil {
+  if err := iprot.ReadStructEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
   }
   return nil
 }
 
-func (p *KsScmcClientGetImagesListArgs)  ReadField1(ctx context.Context, iprot thrift.TProtocol) error {
-  if v, err := iprot.ReadString(ctx); err != nil {
+func (p *KsScmcClientGetImagesListArgs)  ReadField1(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadString(); err != nil {
   return thrift.PrependError("error reading field 1: ", err)
 } else {
   p.NodeIP = v
@@ -12705,25 +14620,25 @@ func (p *KsScmcClientGetImagesListArgs)  ReadField1(ctx context.Context, iprot t
   return nil
 }
 
-func (p *KsScmcClientGetImagesListArgs) Write(ctx context.Context, oprot thrift.TProtocol) error {
-  if err := oprot.WriteStructBegin(ctx, "getImagesList_args"); err != nil {
+func (p *KsScmcClientGetImagesListArgs) Write(oprot thrift.TProtocol) error {
+  if err := oprot.WriteStructBegin("getImagesList_args"); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err) }
   if p != nil {
-    if err := p.writeField1(ctx, oprot); err != nil { return err }
+    if err := p.writeField1(oprot); err != nil { return err }
   }
-  if err := oprot.WriteFieldStop(ctx); err != nil {
+  if err := oprot.WriteFieldStop(); err != nil {
     return thrift.PrependError("write field stop error: ", err) }
-  if err := oprot.WriteStructEnd(ctx); err != nil {
+  if err := oprot.WriteStructEnd(); err != nil {
     return thrift.PrependError("write struct stop error: ", err) }
   return nil
 }
 
-func (p *KsScmcClientGetImagesListArgs) writeField1(ctx context.Context, oprot thrift.TProtocol) (err error) {
-  if err := oprot.WriteFieldBegin(ctx, "node_ip", thrift.STRING, 1); err != nil {
+func (p *KsScmcClientGetImagesListArgs) writeField1(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("node_ip", thrift.STRING, 1); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field begin error 1:node_ip: ", p), err) }
-  if err := oprot.WriteString(ctx, string(p.NodeIP)); err != nil {
+  if err := oprot.WriteString(string(p.NodeIP)); err != nil {
   return thrift.PrependError(fmt.Sprintf("%T.node_ip (1) field write error: ", p), err) }
-  if err := oprot.WriteFieldEnd(ctx); err != nil {
+  if err := oprot.WriteFieldEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field end error 1:node_ip: ", p), err) }
   return err
 }
@@ -12756,73 +14671,67 @@ func (p *KsScmcClientGetImagesListResult) IsSetSuccess() bool {
   return p.Success != nil
 }
 
-func (p *KsScmcClientGetImagesListResult) Read(ctx context.Context, iprot thrift.TProtocol) error {
-  if _, err := iprot.ReadStructBegin(ctx); err != nil {
+func (p *KsScmcClientGetImagesListResult) Read(iprot thrift.TProtocol) error {
+  if _, err := iprot.ReadStructBegin(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
   }
 
 
   for {
-    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin(ctx)
+    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin()
     if err != nil {
       return thrift.PrependError(fmt.Sprintf("%T field %d read error: ", p, fieldId), err)
     }
     if fieldTypeId == thrift.STOP { break; }
     switch fieldId {
     case 0:
-      if fieldTypeId == thrift.STRUCT {
-        if err := p.ReadField0(ctx, iprot); err != nil {
-          return err
-        }
-      } else {
-        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-          return err
-        }
+      if err := p.ReadField0(iprot); err != nil {
+        return err
       }
     default:
-      if err := iprot.Skip(ctx, fieldTypeId); err != nil {
+      if err := iprot.Skip(fieldTypeId); err != nil {
         return err
       }
     }
-    if err := iprot.ReadFieldEnd(ctx); err != nil {
+    if err := iprot.ReadFieldEnd(); err != nil {
       return err
     }
   }
-  if err := iprot.ReadStructEnd(ctx); err != nil {
+  if err := iprot.ReadStructEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
   }
   return nil
 }
 
-func (p *KsScmcClientGetImagesListResult)  ReadField0(ctx context.Context, iprot thrift.TProtocol) error {
+func (p *KsScmcClientGetImagesListResult)  ReadField0(iprot thrift.TProtocol) error {
   p.Success = &GetImagesListResponse{}
-  if err := p.Success.Read(ctx, iprot); err != nil {
+  if err := p.Success.Read(iprot); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", p.Success), err)
   }
   return nil
 }
 
-func (p *KsScmcClientGetImagesListResult) Write(ctx context.Context, oprot thrift.TProtocol) error {
-  if err := oprot.WriteStructBegin(ctx, "getImagesList_result"); err != nil {
+func (p *KsScmcClientGetImagesListResult) Write(oprot thrift.TProtocol) error {
+  if err := oprot.WriteStructBegin("getImagesList_result"); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err) }
   if p != nil {
-    if err := p.writeField0(ctx, oprot); err != nil { return err }
+    if err := p.writeField0(oprot); err != nil { return err }
   }
-  if err := oprot.WriteFieldStop(ctx); err != nil {
+  if err := oprot.WriteFieldStop(); err != nil {
     return thrift.PrependError("write field stop error: ", err) }
-  if err := oprot.WriteStructEnd(ctx); err != nil {
+  if err := oprot.WriteStructEnd(); err != nil {
     return thrift.PrependError("write struct stop error: ", err) }
   return nil
 }
 
-func (p *KsScmcClientGetImagesListResult) writeField0(ctx context.Context, oprot thrift.TProtocol) (err error) {
+func (p *KsScmcClientGetImagesListResult) writeField0(oprot thrift.TProtocol) (err error) {
   if p.IsSetSuccess() {
-    if err := oprot.WriteFieldBegin(ctx, "success", thrift.STRUCT, 0); err != nil {
+    if err := oprot.WriteFieldBegin("success", thrift.STRUCT, 0); err != nil {
       return thrift.PrependError(fmt.Sprintf("%T write field begin error 0:success: ", p), err) }
-    if err := p.Success.Write(ctx, oprot); err != nil {
+    if err := p.Success.Write(oprot); err != nil {
       return thrift.PrependError(fmt.Sprintf("%T error writing struct: ", p.Success), err)
     }
-    if err := oprot.WriteFieldEnd(ctx); err != nil {
+    if err := oprot.WriteFieldEnd(); err != nil {
       return thrift.PrependError(fmt.Sprintf("%T write field end error 0:success: ", p), err) }
   }
   return err
@@ -12855,56 +14764,44 @@ func (p *KsScmcClientLoadImageArgs) GetNodeIP() string {
 func (p *KsScmcClientLoadImageArgs) GetTarPath() string {
   return p.TarPath
 }
-func (p *KsScmcClientLoadImageArgs) Read(ctx context.Context, iprot thrift.TProtocol) error {
-  if _, err := iprot.ReadStructBegin(ctx); err != nil {
+func (p *KsScmcClientLoadImageArgs) Read(iprot thrift.TProtocol) error {
+  if _, err := iprot.ReadStructBegin(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
   }
 
 
   for {
-    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin(ctx)
+    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin()
     if err != nil {
       return thrift.PrependError(fmt.Sprintf("%T field %d read error: ", p, fieldId), err)
     }
     if fieldTypeId == thrift.STOP { break; }
     switch fieldId {
     case 1:
-      if fieldTypeId == thrift.STRING {
-        if err := p.ReadField1(ctx, iprot); err != nil {
-          return err
-        }
-      } else {
-        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-          return err
-        }
+      if err := p.ReadField1(iprot); err != nil {
+        return err
       }
     case 2:
-      if fieldTypeId == thrift.STRING {
-        if err := p.ReadField2(ctx, iprot); err != nil {
-          return err
-        }
-      } else {
-        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-          return err
-        }
+      if err := p.ReadField2(iprot); err != nil {
+        return err
       }
     default:
-      if err := iprot.Skip(ctx, fieldTypeId); err != nil {
+      if err := iprot.Skip(fieldTypeId); err != nil {
         return err
       }
     }
-    if err := iprot.ReadFieldEnd(ctx); err != nil {
+    if err := iprot.ReadFieldEnd(); err != nil {
       return err
     }
   }
-  if err := iprot.ReadStructEnd(ctx); err != nil {
+  if err := iprot.ReadStructEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
   }
   return nil
 }
 
-func (p *KsScmcClientLoadImageArgs)  ReadField1(ctx context.Context, iprot thrift.TProtocol) error {
-  if v, err := iprot.ReadString(ctx); err != nil {
+func (p *KsScmcClientLoadImageArgs)  ReadField1(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadString(); err != nil {
   return thrift.PrependError("error reading field 1: ", err)
 } else {
   p.NodeIP = v
@@ -12912,8 +14809,8 @@ func (p *KsScmcClientLoadImageArgs)  ReadField1(ctx context.Context, iprot thrif
   return nil
 }
 
-func (p *KsScmcClientLoadImageArgs)  ReadField2(ctx context.Context, iprot thrift.TProtocol) error {
-  if v, err := iprot.ReadString(ctx); err != nil {
+func (p *KsScmcClientLoadImageArgs)  ReadField2(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadString(); err != nil {
   return thrift.PrependError("error reading field 2: ", err)
 } else {
   p.TarPath = v
@@ -12921,36 +14818,36 @@ func (p *KsScmcClientLoadImageArgs)  ReadField2(ctx context.Context, iprot thrif
   return nil
 }
 
-func (p *KsScmcClientLoadImageArgs) Write(ctx context.Context, oprot thrift.TProtocol) error {
-  if err := oprot.WriteStructBegin(ctx, "loadImage_args"); err != nil {
+func (p *KsScmcClientLoadImageArgs) Write(oprot thrift.TProtocol) error {
+  if err := oprot.WriteStructBegin("loadImage_args"); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err) }
   if p != nil {
-    if err := p.writeField1(ctx, oprot); err != nil { return err }
-    if err := p.writeField2(ctx, oprot); err != nil { return err }
+    if err := p.writeField1(oprot); err != nil { return err }
+    if err := p.writeField2(oprot); err != nil { return err }
   }
-  if err := oprot.WriteFieldStop(ctx); err != nil {
+  if err := oprot.WriteFieldStop(); err != nil {
     return thrift.PrependError("write field stop error: ", err) }
-  if err := oprot.WriteStructEnd(ctx); err != nil {
+  if err := oprot.WriteStructEnd(); err != nil {
     return thrift.PrependError("write struct stop error: ", err) }
   return nil
 }
 
-func (p *KsScmcClientLoadImageArgs) writeField1(ctx context.Context, oprot thrift.TProtocol) (err error) {
-  if err := oprot.WriteFieldBegin(ctx, "node_ip", thrift.STRING, 1); err != nil {
+func (p *KsScmcClientLoadImageArgs) writeField1(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("node_ip", thrift.STRING, 1); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field begin error 1:node_ip: ", p), err) }
-  if err := oprot.WriteString(ctx, string(p.NodeIP)); err != nil {
+  if err := oprot.WriteString(string(p.NodeIP)); err != nil {
   return thrift.PrependError(fmt.Sprintf("%T.node_ip (1) field write error: ", p), err) }
-  if err := oprot.WriteFieldEnd(ctx); err != nil {
+  if err := oprot.WriteFieldEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field end error 1:node_ip: ", p), err) }
   return err
 }
 
-func (p *KsScmcClientLoadImageArgs) writeField2(ctx context.Context, oprot thrift.TProtocol) (err error) {
-  if err := oprot.WriteFieldBegin(ctx, "tarPath", thrift.STRING, 2); err != nil {
+func (p *KsScmcClientLoadImageArgs) writeField2(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("tarPath", thrift.STRING, 2); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field begin error 2:tarPath: ", p), err) }
-  if err := oprot.WriteString(ctx, string(p.TarPath)); err != nil {
+  if err := oprot.WriteString(string(p.TarPath)); err != nil {
   return thrift.PrependError(fmt.Sprintf("%T.tarPath (2) field write error: ", p), err) }
-  if err := oprot.WriteFieldEnd(ctx); err != nil {
+  if err := oprot.WriteFieldEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field end error 2:tarPath: ", p), err) }
   return err
 }
@@ -12983,46 +14880,40 @@ func (p *KsScmcClientLoadImageResult) IsSetSuccess() bool {
   return p.Success != nil
 }
 
-func (p *KsScmcClientLoadImageResult) Read(ctx context.Context, iprot thrift.TProtocol) error {
-  if _, err := iprot.ReadStructBegin(ctx); err != nil {
+func (p *KsScmcClientLoadImageResult) Read(iprot thrift.TProtocol) error {
+  if _, err := iprot.ReadStructBegin(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
   }
 
 
   for {
-    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin(ctx)
+    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin()
     if err != nil {
       return thrift.PrependError(fmt.Sprintf("%T field %d read error: ", p, fieldId), err)
     }
     if fieldTypeId == thrift.STOP { break; }
     switch fieldId {
     case 0:
-      if fieldTypeId == thrift.I32 {
-        if err := p.ReadField0(ctx, iprot); err != nil {
-          return err
-        }
-      } else {
-        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-          return err
-        }
+      if err := p.ReadField0(iprot); err != nil {
+        return err
       }
     default:
-      if err := iprot.Skip(ctx, fieldTypeId); err != nil {
+      if err := iprot.Skip(fieldTypeId); err != nil {
         return err
       }
     }
-    if err := iprot.ReadFieldEnd(ctx); err != nil {
+    if err := iprot.ReadFieldEnd(); err != nil {
       return err
     }
   }
-  if err := iprot.ReadStructEnd(ctx); err != nil {
+  if err := iprot.ReadStructEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
   }
   return nil
 }
 
-func (p *KsScmcClientLoadImageResult)  ReadField0(ctx context.Context, iprot thrift.TProtocol) error {
-  if v, err := iprot.ReadI32(ctx); err != nil {
+func (p *KsScmcClientLoadImageResult)  ReadField0(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadI32(); err != nil {
   return thrift.PrependError("error reading field 0: ", err)
 } else {
   p.Success = &v
@@ -13030,26 +14921,26 @@ func (p *KsScmcClientLoadImageResult)  ReadField0(ctx context.Context, iprot thr
   return nil
 }
 
-func (p *KsScmcClientLoadImageResult) Write(ctx context.Context, oprot thrift.TProtocol) error {
-  if err := oprot.WriteStructBegin(ctx, "loadImage_result"); err != nil {
+func (p *KsScmcClientLoadImageResult) Write(oprot thrift.TProtocol) error {
+  if err := oprot.WriteStructBegin("loadImage_result"); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err) }
   if p != nil {
-    if err := p.writeField0(ctx, oprot); err != nil { return err }
+    if err := p.writeField0(oprot); err != nil { return err }
   }
-  if err := oprot.WriteFieldStop(ctx); err != nil {
+  if err := oprot.WriteFieldStop(); err != nil {
     return thrift.PrependError("write field stop error: ", err) }
-  if err := oprot.WriteStructEnd(ctx); err != nil {
+  if err := oprot.WriteStructEnd(); err != nil {
     return thrift.PrependError("write struct stop error: ", err) }
   return nil
 }
 
-func (p *KsScmcClientLoadImageResult) writeField0(ctx context.Context, oprot thrift.TProtocol) (err error) {
+func (p *KsScmcClientLoadImageResult) writeField0(oprot thrift.TProtocol) (err error) {
   if p.IsSetSuccess() {
-    if err := oprot.WriteFieldBegin(ctx, "success", thrift.I32, 0); err != nil {
+    if err := oprot.WriteFieldBegin("success", thrift.I32, 0); err != nil {
       return thrift.PrependError(fmt.Sprintf("%T write field begin error 0:success: ", p), err) }
-    if err := oprot.WriteI32(ctx, int32(*p.Success)); err != nil {
+    if err := oprot.WriteI32(int32(*p.Success)); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T.success (0) field write error: ", p), err) }
-    if err := oprot.WriteFieldEnd(ctx); err != nil {
+    if err := oprot.WriteFieldEnd(); err != nil {
       return thrift.PrependError(fmt.Sprintf("%T write field end error 0:success: ", p), err) }
   }
   return err
@@ -13082,56 +14973,44 @@ func (p *KsScmcClientPauseContainerArgs) GetNodeIP() string {
 func (p *KsScmcClientPauseContainerArgs) GetContainerName() string {
   return p.ContainerName
 }
-func (p *KsScmcClientPauseContainerArgs) Read(ctx context.Context, iprot thrift.TProtocol) error {
-  if _, err := iprot.ReadStructBegin(ctx); err != nil {
+func (p *KsScmcClientPauseContainerArgs) Read(iprot thrift.TProtocol) error {
+  if _, err := iprot.ReadStructBegin(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
   }
 
 
   for {
-    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin(ctx)
+    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin()
     if err != nil {
       return thrift.PrependError(fmt.Sprintf("%T field %d read error: ", p, fieldId), err)
     }
     if fieldTypeId == thrift.STOP { break; }
     switch fieldId {
     case 1:
-      if fieldTypeId == thrift.STRING {
-        if err := p.ReadField1(ctx, iprot); err != nil {
-          return err
-        }
-      } else {
-        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-          return err
-        }
+      if err := p.ReadField1(iprot); err != nil {
+        return err
       }
     case 2:
-      if fieldTypeId == thrift.STRING {
-        if err := p.ReadField2(ctx, iprot); err != nil {
-          return err
-        }
-      } else {
-        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-          return err
-        }
+      if err := p.ReadField2(iprot); err != nil {
+        return err
       }
     default:
-      if err := iprot.Skip(ctx, fieldTypeId); err != nil {
+      if err := iprot.Skip(fieldTypeId); err != nil {
         return err
       }
     }
-    if err := iprot.ReadFieldEnd(ctx); err != nil {
+    if err := iprot.ReadFieldEnd(); err != nil {
       return err
     }
   }
-  if err := iprot.ReadStructEnd(ctx); err != nil {
+  if err := iprot.ReadStructEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
   }
   return nil
 }
 
-func (p *KsScmcClientPauseContainerArgs)  ReadField1(ctx context.Context, iprot thrift.TProtocol) error {
-  if v, err := iprot.ReadString(ctx); err != nil {
+func (p *KsScmcClientPauseContainerArgs)  ReadField1(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadString(); err != nil {
   return thrift.PrependError("error reading field 1: ", err)
 } else {
   p.NodeIP = v
@@ -13139,8 +15018,8 @@ func (p *KsScmcClientPauseContainerArgs)  ReadField1(ctx context.Context, iprot 
   return nil
 }
 
-func (p *KsScmcClientPauseContainerArgs)  ReadField2(ctx context.Context, iprot thrift.TProtocol) error {
-  if v, err := iprot.ReadString(ctx); err != nil {
+func (p *KsScmcClientPauseContainerArgs)  ReadField2(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadString(); err != nil {
   return thrift.PrependError("error reading field 2: ", err)
 } else {
   p.ContainerName = v
@@ -13148,36 +15027,36 @@ func (p *KsScmcClientPauseContainerArgs)  ReadField2(ctx context.Context, iprot 
   return nil
 }
 
-func (p *KsScmcClientPauseContainerArgs) Write(ctx context.Context, oprot thrift.TProtocol) error {
-  if err := oprot.WriteStructBegin(ctx, "pauseContainer_args"); err != nil {
+func (p *KsScmcClientPauseContainerArgs) Write(oprot thrift.TProtocol) error {
+  if err := oprot.WriteStructBegin("pauseContainer_args"); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err) }
   if p != nil {
-    if err := p.writeField1(ctx, oprot); err != nil { return err }
-    if err := p.writeField2(ctx, oprot); err != nil { return err }
+    if err := p.writeField1(oprot); err != nil { return err }
+    if err := p.writeField2(oprot); err != nil { return err }
   }
-  if err := oprot.WriteFieldStop(ctx); err != nil {
+  if err := oprot.WriteFieldStop(); err != nil {
     return thrift.PrependError("write field stop error: ", err) }
-  if err := oprot.WriteStructEnd(ctx); err != nil {
+  if err := oprot.WriteStructEnd(); err != nil {
     return thrift.PrependError("write struct stop error: ", err) }
   return nil
 }
 
-func (p *KsScmcClientPauseContainerArgs) writeField1(ctx context.Context, oprot thrift.TProtocol) (err error) {
-  if err := oprot.WriteFieldBegin(ctx, "node_ip", thrift.STRING, 1); err != nil {
+func (p *KsScmcClientPauseContainerArgs) writeField1(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("node_ip", thrift.STRING, 1); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field begin error 1:node_ip: ", p), err) }
-  if err := oprot.WriteString(ctx, string(p.NodeIP)); err != nil {
+  if err := oprot.WriteString(string(p.NodeIP)); err != nil {
   return thrift.PrependError(fmt.Sprintf("%T.node_ip (1) field write error: ", p), err) }
-  if err := oprot.WriteFieldEnd(ctx); err != nil {
+  if err := oprot.WriteFieldEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field end error 1:node_ip: ", p), err) }
   return err
 }
 
-func (p *KsScmcClientPauseContainerArgs) writeField2(ctx context.Context, oprot thrift.TProtocol) (err error) {
-  if err := oprot.WriteFieldBegin(ctx, "container_name", thrift.STRING, 2); err != nil {
+func (p *KsScmcClientPauseContainerArgs) writeField2(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("container_name", thrift.STRING, 2); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field begin error 2:container_name: ", p), err) }
-  if err := oprot.WriteString(ctx, string(p.ContainerName)); err != nil {
+  if err := oprot.WriteString(string(p.ContainerName)); err != nil {
   return thrift.PrependError(fmt.Sprintf("%T.container_name (2) field write error: ", p), err) }
-  if err := oprot.WriteFieldEnd(ctx); err != nil {
+  if err := oprot.WriteFieldEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field end error 2:container_name: ", p), err) }
   return err
 }
@@ -13210,46 +15089,40 @@ func (p *KsScmcClientPauseContainerResult) IsSetSuccess() bool {
   return p.Success != nil
 }
 
-func (p *KsScmcClientPauseContainerResult) Read(ctx context.Context, iprot thrift.TProtocol) error {
-  if _, err := iprot.ReadStructBegin(ctx); err != nil {
+func (p *KsScmcClientPauseContainerResult) Read(iprot thrift.TProtocol) error {
+  if _, err := iprot.ReadStructBegin(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
   }
 
 
   for {
-    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin(ctx)
+    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin()
     if err != nil {
       return thrift.PrependError(fmt.Sprintf("%T field %d read error: ", p, fieldId), err)
     }
     if fieldTypeId == thrift.STOP { break; }
     switch fieldId {
     case 0:
-      if fieldTypeId == thrift.I32 {
-        if err := p.ReadField0(ctx, iprot); err != nil {
-          return err
-        }
-      } else {
-        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-          return err
-        }
+      if err := p.ReadField0(iprot); err != nil {
+        return err
       }
     default:
-      if err := iprot.Skip(ctx, fieldTypeId); err != nil {
+      if err := iprot.Skip(fieldTypeId); err != nil {
         return err
       }
     }
-    if err := iprot.ReadFieldEnd(ctx); err != nil {
+    if err := iprot.ReadFieldEnd(); err != nil {
       return err
     }
   }
-  if err := iprot.ReadStructEnd(ctx); err != nil {
+  if err := iprot.ReadStructEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
   }
   return nil
 }
 
-func (p *KsScmcClientPauseContainerResult)  ReadField0(ctx context.Context, iprot thrift.TProtocol) error {
-  if v, err := iprot.ReadI32(ctx); err != nil {
+func (p *KsScmcClientPauseContainerResult)  ReadField0(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadI32(); err != nil {
   return thrift.PrependError("error reading field 0: ", err)
 } else {
   p.Success = &v
@@ -13257,26 +15130,26 @@ func (p *KsScmcClientPauseContainerResult)  ReadField0(ctx context.Context, ipro
   return nil
 }
 
-func (p *KsScmcClientPauseContainerResult) Write(ctx context.Context, oprot thrift.TProtocol) error {
-  if err := oprot.WriteStructBegin(ctx, "pauseContainer_result"); err != nil {
+func (p *KsScmcClientPauseContainerResult) Write(oprot thrift.TProtocol) error {
+  if err := oprot.WriteStructBegin("pauseContainer_result"); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err) }
   if p != nil {
-    if err := p.writeField0(ctx, oprot); err != nil { return err }
+    if err := p.writeField0(oprot); err != nil { return err }
   }
-  if err := oprot.WriteFieldStop(ctx); err != nil {
+  if err := oprot.WriteFieldStop(); err != nil {
     return thrift.PrependError("write field stop error: ", err) }
-  if err := oprot.WriteStructEnd(ctx); err != nil {
+  if err := oprot.WriteStructEnd(); err != nil {
     return thrift.PrependError("write struct stop error: ", err) }
   return nil
 }
 
-func (p *KsScmcClientPauseContainerResult) writeField0(ctx context.Context, oprot thrift.TProtocol) (err error) {
+func (p *KsScmcClientPauseContainerResult) writeField0(oprot thrift.TProtocol) (err error) {
   if p.IsSetSuccess() {
-    if err := oprot.WriteFieldBegin(ctx, "success", thrift.I32, 0); err != nil {
+    if err := oprot.WriteFieldBegin("success", thrift.I32, 0); err != nil {
       return thrift.PrependError(fmt.Sprintf("%T write field begin error 0:success: ", p), err) }
-    if err := oprot.WriteI32(ctx, int32(*p.Success)); err != nil {
+    if err := oprot.WriteI32(int32(*p.Success)); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T.success (0) field write error: ", p), err) }
-    if err := oprot.WriteFieldEnd(ctx); err != nil {
+    if err := oprot.WriteFieldEnd(); err != nil {
       return thrift.PrependError(fmt.Sprintf("%T write field end error 0:success: ", p), err) }
   }
   return err
@@ -13309,56 +15182,44 @@ func (p *KsScmcClientUnpauseContainerArgs) GetNodeIP() string {
 func (p *KsScmcClientUnpauseContainerArgs) GetContainerName() string {
   return p.ContainerName
 }
-func (p *KsScmcClientUnpauseContainerArgs) Read(ctx context.Context, iprot thrift.TProtocol) error {
-  if _, err := iprot.ReadStructBegin(ctx); err != nil {
+func (p *KsScmcClientUnpauseContainerArgs) Read(iprot thrift.TProtocol) error {
+  if _, err := iprot.ReadStructBegin(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
   }
 
 
   for {
-    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin(ctx)
+    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin()
     if err != nil {
       return thrift.PrependError(fmt.Sprintf("%T field %d read error: ", p, fieldId), err)
     }
     if fieldTypeId == thrift.STOP { break; }
     switch fieldId {
     case 1:
-      if fieldTypeId == thrift.STRING {
-        if err := p.ReadField1(ctx, iprot); err != nil {
-          return err
-        }
-      } else {
-        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-          return err
-        }
+      if err := p.ReadField1(iprot); err != nil {
+        return err
       }
     case 2:
-      if fieldTypeId == thrift.STRING {
-        if err := p.ReadField2(ctx, iprot); err != nil {
-          return err
-        }
-      } else {
-        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-          return err
-        }
+      if err := p.ReadField2(iprot); err != nil {
+        return err
       }
     default:
-      if err := iprot.Skip(ctx, fieldTypeId); err != nil {
+      if err := iprot.Skip(fieldTypeId); err != nil {
         return err
       }
     }
-    if err := iprot.ReadFieldEnd(ctx); err != nil {
+    if err := iprot.ReadFieldEnd(); err != nil {
       return err
     }
   }
-  if err := iprot.ReadStructEnd(ctx); err != nil {
+  if err := iprot.ReadStructEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
   }
   return nil
 }
 
-func (p *KsScmcClientUnpauseContainerArgs)  ReadField1(ctx context.Context, iprot thrift.TProtocol) error {
-  if v, err := iprot.ReadString(ctx); err != nil {
+func (p *KsScmcClientUnpauseContainerArgs)  ReadField1(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadString(); err != nil {
   return thrift.PrependError("error reading field 1: ", err)
 } else {
   p.NodeIP = v
@@ -13366,8 +15227,8 @@ func (p *KsScmcClientUnpauseContainerArgs)  ReadField1(ctx context.Context, ipro
   return nil
 }
 
-func (p *KsScmcClientUnpauseContainerArgs)  ReadField2(ctx context.Context, iprot thrift.TProtocol) error {
-  if v, err := iprot.ReadString(ctx); err != nil {
+func (p *KsScmcClientUnpauseContainerArgs)  ReadField2(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadString(); err != nil {
   return thrift.PrependError("error reading field 2: ", err)
 } else {
   p.ContainerName = v
@@ -13375,36 +15236,36 @@ func (p *KsScmcClientUnpauseContainerArgs)  ReadField2(ctx context.Context, ipro
   return nil
 }
 
-func (p *KsScmcClientUnpauseContainerArgs) Write(ctx context.Context, oprot thrift.TProtocol) error {
-  if err := oprot.WriteStructBegin(ctx, "unpauseContainer_args"); err != nil {
+func (p *KsScmcClientUnpauseContainerArgs) Write(oprot thrift.TProtocol) error {
+  if err := oprot.WriteStructBegin("unpauseContainer_args"); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err) }
   if p != nil {
-    if err := p.writeField1(ctx, oprot); err != nil { return err }
-    if err := p.writeField2(ctx, oprot); err != nil { return err }
+    if err := p.writeField1(oprot); err != nil { return err }
+    if err := p.writeField2(oprot); err != nil { return err }
   }
-  if err := oprot.WriteFieldStop(ctx); err != nil {
+  if err := oprot.WriteFieldStop(); err != nil {
     return thrift.PrependError("write field stop error: ", err) }
-  if err := oprot.WriteStructEnd(ctx); err != nil {
+  if err := oprot.WriteStructEnd(); err != nil {
     return thrift.PrependError("write struct stop error: ", err) }
   return nil
 }
 
-func (p *KsScmcClientUnpauseContainerArgs) writeField1(ctx context.Context, oprot thrift.TProtocol) (err error) {
-  if err := oprot.WriteFieldBegin(ctx, "node_ip", thrift.STRING, 1); err != nil {
+func (p *KsScmcClientUnpauseContainerArgs) writeField1(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("node_ip", thrift.STRING, 1); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field begin error 1:node_ip: ", p), err) }
-  if err := oprot.WriteString(ctx, string(p.NodeIP)); err != nil {
+  if err := oprot.WriteString(string(p.NodeIP)); err != nil {
   return thrift.PrependError(fmt.Sprintf("%T.node_ip (1) field write error: ", p), err) }
-  if err := oprot.WriteFieldEnd(ctx); err != nil {
+  if err := oprot.WriteFieldEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field end error 1:node_ip: ", p), err) }
   return err
 }
 
-func (p *KsScmcClientUnpauseContainerArgs) writeField2(ctx context.Context, oprot thrift.TProtocol) (err error) {
-  if err := oprot.WriteFieldBegin(ctx, "container_name", thrift.STRING, 2); err != nil {
+func (p *KsScmcClientUnpauseContainerArgs) writeField2(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("container_name", thrift.STRING, 2); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field begin error 2:container_name: ", p), err) }
-  if err := oprot.WriteString(ctx, string(p.ContainerName)); err != nil {
+  if err := oprot.WriteString(string(p.ContainerName)); err != nil {
   return thrift.PrependError(fmt.Sprintf("%T.container_name (2) field write error: ", p), err) }
-  if err := oprot.WriteFieldEnd(ctx); err != nil {
+  if err := oprot.WriteFieldEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field end error 2:container_name: ", p), err) }
   return err
 }
@@ -13437,46 +15298,40 @@ func (p *KsScmcClientUnpauseContainerResult) IsSetSuccess() bool {
   return p.Success != nil
 }
 
-func (p *KsScmcClientUnpauseContainerResult) Read(ctx context.Context, iprot thrift.TProtocol) error {
-  if _, err := iprot.ReadStructBegin(ctx); err != nil {
+func (p *KsScmcClientUnpauseContainerResult) Read(iprot thrift.TProtocol) error {
+  if _, err := iprot.ReadStructBegin(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
   }
 
 
   for {
-    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin(ctx)
+    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin()
     if err != nil {
       return thrift.PrependError(fmt.Sprintf("%T field %d read error: ", p, fieldId), err)
     }
     if fieldTypeId == thrift.STOP { break; }
     switch fieldId {
     case 0:
-      if fieldTypeId == thrift.I32 {
-        if err := p.ReadField0(ctx, iprot); err != nil {
-          return err
-        }
-      } else {
-        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-          return err
-        }
+      if err := p.ReadField0(iprot); err != nil {
+        return err
       }
     default:
-      if err := iprot.Skip(ctx, fieldTypeId); err != nil {
+      if err := iprot.Skip(fieldTypeId); err != nil {
         return err
       }
     }
-    if err := iprot.ReadFieldEnd(ctx); err != nil {
+    if err := iprot.ReadFieldEnd(); err != nil {
       return err
     }
   }
-  if err := iprot.ReadStructEnd(ctx); err != nil {
+  if err := iprot.ReadStructEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
   }
   return nil
 }
 
-func (p *KsScmcClientUnpauseContainerResult)  ReadField0(ctx context.Context, iprot thrift.TProtocol) error {
-  if v, err := iprot.ReadI32(ctx); err != nil {
+func (p *KsScmcClientUnpauseContainerResult)  ReadField0(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadI32(); err != nil {
   return thrift.PrependError("error reading field 0: ", err)
 } else {
   p.Success = &v
@@ -13484,26 +15339,26 @@ func (p *KsScmcClientUnpauseContainerResult)  ReadField0(ctx context.Context, ip
   return nil
 }
 
-func (p *KsScmcClientUnpauseContainerResult) Write(ctx context.Context, oprot thrift.TProtocol) error {
-  if err := oprot.WriteStructBegin(ctx, "unpauseContainer_result"); err != nil {
+func (p *KsScmcClientUnpauseContainerResult) Write(oprot thrift.TProtocol) error {
+  if err := oprot.WriteStructBegin("unpauseContainer_result"); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err) }
   if p != nil {
-    if err := p.writeField0(ctx, oprot); err != nil { return err }
+    if err := p.writeField0(oprot); err != nil { return err }
   }
-  if err := oprot.WriteFieldStop(ctx); err != nil {
+  if err := oprot.WriteFieldStop(); err != nil {
     return thrift.PrependError("write field stop error: ", err) }
-  if err := oprot.WriteStructEnd(ctx); err != nil {
+  if err := oprot.WriteStructEnd(); err != nil {
     return thrift.PrependError("write struct stop error: ", err) }
   return nil
 }
 
-func (p *KsScmcClientUnpauseContainerResult) writeField0(ctx context.Context, oprot thrift.TProtocol) (err error) {
+func (p *KsScmcClientUnpauseContainerResult) writeField0(oprot thrift.TProtocol) (err error) {
   if p.IsSetSuccess() {
-    if err := oprot.WriteFieldBegin(ctx, "success", thrift.I32, 0); err != nil {
+    if err := oprot.WriteFieldBegin("success", thrift.I32, 0); err != nil {
       return thrift.PrependError(fmt.Sprintf("%T write field begin error 0:success: ", p), err) }
-    if err := oprot.WriteI32(ctx, int32(*p.Success)); err != nil {
+    if err := oprot.WriteI32(int32(*p.Success)); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T.success (0) field write error: ", p), err) }
-    if err := oprot.WriteFieldEnd(ctx); err != nil {
+    if err := oprot.WriteFieldEnd(); err != nil {
       return thrift.PrependError(fmt.Sprintf("%T write field end error 0:success: ", p), err) }
   }
   return err

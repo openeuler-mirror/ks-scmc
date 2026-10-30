@@ -92,6 +92,36 @@ struct ContainerLimit {
     12: double net_wbw    // MB/s
 }
 
+// 网卡信息
+struct NetworkInterface {
+    1: required string eth_name,    // 网卡名称
+    2: required string ip,          // 网卡ip地址
+    3: required string mac,         // 网卡mac地址
+    4: required string gateway,     // 网卡网关
+    5: required string mask         // 网卡子网掩码
+}
+
+struct GetAllContainersResponse {
+    1: required string name,        // 容器名称
+    2: required i32 stat, // 容器状态
+    3: required string uuid,        // 容器ID
+    4: required double cpu,        // cpu阈值，支持小数
+    5: required double cpu_usage,   // cpu使用率，百分数(0-100)
+    6: required i32 mem_usage,      // 内存使用量(MB)
+    7: required i32 mem_total,      // 内存总量(MB)
+    8: required double disk_usage,  // 磁盘使用量(GB)
+    9: required i32 disk_total,     // 磁盘总量(GB)
+    10: required double disk_rbw,   // 磁盘读速度(MB/s)
+    11: required double disk_wbw,   // 磁盘写速度(MB/s)
+    12: required double net_rbw,    // 网络下载速度(MB/s)
+    13: required double net_wbw,    // 网络上传速度(MB/s)
+    14: required string image,      // 使用的镜像名称
+    15: required string version,    // 使用的镜像版本
+    16: required bool ha,           // ha使能状态
+    17: required i32 level,         // 模板等级
+    18: required list<NetworkInterface> nets // 容器多网卡信息
+}
+
 struct GetAllNodeListResponse {
     1: list<NodeStatus> nodelist,
     2: i32 ret_code

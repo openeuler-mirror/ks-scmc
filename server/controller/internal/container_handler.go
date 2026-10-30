@@ -116,7 +116,6 @@ func (s *ContainerServer) List(ctx context.Context, in *pb.ListRequest) (*pb.Lis
 }
 
 func (s *ContainerServer) Create(ctx context.Context, in *pb.CreateRequest) (*pb.CreateReply, error) {
-	log.Debugf("container createReply=%v+\n", *in)
 	if in.Configs == nil || in.NodeId <= 0 {
 		return nil, rpc.ErrInvalidArgument
 	} else if !args.ContainerName.Check(in.Configs.Name) {
@@ -444,7 +443,7 @@ func (s *ContainerServer) Update(ctx context.Context, in *pb.UpdateRequest) (*pb
 	if in.ResourceLimit != nil {
 		r := in.ResourceLimit
 		if !args.Float64Resource.Check(r.CpuLimit, r.DiskLimit, r.MemoryLimit, r.MemorySoftLimit) ||
-			!args.Int64Resource.Check(r.CpuPrio, r.DiskPrio) {
+			!args.Int64Resource.Check(r.CpuPrio) {
 			return nil, rpc.ErrContainerResourceArgs
 		}
 	}
@@ -1005,50 +1004,3 @@ func (*ContainerServer) KillAppEntry(ctx context.Context, in *pb.KillAppEntryReq
 
 	return pb.NewContainerClient(conn).KillAppEntry(ctx, in)
 }
-func (*ContainerServer) Pause(ctx context.Context, in *pb.PauseRequest) (*pb.PauseReply, error) {
-	if in.NodeId == 0 {
-		return nil, rpc.ErrInvalidArgument
-	}
-
-	n, err := db.QueryNodeByID(in.NodeId)
-	if err != nil {
-		if err == db.ErrRecordNotFound {
-			log.Infof("node info not found, id=%v", in.NodeId)
-		}
-		log.Infof("QueryNodeByID err=%v", err)
-		return nil, rpc.ErrDatabaseFail
-	}
-
-	conn, err := getAgentConn(n.Address)
-	if err != nil {
-		log.Infof("getAgentConn error=%v", err)
-		return nil, rpc.ErrInternal
-	}
-	return pb.NewContainerClient(conn).Pause(ctx, in)
-}
-func (*ContainerServer) Unpause(ctx context.Context, in *pb.UnpauseRequest) (*pb.UnpauseReply, error) {
-	if in.NodeId == 0 {
-		return nil, rpc.ErrInvalidArgument
-	}
-
-	n, err := db.QueryNodeByID(in.NodeId)
-	if err != nil {
-		if err == db.ErrRecordNotFound {
-			log.Infof("node info not found, id=%v", in.NodeId)
-		}
-		log.Infof("QueryNodeByID err=%v", err)
-		return nil, rpc.ErrDatabaseFail
-	}
-
-	conn, err := getAgentConn(n.Address)
-	if err != nil {
-		log.Infof("getAgentConn error=%v", err)
-		return nil, rpc.ErrInternal
-	}
-	return pb.NewContainerClient(conn).Unpause(ctx, in)
-
-}
-//非grpc方式调用
-//func (*ContainerServer) LoadImageHandler(*pb.LoadRequest) error {
-//
-//}

@@ -762,8 +762,8 @@ func (p *NodeStatus)  ReadField5(iprot thrift.TProtocol) error {
   return nil
 }
 
-func (p *NodeStatus)  ReadField6(ctx context.Context, iprot thrift.TProtocol) error {
-  if v, err := iprot.ReadDouble(ctx); err != nil {
+func (p *NodeStatus)  ReadField6(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadDouble(); err != nil {
   return thrift.PrependError("error reading field 6: ", err)
 } else {
   p.CPUTotal = v

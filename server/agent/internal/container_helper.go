@@ -166,9 +166,6 @@ func containerResourceStat(realtimeStats map[string]*pb.ResourceStat, c *types.C
 		if stat.MemStat != nil {
 			data.MemStat = stat.MemStat
 		}
-		if stat.NetStat != nil {
-			data.NetStat = stat.NetStat
-		}
 	}
 	return &data
 }

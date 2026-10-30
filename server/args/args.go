@@ -25,6 +25,9 @@ type Float64Argument struct {
 type Int64Argument struct {
 	valid func(int64) bool
 }
+type Int32Argument struct {
+	valid func(int32) bool
+}
 
 func (a *StringArgument) Check(s string) bool {
 	if !a.length(s) {
@@ -48,6 +51,15 @@ func (r *Float64Argument) Check(in ...float64) bool {
 }
 
 func (r *Int64Argument) Check(in ...int64) bool {
+	for _, i := range in {
+		if r.valid(i) {
+			continue
+		}
+		return false
+	}
+	return true
+}
+func (r *Int32Argument) Check(in ...int32) bool {
 	for _, i := range in {
 		if r.valid(i) {
 			continue
@@ -99,6 +111,11 @@ var (
 	}
 	Int64Resource = Int64Argument{
 		valid: func(i int64) bool {
+			return i > 0
+		},
+	}
+	Int32Resource = Int32Argument{
+		valid: func(i int32) bool {
 			return i > 0
 		},
 	}

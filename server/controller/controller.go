@@ -22,10 +22,7 @@ import (
 	"scmc/rpc/pb/user"
 	"scmc/server/controller/internal"
 	"scmc/server/controller/tasks"
-	"scmc/server/controller/thriftapi"
 )
-
-
 
 func Server() (*grpc.Server, error) {
 	tlsCredentials, err := common.LoadTLSCredentials()
@@ -59,13 +56,11 @@ func Server() (*grpc.Server, error) {
 	system.RegisterSystemServer(s, &internal.SystemServer{})
 
 	go internal.RuntimeLogWriter()
-	go thriftapi.ThriftapiMain()
 
 	tasks.AddTask(
 		&tasks.SyncImages{},
 		&tasks.IllegalContainer{},
 		&tasks.NodeStatus{},
-		&tasks.UpdateIptables{},
 	)
 
 	if os.Getenv("GRPC_REFLECTION") == "1" {

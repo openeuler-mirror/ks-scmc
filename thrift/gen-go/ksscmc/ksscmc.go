@@ -725,8 +725,8 @@ func (p *NodeStatus)  ReadField1(iprot thrift.TProtocol) error {
   return nil
 }
 
-func (p *NodeStatus)  ReadField2(ctx context.Context, iprot thrift.TProtocol) error {
-  if v, err := iprot.ReadString(ctx); err != nil {
+func (p *NodeStatus)  ReadField2(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadString(); err != nil {
   return thrift.PrependError("error reading field 2: ", err)
 } else {
   p.NodeID = v

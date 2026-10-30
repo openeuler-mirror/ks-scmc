@@ -743,8 +743,8 @@ func (p *NodeStatus)  ReadField3(iprot thrift.TProtocol) error {
   return nil
 }
 
-func (p *NodeStatus)  ReadField4(ctx context.Context, iprot thrift.TProtocol) error {
-  if v, err := iprot.ReadI32(ctx); err != nil {
+func (p *NodeStatus)  ReadField4(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadI32(); err != nil {
   return thrift.PrependError("error reading field 4: ", err)
 } else {
   temp := NodeStatusType(v)

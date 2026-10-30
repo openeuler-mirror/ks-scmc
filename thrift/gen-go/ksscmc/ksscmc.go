@@ -640,156 +640,84 @@ func (p *NodeStatus) GetContainerNums() int32 {
 func (p *NodeStatus) GetContainerMaxNums() int32 {
   return p.ContainerMaxNums
 }
-func (p *NodeStatus) Read(ctx context.Context, iprot thrift.TProtocol) error {
-  if _, err := iprot.ReadStructBegin(ctx); err != nil {
+func (p *NodeStatus) Read(iprot thrift.TProtocol) error {
+  if _, err := iprot.ReadStructBegin(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
   }
 
 
   for {
-    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin(ctx)
+    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin()
     if err != nil {
       return thrift.PrependError(fmt.Sprintf("%T field %d read error: ", p, fieldId), err)
     }
     if fieldTypeId == thrift.STOP { break; }
     switch fieldId {
     case 1:
-      if fieldTypeId == thrift.STRING {
-        if err := p.ReadField1(ctx, iprot); err != nil {
-          return err
-        }
-      } else {
-        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-          return err
-        }
+      if err := p.ReadField1(iprot); err != nil {
+        return err
       }
     case 2:
-      if fieldTypeId == thrift.STRING {
-        if err := p.ReadField2(ctx, iprot); err != nil {
-          return err
-        }
-      } else {
-        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-          return err
-        }
+      if err := p.ReadField2(iprot); err != nil {
+        return err
       }
     case 3:
-      if fieldTypeId == thrift.STRING {
-        if err := p.ReadField3(ctx, iprot); err != nil {
-          return err
-        }
-      } else {
-        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-          return err
-        }
+      if err := p.ReadField3(iprot); err != nil {
+        return err
       }
     case 4:
-      if fieldTypeId == thrift.I32 {
-        if err := p.ReadField4(ctx, iprot); err != nil {
-          return err
-        }
-      } else {
-        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-          return err
-        }
+      if err := p.ReadField4(iprot); err != nil {
+        return err
       }
     case 5:
-      if fieldTypeId == thrift.DOUBLE {
-        if err := p.ReadField5(ctx, iprot); err != nil {
-          return err
-        }
-      } else {
-        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-          return err
-        }
+      if err := p.ReadField5(iprot); err != nil {
+        return err
       }
     case 6:
-      if fieldTypeId == thrift.DOUBLE {
-        if err := p.ReadField6(ctx, iprot); err != nil {
-          return err
-        }
-      } else {
-        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-          return err
-        }
+      if err := p.ReadField6(iprot); err != nil {
+        return err
       }
     case 7:
-      if fieldTypeId == thrift.DOUBLE {
-        if err := p.ReadField7(ctx, iprot); err != nil {
-          return err
-        }
-      } else {
-        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-          return err
-        }
+      if err := p.ReadField7(iprot); err != nil {
+        return err
       }
     case 8:
-      if fieldTypeId == thrift.DOUBLE {
-        if err := p.ReadField8(ctx, iprot); err != nil {
-          return err
-        }
-      } else {
-        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-          return err
-        }
+      if err := p.ReadField8(iprot); err != nil {
+        return err
       }
     case 9:
-      if fieldTypeId == thrift.DOUBLE {
-        if err := p.ReadField9(ctx, iprot); err != nil {
-          return err
-        }
-      } else {
-        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-          return err
-        }
+      if err := p.ReadField9(iprot); err != nil {
+        return err
       }
     case 10:
-      if fieldTypeId == thrift.DOUBLE {
-        if err := p.ReadField10(ctx, iprot); err != nil {
-          return err
-        }
-      } else {
-        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-          return err
-        }
+      if err := p.ReadField10(iprot); err != nil {
+        return err
       }
     case 11:
-      if fieldTypeId == thrift.I32 {
-        if err := p.ReadField11(ctx, iprot); err != nil {
-          return err
-        }
-      } else {
-        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-          return err
-        }
+      if err := p.ReadField11(iprot); err != nil {
+        return err
       }
     case 12:
-      if fieldTypeId == thrift.I32 {
-        if err := p.ReadField12(ctx, iprot); err != nil {
-          return err
-        }
-      } else {
-        if err := iprot.Skip(ctx, fieldTypeId); err != nil {
-          return err
-        }
+      if err := p.ReadField12(iprot); err != nil {
+        return err
       }
     default:
-      if err := iprot.Skip(ctx, fieldTypeId); err != nil {
+      if err := iprot.Skip(fieldTypeId); err != nil {
         return err
       }
     }
-    if err := iprot.ReadFieldEnd(ctx); err != nil {
+    if err := iprot.ReadFieldEnd(); err != nil {
       return err
     }
   }
-  if err := iprot.ReadStructEnd(ctx); err != nil {
+  if err := iprot.ReadStructEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
   }
   return nil
 }
 
-func (p *NodeStatus)  ReadField1(ctx context.Context, iprot thrift.TProtocol) error {
-  if v, err := iprot.ReadString(ctx); err != nil {
+func (p *NodeStatus)  ReadField1(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadString(); err != nil {
   return thrift.PrependError("error reading field 1: ", err)
 } else {
   p.NodeName = v

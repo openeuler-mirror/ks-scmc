@@ -107,7 +107,7 @@ func (s *ImageServer) AgentSync(ctx context.Context, in *pb.AgentSyncRequest) (*
 				break
 			}
 		}
-
+		
 		if isTarFileSystem {
 			tarf, err := os.Open(path)
 			if err != nil {
@@ -124,7 +124,7 @@ func (s *ImageServer) AgentSync(ctx context.Context, in *pb.AgentSyncRequest) (*
 				log.Errorf("load tar image file '%s': %v", path, err)
 			}
 			defer resp.Close()
-
+			
 			var respString string
 			for {
 				data := make([]byte, 4096)

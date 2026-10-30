@@ -5,6 +5,8 @@ import (
 	"context"
 	"io"
 	"os"
+	"path/filepath"
+	"strings"
 
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc/codes"
@@ -356,10 +358,15 @@ func (s *ImageServer) Download(in *pb.DownloadRequest, stream pb.Image_DownloadS
 	}
 	defer f.Close()
 
+	/* 获取扩展名, 否则下载的文件无扩展名 */
+	trimmed := strings.TrimSpace(img.FilePath)
+	ext := filepath.Ext(trimmed)
+
 	reply := pb.DownloadReply{
 		Info: &pb.UploadInfo{
 			Name:     img.Name,
 			Version:  img.Version,
+			Type:	  ext,
 			Checksum: img.CheckSum,
 			Size:     img.FileSize,
 		},

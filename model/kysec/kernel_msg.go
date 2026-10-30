@@ -6,6 +6,10 @@ import (
 	"encoding/hex"
 	"os"
 	"unsafe"
+	// "strings"
+	// "io/ioutil"
+
+	"scmc/common"
 
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/sys/unix"
@@ -26,6 +30,9 @@ const (
 	NLMSG_ACTION_TYPE_ENABLED = 4
 
 	NETLINK_WL   = 30
+	/* v6 版本改为了 31 */
+	NETLINK_WL_V6 = 31
+
 	WL_HASH_SIZE = 16
 	ID_MAX_SIZE  = 64
 	MSG_SIZE     = 84
@@ -60,10 +67,59 @@ func setNlmsgType(x, y, z int) uint16 {
 	return uint16(((x) << 12) | ((y) << 8) | ((z) << 4))
 }
 
-func initNetlink() (int, error) {
-	fd, err := unix.Socket(unix.AF_NETLINK, unix.SOCK_RAW, NETLINK_WL)
+// 确认系统是否为 v6 系统
+func bCheckSysIsV6() bool {
+/*
+	content, err := ioutil.ReadFile("/etc/.kyinfo")
 	if err != nil {
-		log.Warnf("Failed to create the  whitelist netlink socket:%v", err)
+		return false
+	}
+
+	lines := strings.Split(string(content), "\n")
+	for _, line := range lines {
+		str := strings.TrimSpace(line)
+		str = strings.ToLower(str)
+		if strings.HasPrefix(str, "milestone") {
+			kv := strings.Split(str, "=")
+			if len(kv) == 2 {
+				key := strings.TrimSpace(kv[0])
+				value := strings.TrimSpace(kv[1])
+				log.Warnf("system: %s, key: %s, value: %s", str, key, value)
+				return false
+			}
+		}
+	}
+
+	return false
+*/
+	// v6 以及以后的版本 不存在 /etc/.kyinfo 这个文件了
+	_, err := os.Stat("/etc/.kyinfo")
+	if err != nil {
+		return os.IsNotExist(err)
+	}
+	return false;
+
+}
+
+
+func initNetlink() (int, error) {
+	// 以配置文件里面的为准 
+	protocol := NETLINK_WL
+	if common.Config.Netlink.Protocol != NETLINK_WL {
+		protocol = int(common.Config.Netlink.Protocol)
+	} else {
+		/* 配置文件里面如果没有配置， 判断是不是 v6 系统*/
+		if bCheckSysIsV6() {
+			protocol = NETLINK_WL_V6
+		} else {
+			protocol = NETLINK_WL
+		}
+	}
+
+	//fd, err := unix.Socket(unix.AF_NETLINK, unix.SOCK_RAW, NETLINK_WL)
+	fd, err := unix.Socket(unix.AF_NETLINK, unix.SOCK_RAW, protocol)
+	if err != nil {
+		log.Warnf("Failed to create the  whitelist netlink socket:%v, protocol: %d", err, protocol)
 		return 0, err
 	}
 

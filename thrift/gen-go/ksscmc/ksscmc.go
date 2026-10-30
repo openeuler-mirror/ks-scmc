@@ -369,8 +369,8 @@ func (p *ContainerMetric)  ReadField1(iprot thrift.TProtocol) error {
   return nil
 }
 
-func (p *ContainerMetric)  ReadField2(ctx context.Context, iprot thrift.TProtocol) error {
-  if v, err := iprot.ReadString(ctx); err != nil {
+func (p *ContainerMetric)  ReadField2(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadString(); err != nil {
   return thrift.PrependError("error reading field 2: ", err)
 } else {
   p.ContainerID = v

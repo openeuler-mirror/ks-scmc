@@ -165,39 +165,60 @@ struct GetImagesListResponse {
 // ================ 服务接口 ================
 service KsScmcClient {
     string LoginV3(1: string user, 2: string passwd, 3: string node_ip),
+    string InstallContainer(1: string node_name, 2: string image, 3: string ver, 4: string name, 5: string desc),
     // 容器生命周期管理
-    i32 installContainer(1: string node_nameorip, 2: string image_name, 3: string image_ver, 4: string container_name),
-    i32 startContainer(1: string node_nameorip, 2: string container_name),
-    i32 stopContainer(1: string node_nameorip, 2: string container_name),
-    i32 uninstallContainer(1: string node_nameorip, 2: string container_name),
+    // i32 installContainer(1: string node_nameorip, 2: string image_name, 3: string image_ver, 4: string container_name),
+    string StartContainer(1: string node_name, 2: string name),
+    // i32 startContainer(1: string node_nameorip, 2: string container_name),
+    string StopContainer(1: string node_name, 2: string name),
+    // i32 stopContainer(1: string node_nameorip, 2: string container_name),
+    string UninstallContainer(1: string node_name, 2: string name),
+    // i32 uninstallContainer(1: string node_nameorip, 2: string container_name),
 
     // 状态查询
+    // todo: 此接口对应的 thrift层需要确认
     i32 getContainerStatus(1: string node_nameorip, 2: string container_name),
+    // todo: 此接口对应的 thrift层需要确认
     GetContainerMetricsResponse getContainerMetrics(1: string node_nameorip, 2: string container_name),
+    string GetContainerImageVers(1: string node_name, 2: string name),
     GetImageVer4ContainerResponse getImageVer4Container(1: string node_nameorip, 2: string container_name),
+    // todo: 此接口对应的 thrift层需要确认
     i32 getContainer(1: string node_name, 2: string container_name),
 
     // 更新操作
-    i32 updateContainer(1: string node_name, 2: string container_name, 3: string new_ver),
+    string UpdateContainer(1: string node_name, 2: string container_name, 3: string new_ver)
+    // i32 updateContainer(1: string node_name, 2: string container_name, 3: string new_ver),
 
     // 批量查询
-    GetAlarmListResponse getAlarmList(1: string node_name),
+    string GetAlarmList(1: string node_name),
+    // GetAlarmListResponse getAlarmList(1: string node_name),
+    // todo: 此接口对应的 thrift层需要确认
     GetAllNodeListResponse getAllNodeList(),
-    GetAllContainerListResponse getAllContainerList(),
+    string GetAllContainers(1: string node_name), // 存疑，待确认
+    string GetAllContainersV2(1:string nid),
+    GetAllContainerListResponse getAllContainerList(1: string node_name),
 
     // 网络配置
-    GetContainerNetworkResponse getContainerNetwork(1: string node_nameorip, 2: string container_name),
+    string GetContainerNetwork(1: string node_nameorip, 2: string container_name),
+    // GetContainerNetworkResponse getContainerNetwork(1: string node_nameorip, 2: string container_name),
+    // todo: 此接口对应的 thrift层需要确认
     GetContainerNetRulesResponse getContainerNetRules(1: string node_name, 2: string container_name),
+    // todo: 此接口对应的 thrift层需要确认
     i32 addContainerIpPort(1: string node_nameorip, 2: string container_name, 3: string ip_addr, 4: i32 port, 5: string net_proto),
+    // todo: 此接口对应的 thrift层需要确认
     i32 addContainerReqIpPort(1: string node_name, 2: string container_name, 3: string ip_addr, 4: i32 port, 5: string net_proto),
 
     // 环境配置
-    i32 addContainerEnv(1: string node_nameorip, 2: string container_name, 3: string env_name, 4: string env_value),
+    string AddContainerEnv(1: string node_nameorip, 2: string container_name, 3: string env_name, 4: string env_value),
+    // i32 addContainerEnv(1: string node_nameorip, 2: string container_name, 3: string env_name, 4: string env_value),
+    // todo: 此接口对应的 thrift层需要确认
     i32 addContainerLocalVolume(1: string node_nameorip, 2: string container_name, 3: string in_dir, 4: string out_dir, 5: AccessAuth access_auth),
-    i32 setContainerDisplayV2(1: string node_name, 2: string container_name, 3: bool enabled, 4: string display),
+    string SetContainerDisplayV2(1: string node_name, 2: string container_name, 3: bool enabled, 4: string display),
+    // i32 setContainerDisplayV2(1: string node_name, 2: string container_name, 3: bool enabled, 4: string display),
 
     // 资源限制
-    i32 setContainerQuota(1: string node_name, 2: string container_name, 3: ContainerLimit containerLimit)
+    string SetContainerQuota(1: string node_name, 2: string container_name, 3: ContainerLimit containerLimit)
+    // i32 setContainerQuota(1: string node_name, 2: string container_name, 3: ContainerLimit containerLimit)
 
         /**
      * 设置容器是否开启特权
@@ -206,6 +227,7 @@ service KsScmcClient {
      * @param isPrivileged 是否开启特权(true为开启)
      * @return 0成功，1失败
      */
+    // todo: 此接口对应的 thrift层需要确认
     i32 setContainerPrivileged(1: string node_ip, 2: string container_name, 3: bool isPrivileged),
 
     /**
@@ -216,6 +238,7 @@ service KsScmcClient {
      * @param sysctl_value 内核参数值(如"512 32000 100 256")
      * @return 0成功，1失败
      */
+    // todo: 此接口对应的 thrift层需要确认
     i32 setContainerSysctls(1: string node_ip, 2: string container_name,
                            3: string sysctl_name, 4: string sysctl_value),
 
@@ -226,6 +249,7 @@ service KsScmcClient {
      * @param container_extrahosts host信息数组(如["docker:127.0.0.1","docker:127.0.0.1"])
      * @return 0成功，1失败
      */
+    // todo: 此接口对应的 thrift层需要确认
     i32 setContainerExtraHosts(1: string node_ip, 2: string container_name,
                              3: list<string> container_extrahosts),
 
@@ -235,6 +259,7 @@ service KsScmcClient {
      * @param image_list 镜像信息列表(输出参数)
      * @return 0成功，1失败
      */
+    // todo: 此接口对应的 thrift层需要确认
     GetImagesListResponse getImagesList(1: string node_ip),
 
     /**
@@ -243,6 +268,7 @@ service KsScmcClient {
      * @param tarPath 镜像tar文件路径
      * @return 0成功，1失败
      */
+    // todo: 此接口对应的 thrift层需要确认
     i32 loadImage(1: string node_ip, 2: string tarPath),
 
     /**
@@ -251,6 +277,7 @@ service KsScmcClient {
      * @param container_name 容器名称
      * @return 0成功，1失败
      */
+    // todo: 此接口对应的 thrift层需要确认
     i32 pauseContainer(1: string node_ip, 2: string container_name),
 
     /**
@@ -259,6 +286,7 @@ service KsScmcClient {
      * @param container_name 容器名称
      * @return 0成功，1失败
      */
+    // todo: 此接口对应的 thrift层需要确认
     i32 unpauseContainer(1: string node_ip, 2: string container_name)
 }
 

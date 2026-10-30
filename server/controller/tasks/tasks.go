@@ -1,8 +1,11 @@
 package tasks
 
 import (
+	"fmt"
 	"net"
 	"time"
+	"strings"
+
 
 	log "github.com/sirupsen/logrus"
 
@@ -30,10 +33,30 @@ func AddTask(ts ...Task) {
 	}
 }
 
+func extractIP(vip string) (string, error) {
+	ip, _, err := net.ParseCIDR(vip)
+	if err == nil {
+		return ip.String(), nil
+	}
+
+	parsedIP := net.ParseIP(strings.TrimSpace(vip))
+	if parsedIP == nil {
+		return "", fmt.Errorf("Invalid IP format: %s", vip)
+	}
+
+	return parsedIP.String(), nil
+}
+
 func isMaster() bool {
 	ifaceName, vip := common.Config.Controller.VirtualIf, common.Config.Controller.VirtualIP
 	if ifaceName == "" || vip == "" {
 		return true
+	}
+
+	vip, err := extractIP(vip)
+	if err != nil {
+		log.Warnf("extractIP err=%v", err)
+		return false
 	}
 
 	iface, err := net.InterfaceByName(ifaceName)

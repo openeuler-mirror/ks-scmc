@@ -677,7 +677,7 @@ func (x *ExportBackupReply) String() string {
 func (*ExportBackupReply) ProtoMessage() {}
 
 func (x *ExportBackupReply) ProtoReflect() protoreflect.Message {
-	mi := &file_container_proto_msgTypes[1]
+	mi := &file_container_proto_msgTypes[10]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {

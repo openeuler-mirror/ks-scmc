@@ -91,7 +91,7 @@ CREATE TABLE `runtime_logs` (
   `node_info` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '节点名+节点IP',
   `user_id` bigint(20) NOT NULL DEFAULT '0' COMMENT '操作用户ID',
   `target` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '操作对象',
-  `detail` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '详情',
+  `detail` text COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '详情',
   `status_code` int(10) NOT NULL DEFAULT '0' COMMENT '错误码 0:OK',
   `error` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '错误信息',
   `created_at` bigint(20) NOT NULL DEFAULT '0',
@@ -138,4 +138,29 @@ CREATE TABLE IF NOT EXISTS `api_tokens` (
   `token` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT 'API token',
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- CREATE TABLE container_hosts (
+--     `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '主键ID',
+--     `node_id` bigint(20) UNSIGNED NOT NULL COMMENT '节点id',
+--     `container_id` VARCHAR(255) NOT NULL COMMENT '容器ID',
+--     `hosts_config` JSON NOT NULL COMMENT 'Hosts配置(JSON格式)',
+--     `created_at` bigint(20) NOT NULL DEFAULT '0',
+--     `updated_at` bigint(20) NOT NULL DEFAULT '0',
+--      PRIMARY KEY (id),
+--      UNIQUE KEY `node_id` (`node_id`),
+--      UNIQUE KEY `container_id` (`container_id`)
+-- ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE container_limits (
+    `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '主键ID',
+    `node_id` bigint(20) UNSIGNED NOT NULL COMMENT '节点id',
+    `container_id` VARCHAR(255) NOT NULL COMMENT '容器ID',
+    `upload_speed` decimal(20,1) NOT NULL DEFAULT '0.0' COMMENT '网络上传速度',
+    `download_speed` decimal(20,1) NOT NULL DEFAULT '0.0' COMMENT '网络下载速度',
+    `created_at` bigint(20) NOT NULL DEFAULT '0',
+    `updated_at` bigint(20) NOT NULL DEFAULT '0',
+     PRIMARY KEY (id),
+     UNIQUE KEY `node_id` (`node_id`),
+     UNIQUE KEY `container_id` (`container_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

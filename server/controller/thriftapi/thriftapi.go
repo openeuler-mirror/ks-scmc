@@ -2,6 +2,7 @@ package thriftapi
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"io"
 	"log"

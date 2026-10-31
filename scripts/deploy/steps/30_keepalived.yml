@@ -1,4 +1,8 @@
 ---
+- name: KEEPALIVED 设置权重值
+  set_fact:
+    keepalived_priority: "{{ (ansible_play_hosts.index(inventory_hostname) == 0) | ternary('100', '90') }}"
+
 - name: KEEPALIVED 配置虚拟IP(高可用)
   template:
     src: template/keepalived.conf.j2
@@ -7,5 +11,38 @@
     group: root
     mode: '0644'
     backup: true
+
+- name: KEEPALIVED 创建脚本目录
+  file:
+    path: /etc/keepalived/scripts
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+
+- name: KEEPALIVED 部署服务检测脚本
+  template:
+    src: template/check_service.sh.j2
+    dest: /etc/keepalived/scripts/check_service.sh
+    owner: root
+    group: root
+    mode: '0755'
+
+- name: KEEPALIVED 部署 MySQL Master 脚本 
+  template:
+    src: template/mysql_master.sh.j2
+    dest: /etc/keepalived/scripts/mysql_master.sh
+    owner: root
+    group: root
+    mode: '0755'
+
+- name: KEEPALIVED 部署 MySQL Backup 脚本
+  template:
+    src: template/mysql_slave.sh.j2
+    dest: /etc/keepalived/scripts/mysql_slave.sh
+    owner: root
+    group: root
+    mode: '0755'
+
 - name: KEEPALIVED 启用虚拟IP(高可用)
   service: name=keepalived state=restarted enabled=true

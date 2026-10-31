@@ -95,7 +95,7 @@ func (h *KsScmcHandler) _InstallContainer(node_nameorip string, image_name strin
 	}
 
 	containerServer := &internal.ContainerServer{}
-	_, err = containerServer.Create(ctx, createRequest)
+	_, err = containerServer.Create(ctx_, createRequest)
 	if err != nil {
 		logrus.Error(err)
 		return 4, nil

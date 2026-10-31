@@ -4,16 +4,25 @@ global_defs {
 }
 
 vrrp_script chk_scmc {
-    script "bash -c 'systemctl is-active ks-scmc-controller && systemctl is-active mysqld'"
+    # script "bash -c 'systemctl is-active ks-scmc-controller && systemctl is-active mysqld'"
+    script "/etc/keepalived/scripts/check_service.sh"
     interval 2
+    timeout 1
+    weight -20
+    fall 2
+    rise 2
+
 }
 
 vrrp_instance VI_1 {
     interface {{ cluster.virtual_ip_nic }}
     state BACKUP
     virtual_router_id 33
-    priority 100
+    priority {{ keepalived_priority }}
     advert_int 1
+    nopreempt
+    notify_master "/etc/keepalived/scripts/mysql_master.sh"
+    notify_backup "/etc/keepalived/scripts/mysql_slave.sh"
 
     authentication {
         auth_type PASS

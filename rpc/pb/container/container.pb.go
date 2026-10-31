@@ -579,7 +579,7 @@ type ExportBackupRequest struct {
 func (x *ExportBackupRequest) Reset() {
 	*x = ExportBackupRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_container_proto_msgTypes[0]
+		mi := &file_container_proto_msgTypes[9]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}

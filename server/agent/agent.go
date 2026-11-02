@@ -107,6 +107,6 @@ func Server() (*grpc.Server, error) {
 	go internal.NodeWhitelistConfig()
 	go internal.ContainerWhiteConfig()
 	go internal.CPUUsageProbe()
-
+	go internal.NodeNetworkControlConfig()
 	return s, nil
 }

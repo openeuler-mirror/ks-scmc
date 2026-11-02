@@ -13,9 +13,8 @@ import (
 	"github.com/sirupsen/logrus"
 	//"github.com/KyleBanks/dockerstats"
         "scmc/thrift/gen-go/node"
-	_ "scmc/model/docker"
+	"scmc/model/docker"
 	"scmc/common"
-	"scmc/server/controller/thriftapi"
 )
 
 type DockerStatsServer struct {
@@ -66,15 +65,11 @@ func nodeStatus() {
 func (e *DockerStatsServer) GetAllContainers(ctx context.Context, node_name string) (r string, err error) {
 	logrus.Infof("GetAllContainers node_name: %s", node_name)
 
-	json_str, err := thriftapi.GetContainerStats(node_name)
-	if err != nil {
-		json_str = "{\"status\":-1,\"message\":\"" + err.Error() + "\",\"containers\":[]}"
-	} else {
-		if (len(json_str) == 0) {
-			json_str = "{\"status\":0,\"message\":\"success\",\"containers\":[]}"
-		}
+	json_str, err := docker.HandleStatsRequest()
+	if (len(json_str) == 0) {
+		json_str = "{\"status\":0,\"message\":\"success\",\"containers\":[]}"
 	}
-	return json_str, nil
+	return json_str, err
 }
 
 func main() {

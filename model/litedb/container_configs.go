@@ -12,12 +12,12 @@ type ContainerConfig struct {
 	UUID           string `gorm:"unique"`
 	ContainerID    string `gorm:"unique"`
 	ContainerName  string
-	SecurityConfig *ContainerSecurityConfigs `gorm:"serializer:json"`
+	SecurityConfig *SecurityConfigs `gorm:"serializer:json"`
 	CreatedAt      int64            `gorm:"autoCreateTime"`
 	UpdatedAt      int64            `gorm:"autoUpdateTime"`
 }
 
-type ContainerSecurityConfigs = pb.SecurityConfig
+type SecurityConfigs = pb.SecurityConfig
 type ProcProtection = security.ProcProtection
 type NetworkRule = security.NetworkRule
 
@@ -114,6 +114,7 @@ func ContainerConfigList() ([]*ContainerConfig, error) {
 		log.Errorf("db query container configs: %v", r.Error)
 		return nil, r.Error
 	}
+
 	return data, nil
 }
 

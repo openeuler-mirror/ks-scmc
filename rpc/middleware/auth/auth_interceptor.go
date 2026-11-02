@@ -338,9 +338,7 @@ func getPermID(method string) pb.PERMISSION {
 	case "/logging.Logging/ListRuntime":
 		return pb.PERMISSION_AUTID_LOG_READ
 	case "/logging.Logging/ListWarn",
-		"/logging.Logging/ReadWarn",
-		"/logging.Logging/GetLog",
-		"/logging.Logging/SetLog":
+		"/logging.Logging/ReadWarn":
 		return pb.PERMISSION_AUTID_WARN_READ
 	case "/sys.System/SetSecuritySwitch":
 		return pb.PERMISSION_CONTAINER_CONF_SEC

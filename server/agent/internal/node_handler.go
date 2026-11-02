@@ -6,14 +6,15 @@ import (
 
 	"github.com/docker/docker/api/types"
 	// "github.com/google/uuid"
+	"scmc/model/authz"
+	"scmc/model/iptables"
+	"scmc/model/opensnitch"
+
 	"github.com/shirou/gopsutil/disk"
 	"github.com/shirou/gopsutil/mem"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"gorm.io/gorm"
-	"scmc/model/opensnitch"
-	"scmc/model/iptables"
-	"scmc/model/authz"
 
 	log "github.com/sirupsen/logrus"
 
@@ -22,12 +23,23 @@ import (
 	"scmc/model/litedb"
 	"scmc/rpc"
 	pb "scmc/rpc/pb/node"
+	"scmc/rpc/pb/security"
 )
 
 const gigaBytes = 1 << 30
 
 type NodeServer struct {
 	pb.UnimplementedNodeServer
+}
+
+// 默认端口
+var blockedPorts = map[uint32]bool{
+	3306:  true, // mysql
+	8080:  true, // cadvisor
+	8086:  true, // influxdb
+	19091: true,
+	10051: true, // agent
+	10050: true, // controller
 }
 
 func nodeStatus() (*pb.NodeStatus, error) {
@@ -130,32 +142,178 @@ func (*NodeServer) Usage(ctx context.Context, in *pb.UsageRequest) (*pb.UsageRep
 	return reply, nil
 }
 
-
 func (s *NodeServer) UpdateFileProtect(ctx context.Context, in *pb.UpdateFileProtectRequest) (*pb.UpdateFileProtectReply, error) {
-    log.Debugf("UpdateFileProtect called: node_id=%v ,paths:%s enabel:%v at agent",
-				in.NodeId,in.SecurityConfig.FileProtection.FileList,in.SecurityConfig.FileProtection.IsOn)
+	log.Debugf("UpdateFileProtect called: node_id=%v ,paths:%s enabel:%v at agent",
+		in.NodeId, in.SecurityConfig.FileProtection.FileList, in.SecurityConfig.FileProtection.IsOn)
 	if in.SecurityConfig != nil {
 		cfgs, err := litedb.GetNodeConfig("localhost")
 		if err != nil {
 			log.Errorf("GetContainerConfig err=%v", err)
 			return nil, rpc.ErrDatabaseFail
 		}
-		
+
 		if err := kysec.UpdateFileAccess("localhost", in.SecurityConfig.FileProtection.IsOn, in.SecurityConfig.FileProtection.FileList, nil); err != nil {
-        	log.Errorf("UpdateFileAccess failed: %v", err)
-        	return nil, status.Errorf(codes.Internal, "failed to update file access")
-    	}
-	
+			log.Errorf("UpdateFileAccess failed: %v", err)
+			return nil, status.Errorf(codes.Internal, "failed to update file access")
+		}
+
 		cfgs.SecurityConfig.FileProtection = in.SecurityConfig.FileProtection
-		
+
 		if err := litedb.UpdateNodeConfig(cfgs); err != nil {
 			log.Errorf("UpdateContainerConfig err=%v", err)
 			return nil, rpc.ErrDatabaseFail
 		}
-	}	
-	
-    
-    return &pb.UpdateFileProtectReply{}, nil
+	}
+
+	return &pb.UpdateFileProtectReply{}, nil
+}
+
+func (s *NodeServer) UpdateNetworkRule(ctx context.Context, in *pb.UpdateNetworkRuleRequest) (*pb.UpdateNetworkRuleReply, error) {
+	log.Debugf("UpdateNetworkRule called: node_id=%v , enabel:%v  rule:%v at agent", in.NodeId, in.SecurityConfig.NetworkRule.IsOn, in.SecurityConfig.NetworkRule.Rules)
+
+	var mergedRules []*litedb.NetworkRule
+
+	if in.SecurityConfig.NetworkRule != nil {
+		// 如果开关开启，添加默认阻断端口规则
+		if in.SecurityConfig.NetworkRule.IsOn {
+			for port := range blockedPorts {
+				mergedRules = append(mergedRules, &litedb.NetworkRule{
+					Protocols: []string{"tcp"},
+					Addr:      "0.0.0.0/0",
+					Port:      port,
+				})
+			}
+		}
+
+		for _, v := range in.SecurityConfig.NetworkRule.Rules {
+			mergedRules = append(mergedRules, &litedb.NetworkRule{
+				Protocols: v.Protocols,
+				Addr:      v.Addr,
+				Port:      v.Port,
+			})
+		}
+
+		if err := iptables.UpdateNodeIPtablesFile(in.SecurityConfig.NetworkRule.IsOn, mergedRules); err != nil {
+			log.Warnf("UpdateContainerIPtablesFile err: %v", err)
+			return nil, rpc.ErrContainerNetworkRule
+		}
+
+		cfgs, err := litedb.GetNodeConfig("localhost")
+		if err != nil {
+			log.Errorf("GetContainerConfig err=%v", err)
+			return nil, rpc.ErrDatabaseFail
+		}
+
+		var securityRules []*security.NetworkRule
+		for _, rule := range mergedRules {
+			securityRules = append(securityRules, &security.NetworkRule{
+				Protocols: rule.Protocols,
+				Addr:      rule.Addr,
+				Port:      rule.Port,
+			})
+		}
+
+		var isOn bool
+		if in.SecurityConfig.NetworkRule.IsOn {
+			isOn = true
+		} else {
+			isOn = false
+		}
+
+		cfgs.SecurityConfig.NetworkRule = &security.NetworkRuleList{
+			IsOn:  isOn,
+			Rules: securityRules,
+		}
+
+		if err := litedb.UpdateNodeConfig(cfgs); err != nil {
+			log.Errorf("UpdateContainerConfig err=%v", err)
+			return nil, rpc.ErrDatabaseFail
+		}
+	}
+
+	return &pb.UpdateNetworkRuleReply{}, nil
+}
+
+func (s *NodeServer) GetFileProtect(ctx context.Context, in *pb.GetFileProtectRequest) (*pb.GetFileProtectReply, error) {
+	log.Debugf("GetFileProtect called: node_id=%v  at agent ", in.NodeId)
+
+	cfgs, err := litedb.GetNodeConfig("localhost")
+	if err != nil {
+		log.Errorf("GetContainerConfig err=%v", err)
+		return nil, rpc.ErrDatabaseFail
+	}
+
+	var reply pb.GetFileProtectReply
+
+	if cfgs != nil && cfgs.SecurityConfig != nil && cfgs.SecurityConfig.FileProtection != nil {
+
+		reply.FileProtection = &security.FileProtection{
+			IsOn:     cfgs.SecurityConfig.FileProtection.IsOn,
+			FileList: cfgs.SecurityConfig.FileProtection.FileList,
+		}
+	} else {
+		reply.FileProtection = &security.FileProtection{
+			IsOn:     false,
+			FileList: []string{},
+		}
+		log.Warnf("FileProtection data not found for node_id=%v", in.NodeId)
+	}
+
+	log.Debugf("GetFileProtect called: node_id=%v  at agent reply:%v", in.NodeId, reply.FileProtection)
+
+	return &reply, nil
+}
+
+func (s *NodeServer) GetNetworkRule(ctx context.Context, in *pb.GetNetworkRuleRequest) (*pb.GetNetworkRuleReply, error) {
+	log.Debugf("GetNetworkRule called: node_id=%v  at agent ", in.NodeId)
+
+	cfgs, err := litedb.GetNodeConfig("localhost")
+	if err != nil {
+		log.Errorf("GetContainerConfig err=%v", err)
+		return nil, rpc.ErrDatabaseFail
+	}
+
+	var reply pb.GetNetworkRuleReply
+
+	if cfgs != nil && cfgs.SecurityConfig != nil && cfgs.SecurityConfig.NetworkRule != nil {
+		reply.NetworkRule = &security.NetworkRuleList{
+			IsOn:  cfgs.SecurityConfig.NetworkRule.IsOn,
+			Rules: cfgs.SecurityConfig.NetworkRule.Rules,
+		}
+	} else {
+		reply.NetworkRule = &security.NetworkRuleList{
+			IsOn:  false,
+			Rules: nil,
+		}
+		log.Warnf("GetNetworkRule data not found for node_id=%v", in.NodeId)
+	}
+
+	log.Debugf("GetNetworkRule called: node_id=%v reply:%v at agent ", in.NodeId, reply)
+
+	return &reply, nil
+}
+
+func (s *NodeServer) GetNodeSecurityConfig(ctx context.Context, in *pb.GetNodeSecurityConfigRequest) (*pb.GetNodeSecurityConfigReply, error) {
+	log.Debugf("UpdateFileProtect called: node_id=%v  at agent ", in.NodeId)
+
+	cfgs, err := litedb.GetNodeConfig("localhost")
+	if err != nil {
+		log.Errorf("GetContainerConfig err=%v", err)
+		return nil, rpc.ErrDatabaseFail
+	}
+
+	var reply pb.GetNodeSecurityConfigReply
+
+	if cfgs != nil && cfgs.SecurityConfig != nil {
+		reply.SecurityConfig = cfgs.SecurityConfig
+	} else {
+		return nil, rpc.ErrNotFound
+	}
+
+	log.Debugf("GetNetworkRule called: node_id=%v reply:%v at agent ", in.NodeId, reply)
+
+	return &reply, nil
+
 }
 
 func (s *NodeServer) Update(ctx context.Context, in *pb.UpdateRequest) (*pb.UpdateReply, error) {
@@ -199,7 +357,7 @@ func (s *NodeServer) Update(ctx context.Context, in *pb.UpdateRequest) (*pb.Upda
 
 func (s *NodeServer) setSecurityConfig(id string, uuid, name string, pid int, fromUpdate bool, sec *pb.SecurityConfig) error {
 	log.Debugf("NodeServer setSecurityConfig")
-	
+
 	if sec == nil {
 		return nil
 	}
@@ -285,26 +443,47 @@ func (s *NodeServer) Create(ctx context.Context, in *pb.CreateRequest) (*pb.Crea
 		}
 		return nil, rpc.ErrDatabaseFail
 	}
-	
-	cfgs := litedb.NodeConfig{
-		ID			   :1,			// 强制设置id=1，表只能有一条记录
-		UUID           :in.Uuid,
-		NodeID    	   :"localhost",
-		NodeName  	   :in.Name,
-		SecurityConfig :nil,
+
+	securityConfig := &pb.SecurityConfig{
+		NetworkRule: &security.NetworkRuleList{
+			IsOn:  false,
+			Rules: []*security.NetworkRule{},
+		},
 	}
-	
-	if err := litedb.CreateNodeConfig(&cfgs); err != nil{
+
+	for port := range blockedPorts {
+		securityConfig.NetworkRule.Rules = append(
+			securityConfig.NetworkRule.Rules,
+			&security.NetworkRule{
+				Protocols: []string{"tcp"},
+				Addr:      "0.0.0.0/0",
+				Port:      port,
+			},
+		)
+	}
+
+	cfgs := litedb.NodeConfig{
+		ID:             1, // 强制设置id=1，表只能有一条记录
+		UUID:           in.Uuid,
+		NodeID:         "localhost",
+		NodeName:       in.Name,
+		SecurityConfig: securityConfig,
+	}
+
+	if err := litedb.CreateNodeConfig(&cfgs); err != nil {
 		log.Infof("CreateNodeConfig err=%v", err)
 		return nil, rpc.ErrDatabaseFail
 	}
-	
+
 	return &pb.CreateReply{}, nil
 }
 
 func (s *NodeServer) Remove(ctx context.Context, in *pb.RemoveRequest) (*pb.RemoveReply, error) {
 	err := litedb.RemoveNodeInfo(1, in.Uuid) // 强制设置id=1，表只能有一条记录
-	if err != nil {
+
+	res := litedb.RemoveNodeConfigByID(1) // 强制设置id=1，表只能有一条记录
+
+	if err != nil && res == nil {
 		log.Warnf("Node.Remove uuid=%s err=%v", in.Uuid, err)
 		if err == gorm.ErrRecordNotFound {
 			goto success

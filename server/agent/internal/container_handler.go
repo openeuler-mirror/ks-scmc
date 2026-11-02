@@ -1492,3 +1492,10 @@ func (*ContainerServer) KillAppEntry(ctx context.Context, in *pb.KillAppEntryReq
 
 	return &pb.KillAppEntryReply{}, nil
 }
+
+
+func (*ContainerServer) GetContainerStats(ctx context.Context, in *pb.StatsRequest) (*pb.StatsReply, error) {
+	// 这里并不关心 StatsRequest.HostId
+	json_str, _ := docker.HandleStatsRequest()
+	return &pb.StatsReply{StatsData: json_str,}, nil
+}

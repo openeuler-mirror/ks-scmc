@@ -33,6 +33,9 @@ type NodeClient interface {
 	// 安全配置
 	UpdateFileProtect(ctx context.Context, in *UpdateFileProtectRequest, opts ...grpc.CallOption) (*UpdateFileProtectReply, error)
 	UpdateNetworkRule(ctx context.Context, in *UpdateNetworkRuleRequest, opts ...grpc.CallOption) (*UpdateNetworkRuleReply, error)
+	GetFileProtect(ctx context.Context, in *GetFileProtectRequest, opts ...grpc.CallOption) (*GetFileProtectReply, error)
+	GetNetworkRule(ctx context.Context, in *GetNetworkRuleRequest, opts ...grpc.CallOption) (*GetNetworkRuleReply, error)
+	GetNodeSecurityConfig(ctx context.Context, in *GetNodeSecurityConfigRequest, opts ...grpc.CallOption) (*GetNodeSecurityConfigReply, error)
 }
 
 type nodeClient struct {
@@ -115,6 +118,33 @@ func (c *nodeClient) UpdateNetworkRule(ctx context.Context, in *UpdateNetworkRul
 	return out, nil
 }
 
+func (c *nodeClient) GetFileProtect(ctx context.Context, in *GetFileProtectRequest, opts ...grpc.CallOption) (*GetFileProtectReply, error) {
+	out := new(GetFileProtectReply)
+	err := c.cc.Invoke(ctx, "/node.Node/GetFileProtect", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *nodeClient) GetNetworkRule(ctx context.Context, in *GetNetworkRuleRequest, opts ...grpc.CallOption) (*GetNetworkRuleReply, error) {
+	out := new(GetNetworkRuleReply)
+	err := c.cc.Invoke(ctx, "/node.Node/GetNetworkRule", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *nodeClient) GetNodeSecurityConfig(ctx context.Context, in *GetNodeSecurityConfigRequest, opts ...grpc.CallOption) (*GetNodeSecurityConfigReply, error) {
+	out := new(GetNodeSecurityConfigReply)
+	err := c.cc.Invoke(ctx, "/node.Node/GetNodeSecurityConfig", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // NodeServer is the server API for Node service.
 // All implementations must embed UnimplementedNodeServer
 // for forward compatibility
@@ -134,6 +164,9 @@ type NodeServer interface {
 	// 安全配置
 	UpdateFileProtect(context.Context, *UpdateFileProtectRequest) (*UpdateFileProtectReply, error)
 	UpdateNetworkRule(context.Context, *UpdateNetworkRuleRequest) (*UpdateNetworkRuleReply, error)
+	GetFileProtect(context.Context, *GetFileProtectRequest) (*GetFileProtectReply, error)
+	GetNetworkRule(context.Context, *GetNetworkRuleRequest) (*GetNetworkRuleReply, error)
+	GetNodeSecurityConfig(context.Context, *GetNodeSecurityConfigRequest) (*GetNodeSecurityConfigReply, error)
 	mustEmbedUnimplementedNodeServer()
 }
 
@@ -164,6 +197,15 @@ func (UnimplementedNodeServer) UpdateFileProtect(context.Context, *UpdateFilePro
 }
 func (UnimplementedNodeServer) UpdateNetworkRule(context.Context, *UpdateNetworkRuleRequest) (*UpdateNetworkRuleReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateNetworkRule not implemented")
+}
+func (UnimplementedNodeServer) GetFileProtect(context.Context, *GetFileProtectRequest) (*GetFileProtectReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetFileProtect not implemented")
+}
+func (UnimplementedNodeServer) GetNetworkRule(context.Context, *GetNetworkRuleRequest) (*GetNetworkRuleReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetNetworkRule not implemented")
+}
+func (UnimplementedNodeServer) GetNodeSecurityConfig(context.Context, *GetNodeSecurityConfigRequest) (*GetNodeSecurityConfigReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetNodeSecurityConfig not implemented")
 }
 func (UnimplementedNodeServer) mustEmbedUnimplementedNodeServer() {}
 
@@ -322,6 +364,60 @@ func _Node_UpdateNetworkRule_Handler(srv interface{}, ctx context.Context, dec f
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Node_GetFileProtect_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetFileProtectRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(NodeServer).GetFileProtect(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/node.Node/GetFileProtect",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(NodeServer).GetFileProtect(ctx, req.(*GetFileProtectRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Node_GetNetworkRule_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetNetworkRuleRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(NodeServer).GetNetworkRule(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/node.Node/GetNetworkRule",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(NodeServer).GetNetworkRule(ctx, req.(*GetNetworkRuleRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Node_GetNodeSecurityConfig_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetNodeSecurityConfigRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(NodeServer).GetNodeSecurityConfig(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/node.Node/GetNodeSecurityConfig",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(NodeServer).GetNodeSecurityConfig(ctx, req.(*GetNodeSecurityConfigRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Node_ServiceDesc is the grpc.ServiceDesc for Node service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -360,6 +456,18 @@ var Node_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "UpdateNetworkRule",
 			Handler:    _Node_UpdateNetworkRule_Handler,
+		},
+		{
+			MethodName: "GetFileProtect",
+			Handler:    _Node_GetFileProtect_Handler,
+		},
+		{
+			MethodName: "GetNetworkRule",
+			Handler:    _Node_GetNetworkRule_Handler,
+		},
+		{
+			MethodName: "GetNodeSecurityConfig",
+			Handler:    _Node_GetNodeSecurityConfig_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

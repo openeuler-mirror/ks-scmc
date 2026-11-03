@@ -59,13 +59,17 @@ func Server() (*grpc.Server, error) {
 	system.RegisterSystemServer(s, &internal.SystemServer{})
 
 	go internal.RuntimeLogWriter()
-	go thriftapi.ThriftapiMain()
+	if common.Config.ApiTLS.Enable {
+		go thriftapi.ThriftapiMain()
+	}
 
 	tasks.AddTask(
 		&tasks.SyncImages{},
 		&tasks.IllegalContainer{},
 		&tasks.NodeStatus{},
 		&tasks.UpdateIptables{},
+		&tasks.CleanLogs{},
+		&tasks.ContainerEventMonitor{},
 	)
 
 	if os.Getenv("GRPC_REFLECTION") == "1" {

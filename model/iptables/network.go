@@ -131,6 +131,10 @@ func nodeInitFile() string {
 	return common.Config.Network.IPtablesPath + "/node-default.rule"
 }
 
+func nodeNetworkControlFile() string {
+	return common.Config.Network.IPtablesPath + "/node-network-control.rule"
+}
+
 func jsonFile() string {
 	return common.Config.Network.IPtablesJsonFile
 }
@@ -614,6 +618,20 @@ func NodeWhitelistInit(linkifs string) error {
 	return nil
 }
 
+func NodeControlInit() error {
+	controlenable := getEnableStatus("node-network-control.rule")
+	if controlenable {
+		fileName := nodeNetworkControlFile()
+		cmd := fmt.Sprintf("iptables-restore < %s", fileName)
+
+		if _, err := callShell(cmd); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 func DisableNode() error {
 	initFile := nodeInitFile()
 	cmd := fmt.Sprintf("ls -l %s > /dev/null 2>&1 && iptables-restore %s", initFile, initFile)
@@ -679,7 +697,8 @@ func ruleToCmd(filePath, fileName string, isOn bool, rules []*litedb.NetworkRule
 			str := "-p " + protocol
 			arr = append(arr, str)
 			if (protocol == "tcp" || protocol == "udp") && rule.Port != 0 {
-				str = fmt.Sprintf("--sport %d", rule.Port)
+				str = fmt.Sprintf("--dport %d", rule.Port)
+				// str = fmt.Sprintf("--sport %d", rule.Port)
 				arr = append(arr, str)
 			}
 			arr = append(arr, sufstr)
@@ -706,6 +725,21 @@ func UpdateContainerIPtablesFile(fileName string, isOn bool, rules []*litedb.Net
 	if pid != 0 {
 		cmd = fmt.Sprintf("%s; nsenter -t %d -n iptables-restore %s", cmd, pid, filePath)
 	}
+
+	if _, err := callShell(cmd); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func UpdateNodeIPtablesFile(isOn bool, rules []*litedb.NetworkRule) error {
+	log.Debugf("UpdateContainerIPtablesFile isOn:%v,rules:%v", isOn, rules)
+	filePath := nodeNetworkControlFile()
+
+	cmd := ruleToCmd(filePath, "node-network-control.rule", isOn, rules)
+
+	cmd = fmt.Sprintf("%s; iptables-restore %s", cmd, filePath)
 
 	if _, err := callShell(cmd); err != nil {
 		return err

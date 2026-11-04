@@ -2367,7 +2367,7 @@ func (p *GetAllContainersResponse) GetVersion() string {
   return p.Version
 }
 
-func (p *GetAllContainersResponse) GetHa() bool {
+func (p *GetAllContainersResponse) GetHa() string {
   return p.Ha
 }
 

@@ -6,6 +6,7 @@ import (
 
 	"github.com/docker/docker/api/types"
 	// "github.com/google/uuid"
+	// "github.com/google/uuid"
 	"scmc/model/authz"
 	"scmc/model/iptables"
 	"scmc/model/opensnitch"
@@ -145,11 +146,18 @@ func (*NodeServer) Usage(ctx context.Context, in *pb.UsageRequest) (*pb.UsageRep
 func (s *NodeServer) UpdateFileProtect(ctx context.Context, in *pb.UpdateFileProtectRequest) (*pb.UpdateFileProtectReply, error) {
 	log.Debugf("UpdateFileProtect called: node_id=%v ,paths:%s enabel:%v at agent",
 		in.NodeId, in.SecurityConfig.FileProtection.FileList, in.SecurityConfig.FileProtection.IsOn)
-	if in.SecurityConfig != nil {
+	if in.SecurityConfig != nil {	
 		cfgs, err := litedb.GetNodeConfig("localhost")
 		if err != nil {
-			log.Errorf("GetContainerConfig err=%v", err)
-			return nil, rpc.ErrDatabaseFail
+			err = s.nodeConfigDataTableCreate("","")
+			if err != nil{
+				return nil,err
+			}
+			cfgs, err = litedb.GetNodeConfig("localhost")
+			if err != nil {
+				log.Errorf("GetContainerConfig err=%v", err)
+				return nil, rpc.ErrDatabaseFail
+			}
 		}
 
 		if err := kysec.UpdateFileAccess("localhost", in.SecurityConfig.FileProtection.IsOn, in.SecurityConfig.FileProtection.FileList, nil); err != nil {
@@ -200,8 +208,15 @@ func (s *NodeServer) UpdateNetworkRule(ctx context.Context, in *pb.UpdateNetwork
 
 		cfgs, err := litedb.GetNodeConfig("localhost")
 		if err != nil {
-			log.Errorf("GetContainerConfig err=%v", err)
-			return nil, rpc.ErrDatabaseFail
+			err = s.nodeConfigDataTableCreate("","")
+			if err != nil{
+				return nil,err
+			}
+			cfgs, err = litedb.GetNodeConfig("localhost")
+			if err != nil {
+				log.Errorf("GetContainerConfig err=%v", err)
+				return nil, rpc.ErrDatabaseFail
+			}
 		}
 
 		var securityRules []*security.NetworkRule
@@ -239,8 +254,15 @@ func (s *NodeServer) GetFileProtect(ctx context.Context, in *pb.GetFileProtectRe
 
 	cfgs, err := litedb.GetNodeConfig("localhost")
 	if err != nil {
-		log.Errorf("GetContainerConfig err=%v", err)
-		return nil, rpc.ErrDatabaseFail
+		err = s.nodeConfigDataTableCreate("","")
+		if err != nil{
+			return nil,err
+		}
+		cfgs, err = litedb.GetNodeConfig("localhost")
+		if err != nil {
+			log.Errorf("GetContainerConfig err=%v", err)
+			return nil, rpc.ErrDatabaseFail
+		}
 	}
 
 	var reply pb.GetFileProtectReply
@@ -269,8 +291,15 @@ func (s *NodeServer) GetNetworkRule(ctx context.Context, in *pb.GetNetworkRuleRe
 
 	cfgs, err := litedb.GetNodeConfig("localhost")
 	if err != nil {
-		log.Errorf("GetContainerConfig err=%v", err)
-		return nil, rpc.ErrDatabaseFail
+		err = s.nodeConfigDataTableCreate("","")
+		if err != nil{
+			return nil,err
+		}
+		cfgs, err = litedb.GetNodeConfig("localhost")
+		if err != nil {
+			log.Errorf("GetContainerConfig err=%v", err)
+			return nil, rpc.ErrDatabaseFail
+		}
 	}
 
 	var reply pb.GetNetworkRuleReply
@@ -430,20 +459,18 @@ func (s *NodeServer) setSecurityConfig(id string, uuid, name string, pid int, fr
 	return nil
 }
 
-func (s *NodeServer) Create(ctx context.Context, in *pb.CreateRequest) (*pb.CreateReply, error) {
-	if len(in.Uuid) == 0 {
-		return nil, rpc.ErrInvalidArgument
-	}
-
-	err := litedb.CreateNodeInfo(1, in.Uuid) // 强制设置id=1，表只能有一条记录
-	if err != nil {
-		log.Warnf("Node.Create uuid=%s err=%v", in.Uuid, err)
-		if strings.HasPrefix(err.Error(), "UNIQUE constraint failed") {
-			return nil, status.Error(codes.Internal, "节点已加入其他集群")
+func (s *NodeServer) nodeConfigDataTableCreate(uuid string,nodeName string) ( error ) {
+	
+	if uuid == "" {
+		nodeInfo,err := litedb.GetNodeInfo(1)
+		
+		if err != nil{
+			return err;
 		}
-		return nil, rpc.ErrDatabaseFail
+		
+		uuid = nodeInfo.UUID
 	}
-
+	
 	securityConfig := &pb.SecurityConfig{
 		NetworkRule: &security.NetworkRuleList{
 			IsOn:  false,
@@ -464,17 +491,38 @@ func (s *NodeServer) Create(ctx context.Context, in *pb.CreateRequest) (*pb.Crea
 
 	cfgs := litedb.NodeConfig{
 		ID:             1, // 强制设置id=1，表只能有一条记录
-		UUID:           in.Uuid,
+		UUID:           uuid,
 		NodeID:         "localhost",
-		NodeName:       in.Name,
+		NodeName:       nodeName,
 		SecurityConfig: securityConfig,
 	}
 
 	if err := litedb.CreateNodeConfig(&cfgs); err != nil {
 		log.Infof("CreateNodeConfig err=%v", err)
+		return  rpc.ErrDatabaseFail
+	}
+	
+	return nil
+}
+
+func (s *NodeServer) Create(ctx context.Context, in *pb.CreateRequest) (*pb.CreateReply, error) {
+	if len(in.Uuid) == 0 {
+		return nil, rpc.ErrInvalidArgument
+	}
+
+	err := litedb.CreateNodeInfo(1, in.Uuid) // 强制设置id=1，表只能有一条记录
+	if err != nil {
+		log.Warnf("Node.Create uuid=%s err=%v", in.Uuid, err)
+		if strings.HasPrefix(err.Error(), "UNIQUE constraint failed") {
+			return nil, status.Error(codes.Internal, "节点已加入其他集群")
+		}
 		return nil, rpc.ErrDatabaseFail
 	}
 
+	err = s.nodeConfigDataTableCreate(in.Uuid,in.Name)
+	if err != nil{
+		return nil,err
+	}	
 	return &pb.CreateReply{}, nil
 }
 

@@ -312,7 +312,7 @@ func (x *SetHostsReply) String() string {
 func (*SetHostsReply) ProtoMessage() {}
 
 func (x *SetHostsReply) ProtoReflect() protoreflect.Message {
-	mi := &file_container_proto_msgTypes[1]
+	mi := &file_container_proto_msgTypes[4]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {

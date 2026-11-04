@@ -46,6 +46,8 @@ type ContainerClient interface {
 	LoadImage(ctx context.Context, in *LoadRequest, opts ...grpc.CallOption) (Container_LoadImageClient, error)
 	// 设置容器/etc/hosts
 	SetContainerExtraHosts(ctx context.Context, in *SetHostsRequest, opts ...grpc.CallOption) (*SetHostsReply, error)
+	// 设置容器限制
+	SetContainerQuota(ctx context.Context, in *SetQuotaRequest, opts ...grpc.CallOption) (*SetQuotaReply, error)
 	// 容器备份客户端接口
 	CreateBackup(ctx context.Context, in *CreateBackupRequest, opts ...grpc.CallOption) (*CreateBackupReply, error)
 	UpdateBackup(ctx context.Context, in *UpdateBackupRequest, opts ...grpc.CallOption) (*UpdateBackupReply, error)
@@ -209,6 +211,15 @@ func (x *containerLoadImageClient) Recv() (*LoadProgress, error) {
 func (c *containerClient) SetContainerExtraHosts(ctx context.Context, in *SetHostsRequest, opts ...grpc.CallOption) (*SetHostsReply, error) {
 	out := new(SetHostsReply)
 	err := c.cc.Invoke(ctx, "/container.Container/SetContainerExtraHosts", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *containerClient) SetContainerQuota(ctx context.Context, in *SetQuotaRequest, opts ...grpc.CallOption) (*SetQuotaReply, error) {
+	out := new(SetQuotaReply)
+	err := c.cc.Invoke(ctx, "/container.Container/SetContainerQuota", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -446,6 +457,8 @@ type ContainerServer interface {
 	LoadImage(*LoadRequest, Container_LoadImageServer) error
 	// 设置容器/etc/hosts
 	SetContainerExtraHosts(context.Context, *SetHostsRequest) (*SetHostsReply, error)
+	// 设置容器限制
+	SetContainerQuota(context.Context, *SetQuotaRequest) (*SetQuotaReply, error)
 	// 容器备份客户端接口
 	CreateBackup(context.Context, *CreateBackupRequest) (*CreateBackupReply, error)
 	UpdateBackup(context.Context, *UpdateBackupRequest) (*UpdateBackupReply, error)
@@ -516,6 +529,9 @@ func (UnimplementedContainerServer) LoadImage(*LoadRequest, Container_LoadImageS
 }
 func (UnimplementedContainerServer) SetContainerExtraHosts(context.Context, *SetHostsRequest) (*SetHostsReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SetContainerExtraHosts not implemented")
+}
+func (UnimplementedContainerServer) SetContainerQuota(context.Context, *SetQuotaRequest) (*SetQuotaReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SetContainerQuota not implemented")
 }
 func (UnimplementedContainerServer) CreateBackup(context.Context, *CreateBackupRequest) (*CreateBackupReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateBackup not implemented")
@@ -805,6 +821,24 @@ func _Container_SetContainerExtraHosts_Handler(srv interface{}, ctx context.Cont
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(ContainerServer).SetContainerExtraHosts(ctx, req.(*SetHostsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Container_SetContainerQuota_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SetQuotaRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ContainerServer).SetContainerQuota(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/container.Container/SetContainerQuota",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ContainerServer).SetContainerQuota(ctx, req.(*SetQuotaRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -1222,6 +1256,10 @@ var Container_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "SetContainerExtraHosts",
 			Handler:    _Container_SetContainerExtraHosts_Handler,
+		},
+		{
+			MethodName: "SetContainerQuota",
+			Handler:    _Container_SetContainerQuota_Handler,
 		},
 		{
 			MethodName: "CreateBackup",

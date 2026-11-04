@@ -2922,9 +2922,9 @@ func (p *GetAllContainersResponse) writeField15(oprot thrift.TProtocol) (err err
 }
 
 func (p *GetAllContainersResponse) writeField16(oprot thrift.TProtocol) (err error) {
-  if err := oprot.WriteFieldBegin("ha", thrift.BOOL, 16); err != nil {
+  if err := oprot.WriteFieldBegin("ha", thrift.STRING, 16); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field begin error 16:ha: ", p), err) }
-  if err := oprot.WriteBool(bool(p.Ha)); err != nil {
+  if err := oprot.WriteString(string(p.Ha)); err != nil {
   return thrift.PrependError(fmt.Sprintf("%T.ha (16) field write error: ", p), err) }
   if err := oprot.WriteFieldEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field end error 16:ha: ", p), err) }

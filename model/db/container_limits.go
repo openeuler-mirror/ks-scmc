@@ -43,14 +43,14 @@ func UpdateContainerLimits(n *ContainerLimits) error {
 	}
 	return nil
 }
-func QueryContainerLimitsByContainerId(containerId string, nodeId int64) (*ContainerLimits, error) {
+func QueryContainerLimitsByContainerId(containerId string) (*ContainerLimits, error) {
 	db, err := getConn()
 	if err != nil {
 		return nil, err
 	}
 
 	var containerLimits ContainerLimits
-	result := db.Where("container_id=?", containerId).First(&containerLimits, "node_id=? AND container_id=?", nodeId, containerId)
+	result := db.Where("container_id=?", containerId).First(&containerLimits)
 	if result.Error != nil {
 		log.Warnf("query container limits container_id=%v: %v", containerId, err)
 		return nil, translateError(result.Error)

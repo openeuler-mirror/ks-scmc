@@ -719,21 +719,138 @@ func (h *KsScmcHandler) GetAllNodeList() (*ksscmc.GetAllNodeListResponse, error)
 }
 
 func (h *KsScmcHandler) GetAllContainers(node_name string) (r string, err error) {
-	return "", nil
+	logrus.Error("777777777777777777777777777")
+	response := map[string]interface{}{
+		"status":     0,
+		"message":    "success",
+		"containers": nil,
+	}
+
+	data := []ksscmc.GetAllContainersResponse{}
+
+	containersInfo, err := h.GetAllContainerList(node_name)
+	for _, containerInfo := range containersInfo.Containerlist {
+		tmp := ksscmc.GetAllContainersResponse{
+			Name:      containerInfo.ContainerName,
+			Stat:      int32(containerInfo.ContainerStatus),
+			UUID:      containerInfo.ContainerID,
+			CPU:       0, // todo
+			CPUUsage:  containerInfo.CPUUsage,
+			MemUsage:  containerInfo.MemUsage,
+			MemTotal:  0, // todo
+			DiskUsage: containerInfo.DiskUsage,
+			DiskTotal: 0,
+			DiskRbw:   0,
+			DiskWbw:   0,
+			NetRbw:    0,
+			NetWbw:    0,
+			Image:     "",
+			Version:   "",
+			Ha:        "false",
+			Level:     0,
+			Nets:      nil,
+		}
+		networkInfo, _ := h._GetContainerNetwork(node_name, tmp.Name)
+		tmp.Nets = append(tmp.Nets, &ksscmc.NetworkInterface{
+			EthName: "",
+			IP:      networkInfo.ContainerNetInfo.IP,
+			Mac:     "",
+			Gateway: networkInfo.ContainerNetInfo.Gateway,
+			Mask:    networkInfo.ContainerNetInfo.Mask,
+		})
+		data = append(data, tmp)
+	}
+	response["containers"] = data
+
+	jsonStr, _ := json.Marshal(response)
+	logrus.Error("====================================")
+	logrus.Error(string(jsonStr))
+	return string(jsonStr), nil
 }
 
 func (h *KsScmcHandler) GetAllContainersV2(nid string) (r string, err error) {
-	return "", nil
+	logrus.Error("888888888888888888888888888888")
+	response := map[string]interface{}{
+		"status":     0,
+		"message":    "success",
+		"containers": nil,
+	}
+
+	data := []ksscmc.GetAllContainersResponse{}
+
+	nodeId, err := strconv.Atoi(nid)
+	if err != nil {
+		logrus.Errorf("Invalid nid: %s", nid)
+		logrus.Error(err)
+		response["status"] = 1
+		response["message"] = "failed"
+		jsonStr, _ := json.Marshal(response)
+		logrus.Error("!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+		return string(jsonStr), nil
+	}
+	nodeInfo, err := db.QueryNodeByID(int64(nodeId))
+	if err != nil {
+		logrus.Error(err)
+		response["status"] = 1
+		response["message"] = "failed"
+		jsonStr, _ := json.Marshal(response)
+		logrus.Error("****************************")
+		return string(jsonStr), nil
+	}
+
+	containersInfo, err := h.GetAllContainerList(nodeInfo.Name)
+	for _, containerInfo := range containersInfo.Containerlist {
+		tmp := ksscmc.GetAllContainersResponse{
+			Name:      containerInfo.ContainerName,
+			Stat:      int32(containerInfo.ContainerStatus),
+			UUID:      containerInfo.ContainerID,
+			CPU:       0, // todo
+			CPUUsage:  containerInfo.CPUUsage,
+			MemUsage:  containerInfo.MemUsage,
+			MemTotal:  0, // todo
+			DiskUsage: containerInfo.DiskUsage,
+			DiskTotal: 0,
+			DiskRbw:   0,
+			DiskWbw:   0,
+			NetRbw:    0,
+			NetWbw:    0,
+			Image:     "",
+			Version:   "",
+			Ha:        "false",
+			Level:     0,
+			Nets:      nil,
+		}
+		networkInfo, _ := h._GetContainerNetwork(nodeInfo.Name, tmp.Name)
+		tmp.Nets = append(tmp.Nets, &ksscmc.NetworkInterface{
+			EthName: "",
+			IP:      networkInfo.ContainerNetInfo.IP,
+			Mac:     "",
+			Gateway: networkInfo.ContainerNetInfo.Gateway,
+			Mask:    networkInfo.ContainerNetInfo.Mask,
+		})
+		data = append(data, tmp)
+	}
+	response["containers"] = data
+	jsonStr, err := json.Marshal(response)
+	if err != nil {
+		logrus.Error(err)
+	}
+	logrus.Error("====================================")
+	logrus.Error(string(jsonStr))
+	return string(jsonStr), nil
 }
 
 func (h *KsScmcHandler) GetAllContainerList(node_name string) (*ksscmc.GetAllContainerListResponse, error) {
-	ctx_, _ := context.WithTimeout(context.Background(), time.Second*5)
+	ctx_, cancel := context.WithTimeout(context.Background(), time.Second*5)
+	defer cancel()
 	response := &ksscmc.GetAllContainerListResponse{
 		Containerlist: []*ksscmc.ContainerMetric{},
 		RetCode:       1, // 成功码
 	}
 
-	nodes, err := db.ListNodes()
+	// nodes, err := db.ListNodes()
+	node, err := db.QueryNodeByName(node_name)
+	nodes := []*db.NodeInfo{node}
 	if err != nil {
 		logrus.Error(err)
 		return response, nil

@@ -134,6 +134,162 @@ func (x *SetHostsRequest) GetContainerExtrahosts() []string {
 	return nil
 }
 
+type SetQuotaRequest struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	NodeId         int64           `protobuf:"varint,1,opt,name=node_id,json=nodeId,proto3" json:"node_id,omitempty"`
+	ContainerId    string          `protobuf:"bytes,2,opt,name=container_id,json=containerId,proto3" json:"container_id,omitempty"`
+	ContainerLimit *ContainerLimit `protobuf:"bytes,3,opt,name=container_limit,json=containerLimit,proto3" json:"container_limit,omitempty"`
+}
+
+func (x *SetQuotaRequest) Reset() {
+	*x = SetQuotaRequest{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_container_proto_msgTypes[1]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *SetQuotaRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SetQuotaRequest) ProtoMessage() {}
+
+func (x *SetQuotaRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_container_proto_msgTypes[1]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SetQuotaRequest.ProtoReflect.Descriptor instead.
+func (*SetQuotaRequest) Descriptor() ([]byte, []int) {
+	return file_container_proto_rawDescGZIP(), []int{1}
+}
+
+func (x *SetQuotaRequest) GetNodeId() int64 {
+	if x != nil {
+		return x.NodeId
+	}
+	return 0
+}
+
+func (x *SetQuotaRequest) GetContainerId() string {
+	if x != nil {
+		return x.ContainerId
+	}
+	return ""
+}
+
+func (x *SetQuotaRequest) GetContainerLimit() *ContainerLimit {
+	if x != nil {
+		return x.ContainerLimit
+	}
+	return nil
+}
+
+type ContainerLimit struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	NetRbw float64 `protobuf:"fixed64,1,opt,name=net_rbw,json=netRbw,proto3" json:"net_rbw,omitempty"`
+	NetWbw float64 `protobuf:"fixed64,2,opt,name=net_wbw,json=netWbw,proto3" json:"net_wbw,omitempty"`
+}
+
+func (x *ContainerLimit) Reset() {
+	*x = ContainerLimit{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_container_proto_msgTypes[2]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *ContainerLimit) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ContainerLimit) ProtoMessage() {}
+
+func (x *ContainerLimit) ProtoReflect() protoreflect.Message {
+	mi := &file_container_proto_msgTypes[2]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ContainerLimit.ProtoReflect.Descriptor instead.
+func (*ContainerLimit) Descriptor() ([]byte, []int) {
+	return file_container_proto_rawDescGZIP(), []int{2}
+}
+
+func (x *ContainerLimit) GetNetRbw() float64 {
+	if x != nil {
+		return x.NetRbw
+	}
+	return 0
+}
+
+func (x *ContainerLimit) GetNetWbw() float64 {
+	if x != nil {
+		return x.NetWbw
+	}
+	return 0
+}
+
+type SetQuotaReply struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+}
+
+func (x *SetQuotaReply) Reset() {
+	*x = SetQuotaReply{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_container_proto_msgTypes[3]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *SetQuotaReply) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SetQuotaReply) ProtoMessage() {}
+
+func (x *SetQuotaReply) ProtoReflect() protoreflect.Message {
+	mi := &file_container_proto_msgTypes[3]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SetQuotaReply.ProtoReflect.Descriptor instead.
+func (*SetQuotaReply) Descriptor() ([]byte, []int) {
+	return file_container_proto_rawDescGZIP(), []int{3}
+}
+
 type SetHostsReply struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache

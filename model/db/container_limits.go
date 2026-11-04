@@ -17,7 +17,7 @@ type ContainerLimits struct {
 func (ContainerLimits) TableName() string {
 	return "container_limits"
 }
-func CreateContainerLimits(data *ContainerHosts) error {
+func CreateContainerLimits(data *ContainerLimits) error {
 	db, err := getConn()
 	if err != nil {
 		return err

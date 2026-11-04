@@ -2297,7 +2297,7 @@ type GetAllContainersResponse struct {
   NetWbw float64 `thrift:"net_wbw,13,required" db:"net_wbw" json:"net_wbw"`
   Image string `thrift:"image,14,required" db:"image" json:"image"`
   Version string `thrift:"version,15,required" db:"version" json:"version"`
-  Ha bool `thrift:"ha,16,required" db:"ha" json:"ha"`
+  Ha string `thrift:"ha,16,required" db:"ha" json:"ha"`
   Level int32 `thrift:"level,17,required" db:"level" json:"level"`
   Nets []*NetworkInterface `thrift:"nets,18,required" db:"nets" json:"nets"`
 }

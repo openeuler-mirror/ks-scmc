@@ -2704,7 +2704,7 @@ func (p *GetAllContainersResponse)  ReadField15(iprot thrift.TProtocol) error {
 }
 
 func (p *GetAllContainersResponse)  ReadField16(iprot thrift.TProtocol) error {
-  if v, err := iprot.ReadBool(); err != nil {
+  if v, err := iprot.ReadString(); err != nil {
   return thrift.PrependError("error reading field 16: ", err)
 } else {
   p.Ha = v

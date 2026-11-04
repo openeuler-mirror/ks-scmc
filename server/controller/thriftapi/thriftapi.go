@@ -942,8 +942,13 @@ func (h *KsScmcHandler) GetAllContainerList(node_name string) (*ksscmc.GetAllCon
 			item.CPUUsage = tmpcontainer.Info.ResourceStat.CpuStat.CoreUsed * 100
 			item.MemUsage = int32(tmpcontainer.Info.ResourceStat.MemStat.Used)
 			item.DiskUsage = float64(tmpcontainer.Info.ResourceStat.DiskStat.Used / 1024)
-			item.NetUpload = float64(tmpcontainer.Info.ResourceStat.NetStat.Tx / 1024 / 1024)
-			item.NetDownload = float64(tmpcontainer.Info.ResourceStat.NetStat.Rx / 1024 / 1024)
+			if tmpcontainer.Info.ResourceStat.NetStat == nil {
+				item.NetUpload = 0
+				item.NetDownload = 0
+			} else {
+				item.NetUpload = float64(tmpcontainer.Info.ResourceStat.NetStat.Tx / 1024 / 1024)
+				item.NetDownload = float64(tmpcontainer.Info.ResourceStat.NetStat.Rx / 1024 / 1024)
+			}
 		}
 
 		response.Containerlist = append(response.Containerlist, item)

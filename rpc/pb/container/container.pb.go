@@ -325,7 +325,7 @@ func (x *SetHostsReply) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SetHostsReply.ProtoReflect.Descriptor instead.
 func (*SetHostsReply) Descriptor() ([]byte, []int) {
-	return file_container_proto_rawDescGZIP(), []int{1}
+	return file_container_proto_rawDescGZIP(), []int{4}
 }
 
 type LoadRequest struct {

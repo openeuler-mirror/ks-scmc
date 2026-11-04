@@ -366,7 +366,7 @@ func (x *LoadRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use LoadRequest.ProtoReflect.Descriptor instead.
 func (*LoadRequest) Descriptor() ([]byte, []int) {
-	return file_container_proto_rawDescGZIP(), []int{2}
+	return file_container_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *LoadRequest) GetTarPath() string {

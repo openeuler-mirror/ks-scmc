@@ -340,7 +340,7 @@ type LoadRequest struct {
 func (x *LoadRequest) Reset() {
 	*x = LoadRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_container_proto_msgTypes[2]
+		mi := &file_container_proto_msgTypes[5]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}

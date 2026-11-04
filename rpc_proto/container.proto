@@ -71,6 +71,16 @@ message SetHostsRequest{
   string container_id = 2;
   repeated string container_extrahosts = 3;
 }
+message SetQuotaRequest{
+    int64  node_id = 1;
+    string container_id = 2;
+    ContainerLimit container_limit = 3;
+}
+message ContainerLimit{
+    double net_rbw = 1;
+    double net_wbw =2;
+}
+message SetQuotaReply{}
 message SetHostsReply{}
 message LoadRequest{
   string tar_path = 1;

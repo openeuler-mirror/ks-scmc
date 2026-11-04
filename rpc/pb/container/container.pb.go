@@ -299,7 +299,7 @@ type SetHostsReply struct {
 func (x *SetHostsReply) Reset() {
 	*x = SetHostsReply{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_container_proto_msgTypes[1]
+		mi := &file_container_proto_msgTypes[4]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}

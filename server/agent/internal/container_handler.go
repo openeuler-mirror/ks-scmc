@@ -1756,3 +1756,31 @@ func (s *ContainerServer) SetContainerExtraHosts(ctx context.Context, in *pb.Set
 	}
 	return reply, nil
 }
+func (s *ContainerServer) SetContainerQuota(ctx context.Context, in *pb.SetQuotaRequest) (reply *pb.SetQuotaReply, err error) {
+	//先将配置写入数据库
+	data := &db.ContainerLimits{
+		NodeId:      in.NodeId,
+		ContainerId: in.ContainerId,
+		UploadSpeed: in.ContainerLimit.NetWbw,
+		DownSpeed:   in.ContainerLimit.NetRbw,
+	}
+	if err := db.CreateContainerLimits(data); err != nil {
+		log.Errorf("create  container limits failed: %v", err)
+		return nil, rpc.ErrInternal
+	}
+	//开启协程监听docker事件，监听到start restart事件后，处理容器的限速功能
+	cli, err := docker.Client()
+	if err != nil {
+		return nil, rpc.ErrInternal
+	}
+	dm := docker.GetDockerManager(cli)
+	go dm.Start()
+	return reply, nil
+}
+func (s *ContainerServer) GetContainerPid(containerId string) (int, error) {
+	_, pid, err := s.inspect(containerId, false)
+	if err != nil {
+		return 0, fmt.Errorf("Get container Pid error: %v", err)
+	}
+	return pid, nil
+}

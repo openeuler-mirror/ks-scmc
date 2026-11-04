@@ -825,13 +825,8 @@ func (h *KsScmcHandler) GetAllContainerList(node_name string) (*ksscmc.GetAllCon
 			item.CPUUsage = tmpcontainer.Info.ResourceStat.CpuStat.CoreUsed * 100
 			item.MemUsage = int32(tmpcontainer.Info.ResourceStat.MemStat.Used)
 			item.DiskUsage = float64(tmpcontainer.Info.ResourceStat.DiskStat.Used / 1024)
-			if tmpcontainer.Info.ResourceStat.NetStat == nil {
-				item.NetUpload = 0
-				item.NetDownload = 0
-			} else {
-				item.NetUpload = float64(tmpcontainer.Info.ResourceStat.NetStat.Tx / 1024 / 1024)
-				item.NetDownload = float64(tmpcontainer.Info.ResourceStat.NetStat.Rx / 1024 / 1024)
-			}
+			item.NetUpload = float64(tmpcontainer.Info.ResourceStat.NetStat.Tx / 1024 / 1024)
+			item.NetDownload = float64(tmpcontainer.Info.ResourceStat.NetStat.Rx / 1024 / 1024)
 		}
 
 		response.Containerlist = append(response.Containerlist, item)
@@ -1340,7 +1335,19 @@ func (h *KsScmcHandler) _SetContainerQuota(node_name string, container_name stri
 	}
 
 	logrus.Error(up)
-
+	//网络限速
+	limit := &containerPB.ContainerLimit{
+		NetRbw: containerLimit.NetRbw,
+		NetWbw: containerLimit.NetWbw,
+	}
+	quotaRequest := &containerPB.SetQuotaRequest{
+		ContainerId:    containerId,
+		ContainerLimit: limit,
+	}
+	_, err = cli.SetContainerQuota(ctx_, quotaRequest)
+	if err != nil {
+		return 6, nil
+	}
 	// upRsp, err := cli.Update(ctx_, up)
 	// 更新配置, 容器运行中，更新配置会失败
 	_, err = containerServer.Update(ctx_, up)

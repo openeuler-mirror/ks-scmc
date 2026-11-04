@@ -32,6 +32,8 @@ service Container {
   rpc LoadImage(LoadRequest)returns (stream LoadProgress){}
   //设置容器/etc/hosts
   rpc SetContainerExtraHosts(SetHostsRequest)returns (SetHostsReply){}
+  //设置容器限制
+  rpc SetContainerQuota(SetQuotaRequest) returns (SetQuotaReply){}
   // 容器备份客户端接口
   rpc CreateBackup(CreateBackupRequest) returns (CreateBackupReply) {}         // 创建备份
   rpc UpdateBackup(UpdateBackupRequest) returns (UpdateBackupReply) {}         // 更新备份描述

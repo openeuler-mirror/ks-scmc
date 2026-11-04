@@ -399,7 +399,7 @@ type LoadProgress struct {
 func (x *LoadProgress) Reset() {
 	*x = LoadProgress{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_container_proto_msgTypes[3]
+		mi := &file_container_proto_msgTypes[6]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}

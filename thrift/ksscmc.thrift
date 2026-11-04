@@ -117,7 +117,7 @@ struct GetAllContainersResponse {
     13: required double net_wbw,    // 网络上传速度(MB/s)
     14: required string image,      // 使用的镜像名称
     15: required string version,    // 使用的镜像版本
-    16: required bool ha,           // ha使能状态
+    16: required string ha,           // ha使能状态
     17: required i32 level,         // 模板等级
     18: required list<NetworkInterface> nets // 容器多网卡信息
 }

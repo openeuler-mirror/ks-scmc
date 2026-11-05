@@ -580,11 +580,31 @@ func (s *ContainerServer) Create(ctx context.Context, in *pb.CreateRequest) (*pb
 	in.Configs.Uuid = uuid
 	id, err := s.create(in.NodeId, in.Configs)
 
+	// 通过 ipcname 获取 ipc容器的容器 id
+	ipcID := ""
+	if in.Configs.Ipcname != "" {
+		ipcInfo, err := litedb.GetIpcConfigByName(in.Configs.Ipcname)
+		if err != nil {
+			log.Warnf("GetIpcConfigByName name: %v, err: %v", in.Configs.Ipcname, err)
+		} else {
+			ipcID = ipcInfo.ContainerID
+		}
+	}
+
 	if err != nil {
 		litedb.RemoveContainerConfigByID(cfgs.ID)
 	} else {
 		cfgs.ContainerID = id
 		litedb.UpdateContainerConfig(&cfgs)
+
+		// 容器与IPC 容器映射表
+		ipcMapCfg := litedb.IpcmapConfig {
+			ContainerName : in.Configs.Name, //容器名称
+			ContainerID : id, // 容器ID
+			IpcName : in.Configs.Ipcname, // IPC 容器名称，去掉头部的 ipc. 前缀
+			IpcID : ipcID, // IPC 容器对应的 容器ID
+		}
+		litedb.CreateIpcmapConfig(&ipcMapCfg)
 	}
 
 	return &pb.CreateReply{ContainerId: id}, err

@@ -278,6 +278,31 @@ func (s *NodeServer) GetNodeSecurityConfig(ctx context.Context, in *pb.GetNodeSe
 	return reply, nil
 }
 
+func (s *NodeServer) GetNodeDefaultPort(ctx context.Context, in *pb.GetNodeDefaultPortRequest) (*pb.GetNodeDefaultPortReply, error) {
+	log.Debugf("UpdateFileProtect called: node_id=%v  at server ", in.NodeId)
+
+	n, err := db.QueryNodeByID(in.NodeId)
+	if err != nil {
+		if err == db.ErrRecordNotFound {
+			return nil, rpc.ErrNotFound
+		}
+		return nil, rpc.ErrDatabaseFail
+	}
+	conn, err := getAgentConn(n.Address)
+	if err != nil {
+		return nil, rpc.ErrInternal
+	}
+
+	cli := pb.NewNodeClient(conn)
+	reply, err := cli.GetNodeDefaultPort(ctx, in)
+	if err != nil {
+		log.Warnf("Update node: %v", err)
+		return nil, err
+	}
+
+	return reply, nil
+}
+
 func (s *NodeServer) Update(ctx context.Context, in *pb.UpdateRequest) (*pb.UpdateReply, error) {
 	if utf8.RuneCountInString(in.Name) < 1 || utf8.RuneCountInString(in.Name) > 50 {
 		return nil, status.Errorf(codes.InvalidArgument, "节点名长度限制1-50")

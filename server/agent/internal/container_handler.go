@@ -114,7 +114,7 @@ func (s *ContainerServer) List(ctx context.Context, in *pb.ListRequest) (*pb.Lis
 
 	var reply pb.ListReply
 	for _, c := range containers {
-		if s.isIpcContainer(c.ID) {
+		if s.isIpcContainer(c.ID) { // 过滤掉 IPC 容器
 			continue
 		}
 		info := pb.ContainerInfo{
@@ -336,7 +336,7 @@ func (s *ContainerServer) setSecurityConfig(nodeid int64, id, uuid, name string,
 }
 
 func (s *ContainerServer) setSecurityLevel1(nodeid int64, id, name string, pid int, sec *pb.SecurityConfig) error {
-	
+
 	if sec == nil {
 		log.Warnf("setSecurityLevel1 invalid param sec")
 		return rpc.ErrContainerSecurityLevel
@@ -840,6 +840,35 @@ func (s *ContainerServer) Update(ctx context.Context, in *pb.UpdateRequest) (*pb
 		log.Debugf("%v mounts change", inspectConfigs.ContainerId)
 	}
 
+	// 获取容器与 ipcBase 的映射关系
+	ipcmapCfg, err := litedb.GetIpcmapConfigByCID(in.ContainerId)
+	if err != nil {
+		// 在创建的时候写入的数据，这里不应该失败
+		log.Warnf("Update GetIpcmapConfigByCID id: %v, err: %v", in.ContainerId, err)
+	} else {
+		//如果当前传递过来的和以前的不一样
+		if strings.TrimSpace(ipcmapCfg.IpcName) != strings.TrimSpace(in.Ipcname) {
+			// 获取 ipcBase 容器的容器ID
+			if strings.TrimSpace(in.Ipcname) != "" {
+				ipcInfo, err := litedb.GetIpcConfigByName(strings.TrimSpace(in.Ipcname))
+				if err != nil {
+					log.Warnf("Update litedb.GetIpcConfigByName %v, err: %v", in.Ipcname, err)
+				} else {
+					// 更新数据库
+					ipcmapCfg.IpcName = strings.TrimSpace(in.Ipcname)
+					ipcmapCfg.IpcID = ipcInfo.ContainerID
+					litedb.UpdateIpcmanConfig(ipcmapCfg)
+					change |= docker.IpcBit
+				}
+			} else {
+				ipcmapCfg.IpcName = ""
+				ipcmapCfg.IpcID = ""
+				litedb.UpdateIpcmanConfig(ipcmapCfg)
+				change |= docker.IpcBit
+			}
+		}
+	}
+
 	log.Warnf("change: %v docker.NoneBit: %v", change, docker.NoneBit)
 	if change != docker.NoneBit {
 		if err = docker.ModifyContainerConfig(inspectConfigs.ContainerId, change, envs, mountMap); err != nil {
@@ -1046,11 +1075,13 @@ func (s *ContainerServer) Remove(ctx context.Context, in *pb.RemoveRequest) (*pb
 			continue
 		}
 		litedb.RemoveContainerConfig([]string{id})
-
+		litedb.IpcmapConfigRemoveByCID([]string{id}) // 删除容器与ipc 容器的映射数据
 		reply.OkIds = append(reply.OkIds, id)
 	}
 
 	litedb.RemoveContainerConfig(reply.OkIds)
+	litedb.IpcmapConfigRemoveByCID(reply.OkIds) // 删除容器与ipc 容器的映射数据
+
 	go s.removeContainerBackups(reply.OkIds)
 
 	return &reply, nil

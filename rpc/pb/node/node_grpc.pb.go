@@ -33,10 +33,16 @@ type NodeClient interface {
 	// 安全配置
 	UpdateFileProtect(ctx context.Context, in *UpdateFileProtectRequest, opts ...grpc.CallOption) (*UpdateFileProtectReply, error)
 	UpdateNetworkRule(ctx context.Context, in *UpdateNetworkRuleRequest, opts ...grpc.CallOption) (*UpdateNetworkRuleReply, error)
+	UpdateNetworkProcessWhiteList(ctx context.Context, in *UpdateNetworkProcessWhiteListRequest, opts ...grpc.CallOption) (*UpdateNetworkProcessWhiteListReply, error)
+	UpdateProcessWhiteList(ctx context.Context, in *UpdateProcessWhiteListRequest, opts ...grpc.CallOption) (*UpdateProcessWhiteListReply, error)
 	GetFileProtect(ctx context.Context, in *GetFileProtectRequest, opts ...grpc.CallOption) (*GetFileProtectReply, error)
 	GetNetworkRule(ctx context.Context, in *GetNetworkRuleRequest, opts ...grpc.CallOption) (*GetNetworkRuleReply, error)
+	GetNetworkProcessWhiteList(ctx context.Context, in *GetNetworkProcessWhiteListRequest, opts ...grpc.CallOption) (*GetNetworkProcessWhiteListReply, error)
+	GetNodeProcessWhiteList(ctx context.Context, in *GetProcessWhiteListRequest, opts ...grpc.CallOption) (*GetProcessWhiteListReply, error)
 	GetNodeSecurityConfig(ctx context.Context, in *GetNodeSecurityConfigRequest, opts ...grpc.CallOption) (*GetNodeSecurityConfigReply, error)
 	GetNodeDefaultPort(ctx context.Context, in *GetNodeDefaultPortRequest, opts ...grpc.CallOption) (*GetNodeDefaultPortReply, error)
+	GetNodeDefaultProcessWhiteList(ctx context.Context, in *GetNodeDefaultProcessWhiteListRequest, opts ...grpc.CallOption) (*GetNodeDefaultProcessWhiteListReply, error)
+	GetNodeDefaultNetProWhiteList(ctx context.Context, in *GetNodeDefaultNetProWhiteListRequest, opts ...grpc.CallOption) (*GetNodeDefaultNetProWhiteListReply, error)
 }
 
 type nodeClient struct {

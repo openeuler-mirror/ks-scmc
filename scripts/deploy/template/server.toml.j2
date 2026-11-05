@@ -3,6 +3,16 @@ basedir = "/var/log/ks-scmc"
 level   = "debug"
 stdout  = false
 
+[apitls]
+enable = false
+ca = "/etc/ks-scmc/ca.crt"
+server_cert = "/etc/ks-scmc/server.crt"
+server_key = "/etc/ks-scmc/server.key"
+
+[apicontroller]
+host = "0.0.0.0"
+port = 19091
+
 [tls]
 enable = false
 ca = ""

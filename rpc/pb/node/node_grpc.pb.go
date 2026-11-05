@@ -122,6 +122,15 @@ func (c *nodeClient) UpdateNetworkRule(ctx context.Context, in *UpdateNetworkRul
 	return out, nil
 }
 
+func (c *nodeClient) UpdateProcessWhiteList(ctx context.Context, in *UpdateProcessWhiteListRequest, opts ...grpc.CallOption) (*UpdateProcessWhiteListReply, error) {
+	out := new(UpdateProcessWhiteListReply)
+	err := c.cc.Invoke(ctx, "/node.Node/UpdateProcessWhiteList", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *nodeClient) GetFileProtect(ctx context.Context, in *GetFileProtectRequest, opts ...grpc.CallOption) (*GetFileProtectReply, error) {
 	out := new(GetFileProtectReply)
 	err := c.cc.Invoke(ctx, "/node.Node/GetFileProtect", in, out, opts...)
@@ -140,6 +149,15 @@ func (c *nodeClient) GetNetworkRule(ctx context.Context, in *GetNetworkRuleReque
 	return out, nil
 }
 
+func (c *nodeClient) GetNodeProcessWhiteList(ctx context.Context, in *GetProcessWhiteListRequest, opts ...grpc.CallOption) (*GetProcessWhiteListReply, error) {
+	out := new(GetProcessWhiteListReply)
+	err := c.cc.Invoke(ctx, "/node.Node/GetNodeProcessWhiteList", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *nodeClient) GetNodeSecurityConfig(ctx context.Context, in *GetNodeSecurityConfigRequest, opts ...grpc.CallOption) (*GetNodeSecurityConfigReply, error) {
 	out := new(GetNodeSecurityConfigReply)
 	err := c.cc.Invoke(ctx, "/node.Node/GetNodeSecurityConfig", in, out, opts...)
@@ -152,6 +170,15 @@ func (c *nodeClient) GetNodeSecurityConfig(ctx context.Context, in *GetNodeSecur
 func (c *nodeClient) GetNodeDefaultPort(ctx context.Context, in *GetNodeDefaultPortRequest, opts ...grpc.CallOption) (*GetNodeDefaultPortReply, error) {
 	out := new(GetNodeDefaultPortReply)
 	err := c.cc.Invoke(ctx, "/node.Node/GetNodeDefaultPort", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *nodeClient) GetNodeDefaultProcessWhiteList(ctx context.Context, in *GetNodeDefaultProcessWhiteListRequest, opts ...grpc.CallOption) (*GetNodeDefaultProcessWhiteListReply, error) {
+	out := new(GetNodeDefaultProcessWhiteListReply)
+	err := c.cc.Invoke(ctx, "/node.Node/GetNodeDefaultProcessWhiteList", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -177,10 +204,13 @@ type NodeServer interface {
 	// 安全配置
 	UpdateFileProtect(context.Context, *UpdateFileProtectRequest) (*UpdateFileProtectReply, error)
 	UpdateNetworkRule(context.Context, *UpdateNetworkRuleRequest) (*UpdateNetworkRuleReply, error)
+	UpdateProcessWhiteList(context.Context, *UpdateProcessWhiteListRequest) (*UpdateProcessWhiteListReply, error)
 	GetFileProtect(context.Context, *GetFileProtectRequest) (*GetFileProtectReply, error)
 	GetNetworkRule(context.Context, *GetNetworkRuleRequest) (*GetNetworkRuleReply, error)
+	GetNodeProcessWhiteList(context.Context, *GetProcessWhiteListRequest) (*GetProcessWhiteListReply, error)
 	GetNodeSecurityConfig(context.Context, *GetNodeSecurityConfigRequest) (*GetNodeSecurityConfigReply, error)
 	GetNodeDefaultPort(context.Context, *GetNodeDefaultPortRequest) (*GetNodeDefaultPortReply, error)
+	GetNodeDefaultProcessWhiteList(context.Context, *GetNodeDefaultProcessWhiteListRequest) (*GetNodeDefaultProcessWhiteListReply, error)
 	mustEmbedUnimplementedNodeServer()
 }
 
@@ -212,17 +242,26 @@ func (UnimplementedNodeServer) UpdateFileProtect(context.Context, *UpdateFilePro
 func (UnimplementedNodeServer) UpdateNetworkRule(context.Context, *UpdateNetworkRuleRequest) (*UpdateNetworkRuleReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateNetworkRule not implemented")
 }
+func (UnimplementedNodeServer) UpdateProcessWhiteList(context.Context, *UpdateProcessWhiteListRequest) (*UpdateProcessWhiteListReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateProcessWhiteList not implemented")
+}
 func (UnimplementedNodeServer) GetFileProtect(context.Context, *GetFileProtectRequest) (*GetFileProtectReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetFileProtect not implemented")
 }
 func (UnimplementedNodeServer) GetNetworkRule(context.Context, *GetNetworkRuleRequest) (*GetNetworkRuleReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetNetworkRule not implemented")
 }
+func (UnimplementedNodeServer) GetNodeProcessWhiteList(context.Context, *GetProcessWhiteListRequest) (*GetProcessWhiteListReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetNodeProcessWhiteList not implemented")
+}
 func (UnimplementedNodeServer) GetNodeSecurityConfig(context.Context, *GetNodeSecurityConfigRequest) (*GetNodeSecurityConfigReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetNodeSecurityConfig not implemented")
 }
 func (UnimplementedNodeServer) GetNodeDefaultPort(context.Context, *GetNodeDefaultPortRequest) (*GetNodeDefaultPortReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetNodeDefaultPort not implemented")
+}
+func (UnimplementedNodeServer) GetNodeDefaultProcessWhiteList(context.Context, *GetNodeDefaultProcessWhiteListRequest) (*GetNodeDefaultProcessWhiteListReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetNodeDefaultProcessWhiteList not implemented")
 }
 func (UnimplementedNodeServer) mustEmbedUnimplementedNodeServer() {}
 
@@ -381,6 +420,24 @@ func _Node_UpdateNetworkRule_Handler(srv interface{}, ctx context.Context, dec f
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Node_UpdateProcessWhiteList_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateProcessWhiteListRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(NodeServer).UpdateProcessWhiteList(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/node.Node/UpdateProcessWhiteList",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(NodeServer).UpdateProcessWhiteList(ctx, req.(*UpdateProcessWhiteListRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _Node_GetFileProtect_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(GetFileProtectRequest)
 	if err := dec(in); err != nil {
@@ -417,6 +474,24 @@ func _Node_GetNetworkRule_Handler(srv interface{}, ctx context.Context, dec func
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Node_GetNodeProcessWhiteList_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetProcessWhiteListRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(NodeServer).GetNodeProcessWhiteList(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/node.Node/GetNodeProcessWhiteList",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(NodeServer).GetNodeProcessWhiteList(ctx, req.(*GetProcessWhiteListRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _Node_GetNodeSecurityConfig_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(GetNodeSecurityConfigRequest)
 	if err := dec(in); err != nil {
@@ -449,6 +524,24 @@ func _Node_GetNodeDefaultPort_Handler(srv interface{}, ctx context.Context, dec 
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(NodeServer).GetNodeDefaultPort(ctx, req.(*GetNodeDefaultPortRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Node_GetNodeDefaultProcessWhiteList_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetNodeDefaultProcessWhiteListRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(NodeServer).GetNodeDefaultProcessWhiteList(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/node.Node/GetNodeDefaultProcessWhiteList",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(NodeServer).GetNodeDefaultProcessWhiteList(ctx, req.(*GetNodeDefaultProcessWhiteListRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -493,6 +586,10 @@ var Node_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Node_UpdateNetworkRule_Handler,
 		},
 		{
+			MethodName: "UpdateProcessWhiteList",
+			Handler:    _Node_UpdateProcessWhiteList_Handler,
+		},
+		{
 			MethodName: "GetFileProtect",
 			Handler:    _Node_GetFileProtect_Handler,
 		},
@@ -501,12 +598,20 @@ var Node_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Node_GetNetworkRule_Handler,
 		},
 		{
+			MethodName: "GetNodeProcessWhiteList",
+			Handler:    _Node_GetNodeProcessWhiteList_Handler,
+		},
+		{
 			MethodName: "GetNodeSecurityConfig",
 			Handler:    _Node_GetNodeSecurityConfig_Handler,
 		},
 		{
 			MethodName: "GetNodeDefaultPort",
 			Handler:    _Node_GetNodeDefaultPort_Handler,
+		},
+		{
+			MethodName: "GetNodeDefaultProcessWhiteList",
+			Handler:    _Node_GetNodeDefaultProcessWhiteList_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

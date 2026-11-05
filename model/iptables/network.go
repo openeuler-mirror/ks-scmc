@@ -661,33 +661,14 @@ func EnableNode(linkifs string) error {
 	return updateJSON("Node", true)
 }
 
-func ruleToCmd(filePath, fileName string, isOn, blacklist bool, rules []*litedb.NetworkRule) string {
+func ruleToCmd(filePath, fileName string, isOn bool, rules []*litedb.NetworkRule) string {
 	var chainCmd string
-	if !isOn {
-		chainCmd = "echo '*filter\n:INPUT ACCEPT [0:0]\n:FORWARD ACCEPT [0:0]\n:OUTPUT ACCEPT [0:0]\n"
-		updateJSON(fileName, false)
-	} else if !blacklist {
-		// default is whitelist
-		// base rule, drop all default
-		chainCmd = "echo '*filter\n:INPUT DROP [0:0]\n:FORWARD ACCEPT [0:0]\n:OUTPUT DROP [0:0]\n"
-		// allow local interface traffic
-		chainCmd += "-A INPUT -i lo -j ACCEPT\n"
-		chainCmd += "-A OUTPUT -o lo -j ACCEPT\n"
-		// allow established traffic
-		// chainCmd += "-A INPUT  -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT\n"
-		chainCmd += "-A OUTPUT -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT\n"
+	if isOn {
+		chainCmd = "echo '*filter\n:INPUT DROP [0:0]\n:FORWARD ACCEPT [0:0]\n:OUTPUT ACCEPT [0:0]\n"
 		updateJSON(fileName, true)
 	} else {
-		// blacklist
-		// base rule, drop all default
 		chainCmd = "echo '*filter\n:INPUT ACCEPT [0:0]\n:FORWARD ACCEPT [0:0]\n:OUTPUT ACCEPT [0:0]\n"
-		// allow local interface traffic
-		chainCmd += "-A INPUT -i lo -j ACCEPT\n"
-		chainCmd += "-A OUTPUT -o lo -j ACCEPT\n"
-		// allow established traffic
-		// chainCmd += "-A INPUT  -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT\n"
-		chainCmd += "-A OUTPUT -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT\n"
-		updateJSON(fileName, true)
+		updateJSON(fileName, false)
 	}
 
 	var allRule string
@@ -695,63 +676,39 @@ func ruleToCmd(filePath, fileName string, isOn, blacklist bool, rules []*litedb.
 	for _, rule := range rules {
 		var curRule string
 		var addrstr string
-		var addrstr_dst string
 		prestr := "-A INPUT "
-		prestr_output := "-A OUTPUT "
 		sufstr := " -j ACCEPT"
-		sufstr_drop := " -j DROP"
 		if rule.Addr != "" {
 			addrstr = "-s " + rule.Addr
-			addrstr_dst = "-d " + rule.Addr
 			if net.ParseIP(rule.Addr) != nil {
 				addrstr += "/32"
-				addrstr_dst += "/32"
 			}
 		}
 
-		// process multi protocol case
+		//多个协议情况处理
 		for _, protocol := range rule.Protocols {
 			protocol = strings.ToLower(protocol)
 			if protocol == "" {
 				continue
 			}
 			var arr []string
-			var arr_output []string
 			arr = append(arr, prestr)
-			arr_output = append(arr_output, prestr_output)
 			arr = append(arr, addrstr)
-			arr_output = append(arr_output, addrstr_dst)
 			str := "-p " + protocol
 			arr = append(arr, str)
-			arr_output = append(arr_output, str)
 			if (protocol == "tcp" || protocol == "udp") && rule.Port != 0 {
 				str = fmt.Sprintf("--dport %d", rule.Port)
 				// str = fmt.Sprintf("--sport %d", rule.Port)
 				arr = append(arr, str)
-				arr_output = append(arr_output, str)
 			}
-			if blacklist {
-				arr = append(arr, sufstr_drop)
-				arr_output = append(arr_output, sufstr_drop)
-			} else {
-				arr = append(arr, sufstr)
-				arr_output = append(arr_output, sufstr)
-			}
+			arr = append(arr, sufstr)
 			res := strings.Join(arr, " ") + "\n"
-			curRule = curRule + res
-			res = strings.Join(arr_output, " ") + "\n"
 			curRule = curRule + res
 		}
 
 		//只有ip没有协议情况处理
-		if curRule == "" && addrstr != "" && addrstr_dst != "" {
-			if blacklist {
-				curRule = prestr + " " + addrstr + sufstr_drop + "\n"
-				curRule = prestr_output + " " + addrstr_dst + sufstr_drop + "\n"
-			} else {
-				curRule = prestr + " " + addrstr + sufstr + "\n"
-				curRule = prestr_output + " " + addrstr_dst + sufstr + "\n"
-			}
+		if curRule == "" && addrstr != "" {
+			curRule = prestr + " " + addrstr + sufstr + "\n"
 		}
 
 		allRule = allRule + curRule
@@ -762,9 +719,9 @@ func ruleToCmd(filePath, fileName string, isOn, blacklist bool, rules []*litedb.
 	return cmd
 }
 
-func UpdateContainerIPtablesFile(fileName string, pid int, isOn, blackList bool, rules []*litedb.NetworkRule) error {
+func UpdateContainerIPtablesFile(fileName string, isOn bool, rules []*litedb.NetworkRule, pid int) error {
 	filePath := path() + "/" + fileName
-	cmd := ruleToCmd(filePath, fileName, isOn, blackList, rules)
+	cmd := ruleToCmd(filePath, fileName, isOn, rules)
 	if pid != 0 {
 		cmd = fmt.Sprintf("%s; nsenter -t %d -n iptables-restore %s", cmd, pid, filePath)
 	}
@@ -780,7 +737,7 @@ func UpdateNodeIPtablesFile(isOn bool, rules []*litedb.NetworkRule) error {
 	log.Debugf("UpdateContainerIPtablesFile isOn:%v,rules:%v", isOn, rules)
 	filePath := nodeNetworkControlFile()
 
-	cmd := ruleToCmd(filePath, "node-network-control.rule", isOn, false, rules)
+	cmd := ruleToCmd(filePath, "node-network-control.rule", isOn, rules)
 
 	cmd = fmt.Sprintf("%s; iptables-restore %s", cmd, filePath)
 

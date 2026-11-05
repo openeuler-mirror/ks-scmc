@@ -85,6 +85,15 @@ type ContainerServer struct {
 	pb.UnimplementedContainerServer
 }
 
+// 确认是否为 IPC 容器, 如果为 IPC 容器就不展示出来
+func (s *ContainerServer) isIpcContainer(id string) bool {
+	_, err:= litedb.GetIpcConfigByID(id)
+	if err != nil {
+		return false
+	}
+	return true;
+}
+
 func (s *ContainerServer) List(ctx context.Context, in *pb.ListRequest) (*pb.ListReply, error) {
 	cli, err := docker.Client()
 	if err != nil {
@@ -105,6 +114,9 @@ func (s *ContainerServer) List(ctx context.Context, in *pb.ListRequest) (*pb.Lis
 
 	var reply pb.ListReply
 	for _, c := range containers {
+		if s.isIpcContainer(c.ID) {
+			continue
+		}
 		info := pb.ContainerInfo{
 			Id:           c.ID,
 			Image:        c.Image,

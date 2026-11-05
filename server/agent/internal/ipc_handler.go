@@ -43,6 +43,23 @@ func (s *IpcBaseServer) List(ctx context.Context, in *pb.IpcListRequest) (*pb.Ip
 	var rsp pb.IpcListReply
 	for _, c := range ipcAllData {
 		info := pb.IpcContainerData {
+			Name: c.ContainerName,
+			Id : c.ContainerID,
+			StartTime : c.CreatedAt,
+		}
+		ipcMapcfg, err := litedb.IpcmapConfigByIPCName([]string{c.ContainerName})
+		if err != nil {
+		} else {
+			for _, d := range ipcMapcfg {
+				info.Containers = append(info.Containers, d.ContainerName)
+			}
+		}
+		rsp.IpcnameIds = append(rsp.IpcnameIds, &pb.IpcContainerData {Name: info.Name, Id: info.Id, StartTime: info.StartTime, Containers: info.Containers})
+	}
+
+	/*
+	for _, c := range ipcAllData {
+		info := pb.IpcContainerData {
 			Name : c.ContainerName,
 			Id : c.ContainerID,
 			StartTime : c.CreatedAt,
@@ -55,7 +72,7 @@ func (s *IpcBaseServer) List(ctx context.Context, in *pb.IpcListRequest) (*pb.Ip
 		}
 
 		rsp.IpcnameIds = append(rsp.IpcnameIds, &pb.IpcContainerData{Name:info.Name, Id:info.Id, StartTime: info.StartTime, Containers:info.Containers})
-	}
+	} */
 
 	return &rsp, nil
 }
@@ -187,16 +204,15 @@ func (s *IpcBaseServer) Remove(ctx context.Context, in *pb.IpcRemoveRequest) (*p
 			continue
 		}
 
-		// 有容器依赖不允许删除
-		if len(*cfg.IPC) > 0 {
-			continue
+		_, err = litedb.IpcmapConfigByIPCName([]string{cfg.ContainerName})
+		if err != nil { // err 不为 nil 说明 数据库里面没有记录，可以删除
+			containerID := cfg.ContainerID
+			IpcStopAndRemoveContainer(containerID)
+
+			//删除数据库里面的记录
+			litedb.IpcConfigRemoveByID(cfg.ID)
 		}
 
-		containerID := cfg.ContainerID
-		IpcStopAndRemoveContainer(containerID)
-
-		//删除数据库里面的记录
-		litedb.IpcConfigRemoveByID(cfg.ID)
 	}
 
 	return &pb.IpcRemoveReply{}, nil

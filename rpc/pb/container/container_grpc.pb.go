@@ -64,6 +64,7 @@ type ContainerClient interface {
 	MonitorHistory(ctx context.Context, in *MonitorHistoryRequest, opts ...grpc.CallOption) (*MonitorHistoryReply, error)
 	// 容器状态数据查询
 	GetContainerStats(ctx context.Context, in *StatsRequest, opts ...grpc.CallOption) (*StatsReply, error)
+	UpdateContainerVersion(ctx context.Context, in *UpdateContainerVersionRequest, opts ...grpc.CallOption) (*UpdateContainerVersionReply, error)
 }
 
 type containerClient struct {

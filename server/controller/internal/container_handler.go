@@ -466,7 +466,7 @@ func (s *ContainerServer) Update(ctx context.Context, in *pb.UpdateRequest) (*pb
 }
 
 func (s *ContainerServer) UpdateContainerVersion(ctx context.Context, in *pb.UpdateContainerVersionRequest) (*pb.UpdateContainerVersionReply, error) {
-	if in.NodeId <= 0 || in.ContainerId == "" || in.ImgName == "" || in.ImgVersion == "" {
+	if in.NodeId <= 0 || in.ContainerName == "" || in.ImgName == "" || in.ImgVersion == "" {
 		return nil, rpc.ErrInvalidArgument
 	}
 	

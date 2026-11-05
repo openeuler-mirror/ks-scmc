@@ -780,7 +780,7 @@ func UpdateNodeIPtablesFile(isOn bool, rules []*litedb.NetworkRule) error {
 	log.Debugf("UpdateContainerIPtablesFile isOn:%v,rules:%v", isOn, rules)
 	filePath := nodeNetworkControlFile()
 
-	cmd := ruleToCmd(filePath, "node-network-control.rule", isOn, rules)
+	cmd := ruleToCmd(filePath, "node-network-control.rule", isOn, false, rules)
 
 	cmd = fmt.Sprintf("%s; iptables-restore %s", cmd, filePath)
 

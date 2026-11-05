@@ -151,33 +151,34 @@ func (*NodeServer) Usage(ctx context.Context, in *pb.UsageRequest) (*pb.UsageRep
 }
 
 func (s *NodeServer) UpdateFileProtect(ctx context.Context, in *pb.UpdateFileProtectRequest) (*pb.UpdateFileProtectReply, error) {
-	log.Debugf("UpdateFileProtect called: node_id=%v ,paths:%s enabel:%v at agent",
-		in.NodeId, in.SecurityConfig.FileProtection.FileList, in.SecurityConfig.FileProtection.IsOn)
-	if in.SecurityConfig != nil {
-		cfgs, err := litedb.GetNodeConfig("localhost")
+
+	if in.SecurityConfig.FileProtection == nil {
+		return nil, rpc.ErrNodeFileProtection
+	}
+
+	cfgs, err := litedb.GetNodeConfig("localhost")
+	if err != nil {
+		err = s.nodeConfigDataTableCreate("", "")
 		if err != nil {
-			err = s.nodeConfigDataTableCreate("", "")
-			if err != nil {
-				return nil, err
-			}
-			cfgs, err = litedb.GetNodeConfig("localhost")
-			if err != nil {
-				log.Errorf("GetContainerConfig err=%v", err)
-				return nil, rpc.ErrDatabaseFail
-			}
+			return nil, err
 		}
-
-		if err := kysec.UpdateFileAccess("localhost", in.SecurityConfig.FileProtection.IsOn, in.SecurityConfig.FileProtection.FileList, nil); err != nil {
-			log.Errorf("UpdateFileAccess failed: %v", err)
-			return nil, status.Errorf(codes.Internal, "failed to update file access")
-		}
-
-		cfgs.SecurityConfig.FileProtection = in.SecurityConfig.FileProtection
-
-		if err := litedb.UpdateNodeConfig(cfgs); err != nil {
-			log.Errorf("UpdateContainerConfig err=%v", err)
+		cfgs, err = litedb.GetNodeConfig("localhost")
+		if err != nil {
+			log.Errorf("GetContainerConfig err=%v", err)
 			return nil, rpc.ErrDatabaseFail
 		}
+	}
+
+	if err := kysec.UpdateFileAccess("localhost", in.SecurityConfig.FileProtection.IsOn, in.SecurityConfig.FileProtection.FileList, nil); err != nil {
+		log.Errorf("UpdateFileAccess failed: %v", err)
+		return nil, status.Errorf(codes.Internal, "failed to update file access")
+	}
+
+	cfgs.SecurityConfig.FileProtection = in.SecurityConfig.FileProtection
+
+	if err := litedb.UpdateNodeConfig(cfgs); err != nil {
+		log.Errorf("UpdateContainerConfig err=%v", err)
+		return nil, rpc.ErrDatabaseFail
 	}
 
 	return &pb.UpdateFileProtectReply{}, nil
@@ -211,7 +212,6 @@ func (s *NodeServer) UpdateNetworkRule(ctx context.Context, in *pb.UpdateNetwork
 			})
 		}
 
-
 		if err := iptables.UpdateNodeIPtablesFile(in.SecurityConfig.NetworkRule.IsOn, mergedRules); err != nil {
 			log.Warnf("UpdateContainerIPtablesFile err: %v", err)
 			return nil, rpc.ErrContainerNetworkRule
@@ -229,8 +229,6 @@ func (s *NodeServer) UpdateNetworkRule(ctx context.Context, in *pb.UpdateNetwork
 				return nil, rpc.ErrDatabaseFail
 			}
 		}
-
-
 
 		var isOn bool
 		if in.SecurityConfig.NetworkRule.IsOn {
@@ -422,71 +420,70 @@ func (s *NodeServer) UpdateProcessWhiteList(ctx context.Context, in *pb.UpdatePr
 }
 
 func (s *NodeServer) UpdateNetworkProcessWhiteList(ctx context.Context, in *pb.UpdateNetworkProcessWhiteListRequest) (*pb.UpdateNetworkProcessWhiteListReply, error) {
-    log.Debugf("UpdateNetworkProcessWhiteList called: node_id=%v  at agent ", in.NodeId)
+	log.Debugf("UpdateNetworkProcessWhiteList called: node_id=%v  at agent ", in.NodeId)
 
-    if in.SecurityConfig.NprocProtection == nil {
-        return nil, rpc.ErrNodeNetworkProcProtection
-    }
+	if in.SecurityConfig.NprocProtection == nil {
+		return nil, rpc.ErrNodeNetworkProcProtection
+	}
 
-    cfgs, err := litedb.GetNodeConfig("localhost")
-    if err != nil {
-        err = s.nodeConfigDataTableCreate("", "")
-        if err != nil {
-            return nil, err
-        }
-        cfgs, err = litedb.GetNodeConfig("localhost")
-        if err != nil {
-            log.Errorf("GetContainerConfig err=%v", err)
-            return nil, rpc.ErrDatabaseFail
-        }
-    }
+	cfgs, err := litedb.GetNodeConfig("localhost")
+	if err != nil {
+		err = s.nodeConfigDataTableCreate("", "")
+		if err != nil {
+			return nil, err
+		}
+		cfgs, err = litedb.GetNodeConfig("localhost")
+		if err != nil {
+			log.Errorf("GetContainerConfig err=%v", err)
+			return nil, rpc.ErrDatabaseFail
+		}
+	}
 
-    nodeInfo, err := litedb.GetNodeInfo(1)
-    if err != nil {
-        return nil, rpc.ErrDatabaseFail
-    }
+	nodeInfo, err := litedb.GetNodeInfo(1)
+	if err != nil {
+		return nil, rpc.ErrDatabaseFail
+	}
 
-    uuid := nodeInfo.UUID
-	
+	uuid := nodeInfo.UUID
+
 	defaultNetProList := common.GetNetworkProcWhitelist()
-	
-    // 合并用户列表和默认列表（保留顺序：用户列表在前，默认列表在后）
-    mergedPaths := make([]string, 0, len(in.SecurityConfig.NprocProtection.ExeList)+len(defaultNetProList))
-    mergedPaths = append(mergedPaths, in.SecurityConfig.NprocProtection.ExeList...)
-    mergedPaths = append(mergedPaths, defaultNetProList...)
 
-    // 去重逻辑（保留首次出现的元素）
-    seen := make(map[string]struct{})
-    uniquePaths := make([]string, 0, len(mergedPaths))
-    for _, path := range mergedPaths {
-        if _, exists := seen[path]; !exists {
-            seen[path] = struct{}{}
-            uniquePaths = append(uniquePaths, path)
-        }
-    }
-    mergedPaths = uniquePaths
+	// 合并用户列表和默认列表（保留顺序：用户列表在前，默认列表在后）
+	mergedPaths := make([]string, 0, len(in.SecurityConfig.NprocProtection.ExeList)+len(defaultNetProList))
+	mergedPaths = append(mergedPaths, in.SecurityConfig.NprocProtection.ExeList...)
+	mergedPaths = append(mergedPaths, defaultNetProList...)
 
-    log.Debugf("UpdateNetworkProcessWhiteList mergedPaths = %v ", mergedPaths)
+	// 去重逻辑（保留首次出现的元素）
+	seen := make(map[string]struct{})
+	uniquePaths := make([]string, 0, len(mergedPaths))
+	for _, path := range mergedPaths {
+		if _, exists := seen[path]; !exists {
+			seen[path] = struct{}{}
+			uniquePaths = append(uniquePaths, path)
+		}
+	}
+	mergedPaths = uniquePaths
 
+	log.Debugf("UpdateNetworkProcessWhiteList mergedPaths = %v ", mergedPaths)
 
-    var inRule = &litedb.ProcProtection{
-        IsOn:    in.SecurityConfig.NprocProtection.IsOn,
-        ExeList: mergedPaths,
-    }
+	var inRule = &litedb.ProcProtection{
+		IsOn:    in.SecurityConfig.NprocProtection.IsOn,
+		ExeList: mergedPaths,
+	}
 
-    if err := opensnitch.SaveNodeRule(inRule, "localhost", uuid); err != nil {
-        log.Warnf("SaveRule id=%v err=%v", "localhost", err)
-        return nil, rpc.ErrNodeNetworkProcProtection
-    }
+	if err := opensnitch.SaveNodeRule(inRule, "localhost", uuid); err != nil {
+		log.Warnf("SaveRule id=%v err=%v", "localhost", err)
+		return nil, rpc.ErrNodeNetworkProcProtection
+	}
 
-    cfgs.SecurityConfig.NprocProtection = in.SecurityConfig.NprocProtection
+	cfgs.SecurityConfig.NprocProtection = in.SecurityConfig.NprocProtection
 
-    if err := litedb.UpdateNodeConfig(cfgs); err != nil {
-        log.Errorf("UpdateContainerConfig err=%v", err)
-        return nil, rpc.ErrDatabaseFail
-    }
+	if err := litedb.UpdateNodeConfig(cfgs); err != nil {
+		log.Errorf("UpdateContainerConfig err=%v", err)
+		return nil, rpc.ErrDatabaseFail
+	}
 
-    return &pb.UpdateNetworkProcessWhiteListReply{}, nil
+	return &pb.UpdateNetworkProcessWhiteListReply{}, nil
 }
 
 func (s *NodeServer) GetNetworkProcessWhiteList(ctx context.Context, in *pb.GetNetworkProcessWhiteListRequest) (*pb.GetNetworkProcessWhiteListReply, error) {

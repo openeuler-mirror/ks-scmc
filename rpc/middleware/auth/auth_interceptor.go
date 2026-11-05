@@ -344,6 +344,11 @@ func getPermID(method string) pb.PERMISSION {
 		return pb.PERMISSION_AUTID_WARN_READ
 	case "/sys.System/SetSecuritySwitch":
 		return pb.PERMISSION_CONTAINER_CONF_SEC
+	case "/ipcbase.IpcBase/Create",
+		"/ipcbase.IpcBase/List",
+		"/ipcbase.IpcBase/Remove":
+		return pb.PERMISSION_CONTAINER_INFO_WRITE
+
 	default:
 		return pb.PERMISSION_NONE
 	}

@@ -336,7 +336,7 @@ func (s *ContainerServer) setSecurityConfig(nodeid int64, id, uuid, name string,
 }
 
 func (s *ContainerServer) setSecurityLevel1(nodeid int64, id, name string, pid int, sec *pb.SecurityConfig) error {
-	
+
 	if sec == nil {
 		log.Warnf("setSecurityLevel1 invalid param sec")
 		return rpc.ErrContainerSecurityLevel

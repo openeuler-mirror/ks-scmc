@@ -11,7 +11,7 @@ import (
 	"github.com/docker/docker/api/types/events"
 	"github.com/docker/docker/client"
 	"github.com/docker/docker/api/types/filters"
-	"scmc/model/docker"
+
 	"scmc/model/db"
 	"scmc/model/warnlog"
 	"scmc/rpc/pb/logging"
@@ -193,10 +193,10 @@ func (c *ContainerEventMonitor) Run() {
 
 	// 获取 Docker 客户端
 	if c.cli == nil {
-		cli, err := docker.Client()
+		cli, err := client.NewClientWithOpts(client.WithVersion("1.41"))
 		if err != nil {
 			log.Errorf("Failed to create Docker client: %v", err)
-			return 
+			return
 		}
 		c.cli = cli
 	}

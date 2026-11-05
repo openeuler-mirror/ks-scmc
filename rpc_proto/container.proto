@@ -498,6 +498,8 @@ message ResourceLimit {
 message SecurityConfig {
     bool disable_external_network = 1;  // 禁止访问外部网络
     bool disable_cmd_operation    = 2;  // 禁止命令行控制容器(启停控制)
+    int64 security_level_template = 3;  // 安全等级模板
+    bool network_access_controll  = 4;  // 一级模板的对外访问控制
 
     security.ProcProtection  proc_protection  = 11;  // 进程保护
     security.ProcProtection  nproc_protection = 12;  // 网络进程保护

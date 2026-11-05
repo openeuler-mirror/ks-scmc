@@ -1,10 +1,6 @@
 package agent
 
 import (
-	"crypto/md5"
-	"encoding/hex"
-	"io"
-	"os"
 	"time"
 
 	log "github.com/sirupsen/logrus"
@@ -20,22 +16,6 @@ import (
 	"scmc/rpc/pb/node"
 	"scmc/server/agent/internal"
 )
-
-func getFileMD5(filePath string) (string, error) {
-	file, err := os.Open(filePath)
-	if err != nil {
-		return "", err
-	}
-
-	defer file.Close()
-
-	hasher := md5.New()
-	if _, err := io.Copy(hasher, file); err != nil {
-		return "", err
-	}
-
-	return hex.EncodeToString(hasher.Sum(nil)), nil
-}
 
 func resumeNodeConfigs() {
 	cfgs, err := litedb.NodeConfigList()
@@ -56,22 +36,8 @@ func resumeNodeConfigs() {
 		}
 		if c.SecurityConfig.ProcProtection != nil {
 			pp := c.SecurityConfig.ProcProtection
-
-			var hashes []string
-			for _, rawPath := range pp.ExeList {
-
-				fileHash, err := getFileMD5(rawPath)
-				if err != nil {
-					log.Warnf("获取文件哈希失败 path=%v err=%v", rawPath, err)
-					continue
-				}
-
-				log.Debugf("添加白名单条目 path=%s hash=%s", rawPath, fileHash)
-				hashes = append(hashes, fileHash)
-			}
-
-			if err := kysec.UpdateWhiteList("localhost", pp.IsOn, hashes, nil); err != nil {
-				log.Warnf("UpdateWhiteList container=%v err=%v", "localhost", err)
+			if err := kysec.UpdateWhiteList(c.NodeID, pp.IsOn, pp.ExeList, nil); err != nil {
+				log.Warnf("UpdateWhiteList container=%v err=%v", c.NodeID, err)
 			}
 		}
 	}

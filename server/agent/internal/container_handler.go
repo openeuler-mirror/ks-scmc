@@ -123,7 +123,83 @@ func (s *ContainerServer) List(ctx context.Context, in *pb.ListRequest) (*pb.Lis
 	return &reply, nil
 }
 
-func (s *ContainerServer) setSecurityConfig(id, uuid, name string, pid int, fromUpdate bool, sec *pb.SecurityConfig) error {
+func (s *ContainerServer) getHostIps(nodeid int64) ([]string, error) {
+	var result []string
+
+	vip, err := extractVIPFromConfig("/etc/keepalived/keepalived.conf")
+	if err != nil {
+		log.Warnf("get platform vip failed, err: %v", err)
+	} else {
+		result = append(result, vip)
+	}
+
+	n, err := db.QueryNodeByID(nodeid)
+	if err != nil {
+		log.Warnf("get platform nodeip failed, err: %v", err)
+		return result, err
+	} else {
+		result = append(result, n.Address)
+	}
+
+	return result, nil
+}
+
+// 获取所有运行中容器的 IP 地址
+func (s *ContainerServer) getContainerIps() ([]string, error) {
+
+	cli, err := client.NewClientWithOpts(client.FromEnv)
+	if err != nil {
+		return nil, fmt.Errorf("get docker client: %w", err)
+	}
+
+	containers, err := cli.ContainerList(context.Background(), types.ContainerListOptions{})
+	if err != nil {
+		return nil, fmt.Errorf("get container list: %w", err)
+	}
+
+	var result []string
+	for _, container := range containers {
+		// 获取容器详细信息
+		inspect, err := cli.ContainerInspect(context.Background(), container.ID)
+		if err != nil {
+			continue // 跳过无法获取详情的容器
+		}
+
+		// 提取主网络 IP
+		networkSettings := inspect.NetworkSettings
+		if networkSettings != nil {
+			for _, network := range networkSettings.Networks {
+				if network.IPAddress != "" {
+					result = append(result, network.IPAddress)
+					break
+				}
+			}
+		}
+	}
+
+	return result, nil
+}
+
+func (s *ContainerServer) getPlatformIps(nodeid int64) ([]string, error) {
+	var newips []string
+
+	platformips, err := s.getHostIps(nodeid)
+	if err != nil {
+		log.Warnf("get platform ips failed, %v", err)
+		return nil, rpc.ErrContainerSecurityLevel
+	}
+
+	containerips, err := s.getContainerIps()
+	if err != nil {
+		log.Warnf("get container ips failed, %v", err)
+		return nil, rpc.ErrContainerSecurityLevel
+	}
+
+	newips = append(platformips, containerips...)
+	return newips, nil
+}
+
+func (s *ContainerServer) setSecurityConfig(nodeid int64, id, uuid, name string, pid int, fromUpdate bool, sec *pb.SecurityConfig, oldsec *pb.SecurityConfig) error {
 	if sec == nil {
 		return nil
 	}

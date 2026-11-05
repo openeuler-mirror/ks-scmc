@@ -31,16 +31,11 @@ message IpcListRequest {
 	int64 node_id = 1;
 }
 
-message IpcContainerPair {
-	string name = 1;
-	string id = 2;
-}
-
 message IpcContainerData {
-	string name = 1;
-	string id = 2;
-	int64  start_time = 3;
-	repeated IpcContainerPair containers = 4;
+	string name = 1; // IPC 容器名称
+	string id = 2; //IPC 容器ID 
+	int64  start_time = 3; //创建时间
+	repeated string containers = 4; //关联的容器数据
 }
 
 message IpcListReply {
@@ -48,6 +43,7 @@ message IpcListReply {
 }
 
 // 删除 IPC 容器 
+// 如果 IPC 容器关联了其他容器是不允许删除的
 message IpcRemoveRequest {
 	int64	node_id = 1;
 	repeated string ipc_name = 2;

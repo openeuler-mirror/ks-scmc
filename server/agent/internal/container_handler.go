@@ -841,6 +841,35 @@ func (s *ContainerServer) Update(ctx context.Context, in *pb.UpdateRequest) (*pb
 		log.Debugf("%v mounts change", inspectConfigs.ContainerId)
 	}
 
+	// 获取容器与 ipcBase 的映射关系
+	ipcmapCfg, err := litedb.GetIpcmapConfigByCID(in.ContainerId)
+	if err != nil {
+		// 在创建的时候写入的数据，这里不应该失败
+		log.Warnf("Update GetIpcmapConfigByCID id: %v, err: %v", in.ContainerId, err)
+	} else {
+		//如果当前传递过来的和以前的不一样
+		if strings.TrimSpace(ipcmapCfg.IpcName) != strings.TrimSpace(in.Ipcname) {
+			// 获取 ipcBase 容器的容器ID
+			if strings.TrimSpace(in.Ipcname) != "" {
+				ipcInfo, err := litedb.GetIpcConfigByName(strings.TrimSpace(in.Ipcname))
+				if err != nil {
+					log.Warnf("Update litedb.GetIpcConfigByName %v, err: %v", in.Ipcname, err)
+				} else {
+					// 更新数据库
+					ipcmapCfg.IpcName = strings.TrimSpace(in.Ipcname)
+					ipcmapCfg.IpcID = ipcInfo.ContainerID
+					litedb.UpdateIpcmanConfig(ipcmapCfg)
+					change |= docker.IpcBit
+				}
+			} else {
+				ipcmapCfg.IpcName = ""
+				ipcmapCfg.IpcID = ""
+				litedb.UpdateIpcmanConfig(ipcmapCfg)
+				change |= docker.IpcBit
+			}
+		}
+	}
+
 	log.Warnf("change: %v docker.NoneBit: %v", change, docker.NoneBit)
 	if change != docker.NoneBit {
 		if err = docker.ModifyContainerConfig(inspectConfigs.ContainerId, change, envs, mountMap); err != nil {

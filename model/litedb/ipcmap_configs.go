@@ -98,7 +98,7 @@ func IpcmapConfigRemoveByCID(cid []string) error {
 	if err != nil {
 		return err
 	}
-	result := db.Where("container_id IN ?", cid).Delete(IpcmapConfig{})
+	result := db.Where("container_id IN (?)", cid).Delete(IpcmapConfig{})
 	if result.Error != nil {
 		return result.Error
 	}
@@ -114,7 +114,7 @@ func IpcmapConfigByIPCName(name []string) ([]*IpcmapConfig ,error) {
 	}
 
 	var data []*IpcmapConfig
-	result := db.Find(&data, "ipc_name IN ?", name)
+	result := db.Find(&data, "ipc_name IN (?)", name)
 	if result.Error != nil {
 		return nil, result.Error
 	}

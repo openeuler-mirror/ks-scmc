@@ -1,31 +1,15 @@
 package common
 
 import (
-	"bufio"
-	"bytes"
 	"fmt"
-	"io/ioutil"
 	"net/url"
 	"os"
-	"path/filepath"
-	"strconv"
-	"strings"
 	"time"
 
-	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 
 	"scmc/common/aes"
 )
-
-var defaultNetProList = []string{	
-	"/usr/bin/ks-scmc-server",
-	"/usr/bin/ks-scmc-authz",
-	"/usr/bin/mysql",
-	"/usr/bin/sqlite3",
-	"/usr/bin/cadvisor",
-	"/usr/bin/influxd",
-}
 
 type AgentConfig struct {
 	Host                      string `mapstructure:"host"`
@@ -131,232 +115,20 @@ type NetlinkConfig struct {
 	Protocol uint `mapstructure:"protocol"`
 }
 
-type NodeProWhiteComListConfig struct {
-	Path []string `mapstructure:"path"`
-}
-
-type NetworkProcessWhitelistConfig struct {
-    Paths  []string `mapstructure:"paths"`
-}
-
 var Config struct {
-	Log                 LogConfig                 `mapstructure:"log"`
-	ApiTLS              TLSConfig                 `mapstructure:"apitls"`
-	ApiController       ControllerConfig          `mapstructure:"apicontroller"`
-	TLS                 TLSConfig                 `mapstructure:"tls"`
-	Agent               AgentConfig               `mapstructure:"agent"`
-	Controller          ControllerConfig          `mapstructure:"controller"`
-	MySQL               MySQLConfig               `mapstructure:"mysql"`
-	SQLite              SQLiteConfig              `mapstructure:"sqlite"`
-	CAdvisor            ServiceConfig             `mapstructure:"cadvisor"`
-	InfluxDB            ServiceConfig             `mapstructure:"influxdb"`
-	Network             NetworkConfig             `mapstructure:"network"`
-	Registry            RegistryConfig            `mapstructure:"registry"`
-	Netlink             NetlinkConfig             `mapstructure:"netlink"`
-	NodeProWhiteComList NodeProWhiteComListConfig `mapstructure:"nodeprowhitecomlist"`
-	NetworkProcWhitelist NetworkProcessWhitelistConfig `mapstructure:"network_proc_whitelist"`
-}
-
-type ProcessInfo struct {
-	PID       int
-	ExePath   string
-	StartTime time.Time
-	ParentPID int
-	User      string
-}
-
-func getSystemBootTime() (time.Time, error) {
-	data, err := ioutil.ReadFile("/proc/stat")
-	if err != nil {
-		return time.Time{}, err
-	}
-
-	scanner := bufio.NewScanner(bytes.NewReader(data))
-	for scanner.Scan() {
-		if strings.HasPrefix(scanner.Text(), "btime") {
-			fields := strings.Fields(scanner.Text())
-			if len(fields) < 2 {
-				return time.Time{}, fmt.Errorf("invalid btime format")
-			}
-			sec, err := strconv.ParseInt(fields[1], 10, 64)
-			if err != nil {
-				return time.Time{}, err
-			}
-			return time.Unix(sec, 0), nil
-		}
-	}
-	return time.Time{}, fmt.Errorf("btime not found")
-}
-
-func getClockTicks() int64 {
-	return 100 // 固定时钟频率
-}
-
-func getProcessStartTime(pid int) (time.Time, error) {
-	data, err := ioutil.ReadFile(fmt.Sprintf("/proc/%d/stat", pid))
-	if err != nil {
-		return time.Time{}, err
-	}
-
-	pidStr := string(data)
-	end := strings.LastIndex(pidStr, ")")
-	if end == -1 {
-		return time.Time{}, fmt.Errorf("invalid stat format")
-	}
-
-	fields := strings.Fields(pidStr[end+1:])
-	if len(fields) < 20 {
-		return time.Time{}, fmt.Errorf("invalid stat format")
-	}
-
-	clkTicks, err := strconv.ParseInt(fields[19], 10, 64)
-	if err != nil {
-		return time.Time{}, err
-	}
-
-	clkTCK := getClockTicks()
-	bootTime, err := getSystemBootTime()
-	if err != nil {
-		return time.Time{}, err
-	}
-	return bootTime.Add(time.Duration(clkTicks*1000/clkTCK) * time.Millisecond), nil
-}
-
-func getProcessUID(pid int) (string, error) {
-	statusFile := fmt.Sprintf("/proc/%d/status", pid)
-	data, err := ioutil.ReadFile(statusFile)
-	if err != nil {
-		return "", err
-	}
-
-	scanner := bufio.NewScanner(bytes.NewReader(data))
-	for scanner.Scan() {
-		if strings.HasPrefix(scanner.Text(), "Uid:") {
-			fields := strings.Fields(scanner.Text())
-			if len(fields) >= 2 {
-				return fields[1], nil
-			}
-		}
-	}
-	return "", fmt.Errorf("UID not found")
-}
-
-func isGUIProcess(exePath string) bool {
-	keywords := []string{
-		"Xorg", "lightdm", "gdm", "sddm", "gnome-shell", "kwin",
-		"mate-session", "xfce4-session", "kiran-session", "marco", "caja",
-	}
-	exeName := filepath.Base(exePath)
-	for _, kw := range keywords {
-		if strings.EqualFold(exeName, kw) {
-			return true
-		}
-	}
-	return false
-}
-
-func getBootProcesses() ([]ProcessInfo, error) {
-	bootTime, err := getSystemBootTime()
-	if err != nil {
-		return nil, err
-	}
-
-	procDir := "/proc"
-	entries, err := ioutil.ReadDir(procDir)
-	if err != nil {
-		return nil, err
-	}
-
-	var processes []ProcessInfo
-
-	for _, entry := range entries {
-		pid, err := strconv.Atoi(entry.Name())
-		if err != nil || !entry.IsDir() {
-			continue
-		}
-
-		ppid, _ := getParentPID(pid)
-		startTime, _ := getProcessStartTime(pid)
-
-		// 处理可执行路径读取错误
-		exePath, err := os.Readlink(fmt.Sprintf("/proc/%d/exe", pid))
-		if err != nil {
-			continue
-			// exePath = fmt.Sprintf("[error: %s]", err)
-		}
-
-		uid, _ := getProcessUID(pid)
-
-		// 关键修改：只过滤启动时间早于系统启动时间的进程
-		if startTime.Before(bootTime) {
-			continue
-		}
-
-		// 调整过滤逻辑
-		isSystemdChild := ppid == 1
-		isGUI := isGUIProcess(exePath)
-		isUserProcess := false
-		if uidInt, err := strconv.Atoi(uid); err == nil {
-			isUserProcess = uidInt >= 1000 || exePath != "" // 包含root进程但排除内核线程
-		}
-
-		if isSystemdChild || isGUI || isUserProcess {
-			processes = append(processes, ProcessInfo{
-				PID:       pid,
-				ExePath:   exePath,
-				StartTime: startTime,
-				ParentPID: ppid,
-				User:      uid,
-			})
-		}
-	}
-
-	return processes, nil
-}
-
-func getParentPID(pid int) (int, error) {
-	data, err := ioutil.ReadFile(fmt.Sprintf("/proc/%d/stat", pid))
-	if err != nil {
-		return 0, err
-	}
-
-	pidStr := string(data)
-	end := strings.LastIndex(pidStr, ")")
-	if end == -1 {
-		return 0, fmt.Errorf("invalid stat format")
-	}
-
-	fields := strings.Fields(pidStr[end+1:])
-	if len(fields) < 4 {
-		return 0, fmt.Errorf("invalid stat format")
-	}
-
-	return strconv.Atoi(fields[3])
-}
-
-func deduplicate(paths []string) []string {
-	seen := make(map[string]bool)
-	list := []string{}
-	for _, path := range paths {
-		// 处理错误路径的特殊情况
-		if strings.HasPrefix(path, "[error:") {
-			if _, exists := seen[path]; !exists {
-				seen[path] = true
-				list = append(list, path)
-			}
-			continue
-		}
-
-		if realPath, err := filepath.EvalSymlinks(path); err == nil {
-			path = realPath
-		}
-		path = filepath.Clean(path)
-		if _, exists := seen[path]; !exists {
-			seen[path] = true
-			list = append(list, path)
-		}
-	}
-	return list
+	Log            LogConfig        `mapstructure:"log"`
+	ApiTLS         TLSConfig        `mapstructure:"apitls"`
+	ApiController  ControllerConfig `mapstructure:"apicontroller"`
+	TLS            TLSConfig        `mapstructure:"tls"`
+	Agent          AgentConfig      `mapstructure:"agent"`
+	Controller     ControllerConfig `mapstructure:"controller"`
+	MySQL          MySQLConfig      `mapstructure:"mysql"`
+	SQLite         SQLiteConfig     `mapstructure:"sqlite"`
+	CAdvisor       ServiceConfig    `mapstructure:"cadvisor"`
+	InfluxDB       ServiceConfig    `mapstructure:"influxdb"`
+	Network        NetworkConfig    `mapstructure:"network"`
+	Registry       RegistryConfig   `mapstructure:"registry"`
+	Netlink	       NetlinkConfig    `mapstructure:"netlink"`
 }
 
 func setDefault() {
@@ -404,8 +176,7 @@ func setDefault() {
 	viper.SetDefault("registry.password", "")
 
 	viper.SetDefault("netlink.protocol", 30)
-	viper.SetDefault("network_proc_whitelist.paths",defaultNetProList)
-	
+
 }
 
 func LoadConfig(path string) error {
@@ -426,116 +197,9 @@ func LoadConfig(path string) error {
 		return err
 	}
 
-	// if len(Config.NodeProWhiteComList.Path) == 0 {
-	//     return fmt.Errorf("nodeprowhitecomlist.path cannot be empty")
-	// }
-
 	return nil
 }
 
 func SuperUser() bool {
 	return Config.Controller.SuperUser
-}
-
-func GetExecutableFilesInDir(dirPath string) ([]string, error) {
-	var executables []string
-
-	entries, err := ioutil.ReadDir(dirPath)
-	if err != nil {
-		return nil, err
-	}
-
-	for _, entry := range entries {
-		fullPath := filepath.Join(dirPath, entry.Name())
-
-		fileInfo, err := os.Stat(fullPath)
-		if err != nil {
-			continue
-		}
-
-		// 排除目录和非常规文件
-		if !fileInfo.Mode().IsRegular() {
-			continue
-		}
-
-		// 检查是否有任意执行权限位被设置
-		if fileInfo.Mode().Perm()&0111 != 0 {
-			executables = append(executables, fullPath)
-		}
-	}
-
-	return executables, nil
-}
-
-func GetNodeProWhiteListPaths() []string {
-	log.Debugf("GetNodeProWhiteListPaths %v %v", len(Config.NodeProWhiteComList.Path), Config.NodeProWhiteComList.Path)
-	var paths []string
-
-	if len(Config.NodeProWhiteComList.Path) == 0 {
-		processes, err := getBootProcesses()
-		if err != nil {
-			fmt.Println("Error:", err)
-			return nil
-		}
-
-		for _, p := range processes {
-			fmt.Printf("%d\t%s\t%s\n", p.PID, p.User, p.ExePath)
-			paths = append(paths, p.ExePath)
-		}
-
-		systemdPaths, err := GetExecutableFilesInDir("/usr/lib/systemd")
-
-		if err != nil {
-			log.Errorf("Failed to get executable files: %v", err)
-		} else {
-			paths = append(paths, systemdPaths...)
-		}
-
-		libexecPaths, err := GetExecutableFilesInDir("/usr/libexec")
-
-		if err != nil {
-			log.Errorf("Failed to get executable files: %v", err)
-		} else {
-			paths = append(paths, libexecPaths...)
-		}
-
-		paths = deduplicate(paths)
-		UpdateNodeProWhiteComList(paths)
-		Config.NodeProWhiteComList.Path = paths
-
-	} else {
-		paths = make([]string, len(Config.NodeProWhiteComList.Path))
-		copy(paths, Config.NodeProWhiteComList.Path)
-	}
-
-	return paths
-}
-
-func UpdateNodeProWhiteComList(newPaths []string) error {
-	log.Debugf("UpdateNodeProWhiteComList %v", newPaths)
-	if len(newPaths) == 0 {
-		return fmt.Errorf("nodeprowhitecomlist.path cannot be empty")
-	}
-
-	v := viper.New()
-	v.SetConfigFile("/etc/ks-scmc/server.toml")
-	v.SetConfigType("toml")
-
-	if err := v.ReadInConfig(); err != nil {
-		return fmt.Errorf("读取配置文件失败: %v", err)
-	}
-
-	v.Set("nodeprowhitecomlist.path", newPaths)
-
-	if err := v.WriteConfig(); err != nil {
-		return fmt.Errorf("写入配置文件失败: %v", err)
-	}
-
-	return nil
-}
-
-func GetNetworkProcWhitelist() []string {
-	log.Debugf("GetNetworkProcWhitelist %v", Config.NetworkProcWhitelist.Paths)
-   
-    return Config.NetworkProcWhitelist.Paths
 }

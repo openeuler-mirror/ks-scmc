@@ -49,6 +49,7 @@ func Usage() {
   fmt.Fprintln(os.Stderr, "  i32 loadImage(string node_ip, string tarPath)")
   fmt.Fprintln(os.Stderr, "  i32 pauseContainer(string node_ip, string container_name)")
   fmt.Fprintln(os.Stderr, "  i32 unpauseContainer(string node_ip, string container_name)")
+  fmt.Fprintln(os.Stderr, "  string GetAllContainers(string node_name)")
   fmt.Fprintln(os.Stderr)
   os.Exit(0)
 }

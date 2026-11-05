@@ -188,29 +188,28 @@ func (s *NodeServer) UpdateNetworkRule(ctx context.Context, in *pb.UpdateNetwork
 	var mergedRules []*litedb.NetworkRule
 
 	if in.SecurityConfig.NetworkRule != nil {
-		// 如果开关开启，添加默认阻断端口规则
-		if in.SecurityConfig.NetworkRule.IsOn {
-			for port := range blockedPorts {
-				mergedRules = append(mergedRules, &litedb.NetworkRule{
-					Protocols: []string{"tcp"},
-					Addr:      "0.0.0.0/0",
-					Port:      port,
-				})
-			}
 
-			for _, v := range in.SecurityConfig.NetworkRule.Rules {
-
-				if blockedPorts[v.Port] {
-					return nil, rpc.ErrContainerNetworkRulePortOccupancy
-				}
-
-				mergedRules = append(mergedRules, &litedb.NetworkRule{
-					Protocols: v.Protocols,
-					Addr:      v.Addr,
-					Port:      v.Port,
-				})
-			}
+		for port := range blockedPorts {
+			mergedRules = append(mergedRules, &litedb.NetworkRule{
+				Protocols: []string{"tcp"},
+				Addr:      "0.0.0.0/0",
+				Port:      port,
+			})
 		}
+
+		for _, v := range in.SecurityConfig.NetworkRule.Rules {
+
+			if blockedPorts[v.Port] {
+				return nil, rpc.ErrContainerNetworkRulePortOccupancy
+			}
+
+			mergedRules = append(mergedRules, &litedb.NetworkRule{
+				Protocols: v.Protocols,
+				Addr:      v.Addr,
+				Port:      v.Port,
+			})
+		}
+
 
 		if err := iptables.UpdateNodeIPtablesFile(in.SecurityConfig.NetworkRule.IsOn, mergedRules); err != nil {
 			log.Warnf("UpdateContainerIPtablesFile err: %v", err)
@@ -230,14 +229,7 @@ func (s *NodeServer) UpdateNetworkRule(ctx context.Context, in *pb.UpdateNetwork
 			}
 		}
 
-		var securityRules []*security.NetworkRule
-		for _, rule := range mergedRules {
-			securityRules = append(securityRules, &security.NetworkRule{
-				Protocols: rule.Protocols,
-				Addr:      rule.Addr,
-				Port:      rule.Port,
-			})
-		}
+
 
 		var isOn bool
 		if in.SecurityConfig.NetworkRule.IsOn {
@@ -248,7 +240,7 @@ func (s *NodeServer) UpdateNetworkRule(ctx context.Context, in *pb.UpdateNetwork
 
 		cfgs.SecurityConfig.NetworkRule = &security.NetworkRuleList{
 			IsOn:  isOn,
-			Rules: securityRules,
+			Rules: in.SecurityConfig.NetworkRule.Rules,
 		}
 
 		if err := litedb.UpdateNodeConfig(cfgs); err != nil {

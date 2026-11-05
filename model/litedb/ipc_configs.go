@@ -1,9 +1,9 @@
 package litedb
 
 import (
-	"encoding/json"
-	"database/sql/driver"
-	"errors"
+	//"encoding/json"
+	//"database/sql/driver"
+	//"errors"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -13,11 +13,12 @@ type IpcConfig struct {
         ID      int64   `gorm:"primaryKey;not null"`
         ContainerID     string `gorm:"unique"`
         ContainerName   string `gorm:"unique"`
-        IPC     *IPCData        `gorm:"column:ipc;type:text"` // IPC 映射关系 (JSON 存储)
+        // IPC     *IPCData        `gorm:"column:ipc;type:text"` // IPC 映射关系 (JSON 存储)
         CreatedAt       int64   `gorm:"autoCreateTime"`
         UpdateAt        int64   `gorm:"autoUpdateTime"`
 }
 
+/* 
 type IPCData map[string] string
 
 // 实现 gorm 序列化接口（可选，若使用默认JSON序列化可省略）
@@ -32,6 +33,7 @@ func (i *IPCData) Scan(value interface{}) error {
         }
         return json.Unmarshal(b, i)
 }
+*/
 
 // 新建一条记录
 func CreateIpcConfig(data *IpcConfig) error {

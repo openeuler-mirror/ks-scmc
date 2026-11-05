@@ -459,8 +459,15 @@ func (s *ContainerServer) create(nodeid int64, configs *pb.ContainerConfigs) (st
 		config.Cmd = cmdSlice
 	}
 
+
 	hostConfig := container.HostConfig{
 		Privileged: false, // force non-privileged
+	}
+
+	// 设置 IPC 信息 
+	if configs.Ipcname !="" {
+		modeName := "container:ipc." + configs.Ipcname
+		hostConfig.IpcMode = container.IpcMode(modeName)
 	}
 
 	for _, m := range configs.Mounts {

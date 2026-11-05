@@ -2026,6 +2026,577 @@ func (x *GetNodeDefaultPortReply) GetBlockedPorts() []*PortStatus {
 	return nil
 }
 
+type UpdateProcessWhiteListRequest struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	NodeId         int64           `protobuf:"varint,1,opt,name=node_id,json=nodeId,proto3" json:"node_id,omitempty"`
+	SecurityConfig *SecurityConfig `protobuf:"bytes,2,opt,name=security_config,json=securityConfig,proto3" json:"security_config,omitempty"`
+}
+
+func (x *UpdateProcessWhiteListRequest) Reset() {
+	*x = UpdateProcessWhiteListRequest{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_node_proto_msgTypes[34]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *UpdateProcessWhiteListRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UpdateProcessWhiteListRequest) ProtoMessage() {}
+
+func (x *UpdateProcessWhiteListRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_node_proto_msgTypes[34]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UpdateProcessWhiteListRequest.ProtoReflect.Descriptor instead.
+func (*UpdateProcessWhiteListRequest) Descriptor() ([]byte, []int) {
+	return file_node_proto_rawDescGZIP(), []int{34}
+}
+
+func (x *UpdateProcessWhiteListRequest) GetNodeId() int64 {
+	if x != nil {
+		return x.NodeId
+	}
+	return 0
+}
+
+func (x *UpdateProcessWhiteListRequest) GetSecurityConfig() *SecurityConfig {
+	if x != nil {
+		return x.SecurityConfig
+	}
+	return nil
+}
+
+type UpdateProcessWhiteListReply struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+}
+
+func (x *UpdateProcessWhiteListReply) Reset() {
+	*x = UpdateProcessWhiteListReply{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_node_proto_msgTypes[35]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *UpdateProcessWhiteListReply) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UpdateProcessWhiteListReply) ProtoMessage() {}
+
+func (x *UpdateProcessWhiteListReply) ProtoReflect() protoreflect.Message {
+	mi := &file_node_proto_msgTypes[35]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UpdateProcessWhiteListReply.ProtoReflect.Descriptor instead.
+func (*UpdateProcessWhiteListReply) Descriptor() ([]byte, []int) {
+	return file_node_proto_rawDescGZIP(), []int{35}
+}
+
+type GetProcessWhiteListRequest struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	NodeId int64 `protobuf:"varint,1,opt,name=node_id,json=nodeId,proto3" json:"node_id,omitempty"`
+}
+
+func (x *GetProcessWhiteListRequest) Reset() {
+	*x = GetProcessWhiteListRequest{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_node_proto_msgTypes[36]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *GetProcessWhiteListRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetProcessWhiteListRequest) ProtoMessage() {}
+
+func (x *GetProcessWhiteListRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_node_proto_msgTypes[36]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetProcessWhiteListRequest.ProtoReflect.Descriptor instead.
+func (*GetProcessWhiteListRequest) Descriptor() ([]byte, []int) {
+	return file_node_proto_rawDescGZIP(), []int{36}
+}
+
+func (x *GetProcessWhiteListRequest) GetNodeId() int64 {
+	if x != nil {
+		return x.NodeId
+	}
+	return 0
+}
+
+type GetProcessWhiteListReply struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	ProcProtection *security.ProcProtection `protobuf:"bytes,1,opt,name=proc_protection,json=procProtection,proto3" json:"proc_protection,omitempty"` // 进程保护
+}
+
+func (x *GetProcessWhiteListReply) Reset() {
+	*x = GetProcessWhiteListReply{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_node_proto_msgTypes[37]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *GetProcessWhiteListReply) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetProcessWhiteListReply) ProtoMessage() {}
+
+func (x *GetProcessWhiteListReply) ProtoReflect() protoreflect.Message {
+	mi := &file_node_proto_msgTypes[37]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetProcessWhiteListReply.ProtoReflect.Descriptor instead.
+func (*GetProcessWhiteListReply) Descriptor() ([]byte, []int) {
+	return file_node_proto_rawDescGZIP(), []int{37}
+}
+
+func (x *GetProcessWhiteListReply) GetProcProtection() *security.ProcProtection {
+	if x != nil {
+		return x.ProcProtection
+	}
+	return nil
+}
+
+type GetNodeDefaultProcessWhiteListRequest struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	NodeId int64 `protobuf:"varint,1,opt,name=node_id,json=nodeId,proto3" json:"node_id,omitempty"`
+}
+
+func (x *GetNodeDefaultProcessWhiteListRequest) Reset() {
+	*x = GetNodeDefaultProcessWhiteListRequest{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_node_proto_msgTypes[38]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *GetNodeDefaultProcessWhiteListRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetNodeDefaultProcessWhiteListRequest) ProtoMessage() {}
+
+func (x *GetNodeDefaultProcessWhiteListRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_node_proto_msgTypes[38]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetNodeDefaultProcessWhiteListRequest.ProtoReflect.Descriptor instead.
+func (*GetNodeDefaultProcessWhiteListRequest) Descriptor() ([]byte, []int) {
+	return file_node_proto_rawDescGZIP(), []int{38}
+}
+
+func (x *GetNodeDefaultProcessWhiteListRequest) GetNodeId() int64 {
+	if x != nil {
+		return x.NodeId
+	}
+	return 0
+}
+
+type GetNodeDefaultProcessWhiteListReply struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	ProcessNames []string `protobuf:"bytes,1,rep,name=process_names,json=processNames,proto3" json:"process_names,omitempty"`
+}
+
+func (x *GetNodeDefaultProcessWhiteListReply) Reset() {
+	*x = GetNodeDefaultProcessWhiteListReply{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_node_proto_msgTypes[39]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *GetNodeDefaultProcessWhiteListReply) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetNodeDefaultProcessWhiteListReply) ProtoMessage() {}
+
+func (x *GetNodeDefaultProcessWhiteListReply) ProtoReflect() protoreflect.Message {
+	mi := &file_node_proto_msgTypes[39]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetNodeDefaultProcessWhiteListReply.ProtoReflect.Descriptor instead.
+func (*GetNodeDefaultProcessWhiteListReply) Descriptor() ([]byte, []int) {
+	return file_node_proto_rawDescGZIP(), []int{39}
+}
+
+func (x *GetNodeDefaultProcessWhiteListReply) GetProcessNames() []string {
+	if x != nil {
+		return x.ProcessNames
+	}
+	return nil
+}
+
+type UpdateNetworkProcessWhiteListRequest struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	NodeId         int64           `protobuf:"varint,1,opt,name=node_id,json=nodeId,proto3" json:"node_id,omitempty"`
+	SecurityConfig *SecurityConfig `protobuf:"bytes,2,opt,name=security_config,json=securityConfig,proto3" json:"security_config,omitempty"`
+}
+
+func (x *UpdateNetworkProcessWhiteListRequest) Reset() {
+	*x = UpdateNetworkProcessWhiteListRequest{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_node_proto_msgTypes[40]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *UpdateNetworkProcessWhiteListRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UpdateNetworkProcessWhiteListRequest) ProtoMessage() {}
+
+func (x *UpdateNetworkProcessWhiteListRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_node_proto_msgTypes[40]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UpdateNetworkProcessWhiteListRequest.ProtoReflect.Descriptor instead.
+func (*UpdateNetworkProcessWhiteListRequest) Descriptor() ([]byte, []int) {
+	return file_node_proto_rawDescGZIP(), []int{40}
+}
+
+func (x *UpdateNetworkProcessWhiteListRequest) GetNodeId() int64 {
+	if x != nil {
+		return x.NodeId
+	}
+	return 0
+}
+
+func (x *UpdateNetworkProcessWhiteListRequest) GetSecurityConfig() *SecurityConfig {
+	if x != nil {
+		return x.SecurityConfig
+	}
+	return nil
+}
+
+type UpdateNetworkProcessWhiteListReply struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	ProcessNames []string `protobuf:"bytes,1,rep,name=process_names,json=processNames,proto3" json:"process_names,omitempty"`
+}
+
+func (x *UpdateNetworkProcessWhiteListReply) Reset() {
+	*x = UpdateNetworkProcessWhiteListReply{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_node_proto_msgTypes[41]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *UpdateNetworkProcessWhiteListReply) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UpdateNetworkProcessWhiteListReply) ProtoMessage() {}
+
+func (x *UpdateNetworkProcessWhiteListReply) ProtoReflect() protoreflect.Message {
+	mi := &file_node_proto_msgTypes[41]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UpdateNetworkProcessWhiteListReply.ProtoReflect.Descriptor instead.
+func (*UpdateNetworkProcessWhiteListReply) Descriptor() ([]byte, []int) {
+	return file_node_proto_rawDescGZIP(), []int{41}
+}
+
+func (x *UpdateNetworkProcessWhiteListReply) GetProcessNames() []string {
+	if x != nil {
+		return x.ProcessNames
+	}
+	return nil
+}
+
+type GetNetworkProcessWhiteListRequest struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	NodeId int64 `protobuf:"varint,1,opt,name=node_id,json=nodeId,proto3" json:"node_id,omitempty"`
+}
+
+func (x *GetNetworkProcessWhiteListRequest) Reset() {
+	*x = GetNetworkProcessWhiteListRequest{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_node_proto_msgTypes[42]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *GetNetworkProcessWhiteListRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetNetworkProcessWhiteListRequest) ProtoMessage() {}
+
+func (x *GetNetworkProcessWhiteListRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_node_proto_msgTypes[42]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetNetworkProcessWhiteListRequest.ProtoReflect.Descriptor instead.
+func (*GetNetworkProcessWhiteListRequest) Descriptor() ([]byte, []int) {
+	return file_node_proto_rawDescGZIP(), []int{42}
+}
+
+func (x *GetNetworkProcessWhiteListRequest) GetNodeId() int64 {
+	if x != nil {
+		return x.NodeId
+	}
+	return 0
+}
+
+type GetNetworkProcessWhiteListReply struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	NprocProtection *security.ProcProtection `protobuf:"bytes,1,opt,name=nproc_protection,json=nprocProtection,proto3" json:"nproc_protection,omitempty"` // 网络进程保护
+}
+
+func (x *GetNetworkProcessWhiteListReply) Reset() {
+	*x = GetNetworkProcessWhiteListReply{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_node_proto_msgTypes[43]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *GetNetworkProcessWhiteListReply) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetNetworkProcessWhiteListReply) ProtoMessage() {}
+
+func (x *GetNetworkProcessWhiteListReply) ProtoReflect() protoreflect.Message {
+	mi := &file_node_proto_msgTypes[43]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetNetworkProcessWhiteListReply.ProtoReflect.Descriptor instead.
+func (*GetNetworkProcessWhiteListReply) Descriptor() ([]byte, []int) {
+	return file_node_proto_rawDescGZIP(), []int{43}
+}
+
+func (x *GetNetworkProcessWhiteListReply) GetNprocProtection() *security.ProcProtection {
+	if x != nil {
+		return x.NprocProtection
+	}
+	return nil
+}
+
+type GetNodeDefaultNetProWhiteListRequest struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	NodeId int64 `protobuf:"varint,1,opt,name=node_id,json=nodeId,proto3" json:"node_id,omitempty"`
+}
+
+func (x *GetNodeDefaultNetProWhiteListRequest) Reset() {
+	*x = GetNodeDefaultNetProWhiteListRequest{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_node_proto_msgTypes[44]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *GetNodeDefaultNetProWhiteListRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetNodeDefaultNetProWhiteListRequest) ProtoMessage() {}
+
+func (x *GetNodeDefaultNetProWhiteListRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_node_proto_msgTypes[44]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetNodeDefaultNetProWhiteListRequest.ProtoReflect.Descriptor instead.
+func (*GetNodeDefaultNetProWhiteListRequest) Descriptor() ([]byte, []int) {
+	return file_node_proto_rawDescGZIP(), []int{44}
+}
+
+func (x *GetNodeDefaultNetProWhiteListRequest) GetNodeId() int64 {
+	if x != nil {
+		return x.NodeId
+	}
+	return 0
+}
+
+type GetNodeDefaultNetProWhiteListReply struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	ProcessNames []string `protobuf:"bytes,1,rep,name=process_names,json=processNames,proto3" json:"process_names,omitempty"`
+}
+
+func (x *GetNodeDefaultNetProWhiteListReply) Reset() {
+	*x = GetNodeDefaultNetProWhiteListReply{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_node_proto_msgTypes[45]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *GetNodeDefaultNetProWhiteListReply) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetNodeDefaultNetProWhiteListReply) ProtoMessage() {}
+
+func (x *GetNodeDefaultNetProWhiteListReply) ProtoReflect() protoreflect.Message {
+	mi := &file_node_proto_msgTypes[45]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetNodeDefaultNetProWhiteListReply.ProtoReflect.Descriptor instead.
+func (*GetNodeDefaultNetProWhiteListReply) Descriptor() ([]byte, []int) {
+	return file_node_proto_rawDescGZIP(), []int{45}
+}
+
+func (x *GetNodeDefaultNetProWhiteListReply) GetProcessNames() []string {
+	if x != nil {
+		return x.ProcessNames
+	}
+	return nil
+}
+
 var File_node_proto protoreflect.FileDescriptor
 
 var file_node_proto_rawDesc = []byte{

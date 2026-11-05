@@ -18,7 +18,6 @@ import (
 	"scmc/rpc/pb/image"
 	"scmc/rpc/pb/network"
 	"scmc/rpc/pb/node"
-	"scmc/rpc/pb/ipc"
 	"scmc/server/agent/internal"
 )
 
@@ -133,7 +132,6 @@ func Server() (*grpc.Server, error) {
 	image.RegisterImageServer(s, &internal.ImageServer{})
 	network.RegisterNetworkServer(s, &internal.NetworkServer{})
 	node.RegisterNodeServer(s, &internal.NodeServer{})
-	ipc.RegisterIpcBaseServer(s, &internal.IpcBaseServer{})
 
 	resumeContainerConfigs()
 	resumeNodeConfigs()

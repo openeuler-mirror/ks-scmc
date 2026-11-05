@@ -661,14 +661,33 @@ func EnableNode(linkifs string) error {
 	return updateJSON("Node", true)
 }
 
-func ruleToCmd(filePath, fileName string, isOn bool, rules []*litedb.NetworkRule) string {
+func ruleToCmd(filePath, fileName string, isOn, blacklist bool, rules []*litedb.NetworkRule) string {
 	var chainCmd string
-	if isOn {
-		chainCmd = "echo '*filter\n:INPUT DROP [0:0]\n:FORWARD ACCEPT [0:0]\n:OUTPUT ACCEPT [0:0]\n"
-		updateJSON(fileName, true)
-	} else {
+	if !isOn {
 		chainCmd = "echo '*filter\n:INPUT ACCEPT [0:0]\n:FORWARD ACCEPT [0:0]\n:OUTPUT ACCEPT [0:0]\n"
 		updateJSON(fileName, false)
+	} else if !blacklist {
+		// default is whitelist
+		// base rule, drop all default
+		chainCmd = "echo '*filter\n:INPUT DROP [0:0]\n:FORWARD ACCEPT [0:0]\n:OUTPUT DROP [0:0]\n"
+		// allow local interface traffic
+		chainCmd += "-A INPUT -i lo -j ACCEPT\n"
+		chainCmd += "-A OUTPUT -o lo -j ACCEPT\n"
+		// allow established traffic
+		// chainCmd += "-A INPUT  -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT\n"
+		chainCmd += "-A OUTPUT -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT\n"
+		updateJSON(fileName, true)
+	} else {
+		// blacklist
+		// base rule, drop all default
+		chainCmd = "echo '*filter\n:INPUT ACCEPT [0:0]\n:FORWARD ACCEPT [0:0]\n:OUTPUT ACCEPT [0:0]\n"
+		// allow local interface traffic
+		chainCmd += "-A INPUT -i lo -j ACCEPT\n"
+		chainCmd += "-A OUTPUT -o lo -j ACCEPT\n"
+		// allow established traffic
+		// chainCmd += "-A INPUT  -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT\n"
+		chainCmd += "-A OUTPUT -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT\n"
+		updateJSON(fileName, true)
 	}
 
 	var allRule string

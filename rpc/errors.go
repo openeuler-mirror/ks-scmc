@@ -48,7 +48,6 @@ var (
 	ErrContainerCmdOperation             = rpcError(pb.Errno_CCmdOperationFailed, "配置启停控制失败")
 	ErrContainerNetworkRule              = rpcError(pb.Errno_CNetworkRuleFailed, "配置网络规则失败")
 	ErrContainerNetworkRulePortOccupancy = rpcError(pb.Errno_CNetworkRuleFailed, "配置网络规则失败-端口已被占用")
-	ErrNodeProcProtection           	 = rpcError(pb.Errno_CProcProtectionFailed, "配置节点进程保护失败")
 )
 
 func ErrImageSize(size float64) error {

@@ -2,14 +2,20 @@ package internal
 
 import (
 	"context"
+	"crypto/md5"
+	"encoding/hex"
+	"fmt"
+	"io"
+	"os"
+	"path/filepath"
+
+	// "scmc/model/authz"
+	"scmc/model/iptables"
+	"scmc/model/opensnitch"
+	"sort"
 	"strings"
 
 	"github.com/docker/docker/api/types"
-	// "github.com/google/uuid"
-	// "github.com/google/uuid"
-	"scmc/model/authz"
-	"scmc/model/iptables"
-	"scmc/model/opensnitch"
 
 	"github.com/shirou/gopsutil/disk"
 	"github.com/shirou/gopsutil/mem"

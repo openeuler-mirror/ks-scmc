@@ -93,6 +93,5 @@ message NetworkRule {
 
 message NetworkRuleList {
     bool                 is_on = 1;  // 0:关闭 1:白名单
-    bool                 is_blacklist = 2; // 0:白名单 1:黑名单
-    repeated NetworkRule rules = 3;
+    repeated NetworkRule rules = 2;
 }

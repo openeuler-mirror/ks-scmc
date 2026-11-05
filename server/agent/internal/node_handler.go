@@ -168,16 +168,10 @@ func (s *NodeServer) UpdateFileProtect(ctx context.Context, in *pb.UpdateFilePro
 			return nil, rpc.ErrDatabaseFail
 		}
 	}
-	
-	for _,path := range in.SecurityConfig.FileProtection.FileList{
-		if _, err := os.Stat(path); os.IsNotExist(err) {
-			return nil, status.Errorf(codes.NotFound, "配置节点文件保护失败-文件%s不存在",path)
-		}
-	}
 
 	if err := kysec.UpdateFileAccess("localhost", in.SecurityConfig.FileProtection.IsOn, in.SecurityConfig.FileProtection.FileList, nil); err != nil {
 		log.Errorf("UpdateFileAccess failed: %v", err)
-		return nil, rpc.ErrNodeFileProtection
+		return nil, status.Errorf(codes.Internal, "failed to update file access")
 	}
 
 	cfgs.SecurityConfig.FileProtection = in.SecurityConfig.FileProtection

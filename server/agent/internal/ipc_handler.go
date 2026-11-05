@@ -48,8 +48,10 @@ func (s *IpcBaseServer) List(ctx context.Context, in *pb.IpcListRequest) (*pb.Ip
 			StartTime : c.CreatedAt,
 		}
 
-		for key, value := range *c.IPC {
-			info.Containers = append(info.Containers, &pb.IpcContainerPair{Name: key, Id: value})
+		if c.IPC != nil && len(*c.IPC) > 0 {
+			for key, value := range *c.IPC {
+				info.Containers = append(info.Containers, &pb.IpcContainerPair{Name: key, Id: value})
+			}
 		}
 
 		rsp.IpcnameIds = append(rsp.IpcnameIds, &pb.IpcContainerData{Name:info.Name, Id:info.Id, StartTime: info.StartTime, Containers:info.Containers})

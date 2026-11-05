@@ -201,6 +201,85 @@ func (s *NodeServer) UpdateNetworkRule(ctx context.Context, in *pb.UpdateNetwork
 	return &pb.UpdateNetworkRuleReply{}, nil
 }
 
+func (s *NodeServer) UpdateNetworkProcessWhiteList(ctx context.Context, in *pb.UpdateNetworkProcessWhiteListRequest) (*pb.UpdateNetworkProcessWhiteListReply, error) {
+	log.Debugf("UpdateNetworkProcessWhiteList called: node_id=%v  at server ", in.NodeId)
+	
+	n, err := db.QueryNodeByID(in.NodeId)
+	if err != nil {
+		if err == db.ErrRecordNotFound {
+			return nil, rpc.ErrNotFound
+		}
+		return nil, rpc.ErrDatabaseFail
+	}
+	conn, err := getAgentConn(n.Address)
+	if err != nil {
+		return nil, rpc.ErrInternal
+	}
+
+	cli := pb.NewNodeClient(conn)
+	_, err = cli.UpdateNetworkProcessWhiteList(ctx, in)
+	if err != nil {
+		log.Warnf("Update node: %v", err)
+		return nil, err
+	}
+
+	return &pb.UpdateNetworkProcessWhiteListReply{}, nil
+}
+
+func (s *NodeServer) GetNetworkProcessWhiteList(ctx context.Context, in *pb.GetNetworkProcessWhiteListRequest) (*pb.GetNetworkProcessWhiteListReply, error) {
+	log.Debugf("GetNetworkProcessWhiteList called: node_id=%v  at server ", in.NodeId)
+
+	n, err := db.QueryNodeByID(in.NodeId)
+	if err != nil {
+		if err == db.ErrRecordNotFound {
+			return nil, rpc.ErrNotFound
+		}
+		return nil, rpc.ErrDatabaseFail
+	}
+	conn, err := getAgentConn(n.Address)
+	if err != nil {
+		return nil, rpc.ErrInternal
+	}
+
+	cli := pb.NewNodeClient(conn)
+	reply, err := cli.GetNetworkProcessWhiteList(ctx, in)
+	if err != nil {
+		log.Warnf("GetNetworkProcessWhiteList node: %v", err)
+		return nil, err
+	}
+
+	log.Debugf("GetNetworkProcessWhiteList called: node_id=%v  at server reply:%v", in.NodeId, reply)
+
+	return reply, nil
+}
+
+func (s *NodeServer) GetNodeDefaultNetProWhiteList(ctx context.Context, in *pb.GetNodeDefaultNetProWhiteListRequest) (*pb.GetNodeDefaultNetProWhiteListReply, error) {
+	log.Debugf("GetNodeDefaultNetProWhiteList called: node_id=%v  at server ", in.NodeId)
+
+	n, err := db.QueryNodeByID(in.NodeId)
+	if err != nil {
+		if err == db.ErrRecordNotFound {
+			return nil, rpc.ErrNotFound
+		}
+		return nil, rpc.ErrDatabaseFail
+	}
+	conn, err := getAgentConn(n.Address)
+	if err != nil {
+		return nil, rpc.ErrInternal
+	}
+
+	cli := pb.NewNodeClient(conn)
+	reply, err := cli.GetNodeDefaultNetProWhiteList(ctx, in)
+	if err != nil {
+		log.Warnf("GetNodeDefaultNetProWhiteList node: %v", err)
+		return nil, err
+	}
+
+	log.Debugf("GetNodeDefaultNetProWhiteList called: node_id=%v  at server reply:%v", in.NodeId, reply)
+
+	return reply, nil
+}
+
 func (s *NodeServer) GetFileProtect(ctx context.Context, in *pb.GetFileProtectRequest) (*pb.GetFileProtectReply, error) {
 	log.Debugf("UpdateFileProtect called: node_id=%v  at server ", in.NodeId)
 
@@ -378,4 +457,78 @@ func GetNodeStatus(n *db.NodeInfo) (*pb.NodeStatus, error) {
 		s = r.StatusList[0]
 	}
 	return s, nil
+}
+
+func (s *NodeServer) UpdateProcessWhiteList(ctx context.Context, in *pb.UpdateProcessWhiteListRequest) (*pb.UpdateProcessWhiteListReply, error) {
+
+	n, err := db.QueryNodeByID(in.NodeId)
+	if err != nil {
+		if err == db.ErrRecordNotFound {
+			return nil, rpc.ErrNotFound
+		}
+		return nil, rpc.ErrDatabaseFail
+	}
+	conn, err := getAgentConn(n.Address)
+	if err != nil {
+		return nil, rpc.ErrInternal
+	}
+
+	cli := pb.NewNodeClient(conn)
+	_, err = cli.UpdateProcessWhiteList(ctx, in)
+	if err != nil {
+		log.Warnf("Update node: %v", err)
+		return nil, err
+	}
+
+	return &pb.UpdateProcessWhiteListReply{}, nil
+}
+
+func (s *NodeServer) GetNodeProcessWhiteList(ctx context.Context, in *pb.GetProcessWhiteListRequest) (*pb.GetProcessWhiteListReply, error) {
+	log.Debugf("UpdateFileProtect called: node_id=%v  at server ", in.NodeId)
+
+	n, err := db.QueryNodeByID(in.NodeId)
+	if err != nil {
+		if err == db.ErrRecordNotFound {
+			return nil, rpc.ErrNotFound
+		}
+		return nil, rpc.ErrDatabaseFail
+	}
+	conn, err := getAgentConn(n.Address)
+	if err != nil {
+		return nil, rpc.ErrInternal
+	}
+
+	cli := pb.NewNodeClient(conn)
+	reply, err := cli.GetNodeProcessWhiteList(ctx, in)
+	if err != nil {
+		log.Warnf("Update node: %v", err)
+		return nil, err
+	}
+
+	return reply, nil
+}
+
+func (s *NodeServer) GetNodeDefaultProcessWhiteList(ctx context.Context, in *pb.GetNodeDefaultProcessWhiteListRequest) (*pb.GetNodeDefaultProcessWhiteListReply, error) {
+	log.Debugf("UpdateFileProtect called: node_id=%v  at server ", in.NodeId)
+
+	n, err := db.QueryNodeByID(in.NodeId)
+	if err != nil {
+		if err == db.ErrRecordNotFound {
+			return nil, rpc.ErrNotFound
+		}
+		return nil, rpc.ErrDatabaseFail
+	}
+	conn, err := getAgentConn(n.Address)
+	if err != nil {
+		return nil, rpc.ErrInternal
+	}
+
+	cli := pb.NewNodeClient(conn)
+	reply, err := cli.GetNodeDefaultProcessWhiteList(ctx, in)
+	if err != nil {
+		log.Warnf("Update node: %v", err)
+		return nil, err
+	}
+
+	return reply, nil
 }

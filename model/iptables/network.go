@@ -762,9 +762,9 @@ func ruleToCmd(filePath, fileName string, isOn, blacklist bool, rules []*litedb.
 	return cmd
 }
 
-func UpdateContainerIPtablesFile(fileName string, isOn bool, rules []*litedb.NetworkRule, pid int) error {
+func UpdateContainerIPtablesFile(fileName string, pid int, isOn, blackList bool, rules []*litedb.NetworkRule) error {
 	filePath := path() + "/" + fileName
-	cmd := ruleToCmd(filePath, fileName, isOn, rules)
+	cmd := ruleToCmd(filePath, fileName, isOn, blackList, rules)
 	if pid != 0 {
 		cmd = fmt.Sprintf("%s; nsenter -t %d -n iptables-restore %s", cmd, pid, filePath)
 	}
@@ -780,7 +780,7 @@ func UpdateNodeIPtablesFile(isOn bool, rules []*litedb.NetworkRule) error {
 	log.Debugf("UpdateContainerIPtablesFile isOn:%v,rules:%v", isOn, rules)
 	filePath := nodeNetworkControlFile()
 
-	cmd := ruleToCmd(filePath, "node-network-control.rule", isOn, rules)
+	cmd := ruleToCmd(filePath, "node-network-control.rule", isOn, false, rules)
 
 	cmd = fmt.Sprintf("%s; iptables-restore %s", cmd, filePath)
 

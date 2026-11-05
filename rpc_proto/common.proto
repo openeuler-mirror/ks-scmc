@@ -39,4 +39,5 @@ enum Errno {
     CFileProtectionFailed  = 303;  // 文件保护配置失败
     CCmdOperationFailed    = 304;  // 启停控制配置失败
     CNetworkRuleFailed     = 305;  // 网络访问规则配置失败
+    CSecurityLevelFailed   = 306;  // 安全等级规则配置失败
 }

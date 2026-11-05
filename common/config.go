@@ -1,15 +1,31 @@
 package common
 
 import (
+	"bufio"
+	"bytes"
 	"fmt"
+	"io/ioutil"
 	"net/url"
 	"os"
+	"path/filepath"
+	"strconv"
+	"strings"
 	"time"
 
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 
 	"scmc/common/aes"
 )
+
+var defaultNetProList = []string{	
+	"/usr/bin/ks-scmc-server",
+	"/usr/bin/ks-scmc-authz",
+	"/usr/bin/mysql",
+	"/usr/bin/sqlite3",
+	"/usr/bin/cadvisor",
+	"/usr/bin/influxd",
+}
 
 type AgentConfig struct {
 	Host                      string `mapstructure:"host"`

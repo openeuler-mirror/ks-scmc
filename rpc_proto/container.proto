@@ -59,6 +59,7 @@ service Container {
 
     // 容器状态数据查询
     rpc GetContainerStats(StatsRequest) returns (StatsReply) {}
+    rpc UpdateContainerVersion(UpdateContainerVersionRequest) returns (UpdateContainerVersionReply) {}
 }
 
 message StatsRequest {

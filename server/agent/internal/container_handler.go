@@ -211,6 +211,13 @@ func (s *ContainerServer) setSecurityConfig(nodeid int64, id, uuid, name string,
 		}
 	}
 
+	if sec.FileProtection != nil {
+		if err := kysec.UpdateFileAccess(id, sec.FileProtection.IsOn, sec.FileProtection.FileList, []string{}); err != nil {
+			log.Warnf("UpdateFileAccess %v err: %v", id, err)
+			return rpc.ErrContainerFileProtection
+		}
+	}
+
 	if sec.ProcProtection != nil {
 		var hashes []string
 		for _, p := range sec.ProcProtection.ExeList {
@@ -228,51 +235,187 @@ func (s *ContainerServer) setSecurityConfig(nodeid int64, id, uuid, name string,
 		}
 	}
 
-	if sec.NprocProtection != nil {
-		var inRule = &litedb.ProcProtection{
-			IsOn:    sec.NprocProtection.IsOn,
-			ExeList: sec.NprocProtection.ExeList,
-		}
+	// 支持安全分级模板
+	if sec.SecurityLevelTemplate < 1 || sec.SecurityLevelTemplate > 5 {
+		// 默认设置为 5 级模板
+		sec.SecurityLevelTemplate = 5
+	}
 
-		if err := opensnitch.SaveRule(inRule, id, uuid); err != nil {
-			log.Warnf("SaveRule id=%v err=%v", id, err)
-			return rpc.ErrContainerNprocProtection
+	// 网络进程白名单比较独立，各个级别的模板都可以设置
+	if err := s.SetNprocProtection(id, uuid, sec.NprocProtection); err != nil {
+		log.Warnf("SaveRule id=%v err=%v", id, err)
+		return rpc.ErrContainerNprocProtection
+	}
+
+	if sec.NetworkRule == nil {
+		sec.NetworkRule = oldsec.NetworkRule
+	}
+
+	var hostrules []*litedb.NetworkRule
+
+	if sec.SecurityLevelTemplate == 3 || sec.SecurityLevelTemplate == 2 {
+		hostips, err := s.getHostIps(nodeid)
+		if err != nil {
+			log.Warnf("get host ips failed, %v", err)
+			return rpc.ErrContainerSecurityLevel
+		}
+		for _, ip := range hostips {
+			hostrules = append(hostrules, &litedb.NetworkRule{
+				Addr:      ip,
+				Port:      0,
+				Protocols: []string{"tcp", "udp", "icmp"},
+			})
 		}
 	}
 
-	if sec.FileProtection != nil {
-		if err := kysec.UpdateFileAccess(id, sec.FileProtection.IsOn, sec.FileProtection.FileList, []string{}); err != nil {
-			log.Warnf("UpdateFileAccess %v err: %v", id, err)
-			return rpc.ErrContainerFileProtection
+	switch sec.SecurityLevelTemplate {
+	case 5:
+		// 5 级模板策略，全部可访问，配置了白名单，就按照白名单的规则走，无需处理
+	case 4:
+		// 4 级模板策略，全部不可访问，除非在白名单中，等效于强制开启白名单
+		sec.NetworkRule.IsOn = true
+		sec.DisableCmdOperation = true
+	case 3:
+		// 三级模板策略，能访问平台，平台外的通过白名单也可以访问，等效于强制开启白名单，且平台IP都在白名单内
+		sec.NetworkRule.IsOn = true
+		for _, rule := range hostrules {
+			if !containsRule(sec.NetworkRule.Rules, rule) {
+				sec.NetworkRule.Rules = append(sec.NetworkRule.Rules, rule)
+			}
+		}
+		sec.DisableCmdOperation = true
+	case 2:
+		// 三级模板策略网络规则等同于二级模板，只是少了启停控制
+		sec.NetworkRule.IsOn = true
+		for _, rule := range hostrules {
+			if !containsRule(sec.NetworkRule.Rules, rule) {
+				sec.NetworkRule.Rules = append(sec.NetworkRule.Rules, rule)
+			}
+		}
+	case 1:
+		// 用到了设置黑名单，下面的流程设置
+	default:
+		log.Warnf("invalid parameter SecurityLevelTemplate: %v", sec.SecurityLevelTemplate)
+		return rpc.ErrContainerSecurityLevel
+	}
+
+	if sec.SecurityLevelTemplate == 1 {
+		// 一级模板要应用黑名单
+		if err := s.setSecurityLevel1(nodeid, id, name, pid, sec); err != nil {
+			log.Warnf("setSecurityLevel1 failed: %v", err)
+			return rpc.ErrContainerSecurityLevel
+		}
+	} else {
+		// 二 三 四 五级模板都是设置白名单，走一样的流程
+		var isBlacklist = false
+		if err := s.SetNetworkRule(id, name, pid, sec.NetworkRule.IsOn, isBlacklist, sec.NetworkRule.Rules); err != nil {
+			log.Warnf("UpdateContainerIPtablesFile %v err: %v", name, err)
+			return rpc.ErrContainerNetworkRule
 		}
 	}
 
+	// 启停控制比较独立，各个级别的模板设置方式都一样
 	if err := authz.HandleSensitiveContainer(sec.DisableCmdOperation, fromUpdate, name, id); err != nil {
 		log.Warnf("HandleSensitiveContainer err=%v", err)
 		return rpc.ErrContainerCmdOperation
 	}
 
-	if sec.NetworkRule != nil {
-		var rules []*litedb.NetworkRule
-		for _, v := range sec.NetworkRule.Rules {
-			rules = append(rules, &litedb.NetworkRule{
-				Protocols: v.Protocols,
-				Addr:      v.Addr,
-				Port:      v.Port,
-			})
-		}
+	return nil
+}
 
-		fileName := id + "-" + name
-		if err := iptables.UpdateContainerIPtablesFile(fileName, sec.NetworkRule.IsOn, rules, pid); err != nil {
-			log.Warnf("UpdateContainerIPtablesFile %v err: %v", fileName, err)
-			return rpc.ErrContainerNetworkRule
+func (s *ContainerServer) setSecurityLevel1(nodeid int64, id, name string, pid int, sec *pb.SecurityConfig) error {
+	
+	if sec == nil {
+		log.Warnf("setSecurityLevel1 invalid param sec")
+		return rpc.ErrContainerSecurityLevel
+	}
+
+	platformips, err := s.getPlatformIps(nodeid)
+	if err != nil {
+		log.Warnf("get platform ips failed, %v", err)
+		return rpc.ErrContainerSecurityLevel
+	}
+
+	var platformrules []*litedb.NetworkRule
+	for _, ip := range platformips {
+		platformrules = append(platformrules, &litedb.NetworkRule{
+			Protocols: []string{"tcp", "udp", "icmp"},
+			Addr:      ip,
+			Port:      0,
+		})
+	}
+
+	var newrules []*litedb.NetworkRule
+	isBlacklist := false
+	if sec.NetworkRule.IsOn {
+		if sec.NetworkAccessControll {
+			// 白名单打开，对外访问控制打开情况下，只有在白名单内的平台和容器IP可以访问
+			newrules, err = UnionNetworkRules(platformrules, sec.NetworkRule.Rules)
+			log.Warnf("platformrules: %v", platformrules)
+			log.Warnf("rules: %v", sec.NetworkRule.Rules)
+			log.Warnf("newrules: %v", newrules)
+			if err != nil {
+				log.Warnf("UnionNetworkRules failed, %v", err)
+				return rpc.ErrContainerSecurityLevel
+			}
+			isBlacklist = false
+		} else {
+			/*newrules, err = rulesExcludeRules(platformrules, sec.NetworkRule.Rules)
+			if err != nil {
+				log.Warnf("get platform ips failed, %v", err)
+				return rpc.ErrContainerSecurityLevel
+			}
+			isBlacklist = true*/
 		}
+	} else {
+		if sec.NetworkAccessControll {
+			// 白名单关闭，对外访问控制打开情况下，全部不能访问，等效于开启白名单，且白名单为空
+			isBlacklist = false
+		} else {
+			// 白名单关闭，对外访问控制关闭情况下，只有外部网络能访问，开启黑名单，名单里包含平台IP和容器IP
+			isBlacklist = true
+			newrules = platformrules
+		}
+	}
+
+	var isOn = true
+	if err := s.SetNetworkRule(id, name, pid, isOn, isBlacklist, newrules); err != nil {
+		log.Warnf("UpdateContainerIPtablesFile %v err: %v", name, err)
+		return rpc.ErrContainerNetworkRule
 	}
 
 	return nil
 }
 
-func (s *ContainerServer) create(configs *pb.ContainerConfigs) (string, error) {
+func (s *ContainerServer) SetNetworkRule(id, name string, pid int, on, blacklist bool, rules []*litedb.NetworkRule) error {
+
+	fileName := id + "-" + name
+	if err := iptables.UpdateContainerIPtablesFile(fileName, pid, on, blacklist, rules); err != nil {
+		return rpc.ErrContainerNetworkRule
+	}
+
+	return nil
+}
+
+func (s *ContainerServer) SetNprocProtection(id, uuid string, cfg *secpb.ProcProtection) error {
+
+	if cfg == nil {
+		return nil
+	}
+
+	var inRule = &litedb.ProcProtection{
+		IsOn:    cfg.IsOn,
+		ExeList: cfg.ExeList,
+	}
+
+	if err := opensnitch.SaveRule(inRule, id, uuid); err != nil {
+		return rpc.ErrContainerNprocProtection
+	}
+
+	return nil
+}
+
+func (s *ContainerServer) create(nodeid int64, configs *pb.ContainerConfigs) (string, error) {
 	if configs == nil || configs.Image == "" {
 		return "", rpc.ErrInvalidArgument
 	} else if !regexp.MustCompile(containerNamePattern).MatchString(configs.Name) {
@@ -301,7 +444,7 @@ func (s *ContainerServer) create(configs *pb.ContainerConfigs) (string, error) {
 
 	if configs.Cmd != "" {
 		var cmdSlice strslice.StrSlice = strings.Fields(configs.Cmd)
-		config.Cmd=cmdSlice
+		config.Cmd = cmdSlice
 	}
 
 	hostConfig := container.HostConfig{
@@ -385,7 +528,8 @@ func (s *ContainerServer) create(configs *pb.ContainerConfigs) (string, error) {
 		}
 	}
 
-	if err := s.setSecurityConfig(body.ID, configs.Uuid, configs.Name, 0, false, configs.SecurityConfig); err != nil {
+	if err := s.setSecurityConfig(nodeid, body.ID, configs.Uuid, configs.Name, 0,
+		false, configs.SecurityConfig, nil); err != nil {
 		log.Warnf("setSecurityConfig failed err=%v", err)
 		if e := s.remove(cli, body.ID, true); e != nil {
 			log.Warnf("after setSecurityConfig failed remove container=%v err=%v", body.ID, e)
@@ -414,7 +558,7 @@ func (s *ContainerServer) Create(ctx context.Context, in *pb.CreateRequest) (*pb
 	}
 
 	in.Configs.Uuid = uuid
-	id, err := s.create(in.Configs)
+	id, err := s.create(in.NodeId, in.Configs)
 
 	if err != nil {
 		litedb.RemoveContainerConfigByID(cfgs.ID)
@@ -577,7 +721,7 @@ func (s *ContainerServer) Restart(ctx context.Context, in *pb.RestartRequest) (*
 
 func (s *ContainerServer) Update(ctx context.Context, in *pb.UpdateRequest) (*pb.UpdateReply, error) {
 	var reply pb.UpdateReply
-	
+
 	if in.ContainerId == "" || (in.ResourceLimit == nil && in.RestartPolicy == nil && in.Networks == nil && in.SecurityConfig == nil) {
 		return nil, rpc.ErrInvalidArgument
 	}
@@ -628,7 +772,8 @@ func (s *ContainerServer) Update(ctx context.Context, in *pb.UpdateRequest) (*pb
 
 	updateNetwork(ctx, cli, in.ContainerId, in.Networks)
 
-	if err := s.setSecurityConfig(in.ContainerId, inspectConfigs.Uuid, inspectConfigs.Name, pid, true, in.SecurityConfig); err != nil {
+	if err := s.setSecurityConfig(in.NodeId, in.ContainerId, inspectConfigs.Uuid,
+		inspectConfigs.Name, pid, true, in.SecurityConfig, cfgs.SecurityConfig); err != nil {
 		log.Warnf("Update setSecurityConfig err=%v", err)
 		return nil, err
 	}
@@ -685,33 +830,33 @@ func (s *ContainerServer) Update(ctx context.Context, in *pb.UpdateRequest) (*pb
 func getContainerID(containerName string) (string, error) {
 	cli, err := docker.Client()
 	if err != nil {
-	    return "", rpc.ErrInternal
+		return "", rpc.ErrInternal
 	}
 	containerJSON, err := cli.ContainerInspect(context.Background(), containerName)
 	if err != nil {
-	    return "", err 
+		return "", err
 	}
 	return containerJSON.ID, nil
 }
 
-func (s *ContainerServer)UpdateContainerVersion(ctx context.Context, in *pb.UpdateContainerVersionRequest) (*pb.UpdateContainerVersionReply, error) {
-	
+func (s *ContainerServer) UpdateContainerVersion(ctx context.Context, in *pb.UpdateContainerVersionRequest) (*pb.UpdateContainerVersionReply, error) {
+
 	cli, err := docker.Client()
 	if err != nil {
 		return nil, rpc.ErrInternal
 	}
-	
-	containerId ,err:= getContainerID(in.ContainerName)
+
+	containerId, err := getContainerID(in.ContainerName)
 	if err != nil {
 		return nil, rpc.ErrNotFound
 	}
-	
+
 	cfgs, err := litedb.GetContainerConfig(containerId)
 	if err != nil {
 		log.Warnf("db get container configs id=%v err=%v", containerId, err)
 		return nil, rpc.ErrInternal
 	}
-	
+
 	// inspect container
 	configs, _, err := s.inspect(containerId, true)
 	if err != nil {
@@ -726,19 +871,19 @@ func (s *ContainerServer)UpdateContainerVersion(ctx context.Context, in *pb.Upda
 	}
 
 	// create new contaienr
-	configs.Image = in.ImgName+":"+in.ImgVersion
-	
+	configs.Image = in.ImgName + ":" + in.ImgVersion
+
 	configs.SecurityConfig = cfgs.SecurityConfig
-	id, err := s.create(configs)
+	id, err := s.create(in.NodeId, configs)
 	if err != nil {
 		log.Warnf("create container err=%v", err)
 		return nil, rpc.ErrInternal
 	}
-	
+
 	cfgs.ContainerID = id
 	litedb.UpdateContainerConfig(cfgs)
-	
-	return &pb.UpdateContainerVersionReply{},nil
+
+	return &pb.UpdateContainerVersionReply{}, nil
 }
 
 func updateNetwork(ctx context.Context, cli *client.Client, containerID string, networks []*pb.NetworkConfig) error {
@@ -1227,7 +1372,7 @@ func (s *ContainerServer) ResumeBackup(ctx context.Context, in *pb.ResumeBackupR
 	// create new contaienr
 	configs.Image = b.ImageRef
 	configs.SecurityConfig = cfgs.SecurityConfig
-	id, err := s.create(configs)
+	id, err := s.create(in.NodeId, configs)
 	if err != nil {
 		log.Warnf("create container err=%v", err)
 		return nil, rpc.ErrInternal
@@ -1628,9 +1773,8 @@ func (*ContainerServer) KillAppEntry(ctx context.Context, in *pb.KillAppEntryReq
 	return &pb.KillAppEntryReply{}, nil
 }
 
-
 func (*ContainerServer) GetContainerStats(ctx context.Context, in *pb.StatsRequest) (*pb.StatsReply, error) {
 	// 这里并不关心 StatsRequest.HostId
 	json_str, _ := docker.HandleStatsRequest()
-	return &pb.StatsReply{StatsData: json_str,}, nil
+	return &pb.StatsReply{StatsData: json_str}, nil
 }

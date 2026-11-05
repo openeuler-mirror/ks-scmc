@@ -20,6 +20,7 @@ import (
 	"scmc/rpc/pb/node"
 	"scmc/rpc/pb/system"
 	"scmc/rpc/pb/user"
+	"scmc/rpc/pb/ipc"
 	"scmc/server/controller/internal"
 	"scmc/server/controller/tasks"
 	"scmc/server/controller/thriftapi"
@@ -57,6 +58,7 @@ func Server() (*grpc.Server, error) {
 	user.RegisterUserServer(s, &internal.UserServer{})
 	logging.RegisterLoggingServer(s, &internal.LoggingServer{})
 	system.RegisterSystemServer(s, &internal.SystemServer{})
+	ipc.RegisterIpcBaseServer(s, &internal.IpcBaseServer{})
 
 	go internal.RuntimeLogWriter()
 	if common.Config.ApiTLS.Enable {

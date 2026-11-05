@@ -317,23 +317,13 @@ func getPermID(method string) pb.PERMISSION {
 		"/container.Container/RemoveTemplate":
 		return pb.PERMISSION_CONTAINER_TEMP_WRITE
 	case "/node.Node/List",
-		"/node.Node/Status",
-		"/node.Node/GetFileProtect",
-		"/node.Node/GetNetworkRule",
-		"/node.Node/GetNetworkProcessWhiteList",
-		"/node.Node/GetNodeProcessWhiteList",
-		"/node.Node/GetNodeSecurityConfig",
-		"/node.Node/GetNodeDefaultPort",
-		"/node.Node/GetNodeDefaultProcessWhiteList",
-		"/node.Node/GetNodeDefaultNetProWhiteList":
+		"/node.Node/Status":
 		return pb.PERMISSION_NODE_INFO_READ
 	case "/node.Node/Create",
 		"/node.Node/Update",
 		"/node.Node/Remove",
 		"/node.Node/UpdateFileProtect",
-		"/node.Node/UpdateNetworkRule",
-		"/node.Node/UpdateNetworkProcessWhiteList",
-		"/node.Node/UpdateProcessWhiteList":
+		"/node.Node/UpdateNetworkRule":
 		return pb.PERMISSION_NODE_INFO_WRITE
 	case "/image.Image/List",
 		"/image.Image/ListDB":

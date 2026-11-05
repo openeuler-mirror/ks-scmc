@@ -25,7 +25,6 @@ var defaultNetProList = []string{
 	"/usr/bin/sqlite3",
 	"/usr/bin/cadvisor",
 	"/usr/bin/influxd",
-	"/usr/libexec/ks-scmc-gui",
 }
 
 type AgentConfig struct {

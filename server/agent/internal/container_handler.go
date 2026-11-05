@@ -565,6 +565,7 @@ func (s *ContainerServer) Create(ctx context.Context, in *pb.CreateRequest) (*pb
 		return nil, rpc.ErrInvalidArgument
 	}
 
+	in.Configs.Ipcname = "testipc"
 	uuid := uuid.New().String()
 	cfgs := litedb.ContainerConfig{
 		UUID:           uuid,

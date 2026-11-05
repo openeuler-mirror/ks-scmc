@@ -195,76 +195,21 @@ func (x *IpcListRequest) GetNodeId() int64 {
 	return 0
 }
 
-type IpcContainerPair struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	Name string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
-	Id   string `protobuf:"bytes,2,opt,name=id,proto3" json:"id,omitempty"`
-}
-
-func (x *IpcContainerPair) Reset() {
-	*x = IpcContainerPair{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_ipc_proto_msgTypes[3]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *IpcContainerPair) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*IpcContainerPair) ProtoMessage() {}
-
-func (x *IpcContainerPair) ProtoReflect() protoreflect.Message {
-	mi := &file_ipc_proto_msgTypes[3]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use IpcContainerPair.ProtoReflect.Descriptor instead.
-func (*IpcContainerPair) Descriptor() ([]byte, []int) {
-	return file_ipc_proto_rawDescGZIP(), []int{3}
-}
-
-func (x *IpcContainerPair) GetName() string {
-	if x != nil {
-		return x.Name
-	}
-	return ""
-}
-
-func (x *IpcContainerPair) GetId() string {
-	if x != nil {
-		return x.Id
-	}
-	return ""
-}
-
 type IpcContainerData struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Name       string              `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
-	Id         string              `protobuf:"bytes,2,opt,name=id,proto3" json:"id,omitempty"`
-	StartTime  int64               `protobuf:"varint,3,opt,name=start_time,json=startTime,proto3" json:"start_time,omitempty"`
-	Containers []*IpcContainerPair `protobuf:"bytes,4,rep,name=containers,proto3" json:"containers,omitempty"`
+	Name       string   `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`                             // IPC 容器名称
+	Id         string   `protobuf:"bytes,2,opt,name=id,proto3" json:"id,omitempty"`                                 //IPC 容器ID
+	StartTime  int64    `protobuf:"varint,3,opt,name=start_time,json=startTime,proto3" json:"start_time,omitempty"` //创建时间
+	Containers []string `protobuf:"bytes,4,rep,name=containers,proto3" json:"containers,omitempty"`                 //关联的容器数据
 }
 
 func (x *IpcContainerData) Reset() {
 	*x = IpcContainerData{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_ipc_proto_msgTypes[4]
+		mi := &file_ipc_proto_msgTypes[3]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}

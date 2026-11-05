@@ -2,19 +2,14 @@ package internal
 
 import (
 	"context"
-	"crypto/md5"
-	"encoding/hex"
-	"fmt"
-	"io"
-	"os"
-	"path/filepath"
-	"scmc/model/authz"
-	"scmc/model/iptables"
-	"scmc/model/opensnitch"
-	"sort"
 	"strings"
 
 	"github.com/docker/docker/api/types"
+	// "github.com/google/uuid"
+	// "github.com/google/uuid"
+	"scmc/model/authz"
+	"scmc/model/iptables"
+	"scmc/model/opensnitch"
 
 	"github.com/shirou/gopsutil/disk"
 	"github.com/shirou/gopsutil/mem"
@@ -22,15 +17,14 @@ import (
 	"google.golang.org/grpc/status"
 	"gorm.io/gorm"
 
-	"scmc/common"
+	log "github.com/sirupsen/logrus"
+
 	"scmc/model/docker"
 	"scmc/model/kysec"
 	"scmc/model/litedb"
 	"scmc/rpc"
 	pb "scmc/rpc/pb/node"
 	"scmc/rpc/pb/security"
-
-	log "github.com/sirupsen/logrus"
 )
 
 const gigaBytes = 1 << 30
@@ -197,6 +191,7 @@ func (s *NodeServer) UpdateNetworkRule(ctx context.Context, in *pb.UpdateNetwork
 					Port:      port,
 				})
 			}
+		
 
 			for _, v := range in.SecurityConfig.NetworkRule.Rules {
 
@@ -258,227 +253,6 @@ func (s *NodeServer) UpdateNetworkRule(ctx context.Context, in *pb.UpdateNetwork
 	}
 
 	return &pb.UpdateNetworkRuleReply{}, nil
-}
-
-func ResolveSymlink(path string) (string, error) {
-
-	visited := make(map[string]bool)
-	return resolveSymlinkRecursive(path, visited)
-}
-
-func resolveSymlinkRecursive(path string, visited map[string]bool) (string, error) {
-
-	absPath, err := filepath.Abs(path)
-	if err != nil {
-		return "", fmt.Errorf("获取绝对路径失败: %v", err)
-	}
-
-	if visited[absPath] {
-		return "", fmt.Errorf("检测到循环符号链接: %s", strings.Join(getCyclePath(visited, absPath), " → "))
-	}
-	visited[absPath] = true
-
-	fileInfo, err := os.Lstat(absPath)
-	if err != nil {
-		return "", err
-	}
-
-	if fileInfo.Mode()&os.ModeSymlink != 0 {
-		target, err := os.Readlink(absPath)
-		if err != nil {
-			return "", err
-		}
-
-		if !filepath.IsAbs(target) {
-			target = filepath.Join(filepath.Dir(absPath), target)
-		}
-		target = filepath.Clean(target)
-
-		return resolveSymlinkRecursive(target, visited)
-	}
-
-	return absPath, nil
-}
-
-func getCyclePath(visited map[string]bool, current string) []string {
-	var path []string
-	for k := range visited {
-		path = append(path, k)
-	}
-	path = append(path, current)
-	return path
-}
-
-func getFileMD5(filePath string) (string, error) {
-	file, err := os.Open(filePath)
-	if err != nil {
-		return "", err
-	}
-
-	defer file.Close()
-
-	hasher := md5.New()
-	if _, err := io.Copy(hasher, file); err != nil {
-		return "", err
-	}
-
-	return hex.EncodeToString(hasher.Sum(nil)), nil
-}
-
-func mergeAndDeduplicatePaths(defaultPaths, exeList []string) []string {
-	pathSet := make(map[string]struct{})
-
-	addPath := func(rawPath string) {
-		target, err := ResolveSymlink(rawPath)
-		if err != nil {
-			log.Warnf("路径解析失败 [%s]: %v", rawPath, err)
-			return
-		}
-
-		cleanPath := filepath.Clean(target)
-		pathSet[cleanPath] = struct{}{}
-	}
-
-	for _, p := range defaultPaths {
-		addPath(p)
-	}
-
-	for _, p := range exeList {
-		addPath(p)
-	}
-
-	return mapKeysToSlice(pathSet)
-}
-
-func mapKeysToSlice(m map[string]struct{}) []string {
-	keys := make([]string, 0, len(m))
-	for k := range m {
-		keys = append(keys, k)
-	}
-
-	sort.Strings(keys)
-	return keys
-}
-
-func (s *NodeServer) UpdateProcessWhiteList(ctx context.Context, in *pb.UpdateProcessWhiteListRequest) (*pb.UpdateProcessWhiteListReply, error) {
-
-	if in.SecurityConfig.ProcProtection == nil {
-		return nil, rpc.ErrNodeProcProtection
-	}
-
-	mergedPaths := mergeAndDeduplicatePaths(
-		common.GetNodeProWhiteListPaths(),
-		in.SecurityConfig.ProcProtection.ExeList,
-	)
-
-	var hashes []string
-	for _, rawPath := range mergedPaths {
-
-		target, err := ResolveSymlink(rawPath)
-		if err != nil {
-			log.Errorf("[%s] 符号链接解析失败: %v", rawPath, err)
-			continue
-		}
-
-		fileHash, err := getFileMD5(target)
-		if err != nil {
-			log.Warnf("获取文件哈希失败 path=%v err=%v", target, err)
-			continue
-		}
-
-		log.Debugf("添加白名单条目 path=%s hash=%s", target, fileHash)
-		hashes = append(hashes, fileHash)
-	}
-
-	if len(hashes) == 0 {
-		log.Warn("有效白名单条目为空")
-		return nil, rpc.ErrNodeProcProtection
-	}
-
-	if err := kysec.UpdateWhiteList(
-		"localhost",
-		in.SecurityConfig.ProcProtection.IsOn,
-		hashes,
-		[]string{},
-	); err != nil {
-		log.Errorf("更新内核白名单失败: %v", err)
-		return nil, rpc.ErrNodeProcProtection
-	}
-
-	cfgs, err := litedb.GetNodeConfig("localhost")
-	if err != nil {
-		if err := s.nodeConfigDataTableCreate("", ""); err != nil {
-			return nil, err
-		}
-		if cfgs, err = litedb.GetNodeConfig("localhost"); err != nil {
-			log.Errorf("获取节点配置失败: %v", err)
-			return nil, rpc.ErrDatabaseFail
-		}
-	}
-
-	cfgs.SecurityConfig.ProcProtection = in.SecurityConfig.ProcProtection
-	cfgs.SecurityConfig.ProcProtection.ExeList = mergedPaths
-
-	if err := litedb.UpdateNodeConfig(cfgs); err != nil {
-		log.Errorf("更新节点配置失败: %v", err)
-		return nil, rpc.ErrDatabaseFail
-	}
-
-	log.Info("进程白名单更新成功")
-	return &pb.UpdateProcessWhiteListReply{}, nil
-}
-
-func (s *NodeServer) GetNodeProcessWhiteList(ctx context.Context, in *pb.GetProcessWhiteListRequest) (*pb.GetProcessWhiteListReply, error) {
-	log.Debugf("UpdateFileProtect called: node_id=%v  at agent ", in.NodeId)
-
-	cfgs, err := litedb.GetNodeConfig("localhost")
-	if err != nil {
-		err = s.nodeConfigDataTableCreate("", "")
-		if err != nil {
-			return nil, err
-		}
-		cfgs, err = litedb.GetNodeConfig("localhost")
-		if err != nil {
-			log.Errorf("GetContainerConfig err=%v", err)
-			return nil, rpc.ErrDatabaseFail
-		}
-	}
-
-	var reply pb.GetProcessWhiteListReply
-
-	if cfgs != nil && cfgs.SecurityConfig != nil && cfgs.SecurityConfig.ProcProtection != nil {
-
-		reply.ProcProtection = &security.ProcProtection{
-			IsOn:    cfgs.SecurityConfig.ProcProtection.IsOn,
-			ExeList: cfgs.SecurityConfig.ProcProtection.ExeList,
-		}
-	} else {
-		reply.ProcProtection = &security.ProcProtection{
-			IsOn:    false,
-			ExeList: []string{},
-		}
-		log.Warnf("FileProtection data not found for node_id=%v", in.NodeId)
-	}
-
-	log.Debugf("GetFileProtect called: node_id=%v  at agent reply:%v", in.NodeId, reply.ProcProtection)
-
-	return &reply, nil
-}
-
-func (s *NodeServer) GetNodeDefaultProcessWhiteList(ctx context.Context, in *pb.GetNodeDefaultProcessWhiteListRequest) (*pb.GetNodeDefaultProcessWhiteListReply, error) {
-	log.Debugf("UpdateFileProtect called: node_id=%v  at agent ", in.NodeId)
-
-	rawPaths := common.GetNodeProWhiteListPaths()
-	reply := &pb.GetNodeDefaultProcessWhiteListReply{
-		ProcessNames: make([]string, 0, len(rawPaths)),
-	}
-
-	for _, path := range rawPaths {
-		reply.ProcessNames = append(reply.ProcessNames, path)
-	}
-
-	return reply, nil
-
 }
 
 func (s *NodeServer) GetFileProtect(ctx context.Context, in *pb.GetFileProtectRequest) (*pb.GetFileProtectReply, error) {
@@ -578,18 +352,18 @@ func (s *NodeServer) GetNodeSecurityConfig(ctx context.Context, in *pb.GetNodeSe
 }
 
 func (s *NodeServer) GetNodeDefaultPort(ctx context.Context, in *pb.GetNodeDefaultPortRequest) (*pb.GetNodeDefaultPortReply, error) {
-
+	
 	var portStatusList []*pb.PortStatus
-	for port, blocked := range blockedPorts {
-		portStatusList = append(portStatusList, &pb.PortStatus{
-			Port:    port,
-			Blocked: blocked,
-		})
-	}
+    for port, blocked := range blockedPorts {
+        portStatusList = append(portStatusList, &pb.PortStatus{
+            Port:    port,
+            Blocked: blocked,
+        })
+    }
 
-	return &pb.GetNodeDefaultPortReply{
-		BlockedPorts: portStatusList,
-	}, nil
+    return &pb.GetNodeDefaultPortReply{
+        BlockedPorts: portStatusList, 	
+    }, nil
 }
 
 func (s *NodeServer) Update(ctx context.Context, in *pb.UpdateRequest) (*pb.UpdateReply, error) {

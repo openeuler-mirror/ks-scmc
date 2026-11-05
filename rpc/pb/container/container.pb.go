@@ -5224,7 +5224,7 @@ type UpdateContainerVersionRequest struct {
 func (x *UpdateContainerVersionRequest) Reset() {
 	*x = UpdateContainerVersionRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_container_proto_msgTypes[83]
+		mi := &file_container_proto_msgTypes[85]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}

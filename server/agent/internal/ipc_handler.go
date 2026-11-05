@@ -184,6 +184,12 @@ func (s *IpcBaseServer) Remove(ctx context.Context, in *pb.IpcRemoveRequest) (*p
 		if err != nil {
 			continue
 		}
+
+		// 有容器依赖不允许删除
+		if len(*cfg.IPC) > 0 {
+			continue
+		}
+
 		containerID := cfg.ContainerID
 		IpcStopAndRemoveContainer(containerID)
 

@@ -114,6 +114,9 @@ func (s *ContainerServer) List(ctx context.Context, in *pb.ListRequest) (*pb.Lis
 
 	var reply pb.ListReply
 	for _, c := range containers {
+		if s.isIpcContainer(c.ID) { // 过滤掉 IPC 容器
+			continue
+		}
 		info := pb.ContainerInfo{
 			Id:           c.ID,
 			Image:        c.Image,

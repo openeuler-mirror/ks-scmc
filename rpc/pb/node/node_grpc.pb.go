@@ -36,6 +36,7 @@ type NodeClient interface {
 	GetFileProtect(ctx context.Context, in *GetFileProtectRequest, opts ...grpc.CallOption) (*GetFileProtectReply, error)
 	GetNetworkRule(ctx context.Context, in *GetNetworkRuleRequest, opts ...grpc.CallOption) (*GetNetworkRuleReply, error)
 	GetNodeSecurityConfig(ctx context.Context, in *GetNodeSecurityConfigRequest, opts ...grpc.CallOption) (*GetNodeSecurityConfigReply, error)
+	GetNodeDefaultPort(ctx context.Context, in *GetNodeDefaultPortRequest, opts ...grpc.CallOption) (*GetNodeDefaultPortReply, error)
 }
 
 type nodeClient struct {
@@ -145,6 +146,15 @@ func (c *nodeClient) GetNodeSecurityConfig(ctx context.Context, in *GetNodeSecur
 	return out, nil
 }
 
+func (c *nodeClient) GetNodeDefaultPort(ctx context.Context, in *GetNodeDefaultPortRequest, opts ...grpc.CallOption) (*GetNodeDefaultPortReply, error) {
+	out := new(GetNodeDefaultPortReply)
+	err := c.cc.Invoke(ctx, "/node.Node/GetNodeDefaultPort", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // NodeServer is the server API for Node service.
 // All implementations must embed UnimplementedNodeServer
 // for forward compatibility
@@ -167,6 +177,7 @@ type NodeServer interface {
 	GetFileProtect(context.Context, *GetFileProtectRequest) (*GetFileProtectReply, error)
 	GetNetworkRule(context.Context, *GetNetworkRuleRequest) (*GetNetworkRuleReply, error)
 	GetNodeSecurityConfig(context.Context, *GetNodeSecurityConfigRequest) (*GetNodeSecurityConfigReply, error)
+	GetNodeDefaultPort(context.Context, *GetNodeDefaultPortRequest) (*GetNodeDefaultPortReply, error)
 	mustEmbedUnimplementedNodeServer()
 }
 
@@ -206,6 +217,9 @@ func (UnimplementedNodeServer) GetNetworkRule(context.Context, *GetNetworkRuleRe
 }
 func (UnimplementedNodeServer) GetNodeSecurityConfig(context.Context, *GetNodeSecurityConfigRequest) (*GetNodeSecurityConfigReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetNodeSecurityConfig not implemented")
+}
+func (UnimplementedNodeServer) GetNodeDefaultPort(context.Context, *GetNodeDefaultPortRequest) (*GetNodeDefaultPortReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetNodeDefaultPort not implemented")
 }
 func (UnimplementedNodeServer) mustEmbedUnimplementedNodeServer() {}
 
@@ -418,6 +432,24 @@ func _Node_GetNodeSecurityConfig_Handler(srv interface{}, ctx context.Context, d
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Node_GetNodeDefaultPort_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetNodeDefaultPortRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(NodeServer).GetNodeDefaultPort(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/node.Node/GetNodeDefaultPort",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(NodeServer).GetNodeDefaultPort(ctx, req.(*GetNodeDefaultPortRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Node_ServiceDesc is the grpc.ServiceDesc for Node service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -468,6 +500,10 @@ var Node_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetNodeSecurityConfig",
 			Handler:    _Node_GetNodeSecurityConfig_Handler,
+		},
+		{
+			MethodName: "GetNodeDefaultPort",
+			Handler:    _Node_GetNodeDefaultPort_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

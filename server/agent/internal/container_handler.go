@@ -147,9 +147,9 @@ func (s *ContainerServer) getHostIps(nodeid int64) ([]string, error) {
 // 获取所有运行中容器的 IP 地址
 func (s *ContainerServer) getContainerIps() ([]string, error) {
 
-	cli, err := client.NewClientWithOpts(client.FromEnv)
+	cli, err := docker.Client()
 	if err != nil {
-		return nil, fmt.Errorf("get docker client: %w", err)
+		return nil, rpc.ErrInternal
 	}
 
 	containers, err := cli.ContainerList(context.Background(), types.ContainerListOptions{})
@@ -827,17 +827,6 @@ func (s *ContainerServer) Update(ctx context.Context, in *pb.UpdateRequest) (*pb
 	return &reply, nil
 }
 
-func getContainerID(containerName string) (string, error) {
-	cli, err := docker.Client()
-	if err != nil {
-		return "", rpc.ErrInternal
-	}
-	containerJSON, err := cli.ContainerInspect(context.Background(), containerName)
-	if err != nil {
-		return "", err
-	}
-	return containerJSON.ID, nil
-}
 
 func (s *ContainerServer) UpdateContainerVersion(ctx context.Context, in *pb.UpdateContainerVersionRequest) (*pb.UpdateContainerVersionReply, error) {
 
@@ -846,10 +835,7 @@ func (s *ContainerServer) UpdateContainerVersion(ctx context.Context, in *pb.Upd
 		return nil, rpc.ErrInternal
 	}
 
-	containerId, err := getContainerID(in.ContainerName)
-	if err != nil {
-		return nil, rpc.ErrNotFound
-	}
+	containerId := in.ContainerId
 
 	cfgs, err := litedb.GetContainerConfig(containerId)
 	if err != nil {

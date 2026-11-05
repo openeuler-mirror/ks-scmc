@@ -566,7 +566,7 @@ message ContainerFailInfo {
 
 message UpdateContainerVersionRequest {
     int64 node_id         = 1;
-    string container_name  = 2;
+    string container_id   = 2;
     string img_name       = 3;
     string img_version    = 4;
 }

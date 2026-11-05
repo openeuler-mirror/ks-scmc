@@ -63,6 +63,9 @@ func getConn() (*gorm.DB, error) {
 	if !m.HasTable(&NodeConfig{}) {
 		_ = m.CreateTable(&NodeConfig{})
 	}
+	if !m.HasTable(&IpcConfig{}) {
+		_ = m.CreateTable(&IpcConfig{})
+	}
 
 	conn, err := _db.DB()
 	if err != nil {

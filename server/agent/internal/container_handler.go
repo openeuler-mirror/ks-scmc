@@ -33,6 +33,7 @@ import (
 	"scmc/model/opensnitch"
 	"scmc/rpc"
 	pb "scmc/rpc/pb/container"
+	secpb "scmc/rpc/pb/security"
 	// "scmc/rpc/pb/logging"
 	"scmc/server/args"
 )

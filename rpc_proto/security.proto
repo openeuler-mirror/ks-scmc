@@ -28,6 +28,7 @@ message ListProcProtectionRequest {
 
 message ListProcProtectionReply {
     bool            is_on    = 1;
+    bool            is_blacklist = 2; // 0: 白名单 1：黑名单
     repeated string exe_list = 2;
 }
 

@@ -62,7 +62,8 @@ type ContainerClient interface {
 	KillAppEntry(ctx context.Context, in *KillAppEntryRequest, opts ...grpc.CallOption) (*KillAppEntryReply, error)
 	// 监控历史数据查询
 	MonitorHistory(ctx context.Context, in *MonitorHistoryRequest, opts ...grpc.CallOption) (*MonitorHistoryReply, error)
-	UpdateContainerVersion(ctx context.Context, in *UpdateContainerVersionRequest, opts ...grpc.CallOption) (*UpdateContainerVersionReply, error)
+	// 容器状态数据查询
+	GetContainerStats(ctx context.Context, in *StatsRequest, opts ...grpc.CallOption) (*StatsReply, error)
 }
 
 type containerClient struct {
@@ -348,9 +349,9 @@ func (c *containerClient) MonitorHistory(ctx context.Context, in *MonitorHistory
 	return out, nil
 }
 
-func (c *containerClient) UpdateContainerVersion(ctx context.Context, in *UpdateContainerVersionRequest, opts ...grpc.CallOption) (*UpdateContainerVersionReply, error) {
-	out := new(UpdateContainerVersionReply)
-	err := c.cc.Invoke(ctx, "/container.Container/UpdateContainerVersion", in, out, opts...)
+func (c *containerClient) GetContainerStats(ctx context.Context, in *StatsRequest, opts ...grpc.CallOption) (*StatsReply, error) {
+	out := new(StatsReply)
+	err := c.cc.Invoke(ctx, "/container.Container/GetContainerStats", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -405,7 +406,8 @@ type ContainerServer interface {
 	KillAppEntry(context.Context, *KillAppEntryRequest) (*KillAppEntryReply, error)
 	// 监控历史数据查询
 	MonitorHistory(context.Context, *MonitorHistoryRequest) (*MonitorHistoryReply, error)
-	UpdateContainerVersion(context.Context, *UpdateContainerVersionRequest) (*UpdateContainerVersionReply, error)
+	// 容器状态数据查询
+	GetContainerStats(context.Context, *StatsRequest) (*StatsReply, error)
 	mustEmbedUnimplementedContainerServer()
 }
 
@@ -497,8 +499,8 @@ func (UnimplementedContainerServer) KillAppEntry(context.Context, *KillAppEntryR
 func (UnimplementedContainerServer) MonitorHistory(context.Context, *MonitorHistoryRequest) (*MonitorHistoryReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method MonitorHistory not implemented")
 }
-func (UnimplementedContainerServer) UpdateContainerVersion(context.Context, *UpdateContainerVersionRequest) (*UpdateContainerVersionReply, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method UpdateContainerVersion not implemented")
+func (UnimplementedContainerServer) GetContainerStats(context.Context, *StatsRequest) (*StatsReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetContainerStats not implemented")
 }
 func (UnimplementedContainerServer) mustEmbedUnimplementedContainerServer() {}
 
@@ -1020,20 +1022,20 @@ func _Container_MonitorHistory_Handler(srv interface{}, ctx context.Context, dec
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Container_UpdateContainerVersion_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(UpdateContainerVersionRequest)
+func _Container_GetContainerStats_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(StatsRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(ContainerServer).UpdateContainerVersion(ctx, in)
+		return srv.(ContainerServer).GetContainerStats(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/container.Container/UpdateContainerVersion",
+		FullMethod: "/container.Container/GetContainerStats",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ContainerServer).UpdateContainerVersion(ctx, req.(*UpdateContainerVersionRequest))
+		return srv.(ContainerServer).GetContainerStats(ctx, req.(*StatsRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -1154,8 +1156,8 @@ var Container_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Container_MonitorHistory_Handler,
 		},
 		{
-			MethodName: "UpdateContainerVersion",
-			Handler:    _Container_UpdateContainerVersion_Handler,
+			MethodName: "GetContainerStats",
+			Handler:    _Container_GetContainerStats_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{

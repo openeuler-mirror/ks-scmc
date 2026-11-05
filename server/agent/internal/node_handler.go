@@ -830,30 +830,12 @@ func (s *NodeServer) nodeConfigDataTableCreate(uuid string, nodeName string) err
 		uuid = nodeInfo.UUID
 	}
 
-	securityConfig := &pb.SecurityConfig{
-		NetworkRule: &security.NetworkRuleList{
-			IsOn:  false,
-			Rules: []*security.NetworkRule{},
-		},
-	}
-
-	for port := range blockedPorts {
-		securityConfig.NetworkRule.Rules = append(
-			securityConfig.NetworkRule.Rules,
-			&security.NetworkRule{
-				Protocols: []string{"tcp"},
-				Addr:      "0.0.0.0/0",
-				Port:      port,
-			},
-		)
-	}
-
 	cfgs := litedb.NodeConfig{
 		ID:             1, // 强制设置id=1，表只能有一条记录
 		UUID:           uuid,
 		NodeID:         "localhost",
 		NodeName:       nodeName,
-		SecurityConfig: securityConfig,
+		SecurityConfig: &pb.SecurityConfig{},
 	}
 
 	if err := litedb.CreateNodeConfig(&cfgs); err != nil {

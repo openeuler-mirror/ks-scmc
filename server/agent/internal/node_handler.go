@@ -146,12 +146,12 @@ func (*NodeServer) Usage(ctx context.Context, in *pb.UsageRequest) (*pb.UsageRep
 func (s *NodeServer) UpdateFileProtect(ctx context.Context, in *pb.UpdateFileProtectRequest) (*pb.UpdateFileProtectReply, error) {
 	log.Debugf("UpdateFileProtect called: node_id=%v ,paths:%s enabel:%v at agent",
 		in.NodeId, in.SecurityConfig.FileProtection.FileList, in.SecurityConfig.FileProtection.IsOn)
-	if in.SecurityConfig != nil {	
+	if in.SecurityConfig != nil {
 		cfgs, err := litedb.GetNodeConfig("localhost")
 		if err != nil {
-			err = s.nodeConfigDataTableCreate("","")
-			if err != nil{
-				return nil,err
+			err = s.nodeConfigDataTableCreate("", "")
+			if err != nil {
+				return nil, err
 			}
 			cfgs, err = litedb.GetNodeConfig("localhost")
 			if err != nil {
@@ -191,14 +191,20 @@ func (s *NodeServer) UpdateNetworkRule(ctx context.Context, in *pb.UpdateNetwork
 					Port:      port,
 				})
 			}
-		}
+		
 
-		for _, v := range in.SecurityConfig.NetworkRule.Rules {
-			mergedRules = append(mergedRules, &litedb.NetworkRule{
-				Protocols: v.Protocols,
-				Addr:      v.Addr,
-				Port:      v.Port,
-			})
+			for _, v := range in.SecurityConfig.NetworkRule.Rules {
+
+				if blockedPorts[v.Port] {
+					return nil, rpc.ErrContainerNetworkRulePortOccupancy
+				}
+
+				mergedRules = append(mergedRules, &litedb.NetworkRule{
+					Protocols: v.Protocols,
+					Addr:      v.Addr,
+					Port:      v.Port,
+				})
+			}
 		}
 
 		if err := iptables.UpdateNodeIPtablesFile(in.SecurityConfig.NetworkRule.IsOn, mergedRules); err != nil {
@@ -208,9 +214,9 @@ func (s *NodeServer) UpdateNetworkRule(ctx context.Context, in *pb.UpdateNetwork
 
 		cfgs, err := litedb.GetNodeConfig("localhost")
 		if err != nil {
-			err = s.nodeConfigDataTableCreate("","")
-			if err != nil{
-				return nil,err
+			err = s.nodeConfigDataTableCreate("", "")
+			if err != nil {
+				return nil, err
 			}
 			cfgs, err = litedb.GetNodeConfig("localhost")
 			if err != nil {
@@ -254,9 +260,9 @@ func (s *NodeServer) GetFileProtect(ctx context.Context, in *pb.GetFileProtectRe
 
 	cfgs, err := litedb.GetNodeConfig("localhost")
 	if err != nil {
-		err = s.nodeConfigDataTableCreate("","")
-		if err != nil{
-			return nil,err
+		err = s.nodeConfigDataTableCreate("", "")
+		if err != nil {
+			return nil, err
 		}
 		cfgs, err = litedb.GetNodeConfig("localhost")
 		if err != nil {
@@ -291,9 +297,9 @@ func (s *NodeServer) GetNetworkRule(ctx context.Context, in *pb.GetNetworkRuleRe
 
 	cfgs, err := litedb.GetNodeConfig("localhost")
 	if err != nil {
-		err = s.nodeConfigDataTableCreate("","")
-		if err != nil{
-			return nil,err
+		err = s.nodeConfigDataTableCreate("", "")
+		if err != nil {
+			return nil, err
 		}
 		cfgs, err = litedb.GetNodeConfig("localhost")
 		if err != nil {
@@ -343,6 +349,21 @@ func (s *NodeServer) GetNodeSecurityConfig(ctx context.Context, in *pb.GetNodeSe
 
 	return &reply, nil
 
+}
+
+func (s *NodeServer) GetNodeDefaultPort(ctx context.Context, in *pb.GetNodeDefaultPortRequest) (*pb.GetNodeDefaultPortReply, error) {
+	
+	var portStatusList []*pb.PortStatus
+    for port, blocked := range blockedPorts {
+        portStatusList = append(portStatusList, &pb.PortStatus{
+            Port:    port,
+            Blocked: blocked,
+        })
+    }
+
+    return &pb.GetNodeDefaultPortReply{
+        BlockedPorts: portStatusList, 	
+    }, nil
 }
 
 func (s *NodeServer) Update(ctx context.Context, in *pb.UpdateRequest) (*pb.UpdateReply, error) {
@@ -459,18 +480,18 @@ func (s *NodeServer) setSecurityConfig(id string, uuid, name string, pid int, fr
 	return nil
 }
 
-func (s *NodeServer) nodeConfigDataTableCreate(uuid string,nodeName string) ( error ) {
-	
+func (s *NodeServer) nodeConfigDataTableCreate(uuid string, nodeName string) error {
+
 	if uuid == "" {
-		nodeInfo,err := litedb.GetNodeInfo(1)
-		
-		if err != nil{
-			return err;
+		nodeInfo, err := litedb.GetNodeInfo(1)
+
+		if err != nil {
+			return err
 		}
-		
+
 		uuid = nodeInfo.UUID
 	}
-	
+
 	securityConfig := &pb.SecurityConfig{
 		NetworkRule: &security.NetworkRuleList{
 			IsOn:  false,
@@ -499,9 +520,9 @@ func (s *NodeServer) nodeConfigDataTableCreate(uuid string,nodeName string) ( er
 
 	if err := litedb.CreateNodeConfig(&cfgs); err != nil {
 		log.Infof("CreateNodeConfig err=%v", err)
-		return  rpc.ErrDatabaseFail
+		return rpc.ErrDatabaseFail
 	}
-	
+
 	return nil
 }
 
@@ -519,10 +540,10 @@ func (s *NodeServer) Create(ctx context.Context, in *pb.CreateRequest) (*pb.Crea
 		return nil, rpc.ErrDatabaseFail
 	}
 
-	err = s.nodeConfigDataTableCreate(in.Uuid,in.Name)
-	if err != nil{
-		return nil,err
-	}	
+	err = s.nodeConfigDataTableCreate(in.Uuid, in.Name)
+	if err != nil {
+		return nil, err
+	}
 	return &pb.CreateReply{}, nil
 }
 

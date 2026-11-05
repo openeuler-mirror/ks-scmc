@@ -147,9 +147,9 @@ func (s *ContainerServer) getHostIps(nodeid int64) ([]string, error) {
 // 获取所有运行中容器的 IP 地址
 func (s *ContainerServer) getContainerIps() ([]string, error) {
 
-	cli, err := docker.Client()
+	cli, err := client.NewClientWithOpts(client.FromEnv)
 	if err != nil {
-		return nil, rpc.ErrInternal
+		return nil, fmt.Errorf("get docker client: %w", err)
 	}
 
 	containers, err := cli.ContainerList(context.Background(), types.ContainerListOptions{})
@@ -447,8 +447,15 @@ func (s *ContainerServer) create(nodeid int64, configs *pb.ContainerConfigs) (st
 		config.Cmd = cmdSlice
 	}
 
+
 	hostConfig := container.HostConfig{
 		Privileged: false, // force non-privileged
+	}
+
+	// 设置 IPC 信息 
+	if configs.Ipcname !="" {
+		modeName := "container:ipc." + configs.Ipcname
+		hostConfig.IpcMode = container.IpcMode(modeName)
 	}
 
 	for _, m := range configs.Mounts {
@@ -560,11 +567,31 @@ func (s *ContainerServer) Create(ctx context.Context, in *pb.CreateRequest) (*pb
 	in.Configs.Uuid = uuid
 	id, err := s.create(in.NodeId, in.Configs)
 
+	// 通过 ipcname 获取 ipc容器的容器 id
+	ipcID := ""
+	if in.Configs.Ipcname != "" {
+		ipcInfo, err := litedb.GetIpcConfigByName(in.Configs.Ipcname)
+		if err != nil {
+			log.Warnf("GetIpcConfigByName name: %v, err: %v", in.Configs.Ipcname, err)
+		} else {
+			ipcID = ipcInfo.ContainerID
+		}
+	}
+
 	if err != nil {
 		litedb.RemoveContainerConfigByID(cfgs.ID)
 	} else {
 		cfgs.ContainerID = id
 		litedb.UpdateContainerConfig(&cfgs)
+
+		// 容器与IPC 容器映射表
+		ipcMapCfg := litedb.IpcmapConfig {
+			ContainerName : in.Configs.Name, //容器名称
+			ContainerID : id, // 容器ID
+			IpcName : in.Configs.Ipcname, // IPC 容器名称，去掉头部的 ipc. 前缀
+			IpcID : ipcID, // IPC 容器对应的 容器ID
+		}
+		litedb.CreateIpcmapConfig(&ipcMapCfg)
 	}
 
 	return &pb.CreateReply{ContainerId: id}, err
@@ -827,6 +854,17 @@ func (s *ContainerServer) Update(ctx context.Context, in *pb.UpdateRequest) (*pb
 	return &reply, nil
 }
 
+func getContainerID(containerName string) (string, error) {
+	cli, err := docker.Client()
+	if err != nil {
+		return "", rpc.ErrInternal
+	}
+	containerJSON, err := cli.ContainerInspect(context.Background(), containerName)
+	if err != nil {
+		return "", err
+	}
+	return containerJSON.ID, nil
+}
 
 func (s *ContainerServer) UpdateContainerVersion(ctx context.Context, in *pb.UpdateContainerVersionRequest) (*pb.UpdateContainerVersionReply, error) {
 
@@ -835,7 +873,10 @@ func (s *ContainerServer) UpdateContainerVersion(ctx context.Context, in *pb.Upd
 		return nil, rpc.ErrInternal
 	}
 
-	containerId := in.ContainerId
+	containerId, err := getContainerID(in.ContainerName)
+	if err != nil {
+		return nil, rpc.ErrNotFound
+	}
 
 	cfgs, err := litedb.GetContainerConfig(containerId)
 	if err != nil {
@@ -1071,6 +1112,17 @@ func (s *ContainerServer) inspect(id string, backup bool) (*pb.ContainerConfigs,
 
 		if s, ok := info.HostConfig.StorageOpt["size"]; ok {
 			fmt.Sscanf(s, "%fM", &configs.ResouceLimit.DiskLimit)
+		}
+
+		if info.HostConfig.IpcMode.IsContainer() {
+			parts := strings.SplitN(string(info.HostConfig.IpcMode), ":", 2) // parts[1] 为 IPC 容器的容器ID
+			// 容器ID转换为 ipc 名称
+			cfg, err := litedb.GetIpcConfigByID(strings.TrimSpace(parts[1]))
+			if err != nil {
+				configs.Ipcname = ""
+			} else {
+				configs.Ipcname = cfg.ContainerName
+			}
 		}
 	}
 

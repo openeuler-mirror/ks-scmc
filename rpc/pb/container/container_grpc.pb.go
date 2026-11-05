@@ -359,6 +359,15 @@ func (c *containerClient) GetContainerStats(ctx context.Context, in *StatsReques
 	return out, nil
 }
 
+func (c *containerClient) UpdateContainerVersion(ctx context.Context, in *UpdateContainerVersionRequest, opts ...grpc.CallOption) (*UpdateContainerVersionReply, error) {
+	out := new(UpdateContainerVersionReply)
+	err := c.cc.Invoke(ctx, "/container.Container/UpdateContainerVersion", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // ContainerServer is the server API for Container service.
 // All implementations must embed UnimplementedContainerServer
 // for forward compatibility
@@ -409,6 +418,7 @@ type ContainerServer interface {
 	MonitorHistory(context.Context, *MonitorHistoryRequest) (*MonitorHistoryReply, error)
 	// 容器状态数据查询
 	GetContainerStats(context.Context, *StatsRequest) (*StatsReply, error)
+	UpdateContainerVersion(context.Context, *UpdateContainerVersionRequest) (*UpdateContainerVersionReply, error)
 	mustEmbedUnimplementedContainerServer()
 }
 
@@ -502,6 +512,9 @@ func (UnimplementedContainerServer) MonitorHistory(context.Context, *MonitorHist
 }
 func (UnimplementedContainerServer) GetContainerStats(context.Context, *StatsRequest) (*StatsReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetContainerStats not implemented")
+}
+func (UnimplementedContainerServer) UpdateContainerVersion(context.Context, *UpdateContainerVersionRequest) (*UpdateContainerVersionReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateContainerVersion not implemented")
 }
 func (UnimplementedContainerServer) mustEmbedUnimplementedContainerServer() {}
 
@@ -1041,6 +1054,24 @@ func _Container_GetContainerStats_Handler(srv interface{}, ctx context.Context, 
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Container_UpdateContainerVersion_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateContainerVersionRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ContainerServer).UpdateContainerVersion(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/container.Container/UpdateContainerVersion",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ContainerServer).UpdateContainerVersion(ctx, req.(*UpdateContainerVersionRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Container_ServiceDesc is the grpc.ServiceDesc for Container service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -1159,6 +1190,10 @@ var Container_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetContainerStats",
 			Handler:    _Container_GetContainerStats_Handler,
+		},
+		{
+			MethodName: "UpdateContainerVersion",
+			Handler:    _Container_UpdateContainerVersion_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{

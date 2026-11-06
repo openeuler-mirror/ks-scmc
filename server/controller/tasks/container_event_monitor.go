@@ -149,11 +149,11 @@ func (c *ContainerEventMonitor) handleContainerStartEvent(event events.Message, 
 	var policyLog string
 	switch restartPolicy {
 	case "on-failure":
-		policyLog = fmt.Sprintf("Container %.6s restarted due to failure", event.ID)
+		policyLog = fmt.Sprintf("容器 %.6s 因为异常重启", event.ID)
 	case "always", "unless-stopped":
-		policyLog = fmt.Sprintf("Container %.6s restarted automatically", event.ID)
+		policyLog = fmt.Sprintf("容器 %.6s 正常重启", event.ID)
 	default:
-		policyLog = fmt.Sprintf("Container %.6s started manually", event.ID)
+		policyLog = fmt.Sprintf("容器 %.6s 手动启动", event.ID)
 	}
 	log.Debugf(policyLog)
 

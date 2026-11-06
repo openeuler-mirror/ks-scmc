@@ -6,19 +6,19 @@ import (
 	"sync"
 	"time"
 
-	log "github.com/sirupsen/logrus"
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/events"
-	"github.com/docker/docker/client"
 	"github.com/docker/docker/api/types/filters"
-	"scmc/model/docker"
+	"github.com/docker/docker/client"
+	log "github.com/sirupsen/logrus"
 	"scmc/model/db"
+	"scmc/model/docker"
 	"scmc/model/warnlog"
 	"scmc/rpc/pb/logging"
 )
 
-type ContainerEventMonitor struct{
-	mu sync.Map			//存储每个节点的监控状态
+type ContainerEventMonitor struct {
+	mu  sync.Map //存储每个节点的监控状态
 	cli *client.Client
 }
 
@@ -32,24 +32,21 @@ func (c *ContainerEventMonitor) RunAtInit() bool {
 	return true
 }
 
-
 func (c *ContainerEventMonitor) monitorContainerEvents(cli *client.Client, node *db.NodeInfo) {
-	
 
-
-	if _,loaded := c.mu.LoadOrStore(node.Address,struct{}{});loaded{
-		log.Debugf("Node %s (%s) is already being monitored.",node.Name,node.Address)
+	if _, loaded := c.mu.LoadOrStore(node.Address, struct{}{}); loaded {
+		log.Debugf("Node %s (%s) is already being monitored.", node.Name, node.Address)
 		return
 	}
-	
+
 	log.Debugf("Monitoring container events on node: %s (%s)", node.Name, node.Address)
-	
+
 	// 创建事件过滤器
 	filter := filters.NewArgs(
 		filters.Arg("type", events.ContainerEventType), // 仅监听容器事件
-		filters.Arg("event", "die"),                   // 捕捉容器停止事件
+		filters.Arg("event", "die"),                    // 捕捉容器停止事件
 		// filters.Arg("event", "restart"),               // 捕捉容器重启事件
-		filters.Arg("event", "start"),               // 捕捉容器重启事件
+		filters.Arg("event", "start"), // 捕捉容器重启事件
 	)
 
 	// 获取事件通道和错误通道
@@ -66,39 +63,37 @@ func (c *ContainerEventMonitor) monitorContainerEvents(cli *client.Client, node 
 			log.Warnf("Error receiving event: %v", err)
 			c.mu.Delete((node.Address))
 			return
-		// case <-ctx.Done():
-		// 	return
+			// case <-ctx.Done():
+			// 	return
 		}
 	}
 }
 
-
 func (c *ContainerEventMonitor) handleContainerEvent(event events.Message, node *db.NodeInfo) {
-	log.Debugf("ContainerEventMonitor handleContainerEvent event.Action:%s",event.Action)
-	
+	log.Debugf("ContainerEventMonitor handleContainerEvent event.Action:%s", event.Action)
+
 	switch event.Action {
 	case "die":
 		// c.handleContainerDieEvent(event, node)
-		exitCode,ok := event.Actor.Attributes["exitCode"]
-		if !ok{
-			log.Debugf("Exit code not found for container %.12s",event.Actor.ID)
+		exitCode, ok := event.Actor.Attributes["exitCode"]
+		if !ok {
+			log.Debugf("Exit code not found for container %.12s", event.Actor.ID)
 			return
 		}
-		
-		
-		if exitCode == "0"{
-			log.Debugf("Container %.12s died  normallyat %s code:%s ",event.Actor.ID,time.Unix(event.Time,0),exitCode)
-		} else{
-			log.Debugf("Container %.12s died  abnormallyat %s code:%s ",event.Actor.ID,time.Unix(event.Time,0),exitCode)
-			lastDieTime = time.Unix(event.Time,0)
+
+		if exitCode == "0" {
+			log.Debugf("Container %.12s died  normallyat %s code:%s ", event.Actor.ID, time.Unix(event.Time, 0), exitCode)
+		} else {
+			log.Debugf("Container %.12s died  abnormallyat %s code:%s ", event.Actor.ID, time.Unix(event.Time, 0), exitCode)
+			lastDieTime = time.Unix(event.Time, 0)
 		}
 	// case "restart":
 	// 	c.handleContainerRestartEvent(event, node)
 	case "start":
-		
-		if !lastDieTime.IsZero() && time.Since(lastDieTime) < 5*time.Second{
-			log.Debugf("Container %.12s auto-restarted at %s ",event.ID,time.Unix(event.Time,0))
-			
+
+		if !lastDieTime.IsZero() && time.Since(lastDieTime) < 5*time.Second {
+			log.Debugf("Container %.12s auto-restarted at %s ", event.ID, time.Unix(event.Time, 0))
+
 			c.handleContainerStartEvent(event, node)
 		}
 		lastDieTime = time.Time{}
@@ -139,19 +134,18 @@ func (c *ContainerEventMonitor) handleContainerRestartEvent(event events.Message
 
 func (c *ContainerEventMonitor) handleContainerStartEvent(event events.Message, node *db.NodeInfo) {
 	log.Debugf("Container %.12s started on node %s (%s)", event.Actor.ID, node.Name, node.Address)
-	
-	
-	containerJSON,err := c.cli.ContainerInspect(context.Background(),event.Actor.ID)
-	
-    if err != nil {
-        log.Errorf("Failed to get restart policy for container %s: %v", event.Actor.ID, err)
-        return
-    }
-	
+
+	containerJSON, err := c.cli.ContainerInspect(context.Background(), event.Actor.ID)
+
+	if err != nil {
+		log.Errorf("Failed to get restart policy for container %s: %v", event.Actor.ID, err)
+		return
+	}
+
 	restartPolicy := containerJSON.HostConfig.RestartPolicy.Name
 	maxRetryCount := containerJSON.HostConfig.RestartPolicy.MaximumRetryCount
-	restartCount  := containerJSON.RestartCount
-	
+	restartCount := containerJSON.RestartCount
+
 	var policyLog string
 	switch restartPolicy {
 	case "on-failure":
@@ -171,10 +165,10 @@ func (c *ContainerEventMonitor) handleContainerStartEvent(event events.Message, 
 		detail = fmt.Sprintf("容器 %.6s 异常退出重启（策略：%s，当前次数：%d）",
 			event.ID, restartPolicy, restartCount)
 	} else {
-		detail = fmt.Sprintf("容器 %.6s 手动启动（策略：%s）", 
+		detail = fmt.Sprintf("容器 %.6s 手动启动（策略：%s）",
 			event.ID, restartPolicy)
 	}
-	
+
 	// 创建告警日志
 	warnlog.Create([]*db.WarnLog{
 		{
@@ -196,12 +190,11 @@ func (c *ContainerEventMonitor) Run() {
 		cli, err := docker.Client()
 		if err != nil {
 			log.Errorf("Failed to create Docker client: %v", err)
-			return 
+			return
 		}
 		c.cli = cli
 	}
-	
-	
+
 	nodes, err := db.ListNodes()
 	if err != nil {
 		log.Errorf("Failed to list nodes: %v", err)

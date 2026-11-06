@@ -284,6 +284,7 @@ message UpdateRequest {
     repeated Mount         mounts          = 7;  // 共享目录
     map<string, string>    envs            = 8;  // 环境变量
     string                 cmd             = 9;
+    string		   ipcname	   =10; // IPC 基准名称
 }
 
 message UpdateReply {}

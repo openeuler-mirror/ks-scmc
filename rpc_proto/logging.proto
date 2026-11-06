@@ -15,23 +15,7 @@ service Logging {
     rpc ReadWarn(ReadWarnRequest) returns (ReadWarnReply) {}
     // 实时订阅告警日志
     rpc SubscribeWarn(SubscribeWarnRequest) returns (stream SubscribeWarnReply) {}
-    // 设置日志配置
-    rpc SetLog(SetLogRequest) returns (SetLogReply) {}
-    // 获取日志配置
-    rpc GetLog(GetLogRequest) returns (GetLogReply) {}
 }
-
-message GetLogRequest {}
-
-message GetLogReply {
-    int64 save_log_days = 1;  // 日志保留时长
-}
-
-message SetLogRequest {
-    int64 save_log_days = 1;  // 日志保留时长
-}
-
-message SetLogReply {}
 
 message Filter {
     string property = 1;  // 匹配字段 'target' 'detail'

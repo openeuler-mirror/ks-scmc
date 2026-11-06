@@ -144,10 +144,12 @@ func (s *ContainerServer) List(ctx context.Context, in *pb.ListRequest) (*pb.Lis
 	return &reply, nil
 }
 
+
 func (s *ContainerServer) getHostIps(nodeid int64) ([]string, error) {
 	var result []string
 
-	vip, err := extractVIPFromConfig("/etc/keepalived/keepalived.conf")
+	//vip, err := extractVIPFromConfig("/etc/keepalived/keepalived.conf")
+	vip, err := getVIPAddr()
 	if err != nil {
 		log.Warnf("get platform vip failed, err: %v", err)
 	} else {

@@ -40,19 +40,3 @@ func RemoveNodeInfo(id int64, uuid string) error {
 	}
 	return nil
 }
-
-func GetNodeInfo(ID int64) (*NodeInfo, error) {
-	db, err := getConn()
-	if err != nil {
-		return nil, err
-	}
-
-	var data NodeInfo
-	result := db.First(&data, "id = ?", ID)
-	if result.Error != nil {
-		log.Warnf("GetNodeConfig Node_id=%v, err:%v", ID, result.Error)
-		return nil, result.Error
-	}
-	
-	return &data, nil
-}

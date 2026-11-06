@@ -13,25 +13,13 @@ for arg in $*; do
     fi
 done
 
-if [[ "${without_kernel:-0}" != "1" ]]; then
-    paratest=$(grep -E '^GRUB_CMDLINE_LINUX=.*ksimc=1' /etc/default/grub)
-    if [ -z "$paratest" ]; then
-        sed -i '/^GRUB_CMDLINE_LINUX=/ s/"$/ ksimc=1"/' /etc/default/grub
-    fi
-fi
-
-lines=38
+lines=26
 tail -n +$lines $0 > /opt/ks-run-tmp.tar.gz
 tar -xf /opt/ks-run-tmp.tar.gz -C /opt
 
 KS_PATH=/opt/ks-run-tmp
 
 chmod +x ${KS_PATH}/install.sh && ${KS_PATH}/install.sh ${KS_PATH} KS_PROJECK_NAME $without_kernel
-
-if [[ "${without_kernel:-0}" != "1" ]]; then
-    grbpath=$(find /boot -name grub.cfg 2>/dev/null | head -1)
-    grub2-mkconfig -o ${grbpath}
-fi
 
 rm -rf ${KS_PATH} /opt/ks-run-tmp.tar.gz
 exit 0

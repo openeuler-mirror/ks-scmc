@@ -81,7 +81,7 @@ func ListRuntimeLog(pageSize, pageNo int64, startTime, endTime, nodeID, eventMod
 		Select: &query{"runtime_logs.*, user_infos.username AS username", nil},
 		Join:   &query{"LEFT JOIN user_infos ON runtime_logs.user_id = user_infos.id", nil},
 		Model:  &RuntimeLogs{},
-		Order:  "runtime_logs.id ASC",
+		Order:  "runtime_logs.id DESC",
 	}
 
 	if startTime > 0 && startTime < endTime {

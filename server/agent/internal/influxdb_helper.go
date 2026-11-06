@@ -141,6 +141,9 @@ func influxdbQuery(start, end int64, interval uint, containerName string) (*pb.M
 		txQuery(),
 	}, ";")
 
+
+	log.Warnf("queries: %v", queries)
+
 	q := client.NewQueryWithParameters(queries, "cadvisor", "s", client.Params{
 		"container": client.StringValue(containerName),
 		"start":     client.TimeValue(time.Unix(start, 0)),
@@ -157,6 +160,8 @@ func influxdbQuery(start, end int64, interval uint, containerName string) (*pb.M
 		return nil, response.Error()
 	}
 
+	log.Warnf("response: %v", response)
+
 	var reply pb.MonitorHistoryReply
 	hooks := []*[]*pb.MonitorSample{
 		&reply.CpuUsage,
@@ -167,7 +172,7 @@ func influxdbQuery(start, end int64, interval uint, containerName string) (*pb.M
 	}
 
 	for i, r := range response.Results {
-		if len(hooks) > i+1 {
+		if len(hooks) >= i+1 {
 			var list []*pb.MonitorSample
 			for _, s := range r.Series {
 				for _, v := range s.Values {

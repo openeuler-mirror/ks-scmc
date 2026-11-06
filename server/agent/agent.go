@@ -18,6 +18,7 @@ import (
 	"scmc/rpc/pb/image"
 	"scmc/rpc/pb/network"
 	"scmc/rpc/pb/node"
+	"scmc/rpc/pb/ipc"
 	"scmc/server/agent/internal"
 )
 

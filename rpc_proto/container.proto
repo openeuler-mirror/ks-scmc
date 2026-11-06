@@ -530,6 +530,7 @@ message ContainerConfigs {
     ResourceLimit          resouce_limit  = 25;
 
     SecurityConfig security_config = 31;  // 安全配置
+    string	ipcname = 32; //IPC基准名称
 }
 
 message ContainerTemplate {

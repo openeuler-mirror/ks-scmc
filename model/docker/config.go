@@ -4,15 +4,18 @@ import (
 	"bufio"
 	"context"
 	"encoding/json"
+	"errors"
+	"fmt"
+	log "github.com/sirupsen/logrus"
+	"io/ioutil"
+	"math"
 	"os"
 	"os/exec"
-	"strings"
 	"path/filepath"
-
 	pb "scmc/rpc/pb/container"
-
-	log "github.com/sirupsen/logrus"
-	"scmc/model/litedb"
+	"strconv"
+	"strings"
+	"time"
 )
 
 var dockerRootDir string
@@ -21,8 +24,14 @@ const (
 	NoneBit  = 0
 	EnvBit   = 1
 	MountBit = 2
-	IpcBit = 4
 )
+
+var setters = map[string]string{
+	"disk_wio": "blkio.throttle.write_iops_device",
+	"disk_rio": "blkio.throttle.read_iops_device",
+	"disk_rbw": "blkio.throttle.read_bps_device",
+	"disk_wbw": "blkio.throttle.write_bps_device",
+}
 
 func getDockerRootDir() (string, error) {
 	if dockerRootDir != "" {
@@ -116,62 +125,6 @@ func modifyEnvs(dataBuf map[string]interface{}, envs []string) {
 	}
 }
 
-/*
- * IPC 共享， 修改 IPC 配置信息
- * /config.v2.json 里面的 ShmPath 路径
- * /hostconfig.json 里面的 IpcMode 字段
- * "IpcMode":"container:f9873b27177a53b2b6a6da561fe9d56cc7508528a25ac0109c29f000daa11ae2"
- * "ShmPath":"/var/lib/docker/containers/f9873b27177a53b2b6a6da561fe9d56cc7508528a25ac0109c29f000daa11ae2/mounts/shm"
- * 其中 f9873b27177a53b2b6a6da561fe9d56cc7508528a25ac0109c29f000daa11ae2 为基准容器的容器ID
- */
-func modifyIPC(dataBuf map[string]interface{}, containerId string, baseIPCID string) {
-	baseIPCID = strings.TrimSpace(baseIPCID)
-	dir, err := getDockerRootDir()
-	if err != nil {
-		log.Warnf("getDockerRootDir error: %v", err)
-		return
-	}
-
-	// 修改 config.v2.json 里面的 ShmPath
-	shmPathValue := filepath.Join(dir, "containers", baseIPCID, "mounts", "shm")
-	if len(baseIPCID) == 0 {
-		shmPathValue = ""
-	}
-	_, ok := dataBuf["ShmPath"].(string)
-	if ok {
-		dataBuf["ShmPath"] = shmPathValue
-	}
-
-	// 修改 IpcMode 
-	hostconfigPath := filepath.Join(dir, "containers", containerId, "hostconfig.json")
-	if _, err := os.Stat(hostconfigPath); os.IsNotExist(err) {
-		log.Warnf("find file : %s error!, err: %v", hostconfigPath, err)
-		return
-	}
-
-	hostconfigDataBuf, err := parseConfigFile(hostconfigPath)
-	if err != nil {
-		log.Warnf("parseConfigFile: %s, err: %v", hostconfigPath, err)
-		return
-	}
-
-	ipcModeValue := "container:" + baseIPCID
-	if len(baseIPCID) == 0 {
-		ipcModeValue = "private"
-	}
-	_, hok := hostconfigDataBuf["IpcMode"].(string)
-	if hok {
-		hostconfigDataBuf["IpcMode"] = ipcModeValue
-	}
-	if err = writeConfigFile(hostconfigPath, hostconfigDataBuf); err != nil {
-		log.Warnf("update %s, err: %v", hostconfigPath, err)
-		return
-	}
-
-	return
-}
-
-
 func modifyMounts(dataBuf map[string]interface{}, mounts map[string]*pb.Mount) {
 	data, ok := dataBuf["MountPoints"].(map[string]interface{})
 	log.Debugf("old mounts:%+v, new mounts:%+v", data, mounts)
@@ -255,16 +208,6 @@ func ModifyContainerConfig(containerId string, which int, envs []string, mounts 
 		modifyMounts(dataBuf, mounts)
 	}
 
-	// modify ipc
-	if which&IpcBit != 0 {
-		ipcmapCfg , err := litedb.GetIpcmapConfigByCID(containerId)
-		if err != nil {
-			log.Warnf("config GetIpcmapConfigByCID id: %v, err:%v", containerId, err)
-		} else {
-			modifyIPC(dataBuf, containerId, ipcmapCfg.IpcID)
-		}
-	}
-
 	if err := writeConfigFile(fileName, dataBuf); err != nil {
 		return err
 	}
@@ -278,7 +221,143 @@ func ModifyContainerConfig(containerId string, which int, envs []string, mounts 
 
 	return err
 }
+func SetContainerDiskLimit(key, containerID string, value string) error {
+	file, ok := setters[key]
+	if !ok {
+		return errors.New("invalid key: " + key)
+	}
+	var numValue int64
+	var err error
+	switch {
+	case key == "disk_rbw" || key == "disk_wbw":
+		var num float64
+		num, err = strconv.ParseFloat(value, 64)
+		num = math.Round(num * 1024 * 1024)
+		numValue = int64(num)
+	case key == "disk_rio" || key == "disk_wio":
+		var num int64
+		num, err = strconv.ParseInt(value, 10, 32)
+		numValue = num
+	default:
+		return errors.New("unsupported key type")
+	}
+	if err != nil {
+		return fmt.Errorf("invalid value %s for key %s: %v", value, key, err)
+	}
 
+	device, err := findProcessDevice(containerID)
+	if err != nil {
+		return err
+	}
+
+	path := filepath.Join("/sys/fs/cgroup/blkio/docker", containerID, file)
+
+	if _, err := os.Stat(path); os.IsNotExist(err) {
+		return fmt.Errorf("cgroup path not found")
+	}
+	data, err := ioutil.ReadFile(path)
+	if err != nil {
+		return fmt.Errorf("load cgroup file $s failed: %v", file, err)
+	}
+	lines := strings.Split(string(data), "\n")
+	newLines := make([]string, 0)
+	found := false
+	entry := fmt.Sprintf("%s %d", device, value)
+	for _, line := range lines {
+		if strings.TrimSpace(line) == "" {
+			continue // 跳过空行
+		}
+		if strings.HasPrefix(line, device) {
+			found = true
+			if numValue != 0 {
+				// 如果值非0，替换原有行
+				newLines = append(newLines, entry)
+			}
+			// 如果值为0，跳过（即删除）
+		} else {
+			// 保留其他设备的设置
+			newLines = append(newLines, line)
+		}
+	}
+	// 如果未找到且值非0，追加新行
+	if !found && numValue != 0 {
+		newLines = append(newLines, entry)
+	}
+	// 写入文件
+	err = ioutil.WriteFile(path, []byte(strings.Join(newLines, "\n")), 0644)
+	if err != nil {
+		return fmt.Errorf("Failed to write to the file %s: %v", file, err)
+	}
+	return nil
+}
+func findProcessDevice(containerID string) (string, error) {
+	// 通过容器进程的cgroup信息查找
+	cgroupPath := filepath.Join("/sys/fs/cgroup/blkio/docker", containerID, "blkio.throttle.io_serviced")
+	data, err := ioutil.ReadFile(cgroupPath)
+	if err != nil {
+		return "", err
+	}
+
+	// 解析IO操作最多的设备
+	deviceMap := make(map[string]int)
+	scanner := bufio.NewScanner(strings.NewReader(string(data)))
+	for scanner.Scan() {
+		var devMajor, devMinor, count int
+		_, err := fmt.Sscanf(scanner.Text(), "%d:%d Read %d", &devMajor, &devMinor, &count)
+		if err != nil {
+			continue
+		}
+		device := fmt.Sprintf("%d:%d", devMajor, devMinor)
+		deviceMap[device] += count
+	}
+
+	// 找出使用最多的设备
+	maxCount := 0
+	var activeDevice string
+	for dev, count := range deviceMap {
+		if count > maxCount {
+			maxCount = count
+			activeDevice = dev
+		}
+	}
+
+	if activeDevice == "" {
+		return "", fmt.Errorf("can not find io device")
+	}
+	return activeDevice, nil
+}
+
+func setContainerNetWbw(netWbw float64, containerPid string) error {
+	//加载ifb模块
+	if err := exec.Command("modprobe", "ifb").Run(); err != nil {
+		log.Infof("ifb mod loaded failed: %v", err)
+		return err
+	}
+	return nil
+}
+func setContainerNetRbw(netRbw float64, containerPid string) error {
+	rateMbit := int(netRbw * 8)                 //大B转小b
+	latency := 100 * time.Millisecond.Seconds() //0.1s
+	burst := int(float64(rateMbit*1e6) * latency)
+	tcArgs := []string{
+		"-t", fmt.Sprintf("%d", containerPid),
+		"-n",
+		"tc", "qdisc", "replace", // 使用 replace 避免重复 add/del
+		"dev", "eth0", "root",
+		"tbf",
+		"rate", fmt.Sprintf("%dmbit", rateMbit),
+		"latency", fmt.Sprintf("%dms", latency),
+		"burst", fmt.Sprintf("%d", burst),
+	}
+	cmd := exec.Command("nsenter", tcArgs...)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	if err := cmd.Run(); err != nil {
+		log.Infof("set container:%s netrbw err: %v", containerPid, err)
+		return err
+	}
+	return nil
+}
 func CompareMounts(src, dst []*pb.Mount) (map[string]*pb.Mount, bool) {
 	srcMap := make(map[string]*pb.Mount)
 	dstMap := make(map[string]*pb.Mount)
@@ -319,3 +398,5 @@ func CompareMounts(src, dst []*pb.Mount) (map[string]*pb.Mount, bool) {
 
 	return nil, true
 }
+
+

@@ -1143,6 +1143,17 @@ func (s *ContainerServer) inspect(id string, backup bool) (*pb.ContainerConfigs,
 		if s, ok := info.HostConfig.StorageOpt["size"]; ok {
 			fmt.Sscanf(s, "%fM", &configs.ResouceLimit.DiskLimit)
 		}
+
+		if info.HostConfig.IpcMode.IsContainer() {
+			parts := strings.SplitN(string(info.HostConfig.IpcMode), ":", 2) // parts[1] 为 IPC 容器的容器ID
+			// 容器ID转换为 ipc 名称
+			cfg, err := litedb.GetIpcConfigByID(strings.TrimSpace(parts[1]))
+			if err != nil {
+				configs.Ipcname = ""
+			} else {
+				configs.Ipcname = cfg.ContainerName
+			}
+		}
 	}
 
 	if info.NetworkSettings != nil {

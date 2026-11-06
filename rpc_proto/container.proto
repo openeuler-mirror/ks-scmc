@@ -531,6 +531,7 @@ message ContainerConfigs {
 
     SecurityConfig security_config = 31;  // 安全配置
     string	ipcname = 32; //IPC基准名称
+    string	hostname = 33; // 容器主机名称，可以为空
 }
 
 message ContainerTemplate {

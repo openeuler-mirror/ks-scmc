@@ -157,8 +157,6 @@ func influxdbQuery(start, end int64, interval uint, containerName string) (*pb.M
 		return nil, response.Error()
 	}
 
-	log.Warnf("response: %v", response)
-
 	var reply pb.MonitorHistoryReply
 	hooks := []*[]*pb.MonitorSample{
 		&reply.CpuUsage,

@@ -1,13 +1,13 @@
 CREATE DATABASE IF NOT EXISTS `ks-scmc`
-CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;	-- utf8mb4_0900_ai_ci utf8_general_ci
+CHARACTER SET utf8mb4 COLLATE utf8mb4_bin ;	-- utf8mb4_0900_ai_ci utf8_general_ci
 
 USE `ks-scmc`;
 
 CREATE TABLE `user_infos` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-  `username` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
-  `real_name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
-  `password_en` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
+  `username` varchar(255) COLLATE utf8mb4_bin  NOT NULL DEFAULT '',
+  `real_name` varchar(255) COLLATE utf8mb4_bin  NOT NULL DEFAULT '',
+  `password_en` varchar(255) COLLATE utf8mb4_bin  NOT NULL DEFAULT '',
   `is_active` tinyint(1) NOT NULL DEFAULT '0',
   `is_editable` tinyint(1) NOT NULL DEFAULT '0',
   `role_id` int(10) NOT NULL DEFAULT '0',

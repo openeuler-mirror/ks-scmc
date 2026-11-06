@@ -228,8 +228,16 @@ func (s *NodeServer) UpdateNetworkRule(ctx context.Context, in *pb.UpdateNetwork
 			})
 		}
 
+		//keepalived
 		mergedRules = append(mergedRules, &litedb.NetworkRule{
 			Protocols: []string{"112"},
+			Addr:      "0.0.0.0/0",
+			Port:      0,
+		})
+
+		// rsyncd
+		mergedRules = append(mergedRules, &litedb.NetworkRule{
+			Protocols: []string{"873"},
 			Addr:      "0.0.0.0/0",
 			Port:      0,
 		})

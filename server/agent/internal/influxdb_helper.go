@@ -141,9 +141,6 @@ func influxdbQuery(start, end int64, interval uint, containerName string) (*pb.M
 		txQuery(),
 	}, ";")
 
-
-	log.Warnf("queries: %v", queries)
-
 	q := client.NewQueryWithParameters(queries, "cadvisor", "s", client.Params{
 		"container": client.StringValue(containerName),
 		"start":     client.TimeValue(time.Unix(start, 0)),

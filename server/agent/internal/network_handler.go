@@ -870,7 +870,9 @@ func (s *NetworkServer) removeNetwork(name string) error {
 	parent_nic, err_res := getParentInterface(name)
 	if err_res != nil {
 		log.Warnf("NetworkRemove name=%v err=%v", name, err_res)
-		return err_res
+		// 这里不退出了，继续下面的操作
+		parent_nic = ""
+		// return err_res
 	}
 
 	if parent_nic != "" {
@@ -882,13 +884,14 @@ func (s *NetworkServer) removeNetwork(name string) error {
 		err_res = insertAndDeleteLines(parent_nic, path, begin_flag, end_flag, newlines)
 		if err_res != nil {
 			log.Warnf("NetworkCreate name=%v err=%v", name, err_res)
-			return err_res
+			// return err_res
 		}
 
 		cmd := exec.Command("ip", "link", "del", "link", parent_nic, name + "-host")
 		err_res = cmd.Run()
 		if err_res != nil {
-			return fmt.Errorf("failed to execute command: %v", cmd)
+			// return fmt.Errorf("failed to execute command: %v", cmd)
+			log.Warnf("failed to execute command: %v", cmd)
 		}
 	}
 

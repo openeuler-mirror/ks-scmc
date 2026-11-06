@@ -187,6 +187,27 @@ func createContainerEnvs(m map[string]string, uuid string) []string {
 	return ret
 }
 
+// 返回 VIP 
+func getVIPAddr()(string, error) {
+	vip := common.Config.Controller.VirtualIP
+	vip = strings.TrimSpace(vip)
+	if vip == "" {
+		return "", fmt.Errorf("Invalid VIP format: [%s]", vip)
+	}
+
+	ip, _, err := net.ParseCIDR(vip) // 如果有子网掩码
+	if err == nil {
+		return ip.String(), nil
+	}
+
+	parsedIP := net.ParseIP(vip) // 测试没有子网掩码的情况
+	if parsedIP == nil {
+		return "", fmt.Errorf("Invalid VIP format: [%s]", vip)
+	}
+
+	return parsedIP.String(), nil
+}
+
 var ipv4Pattern = regexp.MustCompile(
 	`^\s*` +
 		`((25[0-5]|2[0-4]\d|1\d{2}|[1-9]?\d)\.){3}` +

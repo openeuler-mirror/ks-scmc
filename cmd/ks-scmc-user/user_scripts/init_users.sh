@@ -17,5 +17,8 @@ ${BIN} -s ${SERVER_ADDR} -c create_role "$(cat create_secadm_r.json)"
 echo "创建角色 audadm_r ..."
 ${BIN} -s ${SERVER_ADDR} -c create_role "$(cat create_audadm_r.json)"
 
+echo "创建角色 stdadm_r ..."
+${BIN} -s ${SERVER_ADDR} -c create_role "$(cat create_stdadm_r.json)"
+
 echo "创建管理员用户 ..."
 ${BIN} -s ${SERVER_ADDR} -c create_admin "{}"

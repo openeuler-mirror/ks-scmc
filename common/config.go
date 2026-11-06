@@ -18,7 +18,7 @@ import (
 	"scmc/common/aes"
 )
 
-var defaultNetProList = []string{	
+var defaultNetProList = []string{
 	"/usr/bin/ks-scmc-server",
 	"/usr/bin/ks-scmc-authz",
 	"/usr/bin/mysql",
@@ -26,6 +26,10 @@ var defaultNetProList = []string{
 	"/usr/bin/cadvisor",
 	"/usr/bin/influxd",
 	"/usr/libexec/ks-scmc-gui",
+	"/usr/sbin/keepalived",
+	"/usr/bin/rsync",
+	"/usr/bin/lsyncd",
+	"/usr/bin/opensnitchd",
 }
 
 type AgentConfig struct {
@@ -406,7 +410,6 @@ func setDefault() {
 
 	viper.SetDefault("netlink.protocol", 30)
 	viper.SetDefault("network_proc_whitelist.paths",defaultNetProList)
-	
 }
 
 func LoadConfig(path string) error {

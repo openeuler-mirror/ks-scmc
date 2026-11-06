@@ -162,7 +162,7 @@ func (s *ContainerServer) getHostIps(nodeid int64) ([]string, error) {
 }
 
 // 获取所有运行中容器的 IP 地址
-func (s *ContainerServer) getContainerIps() ([]string, error) {
+func (s *ContainerServer) getContainerIps(curContainerId string) ([]string, error) {
 
 	cli, err := docker.Client()
 	if err != nil {
@@ -176,6 +176,12 @@ func (s *ContainerServer) getContainerIps() ([]string, error) {
 
 	var result []string
 	for _, container := range containers {
+
+		//如果为当前容器，则跳过该容器
+		if container.ID == curContainerId {
+			continue
+		}
+
 		// 获取容器详细信息
 		inspect, err := cli.ContainerInspect(context.Background(), container.ID)
 		if err != nil {
@@ -255,7 +261,7 @@ func (s *ContainerServer) setSecurityConfig(nodeid int64, id, uuid, name string,
 		return rpc.ErrContainerSecurityLevel
 	}
 
-	containerips, err := s.getContainerIps()
+	containerips, err := s.getContainerIps(id)
 	if err != nil {
 		log.Warnf("get container ips failed, %v", err)
 		return rpc.ErrContainerSecurityLevel

@@ -89,10 +89,10 @@ message NetworkRule {
     repeated string protocols = 1;  // tcp, udp, icmp
     string          addr      = 2;  // e.g. 192.168.10.3 192.168.120.0/24
     uint32          port      = 3;  // 0 for all ports
+    bool            drop      = 4;  // false: accept  true: drop
 }
 
 message NetworkRuleList {
     bool                 is_on = 1;  // 0:关闭 1:白名单
-    bool                 is_blacklist = 2; // 0:白名单 1:黑名单
-    repeated NetworkRule rules = 3;
+    repeated NetworkRule rules = 2;
 }

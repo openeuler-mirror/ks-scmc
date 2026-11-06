@@ -21,6 +21,7 @@ const (
 	NoneBit  = 0
 	EnvBit   = 1
 	MountBit = 2
+	IpcBit = 4
 )
 
 func getDockerRootDir() (string, error) {

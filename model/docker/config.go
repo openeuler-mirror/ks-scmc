@@ -6,9 +6,13 @@ import (
 	"encoding/json"
 	"os"
 	"os/exec"
+	"strings"
+	"path/filepath"
+
 	pb "scmc/rpc/pb/container"
 
 	log "github.com/sirupsen/logrus"
+	"scmc/model/litedb"
 )
 
 var dockerRootDir string

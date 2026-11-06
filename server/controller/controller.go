@@ -58,6 +58,7 @@ func Server() (*grpc.Server, error) {
 	user.RegisterUserServer(s, &internal.UserServer{})
 	logging.RegisterLoggingServer(s, &internal.LoggingServer{})
 	system.RegisterSystemServer(s, &internal.SystemServer{})
+	ipc.RegisterIpcBaseServer(s, &internal.IpcBaseServer{})
 
 	go internal.RuntimeLogWriter()
 	if common.Config.ApiTLS.Enable {

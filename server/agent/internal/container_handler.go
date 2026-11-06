@@ -11,6 +11,7 @@ import (
 	"syscall"
 	"time"
 	"os"
+	"path/filepath"
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
@@ -1002,6 +1003,11 @@ func (s *ContainerServer) remove(cli *client.Client, containerID string, force b
 	if err := authz.DelSensitiveContainers(configs.Name, containerID); err != nil {
 		log.Warnf("DelSensitiveContainers err=%v", err)
 	}
+
+	// 移除残余文件夹数据
+	hostPath := filepath.Join(common.Config.Agent.ContainerExtraDataBasedir, configs.Name)
+	log.Warnf("remove all : %v", hostPath)
+	os.RemoveAll(hostPath)
 
 	return nil
 }

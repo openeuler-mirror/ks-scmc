@@ -20,6 +20,7 @@ import (
 	"scmc/rpc/pb/node"
 	"scmc/rpc/pb/system"
 	"scmc/rpc/pb/user"
+	"scmc/rpc/pb/ipc"
 	"scmc/server/controller/internal"
 	"scmc/server/controller/tasks"
 	"scmc/server/controller/thriftapi"

@@ -13,7 +13,14 @@ for arg in $*; do
     fi
 done
 
-lines=26
+if [[ "${without_kernel:-0}" != "1" ]]; then
+    paratest=$(grep -E '^GRUB_CMDLINE_LINUX=.*ksimc=1' /etc/default/grub)
+    if [ -z "$paratest" ]; then
+        sed -i '/^GRUB_CMDLINE_LINUX=/ s/"$/ ksimc=1"/' /etc/default/grub
+    fi
+fi
+
+lines=33
 tail -n +$lines $0 > /opt/ks-run-tmp.tar.gz
 tar -xf /opt/ks-run-tmp.tar.gz -C /opt
 

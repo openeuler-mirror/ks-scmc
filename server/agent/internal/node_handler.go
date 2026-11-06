@@ -228,6 +228,12 @@ func (s *NodeServer) UpdateNetworkRule(ctx context.Context, in *pb.UpdateNetwork
 			})
 		}
 
+		mergedRules = append(mergedRules, &litedb.NetworkRule{
+			Protocols: []string{"112"},
+			Addr:      "0.0.0.0/0",
+			Port:      0,
+		})
+
 		for _, v := range in.SecurityConfig.NetworkRule.Rules {
 
 			if blockedPorts[v.Port] {

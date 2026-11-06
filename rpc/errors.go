@@ -2,7 +2,7 @@ package rpc
 
 import (
 	"strings"
-	
+
 	"github.com/docker/go-units"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -42,11 +42,16 @@ var (
 	ErrContainerBasicConfigNoPerm       = status.Error(codes.PermissionDenied, "无权限设置容器常规配置")
 	ErrContainerSecurityConfigNoPerm    = status.Error(codes.PermissionDenied, "无权限设置容器安全策略")
 
-	ErrContainerProcProtection  = rpcError(pb.Errno_CProcProtectionFailed, "配置进程保护失败")
-	ErrContainerNprocProtection = rpcError(pb.Errno_CNprocProtectionFailed, "配置网络进程保护失败")
-	ErrContainerFileProtection  = rpcError(pb.Errno_CFileProtectionFailed, "配置文件保护失败")
-	ErrContainerCmdOperation    = rpcError(pb.Errno_CCmdOperationFailed, "配置启停控制失败")
-	ErrContainerNetworkRule     = rpcError(pb.Errno_CNetworkRuleFailed, "配置网络规则失败")
+	ErrContainerProcProtection           = rpcError(pb.Errno_CProcProtectionFailed, "配置进程保护失败")
+	ErrContainerNprocProtection          = rpcError(pb.Errno_CNprocProtectionFailed, "配置网络进程保护失败")
+	ErrContainerFileProtection           = rpcError(pb.Errno_CFileProtectionFailed, "配置文件保护失败")
+	ErrContainerCmdOperation             = rpcError(pb.Errno_CCmdOperationFailed, "配置启停控制失败")
+	ErrContainerNetworkRule              = rpcError(pb.Errno_CNetworkRuleFailed, "配置网络规则失败")
+	ErrContainerNetworkRulePortOccupancy = rpcError(pb.Errno_CNetworkRuleFailed, "配置网络规则失败-端口已被占用")
+	ErrContainerSecurityLevel            = rpcError(pb.Errno_CSecurityLevelFailed, "配置安全分级模板失败")
+	ErrNodeProcProtection                = rpcError(pb.Errno_CProcProtectionFailed, "配置节点进程保护失败")
+	ErrNodeNetworkProcProtection         = rpcError(pb.Errno_CProcProtectionFailed, "配置节点网络进程白名单失败")
+	ErrNodeFileProtection                = rpcError(pb.Errno_CProcProtectionFailed, "配置节点文件保护失败")
 )
 
 func ErrImageSize(size float64) error {
@@ -57,8 +62,8 @@ func ErrInvalidArgumentWrapper(err error) error {
 	errSlice := strings.Split(err.Error(), ":")
 	if len(errSlice) >= 1 {
 		errString := errSlice[1]
-		return status.Errorf(codes.InvalidArgument,"参数错误 %s",errString)
+		return status.Errorf(codes.InvalidArgument, "参数错误 %s", errString)
 	} else {
-		return status.Errorf(codes.InvalidArgument,"参数错误 %s",err.Error())
+		return status.Errorf(codes.InvalidArgument, "参数错误 %s", err.Error())
 	}
 }

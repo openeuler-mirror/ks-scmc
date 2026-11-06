@@ -277,6 +277,25 @@ func NodeWhitelistConfig() error {
 	return nil
 }
 
+func NodeNetworkControlConfig() error {
+	time.Sleep(30 * time.Second)
+	IPtablesPath := common.Config.Network.IPtablesPath
+	_, err := os.Stat(IPtablesPath)
+	if err != nil {
+		if os.IsNotExist(err) {
+			err := os.MkdirAll(IPtablesPath, 0666)
+			if err != nil {
+				log.Warnf("mkdir %v err: %v", IPtablesPath, err)
+			}
+		}
+	}
+	err = iptables.NodeControlInit()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func dockerNetworkDisconnect(ctx context.Context, cli *client.Client, containerID, iface string) error {
 	err := cli.NetworkDisconnect(ctx, iface, containerID, true)
 	if err != nil {

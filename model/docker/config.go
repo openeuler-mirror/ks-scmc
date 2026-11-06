@@ -255,6 +255,16 @@ func ModifyContainerConfig(containerId string, which int, envs []string, mounts 
 		modifyMounts(dataBuf, mounts)
 	}
 
+	// modify ipc
+	if which&IpcBit != 0 {
+		ipcmapCfg , err := litedb.GetIpcmapConfigByCID(containerId)
+		if err != nil {
+			log.Warnf("config GetIpcmapConfigByCID id: %v, err:%v", containerId, err)
+		} else {
+			modifyIPC(dataBuf, containerId, ipcmapCfg.IpcID)
+		}
+	}
+
 	if err := writeConfigFile(fileName, dataBuf); err != nil {
 		return err
 	}

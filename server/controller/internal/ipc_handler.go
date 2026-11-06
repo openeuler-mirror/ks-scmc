@@ -66,7 +66,7 @@ func (s *IpcBaseServer) Create(ctx context.Context, in *pb.IpcCreateRequest) (*p
 		return nil, rpc.ErrDatabaseFail
 	}
 	// 检查镜像文件是否存在 
-	if err := CheckImageLegal(in.NodeId, "busybox:kysec"); err != nil {
+	if err := CheckImageLegal(in.NodeId, "ipcbase:v1.0"); err != nil {
 		return nil, err
 	}
 

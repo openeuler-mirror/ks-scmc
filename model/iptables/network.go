@@ -661,12 +661,12 @@ func EnableNode(linkifs string) error {
 	return updateJSON("Node", true)
 }
 
-func ruleToCmd(filePath, fileName string, isOn bool, blacklist int, rules []*litedb.NetworkRule) string {
+func ruleToCmd(filePath, fileName string, isOn, blacklist bool, rules []*litedb.NetworkRule) string {
 	var chainCmd string
-	if ! isOn {
+	if !isOn {
 		chainCmd = "echo '*filter\n:INPUT ACCEPT [0:0]\n:FORWARD ACCEPT [0:0]\n:OUTPUT ACCEPT [0:0]\n"
 		updateJSON(fileName, false)
-	} else if blacklist == 0 {
+	} else if !blacklist {
 		// default is whitelist
 		// base rule, drop all default
 		chainCmd = "echo '*filter\n:INPUT DROP [0:0]\n:FORWARD ACCEPT [0:0]\n:OUTPUT DROP [0:0]\n"
@@ -674,12 +674,10 @@ func ruleToCmd(filePath, fileName string, isOn bool, blacklist int, rules []*lit
 		chainCmd += "-A INPUT -i lo -j ACCEPT\n"
 		chainCmd += "-A OUTPUT -o lo -j ACCEPT\n"
 		// allow established traffic
-		chainCmd += "-A INPUT  -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT\n" 
+		// chainCmd += "-A INPUT  -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT\n"
 		chainCmd += "-A OUTPUT -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT\n"
-		// chainCmd += "-A INPUT -m state --state RELATED,ESTABLISHED -j ACCEPT\n"
-		// chainCmd += "-A OUTPUT -m state --state RELATED,ESTABLISHED -j ACCEPT\n"
 		updateJSON(fileName, true)
-	} else if blacklist == 1 {
+	} else {
 		// blacklist
 		// base rule, drop all default
 		chainCmd = "echo '*filter\n:INPUT ACCEPT [0:0]\n:FORWARD ACCEPT [0:0]\n:OUTPUT ACCEPT [0:0]\n"
@@ -687,26 +685,8 @@ func ruleToCmd(filePath, fileName string, isOn bool, blacklist int, rules []*lit
 		chainCmd += "-A INPUT -i lo -j ACCEPT\n"
 		chainCmd += "-A OUTPUT -o lo -j ACCEPT\n"
 		// allow established traffic
-		chainCmd += "-A INPUT  -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT\n"
+		// chainCmd += "-A INPUT  -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT\n"
 		chainCmd += "-A OUTPUT -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT\n"
-		updateJSON(fileName, true)
-	} else {
-		// white and black list, white list priority
-		chainCmd = "echo '*filter\n:INPUT ACCEPT [0:0]\n:FORWARD ACCEPT [0:0]\n:OUTPUT ACCEPT [0:0]\n"
-		// define own chain
-		chainCmd += ":WHITELIST - [0:0]\n"
-		chainCmd += ":BLACKLIST - [0:0]\n"
-		// allow local interface traffic
-		chainCmd += "-A INPUT -i lo -j ACCEPT\n"
-		chainCmd += "-A OUTPUT -o lo -j ACCEPT\n"
-		// allow established traffic
-		chainCmd += "-A INPUT  -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT\n"
-		chainCmd += "-A OUTPUT -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT\n"
-		// critical
-		chainCmd += "-A INPUT -j WHITELIST\n"
-		chainCmd += "-A INPUT -j BLACKLIST\n"
-		chainCmd += "-A OUTPUT -j WHITELIST\n"
-		chainCmd += "-A OUTPUT -j BLACKLIST"
 		updateJSON(fileName, true)
 	}
 
@@ -716,6 +696,10 @@ func ruleToCmd(filePath, fileName string, isOn bool, blacklist int, rules []*lit
 		var curRule string
 		var addrstr string
 		var addrstr_dst string
+		prestr := "-A INPUT "
+		prestr_output := "-A OUTPUT "
+		sufstr := " -j ACCEPT"
+		sufstr_drop := " -j DROP"
 		if rule.Addr != "" {
 			addrstr = "-s " + rule.Addr
 			addrstr_dst = "-d " + rule.Addr
@@ -733,18 +717,8 @@ func ruleToCmd(filePath, fileName string, isOn bool, blacklist int, rules []*lit
 			}
 			var arr []string
 			var arr_output []string
-			if blacklist == 2 {
-				if rule.Drop {
-					arr = append(arr, "-A BLACKLIST ")
-					arr_output = append(arr_output, "-A BLACKLIST ")
-				} else {
-					arr = append(arr, "-A WHITELIST ")
-					arr_output = append(arr_output, "-A WHITELIST ")
-				}
-			} else {
-				arr = append(arr, "-A INPUT ")
-				arr_output = append(arr_output, "-A OUTPUT ")
-			}
+			arr = append(arr, prestr)
+			arr_output = append(arr_output, prestr_output)
 			arr = append(arr, addrstr)
 			arr_output = append(arr_output, addrstr_dst)
 			str := "-p " + protocol
@@ -756,20 +730,13 @@ func ruleToCmd(filePath, fileName string, isOn bool, blacklist int, rules []*lit
 				arr = append(arr, str)
 				arr_output = append(arr_output, str)
 			}
-			if blacklist == 0 {
-				arr = append(arr, " -j ACCEPT")
-				arr_output = append(arr_output, " -j ACCEPT")
-			} else if blacklist == 1 {
-				arr = append(arr, " -j DROP")
-				arr_output = append(arr_output, " -j DROP")
-			} else if ! rule.Drop {
-				arr = append(arr, " -j ACCEPT")
-				arr_output = append(arr_output, " -j ACCEPT")
+			if blacklist {
+				arr = append(arr, sufstr_drop)
+				arr_output = append(arr_output, sufstr_drop)
 			} else {
-				arr = append(arr, " -j DROP")
-				arr_output = append(arr_output, " -j DROP")
+				arr = append(arr, sufstr)
+				arr_output = append(arr_output, sufstr)
 			}
-
 			res := strings.Join(arr, " ") + "\n"
 			curRule = curRule + res
 			res = strings.Join(arr_output, " ") + "\n"
@@ -778,30 +745,24 @@ func ruleToCmd(filePath, fileName string, isOn bool, blacklist int, rules []*lit
 
 		//只有ip没有协议情况处理
 		if curRule == "" && addrstr != "" && addrstr_dst != "" {
-			if blacklist == 0 {
-				curRule = "-A INPUT " + " " + addrstr + " -j ACCEPT" + "\n"
-				curRule = "-A OUTPUT " + " " + addrstr_dst + " -j ACCEPT" + "\n"
-			} else if blacklist == 1 {
-				curRule = "-A INPUT " + " " + addrstr + " -j DROP" + "\n"
-				curRule = "-A OUTPUT " + " " + addrstr_dst + " -j DROP" + "\n"
-			} else if ! rule.Drop {
-				curRule = "-A INPUT " + " " + addrstr + " -j ACCEPT" + "\n"
-				curRule = "-A OUTPUT " + " " + addrstr_dst + " -j ACCEPT" + "\n"
+			if blacklist {
+				curRule = prestr + " " + addrstr + sufstr_drop + "\n"
+				curRule = prestr_output + " " + addrstr_dst + sufstr_drop + "\n"
 			} else {
-				curRule = "-A INPUT " + " " + addrstr + " -j DROP" + "\n"
-				curRule = "-A OUTPUT " + " " + addrstr_dst + " -j DROP" + "\n"
+				curRule = prestr + " " + addrstr + sufstr + "\n"
+				curRule = prestr_output + " " + addrstr_dst + sufstr + "\n"
 			}
 		}
 
 		allRule = allRule + curRule
 	}
 
-	cmd := fmt.Sprintf("%s\n%sCOMMIT' > %s", chainCmd, allRule, filePath)
+	cmd := fmt.Sprintf("%s%s\n%sCOMMIT' > %s", chainCmd, inputRule, allRule, filePath)
 
 	return cmd
 }
 
-func UpdateContainerIPtablesFile(fileName string, pid int, isOn bool, blackList int, rules []*litedb.NetworkRule) error {
+func UpdateContainerIPtablesFile(fileName string, pid int, isOn, blackList bool, rules []*litedb.NetworkRule) error {
 	filePath := path() + "/" + fileName
 	cmd := ruleToCmd(filePath, fileName, isOn, blackList, rules)
 	if pid != 0 {
@@ -819,7 +780,7 @@ func UpdateNodeIPtablesFile(isOn bool, rules []*litedb.NetworkRule) error {
 	log.Debugf("UpdateContainerIPtablesFile isOn:%v,rules:%v", isOn, rules)
 	filePath := nodeNetworkControlFile()
 
-	cmd := ruleToCmd(filePath, "node-network-control.rule", isOn, 0, rules)
+	cmd := ruleToCmd(filePath, "node-network-control.rule", isOn, false, rules)
 
 	cmd = fmt.Sprintf("%s; iptables-restore %s", cmd, filePath)
 

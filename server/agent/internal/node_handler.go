@@ -153,35 +153,58 @@ func (*NodeServer) Usage(ctx context.Context, in *pb.UsageRequest) (*pb.UsageRep
 func (s *NodeServer) UpdateFileProtect(ctx context.Context, in *pb.UpdateFileProtectRequest) (*pb.UpdateFileProtectReply, error) {
 
 	if in.SecurityConfig.FileProtection == nil {
-		return nil, rpc.ErrNodeFileProtection
+		return nil, rpc.ErrInvalidArgument
 	}
 
 	cfgs, err := litedb.GetNodeConfig("localhost")
 	if err != nil {
-		err = s.nodeConfigDataTableCreate("", "")
-		if err != nil {
+		if err = s.nodeConfigDataTableCreate("", ""); err != nil {
 			return nil, err
 		}
-		cfgs, err = litedb.GetNodeConfig("localhost")
-		if err != nil {
+		if cfgs, err = litedb.GetNodeConfig("localhost"); err != nil {
 			log.Errorf("GetContainerConfig err=%v", err)
 			return nil, rpc.ErrDatabaseFail
 		}
 	}
-	
-	for _,path := range in.SecurityConfig.FileProtection.FileList{
+
+	for _, path := range in.SecurityConfig.FileProtection.FileList {
 		if _, err := os.Stat(path); os.IsNotExist(err) {
-			return nil, status.Errorf(codes.NotFound, "配置节点文件保护失败-文件%s不存在",path)
+			return nil, status.Errorf(codes.NotFound, "配置节点文件保护失败-文件%s不存在", path)
 		}
 	}
 
-	if err := kysec.UpdateFileAccess("localhost", in.SecurityConfig.FileProtection.IsOn, in.SecurityConfig.FileProtection.FileList, nil); err != nil {
+	var oldFileList []string
+	if cfgs.SecurityConfig.FileProtection != nil {
+		oldFileList = cfgs.SecurityConfig.FileProtection.FileList
+	}
+
+	deletedFiles := make([]string, 0)
+	oldFileMap := make(map[string]struct{})
+	for _, f := range oldFileList {
+		oldFileMap[f] = struct{}{}
+	}
+	newFileMap := make(map[string]struct{})
+	for _, f := range in.SecurityConfig.FileProtection.FileList {
+		newFileMap[f] = struct{}{}
+	}
+
+	for _, f := range oldFileList {
+		if _, exists := newFileMap[f]; !exists {
+			deletedFiles = append(deletedFiles, f)
+		}
+	}
+
+	if err := kysec.UpdateFileAccess(
+		"localhost",
+		in.SecurityConfig.FileProtection.IsOn,
+		in.SecurityConfig.FileProtection.FileList,
+		deletedFiles,
+	); err != nil {
 		log.Errorf("UpdateFileAccess failed: %v", err)
 		return nil, rpc.ErrNodeFileProtection
 	}
 
 	cfgs.SecurityConfig.FileProtection = in.SecurityConfig.FileProtection
-
 	if err := litedb.UpdateNodeConfig(cfgs); err != nil {
 		log.Errorf("UpdateContainerConfig err=%v", err)
 		return nil, rpc.ErrDatabaseFail

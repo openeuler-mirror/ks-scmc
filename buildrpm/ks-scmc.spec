@@ -100,7 +100,6 @@ rm -rf %{_datadir}/ks-scmc
 %{_sysconfdir}/%{name}/create_audadm_r.json
 %{_sysconfdir}/%{name}/create_secadm_r.json
 %{_sysconfdir}/%{name}/create_sysadm_r.json
-%{_sysconfdir}/%{name}/create_stdadm_r.json
 %{_sysconfdir}/%{name}/init_users.sh
 %{_sysconfdir}/sudoers.d/ks-scmc-sudoers
 

@@ -59,20 +59,20 @@ CREATE TABLE `node_infos` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`),
   UNIQUE KEY `address` (`address`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin ;
 
 CREATE TABLE `image_infos` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-  `name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
-  `version` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
-  `description` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
+  `name` varchar(255) COLLATE utf8mb4_bin  NOT NULL DEFAULT '',
+  `version` varchar(255) COLLATE utf8mb4_bin  NOT NULL DEFAULT '',
+  `description` varchar(255) COLLATE utf8mb4_bin  NOT NULL DEFAULT '',
   `file_size` bigint(20) NOT NULL DEFAULT '0',
-  `file_type` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
-  `check_sum` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
-  `image_id` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT 'docker镜像ID',
-  `file_path` text COLLATE utf8mb4_unicode_ci,
-  `sign_path` text COLLATE utf8mb4_unicode_ci,  /* deprecated */
-  `reject_reason` text COLLATE utf8mb4_unicode_ci,
+  `file_type` varchar(255) COLLATE utf8mb4_bin  NOT NULL DEFAULT '',
+  `check_sum` varchar(255) COLLATE utf8mb4_bin  NOT NULL DEFAULT '',
+  `image_id` varchar(255) COLLATE utf8mb4_bin  NOT NULL DEFAULT '' COMMENT 'docker镜像ID',
+  `file_path` text COLLATE utf8mb4_bin ,
+  `sign_path` text COLLATE utf8mb4_bin ,  /* deprecated */
+  `reject_reason` text COLLATE utf8mb4_bin ,
   `approval_status` tinyint(1) NOT NULL DEFAULT '0' COMMENT '0:待审批 1:审批拒绝 2:审批通过',
   `verify_status` tinyint(1) NOT NULL DEFAULT '0' COMMENT '0:验签失败 1:异常 2:验签成功',
   `signature` blob COMMENT '镜像文件签名内容',

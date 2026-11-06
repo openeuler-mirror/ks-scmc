@@ -295,7 +295,6 @@ func getPermID(method string) pb.PERMISSION {
 		"/container.Container/KillAppEntry",
 		"/container.Container/UpdateAppEntry",
 		"/container.Container/RunAppEntry",
-		"/container.Container/UpdateContainerVersion",
 		"/network.Network/Connect",
 		"/network.Network/Disconnect",
 		"/network.Network/EnableIPtables",
@@ -318,23 +317,13 @@ func getPermID(method string) pb.PERMISSION {
 		"/container.Container/RemoveTemplate":
 		return pb.PERMISSION_CONTAINER_TEMP_WRITE
 	case "/node.Node/List",
-		"/node.Node/Status",
-		"/node.Node/GetFileProtect",
-		"/node.Node/GetNetworkRule",
-		"/node.Node/GetNetworkProcessWhiteList",
-		"/node.Node/GetNodeProcessWhiteList",
-		"/node.Node/GetNodeSecurityConfig",
-		"/node.Node/GetNodeDefaultPort",
-		"/node.Node/GetNodeDefaultProcessWhiteList",
-		"/node.Node/GetNodeDefaultNetProWhiteList":
+		"/node.Node/Status":
 		return pb.PERMISSION_NODE_INFO_READ
 	case "/node.Node/Create",
 		"/node.Node/Update",
 		"/node.Node/Remove",
 		"/node.Node/UpdateFileProtect",
-		"/node.Node/UpdateNetworkRule",
-		"/node.Node/UpdateNetworkProcessWhiteList",
-		"/node.Node/UpdateProcessWhiteList":
+		"/node.Node/UpdateNetworkRule":
 		return pb.PERMISSION_NODE_INFO_WRITE
 	case "/image.Image/List",
 		"/image.Image/ListDB":
@@ -349,17 +338,10 @@ func getPermID(method string) pb.PERMISSION {
 	case "/logging.Logging/ListRuntime":
 		return pb.PERMISSION_AUTID_LOG_READ
 	case "/logging.Logging/ListWarn",
-		"/logging.Logging/ReadWarn",
-		"/logging.Logging/GetLog",
-		"/logging.Logging/SetLog":
+		"/logging.Logging/ReadWarn":
 		return pb.PERMISSION_AUTID_WARN_READ
 	case "/sys.System/SetSecuritySwitch":
 		return pb.PERMISSION_CONTAINER_CONF_SEC
-	case "/ipcbase.IpcBase/Create",
-		"/ipcbase.IpcBase/List",
-		"/ipcbase.IpcBase/Remove":
-		return pb.PERMISSION_CONTAINER_INFO_WRITE
-
 	default:
 		return pb.PERMISSION_NONE
 	}

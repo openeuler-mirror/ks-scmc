@@ -7,7 +7,6 @@ import (
 	"net"
 	"os"
 	"time"
-	"path/filepath"
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/events"
@@ -184,8 +183,7 @@ func ContainerWhiteConfig() error {
 					if os.Stat(fileName); os.IsNotExist(err) {
 						iptables.ContainerWhitelistInitialization(fileName, info.State.Pid)
 					} else {
-						//fileName = "/var/lib/ks-scmc/networks/iptables/" + fileName
-						fileName = filepath.Join(common.Config.Network.IPtablesPath, fileName)
+						fileName = "/var/lib/ks-scmc/networks/iptables/" + fileName
 						go func(pid int, fPath string) {
 							log.Infof("Scheduling delayed iptables update for PID %d", pid)
 							time.Sleep(10 * time.Second)

@@ -259,16 +259,21 @@ func (s *ContainerServer) setSecurityConfig(nodeid int64, id, uuid, name string,
 
 	// 0:白名单 1:黑名单 2:黑白名单，白名单优先级高
 	listType := 0
+	var downloadRules []*litedb.NetworkRule
+
 	switch sec.SecurityLevelTemplate {
 	case 5:
 		// 5 级模板策略，全部可访问，配置了白名单，就按照白名单的规则走，无需处理
+		downloadRules = sec.NetworkRule.Rules
 	case 4:
 		// 4 级模板策略，全部不可访问，除非在白名单中，等效于强制开启白名单
 		sec.NetworkRule.IsOn = true
 		sec.DisableCmdOperation = true
+		downloadRules = sec.NetworkRule.Rules
 	case 3:
 		// 三级模板策略，能访问平台，平台外的通过白名单也可以访问，等效于强制开启白名单，且平台IP都在白名单内
 		sec.DisableCmdOperation = true
+		downloadRules = sec.NetworkRule.Rules
 		fallthrough
 	case 2:
 		// 三级模板策略网络规则等同于二级模板，只是少了启停控制
@@ -284,10 +289,10 @@ func (s *ContainerServer) setSecurityConfig(nodeid int64, id, uuid, name string,
 				sec.NetworkRule.Rules = append(sec.NetworkRule.Rules, rule)
 			}
 		}
+		downloadRules = sec.NetworkRule.Rules
 	case 1:
 		sec.NetworkRule.IsOn = true
 		var platformrules []*litedb.NetworkRule
-		var newrules []*litedb.NetworkRule
 
 		if sec.NetworkAccessControll {
 			for _, ip := range append(hostips, containerips...) {
@@ -300,13 +305,12 @@ func (s *ContainerServer) setSecurityConfig(nodeid int64, id, uuid, name string,
 				platformrules = append(platformrules, rule)
 			}
 			// 白名单打开，对外访问控制打开情况下，只有在白名单内的平台和容器IP可以访问
-			newrules, err = UnionNetworkRules(platformrules, sec.NetworkRule.Rules)
+			downloadRules, err = UnionNetworkRules(platformrules, sec.NetworkRule.Rules)
 			if err != nil {
 				log.Warnf("UnionNetworkRules failed, %v", err)
 				return rpc.ErrContainerSecurityLevel
 			}
 
-			sec.NetworkRule.Rules = newrules
 		} else {
 			// 白名单打开，对外访问控制关闭情况下，平台和容器IP且不在白名单内，禁止，加黑名单，其它流量，允许
 			// 换种方式实现，同时加白名单和黑名单，白名单的优先级高
@@ -319,9 +323,8 @@ func (s *ContainerServer) setSecurityConfig(nodeid int64, id, uuid, name string,
 				}
 				platformrules = append(platformrules, rule)
 			}
-			newrules = append(sec.NetworkRule.Rules, platformrules...)
-			sec.NetworkRule.Rules = newrules
 
+			downloadRules = append(sec.NetworkRule.Rules, platformrules...)
 			listType = 2
 		}
 	default:
@@ -329,7 +332,7 @@ func (s *ContainerServer) setSecurityConfig(nodeid int64, id, uuid, name string,
 		return rpc.ErrContainerSecurityLevel
 	}
 
-	if err := s.SetNetworkRule(id, name, pid, sec.NetworkRule.IsOn, listType, sec.NetworkRule.Rules); err != nil {
+	if err := s.SetNetworkRule(id, name, pid, sec.NetworkRule.IsOn, listType, downloadRules); err != nil {
 		log.Warnf("UpdateContainerIPtablesFile %v err: %v", name, err)
 		return rpc.ErrContainerNetworkRule
 	}

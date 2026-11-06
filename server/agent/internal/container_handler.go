@@ -408,6 +408,11 @@ func (s *ContainerServer) create(nodeid int64, configs *pb.ContainerConfigs) (st
 		config.Cmd = cmdSlice
 	}
 
+	/* 设置容器主机名称 */
+	if configs.Hostname != "" {
+		config.Hostname = configs.Hostname
+	}
+
 	hostConfig := container.HostConfig{
 		Privileged: false, // force non-privileged
 	}
@@ -1156,6 +1161,9 @@ func (s *ContainerServer) inspectConfig(cli *client.Client, config *container.Co
 			}
 		}
 	}
+
+	// 返回容器主机名
+	ret.Hostname = config.Hostname
 }
 
 func (s *ContainerServer) inspectNetwork(id string, backup bool, settings *types.NetworkSettings, ret *pb.ContainerConfigs) {

@@ -663,7 +663,7 @@ func EnableNode(linkifs string) error {
 
 func ruleToCmd(filePath, fileName string, isOn bool, blacklist int, rules []*litedb.NetworkRule) string {
 	var chainCmd string
-	if !isOn {
+	if ! isOn {
 		chainCmd = "echo '*filter\n:INPUT ACCEPT [0:0]\n:FORWARD ACCEPT [0:0]\n:OUTPUT ACCEPT [0:0]\n"
 		updateJSON(fileName, false)
 	} else if blacklist == 0 {
@@ -674,7 +674,7 @@ func ruleToCmd(filePath, fileName string, isOn bool, blacklist int, rules []*lit
 		chainCmd += "-A INPUT -i lo -j ACCEPT\n"
 		chainCmd += "-A OUTPUT -o lo -j ACCEPT\n"
 		// allow established traffic
-		chainCmd += "-A INPUT  -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT\n"
+		chainCmd += "-A INPUT  -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT\n" 
 		chainCmd += "-A OUTPUT -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT\n"
 		// chainCmd += "-A INPUT -m state --state RELATED,ESTABLISHED -j ACCEPT\n"
 		// chainCmd += "-A OUTPUT -m state --state RELATED,ESTABLISHED -j ACCEPT\n"
@@ -762,7 +762,7 @@ func ruleToCmd(filePath, fileName string, isOn bool, blacklist int, rules []*lit
 			} else if blacklist == 1 {
 				arr = append(arr, " -j DROP")
 				arr_output = append(arr_output, " -j DROP")
-			} else if !rule.Drop {
+			} else if ! rule.Drop {
 				arr = append(arr, " -j ACCEPT")
 				arr_output = append(arr_output, " -j ACCEPT")
 			} else {
@@ -784,7 +784,7 @@ func ruleToCmd(filePath, fileName string, isOn bool, blacklist int, rules []*lit
 			} else if blacklist == 1 {
 				curRule = "-A INPUT " + " " + addrstr + " -j DROP" + "\n"
 				curRule = "-A OUTPUT " + " " + addrstr_dst + " -j DROP" + "\n"
-			} else if !rule.Drop {
+			} else if ! rule.Drop {
 				curRule = "-A INPUT " + " " + addrstr + " -j ACCEPT" + "\n"
 				curRule = "-A OUTPUT " + " " + addrstr_dst + " -j ACCEPT" + "\n"
 			} else {
@@ -807,18 +807,11 @@ func UpdateContainerIPtablesFile(fileName string, pid int, isOn bool, blackList 
 	if pid != 0 {
 		cmd = fmt.Sprintf("%s; nsenter -t %d -n iptables-restore %s", cmd, pid, filePath)
 	}
+
 	if _, err := callShell(cmd); err != nil {
 		return err
 	}
 
-	return nil
-}
-
-func UpdateContainerIPtablesFromFile(fileName string, pid int) error {
-	cmd := fmt.Sprintf("nsenter -t %d -n iptables-restore %s", pid, fileName)
-	if _, err := callShell(cmd); err != nil {
-		return err
-	}
 	return nil
 }
 

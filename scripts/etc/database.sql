@@ -18,36 +18,36 @@ CREATE TABLE `user_infos` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `username` (`username`),
   KEY `role_id` (`role_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=1000 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=1000 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin ;
 
 CREATE TABLE `user_roles` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-  `name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
+  `name` varchar(255) COLLATE utf8mb4_bin  NOT NULL DEFAULT '',
   `is_editable` tinyint(1) NOT NULL DEFAULT '0',
-  `perms_json` text COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '权限数组 用JSON形式保存 [{"id":1, "name":"NODE", "read":1, "write":0}, ...]',
+  `perms_json` text COLLATE utf8mb4_bin  NOT NULL COMMENT '权限数组 用JSON形式保存 [{"id":1, "name":"NODE", "read":1, "write":0}, ...]',
   `created_at` bigint(20) NOT NULL DEFAULT '0',
   `updated_at` bigint(20) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin ;
 
 CREATE TABLE `user_sessions` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `user_id` bigint(20) unsigned NOT NULL,
-  `session_key` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
-  `source` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
+  `session_key` varchar(255) COLLATE utf8mb4_bin  NOT NULL DEFAULT '',
+  `source` varchar(255) COLLATE utf8mb4_bin  NOT NULL DEFAULT '',
   `expired_at` bigint(20) NOT NULL DEFAULT '0',
   `created_at` bigint(20) NOT NULL DEFAULT '0',
   `updated_at` bigint(20) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `user_id` (`user_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin ;
 
 CREATE TABLE `node_infos` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-  `name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
-  `address` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
-  `comment` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
+  `name` varchar(255) COLLATE utf8mb4_bin  NOT NULL DEFAULT '',
+  `address` varchar(255) COLLATE utf8mb4_bin  NOT NULL DEFAULT '',
+  `comment` varchar(255) COLLATE utf8mb4_bin  NOT NULL DEFAULT '',
   `unread_warn` bigint(20) NOT NULL DEFAULT '0' COMMENT '未读告警消息计数 ',
   `cpu_limit` decimal(10,1) NOT NULL DEFAULT '0.0' COMMENT 'CPU核心数',
   `memory_limit` decimal(20,1) NOT NULL DEFAULT '0.0' COMMENT '内存使用 单位MB',

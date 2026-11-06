@@ -87,7 +87,7 @@ func (s *IpcBaseServer) create(Name string) (string, error) {
 		return "", rpc.ErrInternal
 	}
 
-	if err := ensureImage("busybox:kysec"); err != nil {
+	if err := ensureImage("ipcbase:v1.0"); err != nil {
 		return "", status.Errorf(codes.Internal, "检查IPC镜像信息失败")
 	}
 
@@ -95,7 +95,7 @@ func (s *IpcBaseServer) create(Name string) (string, error) {
 
 	// 容器配置
 	config := &container.Config {
-		Image: "busybox:kysec", //使用指定的镜像文件
+		Image: "ipcbase:v1.0", //使用指定的镜像文件
 		Labels: map[string] string {
 			"KS_SCMC_DESC": "ipc base container",
 			"KS_SCMC_UUID": uuid,

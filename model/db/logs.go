@@ -112,6 +112,53 @@ func ListRuntimeLog(pageSize, pageNo int64, startTime, endTime, nodeID, eventMod
 	return pager, data, nil
 }
 
+func DeleteWarnLogsByNodeIDs(nodeIDs int64) error {
+
+	db, err := getConn()
+	if err != nil {
+		return err
+	}
+
+	return db.Transaction(func(tx *gorm.DB) error {
+
+		type UnreadCount struct {
+			NodeID int64
+			Count  int
+		}
+		var unreadCounts []UnreadCount
+
+		err := tx.Model(&WarnLog{}).
+			Select("node_id, count(*) as count").
+			Where("node_id IN (?) AND have_read = 0", nodeIDs).
+			Group("node_id").
+			Scan(&unreadCounts).Error
+
+		if err != nil {
+			log.Warnf("db query warn_log unread count error: %v", err)
+			return translateError(err)
+		}
+
+		err = tx.Where("node_id IN (?)", nodeIDs).Delete(&WarnLog{}).Error
+		if err != nil {
+			log.Warnf("db delete warn_logs error: %v", err)
+			return translateError(err)
+		}
+
+		for _, uc := range unreadCounts {
+			err = tx.Model(&NodeInfo{}).
+				Where("id = ?", uc.NodeID).
+				Update("unread_warn", gorm.Expr("GREATEST(0, unread_warn - ?)", uc.Count)).Error
+
+			if err != nil {
+				log.Warnf("db update node unread_warn error: %v", err)
+				return translateError(err)
+			}
+		}
+
+		return nil
+	})
+}
+
 func CreateWarnLog(logs []*WarnLog) error {
 	if len(logs) == 0 {
 		return nil

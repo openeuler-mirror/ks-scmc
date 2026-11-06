@@ -87,11 +87,11 @@ type ContainerServer struct {
 
 // 确认是否为 IPC 容器, 如果为 IPC 容器就不展示出来
 func (s *ContainerServer) isIpcContainer(id string) bool {
-	_, err:= litedb.GetIpcConfigByID(id)
+	_, err := litedb.GetIpcConfigByID(id)
 	if err != nil {
 		return false
 	}
-	return true;
+	return true
 }
 
 func (s *ContainerServer) List(ctx context.Context, in *pb.ListRequest) (*pb.ListReply, error) {
@@ -117,6 +117,7 @@ func (s *ContainerServer) List(ctx context.Context, in *pb.ListRequest) (*pb.Lis
 		if s.isIpcContainer(c.ID) { // 过滤掉 IPC 容器
 			continue
 		}
+
 		info := pb.ContainerInfo{
 			Id:           c.ID,
 			Image:        c.Image,
@@ -192,25 +193,6 @@ func (s *ContainerServer) getContainerIps() ([]string, error) {
 	return result, nil
 }
 
-func (s *ContainerServer) getPlatformIps(nodeid int64) ([]string, error) {
-	var newips []string
-
-	platformips, err := s.getHostIps(nodeid)
-	if err != nil {
-		log.Warnf("get platform ips failed, %v", err)
-		return nil, rpc.ErrContainerSecurityLevel
-	}
-
-	containerips, err := s.getContainerIps()
-	if err != nil {
-		log.Warnf("get container ips failed, %v", err)
-		return nil, rpc.ErrContainerSecurityLevel
-	}
-
-	newips = append(platformips, containerips...)
-	return newips, nil
-}
-
 func (s *ContainerServer) setSecurityConfig(nodeid int64, id, uuid, name string, pid int, fromUpdate bool, sec *pb.SecurityConfig, oldsec *pb.SecurityConfig) error {
 	if sec == nil {
 		return nil
@@ -263,23 +245,20 @@ func (s *ContainerServer) setSecurityConfig(nodeid int64, id, uuid, name string,
 		sec.NetworkRule = oldsec.NetworkRule
 	}
 
-	var hostrules []*litedb.NetworkRule
-
-	if sec.SecurityLevelTemplate == 3 || sec.SecurityLevelTemplate == 2 {
-		hostips, err := s.getHostIps(nodeid)
-		if err != nil {
-			log.Warnf("get host ips failed, %v", err)
-			return rpc.ErrContainerSecurityLevel
-		}
-		for _, ip := range hostips {
-			hostrules = append(hostrules, &litedb.NetworkRule{
-				Addr:      ip,
-				Port:      0,
-				Protocols: []string{"tcp", "udp", "icmp"},
-			})
-		}
+	hostips, err := s.getHostIps(nodeid)
+	if err != nil {
+		log.Warnf("get host ips failed, %v", err)
+		return rpc.ErrContainerSecurityLevel
 	}
 
+	containerips, err := s.getContainerIps()
+	if err != nil {
+		log.Warnf("get container ips failed, %v", err)
+		return rpc.ErrContainerSecurityLevel
+	}
+
+	// 0:白名单 1:黑名单 2:黑白名单，白名单优先级高
+	listType := 0
 	switch sec.SecurityLevelTemplate {
 	case 5:
 		// 5 级模板策略，全部可访问，配置了白名单，就按照白名单的规则走，无需处理
@@ -289,41 +268,70 @@ func (s *ContainerServer) setSecurityConfig(nodeid int64, id, uuid, name string,
 		sec.DisableCmdOperation = true
 	case 3:
 		// 三级模板策略，能访问平台，平台外的通过白名单也可以访问，等效于强制开启白名单，且平台IP都在白名单内
-		sec.NetworkRule.IsOn = true
-		for _, rule := range hostrules {
-			if !containsRule(sec.NetworkRule.Rules, rule) {
-				sec.NetworkRule.Rules = append(sec.NetworkRule.Rules, rule)
-			}
-		}
 		sec.DisableCmdOperation = true
+		fallthrough
 	case 2:
 		// 三级模板策略网络规则等同于二级模板，只是少了启停控制
 		sec.NetworkRule.IsOn = true
-		for _, rule := range hostrules {
+		for _, ip := range hostips {
+			rule := &litedb.NetworkRule{
+				Protocols: []string{"tcp", "udp", "icmp"},
+				Addr:      ip,
+				Port:      0,
+				Drop:      false,
+			}
 			if !containsRule(sec.NetworkRule.Rules, rule) {
 				sec.NetworkRule.Rules = append(sec.NetworkRule.Rules, rule)
 			}
 		}
 	case 1:
-		// 用到了设置黑名单，下面的流程设置
+		sec.NetworkRule.IsOn = true
+		var platformrules []*litedb.NetworkRule
+		var newrules []*litedb.NetworkRule
+
+		if sec.NetworkAccessControll {
+			for _, ip := range append(hostips, containerips...) {
+				rule := &litedb.NetworkRule{
+					Protocols: []string{"tcp", "udp", "icmp"},
+					Addr:      ip,
+					Port:      0,
+					Drop:      false,
+				}
+				platformrules = append(platformrules, rule)
+			}
+			// 白名单打开，对外访问控制打开情况下，只有在白名单内的平台和容器IP可以访问
+			newrules, err = UnionNetworkRules(platformrules, sec.NetworkRule.Rules)
+			if err != nil {
+				log.Warnf("UnionNetworkRules failed, %v", err)
+				return rpc.ErrContainerSecurityLevel
+			}
+
+			sec.NetworkRule.Rules = newrules
+		} else {
+			// 白名单打开，对外访问控制关闭情况下，平台和容器IP且不在白名单内，禁止，加黑名单，其它流量，允许
+			// 换种方式实现，同时加白名单和黑名单，白名单的优先级高
+			for _, ip := range append(hostips, containerips...) {
+				rule := &litedb.NetworkRule{
+					Protocols: []string{"tcp", "udp", "icmp"},
+					Addr:      ip,
+					Port:      0,
+					Drop:      true,
+				}
+				platformrules = append(platformrules, rule)
+			}
+			newrules = append(sec.NetworkRule.Rules, platformrules...)
+			sec.NetworkRule.Rules = newrules
+
+			listType = 2
+		}
 	default:
 		log.Warnf("invalid parameter SecurityLevelTemplate: %v", sec.SecurityLevelTemplate)
 		return rpc.ErrContainerSecurityLevel
 	}
 
-	if sec.SecurityLevelTemplate == 1 {
-		// 一级模板要应用黑名单
-		if err := s.setSecurityLevel1(nodeid, id, name, pid, sec); err != nil {
-			log.Warnf("setSecurityLevel1 failed: %v", err)
-			return rpc.ErrContainerSecurityLevel
-		}
-	} else {
-		// 二 三 四 五级模板都是设置白名单，走一样的流程
-		var isBlacklist = false
-		if err := s.SetNetworkRule(id, name, pid, sec.NetworkRule.IsOn, isBlacklist, sec.NetworkRule.Rules); err != nil {
-			log.Warnf("UpdateContainerIPtablesFile %v err: %v", name, err)
-			return rpc.ErrContainerNetworkRule
-		}
+	if err := s.SetNetworkRule(id, name, pid, sec.NetworkRule.IsOn, listType, sec.NetworkRule.Rules); err != nil {
+		log.Warnf("UpdateContainerIPtablesFile %v err: %v", name, err)
+		return rpc.ErrContainerNetworkRule
 	}
 
 	// 启停控制比较独立，各个级别的模板设置方式都一样
@@ -335,71 +343,7 @@ func (s *ContainerServer) setSecurityConfig(nodeid int64, id, uuid, name string,
 	return nil
 }
 
-func (s *ContainerServer) setSecurityLevel1(nodeid int64, id, name string, pid int, sec *pb.SecurityConfig) error {
-
-	if sec == nil {
-		log.Warnf("setSecurityLevel1 invalid param sec")
-		return rpc.ErrContainerSecurityLevel
-	}
-
-	platformips, err := s.getPlatformIps(nodeid)
-	if err != nil {
-		log.Warnf("get platform ips failed, %v", err)
-		return rpc.ErrContainerSecurityLevel
-	}
-
-	var platformrules []*litedb.NetworkRule
-	for _, ip := range platformips {
-		platformrules = append(platformrules, &litedb.NetworkRule{
-			Protocols: []string{"tcp", "udp", "icmp"},
-			Addr:      ip,
-			Port:      0,
-		})
-	}
-
-	var newrules []*litedb.NetworkRule
-	isBlacklist := false
-	if sec.NetworkRule.IsOn {
-		if sec.NetworkAccessControll {
-			// 白名单打开，对外访问控制打开情况下，只有在白名单内的平台和容器IP可以访问
-			newrules, err = UnionNetworkRules(platformrules, sec.NetworkRule.Rules)
-			log.Warnf("platformrules: %v", platformrules)
-			log.Warnf("rules: %v", sec.NetworkRule.Rules)
-			log.Warnf("newrules: %v", newrules)
-			if err != nil {
-				log.Warnf("UnionNetworkRules failed, %v", err)
-				return rpc.ErrContainerSecurityLevel
-			}
-			isBlacklist = false
-		} else {
-			/*newrules, err = rulesExcludeRules(platformrules, sec.NetworkRule.Rules)
-			if err != nil {
-				log.Warnf("get platform ips failed, %v", err)
-				return rpc.ErrContainerSecurityLevel
-			}
-			isBlacklist = true*/
-		}
-	} else {
-		if sec.NetworkAccessControll {
-			// 白名单关闭，对外访问控制打开情况下，全部不能访问，等效于开启白名单，且白名单为空
-			isBlacklist = false
-		} else {
-			// 白名单关闭，对外访问控制关闭情况下，只有外部网络能访问，开启黑名单，名单里包含平台IP和容器IP
-			isBlacklist = true
-			newrules = platformrules
-		}
-	}
-
-	var isOn = true
-	if err := s.SetNetworkRule(id, name, pid, isOn, isBlacklist, newrules); err != nil {
-		log.Warnf("UpdateContainerIPtablesFile %v err: %v", name, err)
-		return rpc.ErrContainerNetworkRule
-	}
-
-	return nil
-}
-
-func (s *ContainerServer) SetNetworkRule(id, name string, pid int, on, blacklist bool, rules []*litedb.NetworkRule) error {
+func (s *ContainerServer) SetNetworkRule(id, name string, pid int, on bool, blacklist int, rules []*litedb.NetworkRule) error {
 
 	fileName := id + "-" + name
 	if err := iptables.UpdateContainerIPtablesFile(fileName, pid, on, blacklist, rules); err != nil {
@@ -459,13 +403,12 @@ func (s *ContainerServer) create(nodeid int64, configs *pb.ContainerConfigs) (st
 		config.Cmd = cmdSlice
 	}
 
-
 	hostConfig := container.HostConfig{
 		Privileged: false, // force non-privileged
 	}
 
-	// 设置 IPC 信息 
-	if configs.Ipcname !="" {
+	// 设置 IPC 信息
+	if configs.Ipcname != "" {
 		modeName := "container:ipc." + configs.Ipcname
 		hostConfig.IpcMode = container.IpcMode(modeName)
 	}
@@ -598,11 +541,11 @@ func (s *ContainerServer) Create(ctx context.Context, in *pb.CreateRequest) (*pb
 		litedb.UpdateContainerConfig(&cfgs)
 
 		// 容器与IPC 容器映射表
-		ipcMapCfg := litedb.IpcmapConfig {
-			ContainerName : in.Configs.Name, //容器名称
-			ContainerID : id, // 容器ID
-			IpcName : in.Configs.Ipcname, // IPC 容器名称，去掉头部的 ipc. 前缀
-			IpcID : ipcID, // IPC 容器对应的 容器ID
+		ipcMapCfg := litedb.IpcmapConfig{
+			ContainerName: in.Configs.Name,    //容器名称
+			ContainerID:   id,                 // 容器ID
+			IpcName:       in.Configs.Ipcname, // IPC 容器名称，去掉头部的 ipc. 前缀
+			IpcID:         ipcID,              // IPC 容器对应的 容器ID
 		}
 		litedb.CreateIpcmapConfig(&ipcMapCfg)
 	}
@@ -896,7 +839,6 @@ func (s *ContainerServer) Update(ctx context.Context, in *pb.UpdateRequest) (*pb
 	return &reply, nil
 }
 
-
 func (s *ContainerServer) UpdateContainerVersion(ctx context.Context, in *pb.UpdateContainerVersionRequest) (*pb.UpdateContainerVersionReply, error) {
 
 	cli, err := docker.Client()
@@ -1063,12 +1005,12 @@ func (s *ContainerServer) Remove(ctx context.Context, in *pb.RemoveRequest) (*pb
 		}
 		litedb.RemoveContainerConfig([]string{id})
 		litedb.IpcmapConfigRemoveByCID([]string{id}) // 删除容器与ipc 容器的映射数据
+
 		reply.OkIds = append(reply.OkIds, id)
 	}
 
 	litedb.RemoveContainerConfig(reply.OkIds)
 	litedb.IpcmapConfigRemoveByCID(reply.OkIds) // 删除容器与ipc 容器的映射数据
-
 	go s.removeContainerBackups(reply.OkIds)
 
 	return &reply, nil
@@ -1154,6 +1096,7 @@ func (s *ContainerServer) inspect(id string, backup bool) (*pb.ContainerConfigs,
 				configs.Ipcname = cfg.ContainerName
 			}
 		}
+
 	}
 
 	if info.NetworkSettings != nil {

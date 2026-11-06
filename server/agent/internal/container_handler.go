@@ -4,14 +4,14 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"os"
+	"path/filepath"
 	"reflect"
 	"regexp"
 	"strings"
 	"sync"
 	"syscall"
 	"time"
-	"os"
-	"path/filepath"
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
@@ -36,6 +36,7 @@ import (
 	"scmc/rpc"
 	pb "scmc/rpc/pb/container"
 	secpb "scmc/rpc/pb/security"
+
 	// "scmc/rpc/pb/logging"
 	"scmc/server/args"
 )
@@ -289,10 +290,10 @@ func (s *ContainerServer) setSecurityConfig(nodeid int64, id, uuid, name string,
 				Drop:      false,
 			}
 			if !containsRule(sec.NetworkRule.Rules, rule) {
-				sec.NetworkRule.Rules = append(sec.NetworkRule.Rules, rule)
+				downloadRules = append(downloadRules, rule)
 			}
 		}
-		downloadRules = sec.NetworkRule.Rules
+		downloadRules = append(downloadRules, sec.NetworkRule.Rules...)
 	case 1:
 		sec.NetworkRule.IsOn = true
 		var platformrules []*litedb.NetworkRule
@@ -601,10 +602,10 @@ func (s *ContainerServer) Start(ctx context.Context, in *pb.StartRequest) (*pb.S
 	if len(reply.OkIds) > 0 {
 		// 容器启动成功，要通知所有容器更新 iptables 规则
 		file, err := os.OpenFile(updateContainerFlagFile, os.O_RDONLY|os.O_CREATE, 0644)
-	    if err != nil {
-	        log.Warnf("create flag failed when start contain: %v", updateContainerFlagFile)
-	    }
-	    defer file.Close()
+		if err != nil {
+			log.Warnf("create flag failed when start contain: %v", updateContainerFlagFile)
+		}
+		defer file.Close()
 	}
 
 	return &reply, nil
@@ -673,10 +674,10 @@ func (s *ContainerServer) Stop(ctx context.Context, in *pb.StopRequest) (*pb.Sto
 	if len(okIDs) > 0 {
 		// 容器停止成功，要通知所有容器更新 iptables 规则
 		file, err := os.OpenFile(updateContainerFlagFile, os.O_RDONLY|os.O_CREATE, 0644)
-	    if err != nil {
-	        log.Warnf("create flag failed when stop contain: %v", updateContainerFlagFile)
-	    }
-	    defer file.Close()
+		if err != nil {
+			log.Warnf("create flag failed when stop contain: %v", updateContainerFlagFile)
+		}
+		defer file.Close()
 	}
 
 	return &pb.StopReply{

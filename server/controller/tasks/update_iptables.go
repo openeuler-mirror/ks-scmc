@@ -21,13 +21,14 @@ import (
 	"strings"
 	"time"
 
-	"github.com/docker/docker/api/types"
-	log "github.com/sirupsen/logrus"
 	"scmc/model/db"
 	"scmc/model/docker"
 	"scmc/model/litedb"
 	pb "scmc/rpc/pb/container"
 	"scmc/server/controller/internal"
+
+	"github.com/docker/docker/api/types"
+	log "github.com/sirupsen/logrus"
 )
 
 const updateContainerFlagFile = "/var/lib/ks-scmc/networks/iptables/updateIptables.flag"

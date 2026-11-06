@@ -137,7 +137,7 @@ func (s *NodeServer) Remove(ctx context.Context, in *pb.RemoveRequest) (*pb.Remo
 			}
 			return nil, err
 		}
-
+		db.DeleteWarnLogsByNodeIDs(n.ID)
 		n.Deleted = true
 		n.Name = uuid.New().String() // issue #67161
 		if err := db.UpdateNode(n); err != nil {
@@ -203,7 +203,7 @@ func (s *NodeServer) UpdateNetworkRule(ctx context.Context, in *pb.UpdateNetwork
 
 func (s *NodeServer) UpdateNetworkProcessWhiteList(ctx context.Context, in *pb.UpdateNetworkProcessWhiteListRequest) (*pb.UpdateNetworkProcessWhiteListReply, error) {
 	log.Debugf("UpdateNetworkProcessWhiteList called: node_id=%v  at server ", in.NodeId)
-	
+
 	n, err := db.QueryNodeByID(in.NodeId)
 	if err != nil {
 		if err == db.ErrRecordNotFound {

@@ -825,169 +825,148 @@ func (p *NodeStatus)  ReadField12(iprot thrift.TProtocol) error {
   return nil
 }
 
-func (p *NodeStatus) Write(ctx context.Context, oprot thrift.TProtocol) error {
-  if err := oprot.WriteStructBegin(ctx, "NodeStatus"); err != nil {
+func (p *NodeStatus) Write(oprot thrift.TProtocol) error {
+  if err := oprot.WriteStructBegin("NodeStatus"); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err) }
   if p != nil {
-    if err := p.writeField1(ctx, oprot); err != nil { return err }
-    if err := p.writeField2(ctx, oprot); err != nil { return err }
-    if err := p.writeField3(ctx, oprot); err != nil { return err }
-    if err := p.writeField4(ctx, oprot); err != nil { return err }
-    if err := p.writeField5(ctx, oprot); err != nil { return err }
-    if err := p.writeField6(ctx, oprot); err != nil { return err }
-    if err := p.writeField7(ctx, oprot); err != nil { return err }
-    if err := p.writeField8(ctx, oprot); err != nil { return err }
-    if err := p.writeField9(ctx, oprot); err != nil { return err }
-    if err := p.writeField10(ctx, oprot); err != nil { return err }
-    if err := p.writeField11(ctx, oprot); err != nil { return err }
-    if err := p.writeField12(ctx, oprot); err != nil { return err }
+    if err := p.writeField1(oprot); err != nil { return err }
+    if err := p.writeField2(oprot); err != nil { return err }
+    if err := p.writeField3(oprot); err != nil { return err }
+    if err := p.writeField4(oprot); err != nil { return err }
+    if err := p.writeField5(oprot); err != nil { return err }
+    if err := p.writeField6(oprot); err != nil { return err }
+    if err := p.writeField7(oprot); err != nil { return err }
+    if err := p.writeField8(oprot); err != nil { return err }
+    if err := p.writeField9(oprot); err != nil { return err }
+    if err := p.writeField10(oprot); err != nil { return err }
+    if err := p.writeField11(oprot); err != nil { return err }
+    if err := p.writeField12(oprot); err != nil { return err }
   }
-  if err := oprot.WriteFieldStop(ctx); err != nil {
+  if err := oprot.WriteFieldStop(); err != nil {
     return thrift.PrependError("write field stop error: ", err) }
-  if err := oprot.WriteStructEnd(ctx); err != nil {
+  if err := oprot.WriteStructEnd(); err != nil {
     return thrift.PrependError("write struct stop error: ", err) }
   return nil
 }
 
-func (p *NodeStatus) writeField1(ctx context.Context, oprot thrift.TProtocol) (err error) {
-  if err := oprot.WriteFieldBegin(ctx, "node_name", thrift.STRING, 1); err != nil {
+func (p *NodeStatus) writeField1(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("node_name", thrift.STRING, 1); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field begin error 1:node_name: ", p), err) }
-  if err := oprot.WriteString(ctx, string(p.NodeName)); err != nil {
+  if err := oprot.WriteString(string(p.NodeName)); err != nil {
   return thrift.PrependError(fmt.Sprintf("%T.node_name (1) field write error: ", p), err) }
-  if err := oprot.WriteFieldEnd(ctx); err != nil {
+  if err := oprot.WriteFieldEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field end error 1:node_name: ", p), err) }
   return err
 }
 
-func (p *NodeStatus) writeField2(ctx context.Context, oprot thrift.TProtocol) (err error) {
-  if err := oprot.WriteFieldBegin(ctx, "node_id", thrift.STRING, 2); err != nil {
+func (p *NodeStatus) writeField2(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("node_id", thrift.STRING, 2); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field begin error 2:node_id: ", p), err) }
-  if err := oprot.WriteString(ctx, string(p.NodeID)); err != nil {
+  if err := oprot.WriteString(string(p.NodeID)); err != nil {
   return thrift.PrependError(fmt.Sprintf("%T.node_id (2) field write error: ", p), err) }
-  if err := oprot.WriteFieldEnd(ctx); err != nil {
+  if err := oprot.WriteFieldEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field end error 2:node_id: ", p), err) }
   return err
 }
 
-func (p *NodeStatus) writeField3(ctx context.Context, oprot thrift.TProtocol) (err error) {
-  if err := oprot.WriteFieldBegin(ctx, "ip_addr", thrift.STRING, 3); err != nil {
+func (p *NodeStatus) writeField3(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("ip_addr", thrift.STRING, 3); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field begin error 3:ip_addr: ", p), err) }
-  if err := oprot.WriteString(ctx, string(p.IPAddr)); err != nil {
+  if err := oprot.WriteString(string(p.IPAddr)); err != nil {
   return thrift.PrependError(fmt.Sprintf("%T.ip_addr (3) field write error: ", p), err) }
-  if err := oprot.WriteFieldEnd(ctx); err != nil {
+  if err := oprot.WriteFieldEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field end error 3:ip_addr: ", p), err) }
   return err
 }
 
-func (p *NodeStatus) writeField4(ctx context.Context, oprot thrift.TProtocol) (err error) {
-  if err := oprot.WriteFieldBegin(ctx, "status", thrift.I32, 4); err != nil {
+func (p *NodeStatus) writeField4(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("status", thrift.I32, 4); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field begin error 4:status: ", p), err) }
-  if err := oprot.WriteI32(ctx, int32(p.Status)); err != nil {
+  if err := oprot.WriteI32(int32(p.Status)); err != nil {
   return thrift.PrependError(fmt.Sprintf("%T.status (4) field write error: ", p), err) }
-  if err := oprot.WriteFieldEnd(ctx); err != nil {
+  if err := oprot.WriteFieldEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field end error 4:status: ", p), err) }
   return err
 }
 
-func (p *NodeStatus) writeField5(ctx context.Context, oprot thrift.TProtocol) (err error) {
-  if err := oprot.WriteFieldBegin(ctx, "cpu_usage", thrift.DOUBLE, 5); err != nil {
+func (p *NodeStatus) writeField5(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("cpu_usage", thrift.DOUBLE, 5); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field begin error 5:cpu_usage: ", p), err) }
-  if err := oprot.WriteDouble(ctx, float64(p.CPUUsage)); err != nil {
+  if err := oprot.WriteDouble(float64(p.CPUUsage)); err != nil {
   return thrift.PrependError(fmt.Sprintf("%T.cpu_usage (5) field write error: ", p), err) }
-  if err := oprot.WriteFieldEnd(ctx); err != nil {
+  if err := oprot.WriteFieldEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field end error 5:cpu_usage: ", p), err) }
   return err
 }
 
-func (p *NodeStatus) writeField6(ctx context.Context, oprot thrift.TProtocol) (err error) {
-  if err := oprot.WriteFieldBegin(ctx, "cpu_total", thrift.DOUBLE, 6); err != nil {
+func (p *NodeStatus) writeField6(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("cpu_total", thrift.DOUBLE, 6); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field begin error 6:cpu_total: ", p), err) }
-  if err := oprot.WriteDouble(ctx, float64(p.CPUTotal)); err != nil {
+  if err := oprot.WriteDouble(float64(p.CPUTotal)); err != nil {
   return thrift.PrependError(fmt.Sprintf("%T.cpu_total (6) field write error: ", p), err) }
-  if err := oprot.WriteFieldEnd(ctx); err != nil {
+  if err := oprot.WriteFieldEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field end error 6:cpu_total: ", p), err) }
   return err
 }
 
-func (p *NodeStatus) writeField7(ctx context.Context, oprot thrift.TProtocol) (err error) {
-  if err := oprot.WriteFieldBegin(ctx, "mem_usage", thrift.DOUBLE, 7); err != nil {
+func (p *NodeStatus) writeField7(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("mem_usage", thrift.DOUBLE, 7); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field begin error 7:mem_usage: ", p), err) }
-  if err := oprot.WriteDouble(ctx, float64(p.MemUsage)); err != nil {
+  if err := oprot.WriteDouble(float64(p.MemUsage)); err != nil {
   return thrift.PrependError(fmt.Sprintf("%T.mem_usage (7) field write error: ", p), err) }
-  if err := oprot.WriteFieldEnd(ctx); err != nil {
+  if err := oprot.WriteFieldEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field end error 7:mem_usage: ", p), err) }
   return err
 }
 
-func (p *NodeStatus) writeField8(ctx context.Context, oprot thrift.TProtocol) (err error) {
-  if err := oprot.WriteFieldBegin(ctx, "mem_total", thrift.DOUBLE, 8); err != nil {
+func (p *NodeStatus) writeField8(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("mem_total", thrift.DOUBLE, 8); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field begin error 8:mem_total: ", p), err) }
-  if err := oprot.WriteDouble(ctx, float64(p.MemTotal)); err != nil {
+  if err := oprot.WriteDouble(float64(p.MemTotal)); err != nil {
   return thrift.PrependError(fmt.Sprintf("%T.mem_total (8) field write error: ", p), err) }
-  if err := oprot.WriteFieldEnd(ctx); err != nil {
+  if err := oprot.WriteFieldEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field end error 8:mem_total: ", p), err) }
   return err
 }
 
-func (p *NodeStatus) writeField9(ctx context.Context, oprot thrift.TProtocol) (err error) {
-  if err := oprot.WriteFieldBegin(ctx, "disk_usage", thrift.DOUBLE, 9); err != nil {
+func (p *NodeStatus) writeField9(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("disk_usage", thrift.DOUBLE, 9); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field begin error 9:disk_usage: ", p), err) }
-  if err := oprot.WriteDouble(ctx, float64(p.DiskUsage)); err != nil {
+  if err := oprot.WriteDouble(float64(p.DiskUsage)); err != nil {
   return thrift.PrependError(fmt.Sprintf("%T.disk_usage (9) field write error: ", p), err) }
-  if err := oprot.WriteFieldEnd(ctx); err != nil {
+  if err := oprot.WriteFieldEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field end error 9:disk_usage: ", p), err) }
   return err
 }
 
-func (p *NodeStatus) writeField10(ctx context.Context, oprot thrift.TProtocol) (err error) {
-  if err := oprot.WriteFieldBegin(ctx, "disk_total", thrift.DOUBLE, 10); err != nil {
+func (p *NodeStatus) writeField10(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("disk_total", thrift.DOUBLE, 10); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field begin error 10:disk_total: ", p), err) }
-  if err := oprot.WriteDouble(ctx, float64(p.DiskTotal)); err != nil {
+  if err := oprot.WriteDouble(float64(p.DiskTotal)); err != nil {
   return thrift.PrependError(fmt.Sprintf("%T.disk_total (10) field write error: ", p), err) }
-  if err := oprot.WriteFieldEnd(ctx); err != nil {
+  if err := oprot.WriteFieldEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field end error 10:disk_total: ", p), err) }
   return err
 }
 
-func (p *NodeStatus) writeField11(ctx context.Context, oprot thrift.TProtocol) (err error) {
-  if err := oprot.WriteFieldBegin(ctx, "container_nums", thrift.I32, 11); err != nil {
+func (p *NodeStatus) writeField11(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("container_nums", thrift.I32, 11); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field begin error 11:container_nums: ", p), err) }
-  if err := oprot.WriteI32(ctx, int32(p.ContainerNums)); err != nil {
+  if err := oprot.WriteI32(int32(p.ContainerNums)); err != nil {
   return thrift.PrependError(fmt.Sprintf("%T.container_nums (11) field write error: ", p), err) }
-  if err := oprot.WriteFieldEnd(ctx); err != nil {
+  if err := oprot.WriteFieldEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field end error 11:container_nums: ", p), err) }
   return err
 }
 
-func (p *NodeStatus) writeField12(ctx context.Context, oprot thrift.TProtocol) (err error) {
-  if err := oprot.WriteFieldBegin(ctx, "container_max_nums", thrift.I32, 12); err != nil {
+func (p *NodeStatus) writeField12(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("container_max_nums", thrift.I32, 12); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field begin error 12:container_max_nums: ", p), err) }
-  if err := oprot.WriteI32(ctx, int32(p.ContainerMaxNums)); err != nil {
+  if err := oprot.WriteI32(int32(p.ContainerMaxNums)); err != nil {
   return thrift.PrependError(fmt.Sprintf("%T.container_max_nums (12) field write error: ", p), err) }
-  if err := oprot.WriteFieldEnd(ctx); err != nil {
+  if err := oprot.WriteFieldEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field end error 12:container_max_nums: ", p), err) }
   return err
-}
-
-func (p *NodeStatus) Equals(other *NodeStatus) bool {
-  if p == other {
-    return true
-  } else if p == nil || other == nil {
-    return false
-  }
-  if p.NodeName != other.NodeName { return false }
-  if p.NodeID != other.NodeID { return false }
-  if p.IPAddr != other.IPAddr { return false }
-  if p.Status != other.Status { return false }
-  if p.CPUUsage != other.CPUUsage { return false }
-  if p.CPUTotal != other.CPUTotal { return false }
-  if p.MemUsage != other.MemUsage { return false }
-  if p.MemTotal != other.MemTotal { return false }
-  if p.DiskUsage != other.DiskUsage { return false }
-  if p.DiskTotal != other.DiskTotal { return false }
-  if p.ContainerNums != other.ContainerNums { return false }
-  if p.ContainerMaxNums != other.ContainerMaxNums { return false }
-  return true
 }
 
 func (p *NodeStatus) String() string {

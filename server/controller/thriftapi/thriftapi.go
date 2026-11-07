@@ -1656,9 +1656,11 @@ func (h *KsScmcHandler) UnpauseContainer(node_ip string, container_name string) 
 	}
 	return 0, nil
 }
+
 func (h *KsScmcHandler) LoginV3(user string, passwd string, node_ip string) (r string, err error) {
 	return "", nil
 }
+
 func ThriftapiMain() {
 
 	logrus.Infof("thriftapi serv:")

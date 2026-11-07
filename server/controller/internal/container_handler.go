@@ -465,27 +465,6 @@ func (s *ContainerServer) Update(ctx context.Context, in *pb.UpdateRequest) (*pb
 	return pb.NewContainerClient(conn).Update(ctx, in)
 }
 
-func (s *ContainerServer) UpdateContainerVersion(ctx context.Context, in *pb.UpdateContainerVersionRequest) (*pb.UpdateContainerVersionReply, error) {
-	if in.NodeId <= 0 || in.ContainerId == "" || in.ImgName == "" || in.ImgVersion == "" {
-		return nil, rpc.ErrInvalidArgument
-	}
-	
-	n, err := db.QueryNodeByID(in.NodeId)
-	if err != nil {
-		if err == db.ErrRecordNotFound {
-			return nil, rpc.ErrNotFound
-		}
-		return nil, rpc.ErrDatabaseFail
-	}
-
-	conn, err := getAgentConn(n.Address)
-	if err != nil {
-		return nil, rpc.ErrInternal
-	}
-
-	return pb.NewContainerClient(conn).UpdateContainerVersion(ctx, in)
-}
-
 func (s *ContainerServer) MonitorHistory(ctx context.Context, in *pb.MonitorHistoryRequest) (*pb.MonitorHistoryReply, error) {
 	n, err := db.QueryNodeByID(in.NodeId)
 	if err != nil {

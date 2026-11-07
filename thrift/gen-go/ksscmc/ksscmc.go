@@ -397,8 +397,8 @@ func (p *ContainerMetric)  ReadField4(iprot thrift.TProtocol) error {
   return nil
 }
 
-func (p *ContainerMetric)  ReadField5(ctx context.Context, iprot thrift.TProtocol) error {
-  if v, err := iprot.ReadDouble(ctx); err != nil {
+func (p *ContainerMetric)  ReadField5(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadDouble(); err != nil {
   return thrift.PrependError("error reading field 5: ", err)
 } else {
   p.CPUUsage = v

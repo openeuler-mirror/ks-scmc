@@ -734,8 +734,8 @@ func (p *NodeStatus)  ReadField2(iprot thrift.TProtocol) error {
   return nil
 }
 
-func (p *NodeStatus)  ReadField3(ctx context.Context, iprot thrift.TProtocol) error {
-  if v, err := iprot.ReadString(ctx); err != nil {
+func (p *NodeStatus)  ReadField3(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadString(); err != nil {
   return thrift.PrependError("error reading field 3: ", err)
 } else {
   p.IPAddr = v

@@ -24,7 +24,6 @@ service Container {
   rpc Restart(RestartRequest) returns (RestartReply) {}
   // 更新容器配置
   rpc Update(UpdateRequest) returns (UpdateReply) {}
-
   //暂停容器
   rpc Pause(PauseRequest) returns (PauseReply) {}
   //取消暂停容器
@@ -35,7 +34,6 @@ service Container {
   rpc SetContainerExtraHosts(SetHostsRequest)returns (SetHostsReply){}
   //设置容器限制
   rpc SetContainerQuota(SetQuotaRequest) returns (SetQuotaReply){}
-
   // 容器备份客户端接口
   rpc CreateBackup(CreateBackupRequest) returns (CreateBackupReply) {}         // 创建备份
   rpc UpdateBackup(UpdateBackupRequest) returns (UpdateBackupReply) {}         // 更新备份描述
@@ -67,38 +65,27 @@ service Container {
 
   // 监控历史数据查询
   rpc MonitorHistory(MonitorHistoryRequest) returns (MonitorHistoryReply) {}
-
-  // 容器状态数据查询
-  rpc GetContainerStats(StatsRequest) returns (StatsReply) {}
-  rpc UpdateContainerVersion(UpdateContainerVersionRequest) returns (UpdateContainerVersionReply) {}
 }
-
 message SetHostsRequest{
   int64  node_id = 1;
   string container_id = 2;
   repeated string container_extrahosts = 3;
 }
-
 message SetQuotaRequest{
     int64  node_id = 1;
     string container_id = 2;
     ContainerLimit container_limit = 3;
 }
-
 message ContainerLimit{
     double net_rbw = 1;
     double net_wbw =2;
 }
-
 message SetQuotaReply{}
-
 message SetHostsReply{}
-
 message LoadRequest{
   string tar_path = 1;
   int64 node_id = 2;
 }
-
 message LoadProgress {
   oneof update {
     float percent = 1;       // 进度百分比 (0~100)
@@ -106,33 +93,20 @@ message LoadProgress {
     LoadResult result = 3;   // 最终结果
   }
 }
-
 message LoadResult {
   bool success = 1;
   string detail = 2;
 }
-
 message UnpauseRequest{
   int64  node_id = 1;
   string container_id = 2;
 }
-
 message UnpauseReply {}
 
 message PauseRequest{
   int64  node_id = 1;
   string container_id = 2;
 }
-
-
-message StatsRequest {
-	string host_id = 1; // 主机唯一标识
-}
-
-message StatsReply {
-	string stats_data = 1; 
-}
-
 message PauseReply {}
 
 message ExportBackupRequest {
@@ -340,16 +314,15 @@ message RestartReply {
 }
 
 message UpdateRequest {
-    int64                  node_id         = 1;
-    string                 container_id    = 2;
-    ResourceLimit          resource_limit  = 3;
-    RestartPolicy          restart_policy  = 4;
-    repeated NetworkConfig networks        = 5;
-    SecurityConfig         security_config = 6;
-    repeated Mount         mounts          = 7;  // 共享目录
-    map<string, string>    envs            = 8;  // 环境变量
-    string                 cmd             = 9;
-    string		   ipcname	   =10; // IPC 基准名称
+  int64                  node_id = 1;
+  string                 container_id = 2;
+  ResourceLimit          resource_limit = 3;
+  RestartPolicy          restart_policy = 4;
+  repeated NetworkConfig networks = 5;
+  SecurityConfig         security_config = 6;
+  repeated Mount         mounts = 7;  // 共享目录
+  map<string, string>    envs = 8;  // 环境变量
+  string                 cmd = 9;
 }
 
 message UpdateReply {}
@@ -563,41 +536,37 @@ message ResourceLimit {
 }
 
 message SecurityConfig {
-	bool disable_external_network = 1;  // 禁止访问外部网络
-	bool disable_cmd_operation    = 2;  // 禁止命令行控制容器(启停控制)
-	int64 security_level_template = 3;  // 安全等级模板
-	bool network_access_controll  = 4;  // 一级模板的对外访问控制
+  bool disable_external_network = 1;  // 禁止访问外部网络
+  bool disable_cmd_operation = 2;  // 禁止命令行控制容器(启停控制)
 
-	security.ProcProtection  proc_protection = 11;  // 进程保护
-	security.ProcProtection  nproc_protection = 12;  // 网络进程保护
-	security.FileProtection  file_protection = 13;  // 文件防篡改保护
-	security.NetworkRuleList network_rule = 14;  // 网络访问规则
+  security.ProcProtection  proc_protection = 11;  // 进程保护
+  security.ProcProtection  nproc_protection = 12;  // 网络进程保护
+  security.FileProtection  file_protection = 13;  // 文件防篡改保护
+  security.NetworkRuleList network_rule = 14;  // 网络访问规则
 }
 
 message ContainerConfigs {
-    string container_id   = 1;  // 展示用
-    string uuid           = 2;  // 内部使用 labels[KS_SCMC_UUID]
-    string name           = 3;  // 容器名 必填 不支持中文字符
-    string status         = 4;
-    string desc           = 5;  // 描述信息 支持中文 对应LABELS[KS_SCMC_DESC]
-    string image          = 6;  // 必填 镜像
-    bool   enable_graphic = 7;  // 开启图形化 对应LABELS[KS_SCMC_GRAPHIC]
-    string cmd            = 8;
-    // hostname
-    // domain_name
-    // user
-    // working_dir
-    // entrypoint
+  string container_id = 1;  // 展示用
+  string uuid = 2;  // 内部使用 labels[KS_SCMC_UUID]
+  string name = 3;  // 容器名 必填 不支持中文字符
+  string status = 4;
+  string desc = 5;  // 描述信息 支持中文 对应LABELS[KS_SCMC_DESC]
+  string image = 6;  // 必填 镜像
+  bool   enable_graphic = 7;  // 开启图形化 对应LABELS[KS_SCMC_GRAPHIC]
+  string cmd = 8;
+  // hostname
+  // domain_name
+  // user
+  // working_dir
+  // entrypoint
 
-    repeated Mount         mounts         = 21;  // 共享目录
-    repeated NetworkConfig networks       = 22;  // 网络信息
-    map<string, string>    envs           = 23;  // 环境变量
-    RestartPolicy          restart_policy = 24;  // 重启策略(高可用)
-    ResourceLimit          resouce_limit  = 25;
+  repeated Mount         mounts = 21;  // 共享目录
+  repeated NetworkConfig networks = 22;  // 网络信息
+  map<string, string>    envs = 23;  // 环境变量
+  RestartPolicy          restart_policy = 24;  // 重启策略(高可用)
+  ResourceLimit          resouce_limit = 25;
 
-    SecurityConfig security_config = 31;  // 安全配置
-    string	ipcname = 32; //IPC基准名称
-    string	hostname = 33; // 容器主机名称，可以为空
+  SecurityConfig security_config = 31;  // 安全配置
 }
 
 message ContainerTemplate {
@@ -631,15 +600,4 @@ message ContainerFailInfo {
   string container_id = 2;
   string container_name = 3;
   string fail_reason = 4;
-}
-
-message UpdateContainerVersionRequest {
-    int64 node_id         = 1;
-    string container_id   = 2;
-    string img_name       = 3;
-    string img_version    = 4;
-}
-
-message UpdateContainerVersionReply {
-
 }

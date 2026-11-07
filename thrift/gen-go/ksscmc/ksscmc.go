@@ -1409,73 +1409,60 @@ func (p *ContainerNetInfo)  ReadField4(iprot thrift.TProtocol) error {
   return nil
 }
 
-func (p *ContainerNetInfo) Write(ctx context.Context, oprot thrift.TProtocol) error {
-  if err := oprot.WriteStructBegin(ctx, "ContainerNetInfo"); err != nil {
+func (p *ContainerNetInfo) Write(oprot thrift.TProtocol) error {
+  if err := oprot.WriteStructBegin("ContainerNetInfo"); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err) }
   if p != nil {
-    if err := p.writeField1(ctx, oprot); err != nil { return err }
-    if err := p.writeField2(ctx, oprot); err != nil { return err }
-    if err := p.writeField3(ctx, oprot); err != nil { return err }
-    if err := p.writeField4(ctx, oprot); err != nil { return err }
+    if err := p.writeField1(oprot); err != nil { return err }
+    if err := p.writeField2(oprot); err != nil { return err }
+    if err := p.writeField3(oprot); err != nil { return err }
+    if err := p.writeField4(oprot); err != nil { return err }
   }
-  if err := oprot.WriteFieldStop(ctx); err != nil {
+  if err := oprot.WriteFieldStop(); err != nil {
     return thrift.PrependError("write field stop error: ", err) }
-  if err := oprot.WriteStructEnd(ctx); err != nil {
+  if err := oprot.WriteStructEnd(); err != nil {
     return thrift.PrependError("write struct stop error: ", err) }
   return nil
 }
 
-func (p *ContainerNetInfo) writeField1(ctx context.Context, oprot thrift.TProtocol) (err error) {
-  if err := oprot.WriteFieldBegin(ctx, "ip", thrift.STRING, 1); err != nil {
+func (p *ContainerNetInfo) writeField1(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("ip", thrift.STRING, 1); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field begin error 1:ip: ", p), err) }
-  if err := oprot.WriteString(ctx, string(p.IP)); err != nil {
+  if err := oprot.WriteString(string(p.IP)); err != nil {
   return thrift.PrependError(fmt.Sprintf("%T.ip (1) field write error: ", p), err) }
-  if err := oprot.WriteFieldEnd(ctx); err != nil {
+  if err := oprot.WriteFieldEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field end error 1:ip: ", p), err) }
   return err
 }
 
-func (p *ContainerNetInfo) writeField2(ctx context.Context, oprot thrift.TProtocol) (err error) {
-  if err := oprot.WriteFieldBegin(ctx, "mask", thrift.STRING, 2); err != nil {
+func (p *ContainerNetInfo) writeField2(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("mask", thrift.STRING, 2); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field begin error 2:mask: ", p), err) }
-  if err := oprot.WriteString(ctx, string(p.Mask)); err != nil {
+  if err := oprot.WriteString(string(p.Mask)); err != nil {
   return thrift.PrependError(fmt.Sprintf("%T.mask (2) field write error: ", p), err) }
-  if err := oprot.WriteFieldEnd(ctx); err != nil {
+  if err := oprot.WriteFieldEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field end error 2:mask: ", p), err) }
   return err
 }
 
-func (p *ContainerNetInfo) writeField3(ctx context.Context, oprot thrift.TProtocol) (err error) {
-  if err := oprot.WriteFieldBegin(ctx, "gateway", thrift.STRING, 3); err != nil {
+func (p *ContainerNetInfo) writeField3(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("gateway", thrift.STRING, 3); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field begin error 3:gateway: ", p), err) }
-  if err := oprot.WriteString(ctx, string(p.Gateway)); err != nil {
+  if err := oprot.WriteString(string(p.Gateway)); err != nil {
   return thrift.PrependError(fmt.Sprintf("%T.gateway (3) field write error: ", p), err) }
-  if err := oprot.WriteFieldEnd(ctx); err != nil {
+  if err := oprot.WriteFieldEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field end error 3:gateway: ", p), err) }
   return err
 }
 
-func (p *ContainerNetInfo) writeField4(ctx context.Context, oprot thrift.TProtocol) (err error) {
-  if err := oprot.WriteFieldBegin(ctx, "port", thrift.I32, 4); err != nil {
+func (p *ContainerNetInfo) writeField4(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("port", thrift.I32, 4); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field begin error 4:port: ", p), err) }
-  if err := oprot.WriteI32(ctx, int32(p.Port)); err != nil {
+  if err := oprot.WriteI32(int32(p.Port)); err != nil {
   return thrift.PrependError(fmt.Sprintf("%T.port (4) field write error: ", p), err) }
-  if err := oprot.WriteFieldEnd(ctx); err != nil {
+  if err := oprot.WriteFieldEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field end error 4:port: ", p), err) }
   return err
-}
-
-func (p *ContainerNetInfo) Equals(other *ContainerNetInfo) bool {
-  if p == other {
-    return true
-  } else if p == nil || other == nil {
-    return false
-  }
-  if p.IP != other.IP { return false }
-  if p.Mask != other.Mask { return false }
-  if p.Gateway != other.Gateway { return false }
-  if p.Port != other.Port { return false }
-  return true
 }
 
 func (p *ContainerNetInfo) String() string {

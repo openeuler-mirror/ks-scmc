@@ -406,8 +406,8 @@ func (p *ContainerMetric)  ReadField5(iprot thrift.TProtocol) error {
   return nil
 }
 
-func (p *ContainerMetric)  ReadField6(ctx context.Context, iprot thrift.TProtocol) error {
-  if v, err := iprot.ReadI32(ctx); err != nil {
+func (p *ContainerMetric)  ReadField6(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadI32(); err != nil {
   return thrift.PrependError("error reading field 6: ", err)
 } else {
   p.MemUsage = v

@@ -8,59 +8,122 @@ import "security.proto";
 package container;
 
 service Container {
-    // 查询容器列表
-    rpc List(ListRequest) returns (ListReply) {}
-    // 创建新容器
-    rpc Create(CreateRequest) returns (CreateReply) {}
-    // 查看容器配置
-    rpc Inspect(InspectRequest) returns (InspectReply) {}
-    // 开始运行容器
-    rpc Start(StartRequest) returns (StartReply) {}
-    // 停止运行容器
-    rpc Stop(StopRequest) returns (StopReply) {}
-    // 删除容器
-    rpc Remove(RemoveRequest) returns (RemoveReply) {}
-    // 重启容器
-    rpc Restart(RestartRequest) returns (RestartReply) {}
-    // 更新容器配置
-    rpc Update(UpdateRequest) returns (UpdateReply) {}
+  // 查询容器列表
+  rpc List(ListRequest) returns (ListReply) {}
+  // 创建新容器
+  rpc Create(CreateRequest) returns (CreateReply) {}
+  // 查看容器配置
+  rpc Inspect(InspectRequest) returns (InspectReply) {}
+  // 开始运行容器
+  rpc Start(StartRequest) returns (StartReply) {}
+  // 停止运行容器
+  rpc Stop(StopRequest) returns (StopReply) {}
+  // 删除容器
+  rpc Remove(RemoveRequest) returns (RemoveReply) {}
+  // 重启容器
+  rpc Restart(RestartRequest) returns (RestartReply) {}
+  // 更新容器配置
+  rpc Update(UpdateRequest) returns (UpdateReply) {}
 
-    // 容器备份客户端接口
-    rpc CreateBackup(CreateBackupRequest) returns (CreateBackupReply) {}         // 创建备份
-    rpc UpdateBackup(UpdateBackupRequest) returns (UpdateBackupReply) {}         // 更新备份描述
-    rpc ResumeBackup(ResumeBackupRequest) returns (ResumeBackupReply) {}         // 恢复备份
-    rpc RemoveBackup(RemoveBackupRequest) returns (RemoveBackupReply) {}         // 删除备份
-    rpc ListBackup(ListBackupRequest) returns (ListBackupReply) {}               // 备份列表
-    rpc ExportBackup(ExportBackupRequest) returns (stream ExportBackupReply) {}  // 导出备份镜像
-    rpc ListBackupImage(ListBackupImageRequest) returns (ListBackupImageReply) {}
-    rpc InspectBackup(InspectBackupRequest) returns (InspectBackupReply) {}
+  //暂停容器
+  rpc Pause(PauseRequest) returns (PauseReply) {}
+  //取消暂停容器
+  rpc Unpause(UnpauseRequest) returns (UnpauseReply) {}
+  //加载镜像 image load
+  rpc LoadImage(LoadRequest)returns (stream LoadProgress){}
+  //设置容器/etc/hosts
+  rpc SetContainerExtraHosts(SetHostsRequest)returns (SetHostsReply){}
+  //设置容器限制
+  rpc SetContainerQuota(SetQuotaRequest) returns (SetQuotaReply){}
 
-    // 查询容器模板列表
-    rpc ListTemplate(ListTemplateRequest) returns (ListTemplateReply) {}
-    // 创建容器模板
-    rpc CreateTemplate(CreateTemplateRequest) returns (CreateTemplateReply) {}
-    // 更新容器模板
-    rpc UpdateTemplate(UpdateTemplateRequest) returns (UpdateTemplateReply) {}
-    // 查询单个容器模板详情
-    rpc InspectTemplate(InspectTemplateRequest) returns (InspectTemplateReply) {}
-    // 删除容器模板
-    rpc RemoveTemplate(RemoveTemplateRequest) returns (RemoveTemplateReply) {}
+  // 容器备份客户端接口
+  rpc CreateBackup(CreateBackupRequest) returns (CreateBackupReply) {}         // 创建备份
+  rpc UpdateBackup(UpdateBackupRequest) returns (UpdateBackupReply) {}         // 更新备份描述
+  rpc ResumeBackup(ResumeBackupRequest) returns (ResumeBackupReply) {}         // 恢复备份
+  rpc RemoveBackup(RemoveBackupRequest) returns (RemoveBackupReply) {}         // 删除备份
+  rpc ListBackup(ListBackupRequest) returns (ListBackupReply) {}               // 备份列表
+  rpc ExportBackup(ExportBackupRequest) returns (stream ExportBackupReply) {}  // 导出备份镜像
+  rpc ListBackupImage(ListBackupImageRequest) returns (ListBackupImageReply) {}
+  rpc InspectBackup(InspectBackupRequest) returns (InspectBackupReply) {}
 
-    // 容器多应用入口功能
-    rpc ListAppEntry(ListAppEntryRequest) returns (ListAppEntryReply) {}
-    rpc AddAppEntry(AddAppEntryRequest) returns (AddAppEntryReply) {}
-    rpc UpdateAppEntry(UpdateAppEntryRequest) returns (UpdateAppEntryReply) {}
-    rpc RemoveAppEntry(RemoveAppEntryRequest) returns (RemoveAppEntryReply) {}
-    rpc RunAppEntry(RunAppEntryRequest) returns (RunAppEntryReply) {}
-    rpc KillAppEntry(KillAppEntryRequest) returns (KillAppEntryReply) {}
+  // 查询容器模板列表
+  rpc ListTemplate(ListTemplateRequest) returns (ListTemplateReply) {}
+  // 创建容器模板
+  rpc CreateTemplate(CreateTemplateRequest) returns (CreateTemplateReply) {}
+  // 更新容器模板
+  rpc UpdateTemplate(UpdateTemplateRequest) returns (UpdateTemplateReply) {}
+  // 查询单个容器模板详情
+  rpc InspectTemplate(InspectTemplateRequest) returns (InspectTemplateReply) {}
+  // 删除容器模板
+  rpc RemoveTemplate(RemoveTemplateRequest) returns (RemoveTemplateReply) {}
 
-    // 监控历史数据查询
-    rpc MonitorHistory(MonitorHistoryRequest) returns (MonitorHistoryReply) {}
+  // 容器多应用入口功能
+  rpc ListAppEntry(ListAppEntryRequest) returns (ListAppEntryReply) {}
+  rpc AddAppEntry(AddAppEntryRequest) returns (AddAppEntryReply) {}
+  rpc UpdateAppEntry(UpdateAppEntryRequest) returns (UpdateAppEntryReply) {}
+  rpc RemoveAppEntry(RemoveAppEntryRequest) returns (RemoveAppEntryReply) {}
+  rpc RunAppEntry(RunAppEntryRequest) returns (RunAppEntryReply) {}
+  rpc KillAppEntry(KillAppEntryRequest) returns (KillAppEntryReply) {}
 
-    // 容器状态数据查询
-    rpc GetContainerStats(StatsRequest) returns (StatsReply) {}
-    rpc UpdateContainerVersion(UpdateContainerVersionRequest) returns (UpdateContainerVersionReply) {}
+  // 监控历史数据查询
+  rpc MonitorHistory(MonitorHistoryRequest) returns (MonitorHistoryReply) {}
+
+  // 容器状态数据查询
+  rpc GetContainerStats(StatsRequest) returns (StatsReply) {}
+  rpc UpdateContainerVersion(UpdateContainerVersionRequest) returns (UpdateContainerVersionReply) {}
 }
+
+message SetHostsRequest{
+  int64  node_id = 1;
+  string container_id = 2;
+  repeated string container_extrahosts = 3;
+}
+
+message SetQuotaRequest{
+    int64  node_id = 1;
+    string container_id = 2;
+    ContainerLimit container_limit = 3;
+}
+
+message ContainerLimit{
+    double net_rbw = 1;
+    double net_wbw =2;
+}
+
+message SetQuotaReply{}
+
+message SetHostsReply{}
+
+message LoadRequest{
+  string tar_path = 1;
+  int64 node_id = 2;
+}
+
+message LoadProgress {
+  oneof update {
+    float percent = 1;       // 进度百分比 (0~100)
+    string message = 2;      // 状态消息
+    LoadResult result = 3;   // 最终结果
+  }
+}
+
+message LoadResult {
+  bool success = 1;
+  string detail = 2;
+}
+
+message UnpauseRequest{
+  int64  node_id = 1;
+  string container_id = 2;
+}
+
+message UnpauseReply {}
+
+message PauseRequest{
+  int64  node_id = 1;
+  string container_id = 2;
+}
+
 
 message StatsRequest {
 	string host_id = 1; // 主机唯一标识

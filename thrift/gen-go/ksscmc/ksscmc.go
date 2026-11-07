@@ -1205,8 +1205,8 @@ func (p *ContainerAlarm)  ReadField3(iprot thrift.TProtocol) error {
   return nil
 }
 
-func (p *ContainerAlarm)  ReadField4(ctx context.Context, iprot thrift.TProtocol) error {
-  if v, err := iprot.ReadString(ctx); err != nil {
+func (p *ContainerAlarm)  ReadField4(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadString(); err != nil {
   return thrift.PrependError("error reading field 4: ", err)
 } else {
   p.AlarmTime = v

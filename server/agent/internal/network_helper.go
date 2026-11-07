@@ -7,6 +7,7 @@ import (
 	"net"
 	"os"
 	"time"
+	"path/filepath"
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/events"
@@ -180,7 +181,31 @@ func ContainerWhiteConfig() error {
 					}
 					log.Infof("%v-%v: pid(%v)", e.ID, name, info.State.Pid)
 					fileName := e.ID + "-" + name
-					iptables.ContainerWhitelistInitialization(fileName, info.State.Pid)
+					if os.Stat(fileName); os.IsNotExist(err) {
+						iptables.ContainerWhitelistInitialization(fileName, info.State.Pid)
+					} else {
+						//fileName = "/var/lib/ks-scmc/networks/iptables/" + fileName
+						fileName = filepath.Join(common.Config.Network.IPtablesPath, fileName)
+						go func(pid int, fPath string) {
+							log.Infof("Scheduling delayed iptables update for PID %d", pid)
+							time.Sleep(10 * time.Second)
+							maxRetries := 3
+							for i := 0; i < maxRetries; i++ {
+								err := iptables.UpdateContainerIPtablesFromFile(fPath, pid)
+								if err == nil {
+									log.Infof("Successfully updated iptables for PID %d", pid)
+									return
+								}
+
+								if i < maxRetries-1 {
+									log.Warnf("Attempt %d/%d failed for PID %d: %v. Retrying in 5s...",
+										i+1, maxRetries, pid, err)
+									time.Sleep(5 * time.Second)
+								}
+							}
+							log.Errorf("Failed to update iptables for PID %d after %d attempts", pid, maxRetries)
+						}(info.State.Pid, fileName)
+					}
 				}
 			}
 		}
@@ -274,6 +299,25 @@ func NodeWhitelistConfig() error {
 		iptables.NodeWhitelistInit(ifs)
 	}
 
+	return nil
+}
+
+func NodeNetworkControlConfig() error {
+	time.Sleep(30 * time.Second)
+	IPtablesPath := common.Config.Network.IPtablesPath
+	_, err := os.Stat(IPtablesPath)
+	if err != nil {
+		if os.IsNotExist(err) {
+			err := os.MkdirAll(IPtablesPath, 0666)
+			if err != nil {
+				log.Warnf("mkdir %v err: %v", IPtablesPath, err)
+			}
+		}
+	}
+	err = iptables.NodeControlInit()
+	if err != nil {
+		return err
+	}
 	return nil
 }
 

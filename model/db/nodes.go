@@ -115,7 +115,7 @@ func QueryNodeByAddr(addr string) (*NodeInfo, error) {
 	var nodeInfo NodeInfo
 	result := db.Where("address = ?", addr).First(&nodeInfo)
 	if result.Error != nil {
-		log.Warnf("query node addr=%v: %v", addr, result.Error)
+		log.Warnf("query node addr=%v: %v", addr, err)
 		return nil, translateError(result.Error)
 	} else if result.RowsAffected == 0 {
 		log.Infof("query node addr=%v not found", addr)
@@ -128,8 +128,8 @@ func QueryNodeByAddr(addr string) (*NodeInfo, error) {
 /*
 通过node name查找node
 by zhouming
-*/
-func QueryNodeByName(name string) (*NodeInfo, error) {
+ */
+func QueryNodeByName(name string)(*NodeInfo, error){
 	db, err := getConn()
 	if err != nil {
 		return nil, err

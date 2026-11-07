@@ -375,6 +375,8 @@ func (h *KsScmcHandler) GetContainerMetrics(node_nameorip string, container_name
 }
 
 func (h *KsScmcHandler) GetContainerImageVers(node_nameorip string, name string) (r string, err error) {
+	logrus.Error(node_nameorip)
+	logrus.Error(name)
 	res, _ := h.GetImageVer4Container(node_nameorip, name)
 	retData := make(map[string]interface{})
 	retData["status"] = res.RetCode
@@ -394,11 +396,13 @@ func (h *KsScmcHandler) GetContainerImageVers(node_nameorip string, name string)
 	if err != nil {
 		logrus.Error(err)
 	}
+	logrus.Error(string(jsonData))
 	return string(jsonData), nil
 	// return fmt.Sprintf("{\"image_name\":\"%s\",\"inuse_version\":\"%s\"}", res.ContainerImage.ImageName, res.ContainerImage.InuseVersion), nil
 }
 
 func (h *KsScmcHandler) GetImageVer4Container(node_nameorip string, container_name string) (*ksscmc.GetImageVer4ContainerResponse, error) {
+
 	response := &ksscmc.GetImageVer4ContainerResponse{
 		ContainerImage: &ksscmc.ContainerImage{},
 		RetCode:        1, // 成功码
@@ -433,7 +437,7 @@ func (h *KsScmcHandler) GetImageVer4Container(node_nameorip string, container_na
 	}
 
 	if containerInfo == nil {
-		logrus.Errorf("Failed to find container: %s", container_name)
+		logrus.Error(err)
 		return response, nil
 	}
 
@@ -715,6 +719,7 @@ func (h *KsScmcHandler) GetAllNodeList() (*ksscmc.GetAllNodeListResponse, error)
 }
 
 func (h *KsScmcHandler) GetAllContainers(node_name string) (r string, err error) {
+	logrus.Error("777777777777777777777777777")
 	response := map[string]interface{}{
 		"status":     0,
 		"message":    "success",
@@ -723,7 +728,7 @@ func (h *KsScmcHandler) GetAllContainers(node_name string) (r string, err error)
 
 	data := []ksscmc.GetAllContainersResponse{}
 
-	containersInfo, _ := h.GetAllContainerList(node_name)
+	containersInfo, err := h.GetAllContainerList(node_name)
 	for _, containerInfo := range containersInfo.Containerlist {
 		tmp := ksscmc.GetAllContainersResponse{
 			Name:      containerInfo.ContainerName,
@@ -758,10 +763,13 @@ func (h *KsScmcHandler) GetAllContainers(node_name string) (r string, err error)
 	response["containers"] = data
 
 	jsonStr, _ := json.Marshal(response)
+	logrus.Error("====================================")
+	logrus.Error(string(jsonStr))
 	return string(jsonStr), nil
 }
 
 func (h *KsScmcHandler) GetAllContainersV2(nid string) (r string, err error) {
+	logrus.Error("888888888888888888888888888888")
 	response := map[string]interface{}{
 		"status":     0,
 		"message":    "success",
@@ -777,6 +785,7 @@ func (h *KsScmcHandler) GetAllContainersV2(nid string) (r string, err error) {
 		response["status"] = 1
 		response["message"] = "failed"
 		jsonStr, _ := json.Marshal(response)
+		logrus.Error("!!!!!!!!!!!!!!!!!!!!!!!!!!!")
 		return string(jsonStr), nil
 	}
 	nodeInfo, err := db.QueryNodeByID(int64(nodeId))
@@ -785,10 +794,11 @@ func (h *KsScmcHandler) GetAllContainersV2(nid string) (r string, err error) {
 		response["status"] = 1
 		response["message"] = "failed"
 		jsonStr, _ := json.Marshal(response)
+		logrus.Error("****************************")
 		return string(jsonStr), nil
 	}
 
-	containersInfo, _ := h.GetAllContainerList(nodeInfo.Name)
+	containersInfo, err := h.GetAllContainerList(nodeInfo.Name)
 	for _, containerInfo := range containersInfo.Containerlist {
 		tmp := ksscmc.GetAllContainersResponse{
 			Name:      containerInfo.ContainerName,
@@ -825,6 +835,8 @@ func (h *KsScmcHandler) GetAllContainersV2(nid string) (r string, err error) {
 	if err != nil {
 		logrus.Error(err)
 	}
+	logrus.Error("====================================")
+	logrus.Error(string(jsonStr))
 	return string(jsonStr), nil
 }
 
@@ -1656,11 +1668,9 @@ func (h *KsScmcHandler) UnpauseContainer(node_ip string, container_name string) 
 	}
 	return 0, nil
 }
-
 func (h *KsScmcHandler) LoginV3(user string, passwd string, node_ip string) (r string, err error) {
 	return "", nil
 }
-
 func ThriftapiMain() {
 
 	logrus.Infof("thriftapi serv:")

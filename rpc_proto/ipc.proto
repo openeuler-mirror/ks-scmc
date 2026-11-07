@@ -1,0 +1,54 @@
+syntax = "proto3";
+
+option go_package = "scmc/rpc/pb/ipc";
+
+package ipcbase;
+
+service IpcBase{
+	/* 查询 IPC 容器 */
+	rpc List(IpcListRequest) returns(IpcListReply) {}	
+	/* 创建 IPC 容器 */
+	rpc Create(IpcCreateRequest) returns(IpcCreateReply) {}
+	/* 移除 IPC 容器 */
+	rpc Remove(IpcRemoveRequest) returns(IpcRemoveReply) {}
+}
+
+// 创建 IPC 容器
+message IpcCreateRequest {
+	int64	node_id = 1;
+	string  name = 2;
+}
+
+message IpcCreateReply{
+	string name = 1;
+	string container_id = 2;
+	int64	start_time = 3;
+	repeated string warnings = 4;
+}
+
+// 查询 IPC 容器
+message IpcListRequest {
+	int64 node_id = 1;
+}
+
+message IpcContainerData {
+	string name = 1; // IPC 容器名称
+	string id = 2; //IPC 容器ID 
+	int64  start_time = 3; //创建时间
+	repeated string containers = 4; //关联的容器数据
+}
+
+message IpcListReply {
+	repeated IpcContainerData ipcname_ids = 1;
+}
+
+// 删除 IPC 容器 
+// 如果 IPC 容器关联了其他容器是不允许删除的
+message IpcRemoveRequest {
+	int64	node_id = 1;
+	repeated string ipc_name = 2;
+}
+
+message IpcRemoveReply {
+
+}

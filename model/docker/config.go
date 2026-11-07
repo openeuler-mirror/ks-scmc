@@ -11,6 +11,10 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	// "scmc/model/db"
+	"strings"
+	// "path/filepath"
+
 	pb "scmc/rpc/pb/container"
 
 	// "github.com/docker/docker/api/types"
@@ -21,8 +25,11 @@ import (
 
 	// "scmc/server/agent/internal"
 	"strconv"
-	"strings"
+	// "strings"
+	// "sync"
+	// "strings"
 	"time"
+	"scmc/model/litedb"
 )
 
 var dockerRootDir string
@@ -31,6 +38,7 @@ const (
 	NoneBit  = 0
 	EnvBit   = 1
 	MountBit = 2
+	IpcBit = 4
 )
 
 var setters = map[string]string{
@@ -132,6 +140,62 @@ func modifyEnvs(dataBuf map[string]interface{}, envs []string) {
 	}
 }
 
+/*
+ * IPC 共享， 修改 IPC 配置信息
+ * /config.v2.json 里面的 ShmPath 路径
+ * /hostconfig.json 里面的 IpcMode 字段
+ * "IpcMode":"container:f9873b27177a53b2b6a6da561fe9d56cc7508528a25ac0109c29f000daa11ae2"
+ * "ShmPath":"/var/lib/docker/containers/f9873b27177a53b2b6a6da561fe9d56cc7508528a25ac0109c29f000daa11ae2/mounts/shm"
+ * 其中 f9873b27177a53b2b6a6da561fe9d56cc7508528a25ac0109c29f000daa11ae2 为基准容器的容器ID
+ */
+func modifyIPC(dataBuf map[string]interface{}, containerId string, baseIPCID string) {
+	baseIPCID = strings.TrimSpace(baseIPCID)
+	dir, err := getDockerRootDir()
+	if err != nil {
+		log.Warnf("getDockerRootDir error: %v", err)
+		return
+	}
+
+	// 修改 config.v2.json 里面的 ShmPath
+	shmPathValue := filepath.Join(dir, "containers", baseIPCID, "mounts", "shm")
+	if len(baseIPCID) == 0 {
+		shmPathValue = ""
+	}
+	_, ok := dataBuf["ShmPath"].(string)
+	if ok {
+		dataBuf["ShmPath"] = shmPathValue
+	}
+
+	// 修改 IpcMode 
+	hostconfigPath := filepath.Join(dir, "containers", containerId, "hostconfig.json")
+	if _, err := os.Stat(hostconfigPath); os.IsNotExist(err) {
+		log.Warnf("find file : %s error!, err: %v", hostconfigPath, err)
+		return
+	}
+
+	hostconfigDataBuf, err := parseConfigFile(hostconfigPath)
+	if err != nil {
+		log.Warnf("parseConfigFile: %s, err: %v", hostconfigPath, err)
+		return
+	}
+
+	ipcModeValue := "container:" + baseIPCID
+	if len(baseIPCID) == 0 {
+		ipcModeValue = "private"
+	}
+	_, hok := hostconfigDataBuf["IpcMode"].(string)
+	if hok {
+		hostconfigDataBuf["IpcMode"] = ipcModeValue
+	}
+	if err = writeConfigFile(hostconfigPath, hostconfigDataBuf); err != nil {
+		log.Warnf("update %s, err: %v", hostconfigPath, err)
+		return
+	}
+
+	return
+}
+
+
 func modifyMounts(dataBuf map[string]interface{}, mounts map[string]*pb.Mount) {
 	data, ok := dataBuf["MountPoints"].(map[string]interface{})
 	log.Debugf("old mounts:%+v, new mounts:%+v", data, mounts)
@@ -213,6 +277,16 @@ func ModifyContainerConfig(containerId string, which int, envs []string, mounts 
 	if which&MountBit != 0 {
 		log.Debugf("modify %v mounts", containerId)
 		modifyMounts(dataBuf, mounts)
+	}
+
+	// modify ipc
+	if which&IpcBit != 0 {
+		ipcmapCfg , err := litedb.GetIpcmapConfigByCID(containerId)
+		if err != nil {
+			log.Warnf("config GetIpcmapConfigByCID id: %v, err:%v", containerId, err)
+		} else {
+			modifyIPC(dataBuf, containerId, ipcmapCfg.IpcID)
+		}
 	}
 
 	if err := writeConfigFile(fileName, dataBuf); err != nil {

@@ -1223,85 +1223,71 @@ func (p *ContainerAlarm)  ReadField5(iprot thrift.TProtocol) error {
   return nil
 }
 
-func (p *ContainerAlarm) Write(ctx context.Context, oprot thrift.TProtocol) error {
-  if err := oprot.WriteStructBegin(ctx, "ContainerAlarm"); err != nil {
+func (p *ContainerAlarm) Write(oprot thrift.TProtocol) error {
+  if err := oprot.WriteStructBegin("ContainerAlarm"); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err) }
   if p != nil {
-    if err := p.writeField1(ctx, oprot); err != nil { return err }
-    if err := p.writeField2(ctx, oprot); err != nil { return err }
-    if err := p.writeField3(ctx, oprot); err != nil { return err }
-    if err := p.writeField4(ctx, oprot); err != nil { return err }
-    if err := p.writeField5(ctx, oprot); err != nil { return err }
+    if err := p.writeField1(oprot); err != nil { return err }
+    if err := p.writeField2(oprot); err != nil { return err }
+    if err := p.writeField3(oprot); err != nil { return err }
+    if err := p.writeField4(oprot); err != nil { return err }
+    if err := p.writeField5(oprot); err != nil { return err }
   }
-  if err := oprot.WriteFieldStop(ctx); err != nil {
+  if err := oprot.WriteFieldStop(); err != nil {
     return thrift.PrependError("write field stop error: ", err) }
-  if err := oprot.WriteStructEnd(ctx); err != nil {
+  if err := oprot.WriteStructEnd(); err != nil {
     return thrift.PrependError("write struct stop error: ", err) }
   return nil
 }
 
-func (p *ContainerAlarm) writeField1(ctx context.Context, oprot thrift.TProtocol) (err error) {
-  if err := oprot.WriteFieldBegin(ctx, "id", thrift.I32, 1); err != nil {
+func (p *ContainerAlarm) writeField1(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("id", thrift.I32, 1); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field begin error 1:id: ", p), err) }
-  if err := oprot.WriteI32(ctx, int32(p.ID)); err != nil {
+  if err := oprot.WriteI32(int32(p.ID)); err != nil {
   return thrift.PrependError(fmt.Sprintf("%T.id (1) field write error: ", p), err) }
-  if err := oprot.WriteFieldEnd(ctx); err != nil {
+  if err := oprot.WriteFieldEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field end error 1:id: ", p), err) }
   return err
 }
 
-func (p *ContainerAlarm) writeField2(ctx context.Context, oprot thrift.TProtocol) (err error) {
-  if err := oprot.WriteFieldBegin(ctx, "status", thrift.I32, 2); err != nil {
+func (p *ContainerAlarm) writeField2(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("status", thrift.I32, 2); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field begin error 2:status: ", p), err) }
-  if err := oprot.WriteI32(ctx, int32(p.Status)); err != nil {
+  if err := oprot.WriteI32(int32(p.Status)); err != nil {
   return thrift.PrependError(fmt.Sprintf("%T.status (2) field write error: ", p), err) }
-  if err := oprot.WriteFieldEnd(ctx); err != nil {
+  if err := oprot.WriteFieldEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field end error 2:status: ", p), err) }
   return err
 }
 
-func (p *ContainerAlarm) writeField3(ctx context.Context, oprot thrift.TProtocol) (err error) {
-  if err := oprot.WriteFieldBegin(ctx, "message", thrift.STRING, 3); err != nil {
+func (p *ContainerAlarm) writeField3(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("message", thrift.STRING, 3); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field begin error 3:message: ", p), err) }
-  if err := oprot.WriteString(ctx, string(p.Message)); err != nil {
+  if err := oprot.WriteString(string(p.Message)); err != nil {
   return thrift.PrependError(fmt.Sprintf("%T.message (3) field write error: ", p), err) }
-  if err := oprot.WriteFieldEnd(ctx); err != nil {
+  if err := oprot.WriteFieldEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field end error 3:message: ", p), err) }
   return err
 }
 
-func (p *ContainerAlarm) writeField4(ctx context.Context, oprot thrift.TProtocol) (err error) {
-  if err := oprot.WriteFieldBegin(ctx, "alarm_time", thrift.STRING, 4); err != nil {
+func (p *ContainerAlarm) writeField4(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("alarm_time", thrift.STRING, 4); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field begin error 4:alarm_time: ", p), err) }
-  if err := oprot.WriteString(ctx, string(p.AlarmTime)); err != nil {
+  if err := oprot.WriteString(string(p.AlarmTime)); err != nil {
   return thrift.PrependError(fmt.Sprintf("%T.alarm_time (4) field write error: ", p), err) }
-  if err := oprot.WriteFieldEnd(ctx); err != nil {
+  if err := oprot.WriteFieldEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field end error 4:alarm_time: ", p), err) }
   return err
 }
 
-func (p *ContainerAlarm) writeField5(ctx context.Context, oprot thrift.TProtocol) (err error) {
-  if err := oprot.WriteFieldBegin(ctx, "container_name", thrift.STRING, 5); err != nil {
+func (p *ContainerAlarm) writeField5(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("container_name", thrift.STRING, 5); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field begin error 5:container_name: ", p), err) }
-  if err := oprot.WriteString(ctx, string(p.ContainerName)); err != nil {
+  if err := oprot.WriteString(string(p.ContainerName)); err != nil {
   return thrift.PrependError(fmt.Sprintf("%T.container_name (5) field write error: ", p), err) }
-  if err := oprot.WriteFieldEnd(ctx); err != nil {
+  if err := oprot.WriteFieldEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field end error 5:container_name: ", p), err) }
   return err
-}
-
-func (p *ContainerAlarm) Equals(other *ContainerAlarm) bool {
-  if p == other {
-    return true
-  } else if p == nil || other == nil {
-    return false
-  }
-  if p.ID != other.ID { return false }
-  if p.Status != other.Status { return false }
-  if p.Message != other.Message { return false }
-  if p.AlarmTime != other.AlarmTime { return false }
-  if p.ContainerName != other.ContainerName { return false }
-  return true
 }
 
 func (p *ContainerAlarm) String() string {

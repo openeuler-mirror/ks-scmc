@@ -764,7 +764,7 @@ func (x *StatsReply) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use StatsReply.ProtoReflect.Descriptor instead.
 func (*StatsReply) Descriptor() ([]byte, []int) {
-	return file_container_proto_rawDescGZIP(), []int{1}
+	return file_container_proto_rawDescGZIP(), []int{12}
 }
 
 func (x *StatsReply) GetStatsData() string {

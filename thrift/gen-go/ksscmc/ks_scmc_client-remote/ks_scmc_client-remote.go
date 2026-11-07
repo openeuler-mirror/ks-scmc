@@ -64,8 +64,7 @@ func main() {
   var urlString string
   var framed bool
   var useHttp bool
-  headers := make(httpHeaders)
-  var parsedUrl *url.URL
+  var parsedUrl url.URL
   var trans thrift.TTransport
   _ = strconv.Atoi
   _ = math.Abs

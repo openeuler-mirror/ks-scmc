@@ -2,9 +2,13 @@ package internal
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"github.com/docker/docker/pkg/jsonmessage"
 	"io"
+	"io/ioutil"
 	"os"
+	"path"
 	"path/filepath"
 	"reflect"
 	"regexp"

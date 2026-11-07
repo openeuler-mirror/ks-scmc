@@ -3,7 +3,6 @@ syntax = "proto3";
 option go_package = "scmc/rpc/pb/node";
 
 import "common.proto";
-import "security.proto";
 
 package node;
 
@@ -24,17 +23,6 @@ service Node {
     // 安全配置
     rpc UpdateFileProtect(UpdateFileProtectRequest) returns (UpdateFileProtectReply) {}  // 文件保护
     rpc UpdateNetworkRule(UpdateNetworkRuleRequest) returns (UpdateNetworkRuleReply) {}  // 网络访问规则
-    rpc UpdateNetworkProcessWhiteList(UpdateNetworkProcessWhiteListRequest) returns (UpdateNetworkProcessWhiteListReply) {}  // 网络访问规则
-    rpc UpdateProcessWhiteList(UpdateProcessWhiteListRequest) returns (UpdateProcessWhiteListReply) {}  
-    
-    rpc GetFileProtect(GetFileProtectRequest) returns (GetFileProtectReply) {}  // 获取文件保护规则
-    rpc GetNetworkRule(GetNetworkRuleRequest) returns (GetNetworkRuleReply) {}  // 获取网络访问规则
-    rpc GetNetworkProcessWhiteList(GetNetworkProcessWhiteListRequest) returns (GetNetworkProcessWhiteListReply) {}  // 获取网络访问规则
-    rpc GetNodeProcessWhiteList(GetProcessWhiteListRequest) returns (GetProcessWhiteListReply) {}  
-    rpc GetNodeSecurityConfig(GetNodeSecurityConfigRequest) returns (GetNodeSecurityConfigReply) {}  // 获取节点全部配置
-    rpc GetNodeDefaultPort(GetNodeDefaultPortRequest) returns (GetNodeDefaultPortReply) {}    
-    rpc GetNodeDefaultProcessWhiteList(GetNodeDefaultProcessWhiteListRequest) returns (GetNodeDefaultProcessWhiteListReply) {}  
-    rpc GetNodeDefaultNetProWhiteList(GetNodeDefaultNetProWhiteListRequest) returns (GetNodeDefaultNetProWhiteListReply) {}    
 }
 
 message ListRequest {}
@@ -75,16 +63,6 @@ message UsageRequest {
     int64 end_time   = 3;  // 结束时间 UNIX时间戳
 }
 
-message SecurityConfig {
-    bool disable_external_network = 1;  // 禁止访问外部网络
-    bool disable_cmd_operation    = 2;  // 禁止命令行控制容器(启停控制)
-
-    security.ProcProtection  proc_protection  = 11;  // 进程保护
-    security.ProcProtection  nproc_protection = 12;  // 网络进程保护
-    security.FileProtection  file_protection  = 13;  // 文件防篡改保护
-    security.NetworkRuleList network_rule     = 14;  // 网络访问规则
-}
-
 message UsageReply {
     NodeStatus status = 1;
 }
@@ -100,16 +78,14 @@ message UpdateReply {}
 
 message UpdateFileProtectRequest {
     int64 node_id      = 1;
-    // int64 container_id = 2;
-    SecurityConfig    security_config = 3;   //节点安全配置
+    int64 container_id = 2;
 }
 
 message UpdateFileProtectReply {}
 
 message UpdateNetworkRuleRequest {
     int64 node_id      = 1;
-    //int64 container_id = 2;
-    SecurityConfig    security_config = 2;   //节点安全配置
+    int64 container_id = 2;
 }
 
 message UpdateNetworkRuleReply {}
@@ -189,90 +165,4 @@ message Log {
     bool   have_read      = 10;
     int64  create_at      = 11;
     int64  update_at      = 12;
-}
-
-message GetFileProtectRequest {
-    int64 node_id      = 1;
-}
-
-message GetFileProtectReply {
-    security.FileProtection  file_protection  = 13;  // 文件防篡改保护
-    
-}
-
-message GetNetworkRuleRequest {
-     int64 node_id      = 1;
-}
-
-message GetNetworkRuleReply {
-    security.NetworkRuleList network_rule     = 1;  // 网络访问规则
-}
-
-message GetNodeSecurityConfigRequest {
-     int64 node_id      = 1;
-}
-
-message GetNodeSecurityConfigReply {
-    SecurityConfig    security_config = 1;   //节点安全配置
-}
-
-message PortStatus {
-    uint32 port = 1;
-    bool blocked = 2;
-}
-
-message GetNodeDefaultPortRequest{
-    int64 node_id       = 1;
-}
-
-message GetNodeDefaultPortReply{
-    repeated PortStatus blocked_ports = 1;
-}
-
-message UpdateProcessWhiteListRequest{
-    int64   node_id = 1;
-    SecurityConfig  security_config =   2;   
-}
-message UpdateProcessWhiteListReply{
-    
-}
-message GetProcessWhiteListRequest{
-    int64   node_id =   1;   
-}
-message GetProcessWhiteListReply{
-    security.ProcProtection  proc_protection    =   1;  // 进程保护
-}
-
-message GetNodeDefaultProcessWhiteListRequest{
-    int64   node_id =   1;
-}
-
-message GetNodeDefaultProcessWhiteListReply{
-    repeated string process_names   =   1;
-}
-
-
-message UpdateNetworkProcessWhiteListRequest{
-    int64   node_id                 =   1;
-    SecurityConfig  security_config =   2;   
-}
-
-message UpdateNetworkProcessWhiteListReply{
-    repeated string process_names   =   1;
-}
-
-message GetNetworkProcessWhiteListRequest{
-    int64   node_id =   1;
-}
-
-message GetNetworkProcessWhiteListReply{
-    security.ProcProtection  nproc_protection = 1;  // 网络进程保护
-}
-
-message GetNodeDefaultNetProWhiteListRequest{
-    int64   node_id =   1;
-}
-
-message GetNodeDefaultNetProWhiteListReply{
-    repeated string process_names   =   1;
 }

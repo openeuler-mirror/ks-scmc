@@ -415,8 +415,8 @@ func (p *ContainerMetric)  ReadField6(iprot thrift.TProtocol) error {
   return nil
 }
 
-func (p *ContainerMetric)  ReadField7(ctx context.Context, iprot thrift.TProtocol) error {
-  if v, err := iprot.ReadDouble(ctx); err != nil {
+func (p *ContainerMetric)  ReadField7(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadDouble(); err != nil {
   return thrift.PrependError("error reading field 7: ", err)
 } else {
   p.DiskUsage = v

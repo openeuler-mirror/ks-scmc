@@ -4009,9 +4009,6 @@ func (p *GetImagesListResponse) String() string {
   return fmt.Sprintf("GetImagesListResponse(%+v)", *p)
 }
 
-// 获取 容器的状态信息，参考 docker stats 的输出
-// 返回值为 json 格式
-// 
 // Attributes:
 //  - ErrorCode
 //  - Reason

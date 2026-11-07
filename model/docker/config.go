@@ -6,29 +6,16 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	log "github.com/sirupsen/logrus"
 	"io/ioutil"
 	"math"
 	"os"
 	"os/exec"
 	"path/filepath"
-	"scmc/model/db"
-	"strings"
-	"path/filepath"
-
 	pb "scmc/rpc/pb/container"
-
-	"github.com/docker/docker/api/types"
-	"github.com/docker/docker/api/types/events"
-	"github.com/docker/docker/api/types/filters"
-	"github.com/docker/docker/client"
-	log "github.com/sirupsen/logrus"
-
-	// "scmc/server/agent/internal"
 	"strconv"
-	// "strings"
-	"sync"
+	"strings"
 	"time"
-	"scmc/model/litedb"
 )
 
 var dockerRootDir string
@@ -37,7 +24,6 @@ const (
 	NoneBit  = 0
 	EnvBit   = 1
 	MountBit = 2
-	IpcBit = 4
 )
 
 var setters = map[string]string{
@@ -139,62 +125,6 @@ func modifyEnvs(dataBuf map[string]interface{}, envs []string) {
 	}
 }
 
-/*
- * IPC 共享， 修改 IPC 配置信息
- * /config.v2.json 里面的 ShmPath 路径
- * /hostconfig.json 里面的 IpcMode 字段
- * "IpcMode":"container:f9873b27177a53b2b6a6da561fe9d56cc7508528a25ac0109c29f000daa11ae2"
- * "ShmPath":"/var/lib/docker/containers/f9873b27177a53b2b6a6da561fe9d56cc7508528a25ac0109c29f000daa11ae2/mounts/shm"
- * 其中 f9873b27177a53b2b6a6da561fe9d56cc7508528a25ac0109c29f000daa11ae2 为基准容器的容器ID
- */
-func modifyIPC(dataBuf map[string]interface{}, containerId string, baseIPCID string) {
-	baseIPCID = strings.TrimSpace(baseIPCID)
-	dir, err := getDockerRootDir()
-	if err != nil {
-		log.Warnf("getDockerRootDir error: %v", err)
-		return
-	}
-
-	// 修改 config.v2.json 里面的 ShmPath
-	shmPathValue := filepath.Join(dir, "containers", baseIPCID, "mounts", "shm")
-	if len(baseIPCID) == 0 {
-		shmPathValue = ""
-	}
-	_, ok := dataBuf["ShmPath"].(string)
-	if ok {
-		dataBuf["ShmPath"] = shmPathValue
-	}
-
-	// 修改 IpcMode 
-	hostconfigPath := filepath.Join(dir, "containers", containerId, "hostconfig.json")
-	if _, err := os.Stat(hostconfigPath); os.IsNotExist(err) {
-		log.Warnf("find file : %s error!, err: %v", hostconfigPath, err)
-		return
-	}
-
-	hostconfigDataBuf, err := parseConfigFile(hostconfigPath)
-	if err != nil {
-		log.Warnf("parseConfigFile: %s, err: %v", hostconfigPath, err)
-		return
-	}
-
-	ipcModeValue := "container:" + baseIPCID
-	if len(baseIPCID) == 0 {
-		ipcModeValue = "private"
-	}
-	_, hok := hostconfigDataBuf["IpcMode"].(string)
-	if hok {
-		hostconfigDataBuf["IpcMode"] = ipcModeValue
-	}
-	if err = writeConfigFile(hostconfigPath, hostconfigDataBuf); err != nil {
-		log.Warnf("update %s, err: %v", hostconfigPath, err)
-		return
-	}
-
-	return
-}
-
-
 func modifyMounts(dataBuf map[string]interface{}, mounts map[string]*pb.Mount) {
 	data, ok := dataBuf["MountPoints"].(map[string]interface{})
 	log.Debugf("old mounts:%+v, new mounts:%+v", data, mounts)
@@ -276,16 +206,6 @@ func ModifyContainerConfig(containerId string, which int, envs []string, mounts 
 	if which&MountBit != 0 {
 		log.Debugf("modify %v mounts", containerId)
 		modifyMounts(dataBuf, mounts)
-	}
-
-	// modify ipc
-	if which&IpcBit != 0 {
-		ipcmapCfg , err := litedb.GetIpcmapConfigByCID(containerId)
-		if err != nil {
-			log.Warnf("config GetIpcmapConfigByCID id: %v, err:%v", containerId, err)
-		} else {
-			modifyIPC(dataBuf, containerId, ipcmapCfg.IpcID)
-		}
 	}
 
 	if err := writeConfigFile(fileName, dataBuf); err != nil {
@@ -479,198 +399,4 @@ func CompareMounts(src, dst []*pb.Mount) (map[string]*pb.Mount, bool) {
 	return nil, true
 }
 
-type DockerManager struct {
-	client       *client.Client
-	tcController *TrafficController
-	cancel       context.CancelFunc
-	startOnce    sync.Once  // 保证启动逻辑只执行一次
-	mu           sync.Mutex // 状态锁
-	isRunning    bool       // 运行状态标识
-}
 
-var (
-	instance *DockerManager
-	once     sync.Once
-)
-
-func GetDockerManager(cli *client.Client) *DockerManager {
-	once.Do(func() {
-		tc := NewTrafficController()
-		instance = &DockerManager{
-			client:       cli,
-			tcController: tc,
-		}
-	})
-	return instance
-}
-func (dm *DockerManager) Start() {
-	dm.startOnce.Do(func() {
-		dm.mu.Lock()
-		defer dm.mu.Unlock()
-
-		if !dm.isRunning {
-			go dm.startEventLoop() // 真正的启动逻辑
-			dm.isRunning = true
-		}
-	})
-}
-func (dm *DockerManager) startEventLoop() {
-	ctx, cancel := context.WithCancel(context.Background())
-	dm.cancel = cancel
-	options := types.EventsOptions{
-		Filters: filters.NewArgs(
-			filters.Arg("type", events.ContainerEventType),
-		),
-	}
-	for {
-		msgChan, errs := dm.client.Events(ctx, options)
-		select {
-		case msg := <-msgChan:
-			dm.handleEvent(msg)
-		case err := <-errs:
-			log.Printf("Docker event error: %v", err)
-		case <-ctx.Done():
-			return
-		}
-	}
-}
-func (dm *DockerManager) Stop() {
-	if dm.cancel != nil {
-		dm.cancel()
-	}
-}
-
-func (dm *DockerManager) handleEvent(msg events.Message) {
-	if msg.Type != events.ContainerEventType {
-		return
-	}
-
-	switch msg.Action {
-	case "start", "restart":
-		// 获取限速配置
-		limit, err := db.QueryContainerLimitsByContainerId(msg.Actor.ID)
-		if err != nil {
-			log.Errorf("Events: start or restart.Can not get container limit config,err: %v", err)
-			return
-		}
-
-		// 应用限速规则
-		if pid, err := getContainerPID(msg.Actor.ID); err == nil {
-			log.Errorf("Events: start or restart.Can not get container pid,err: %v", err)
-			if pid == 0 {
-				log.Errorf("container pid err.")
-				return
-			}
-			dm.tcController.ApplyLimit(pid, limit.UploadSpeed, limit.DownSpeed)
-		}
-
-	case "die", "destroy":
-		// 清理规则
-		if pid, err := getContainerPID(msg.Actor.ID); err == nil {
-			log.Errorf("Events: die or destroy.Can not get container limit config,err: %v", err)
-			if pid == 0 {
-				log.Errorf("Events: die or destroy.container pid err.")
-				return
-			}
-			dm.tcController.RemoveLimit(pid)
-		}
-		//dm.dbManager.DeleteLimit(event.ID)
-	}
-}
-
-type TrafficController struct{}
-
-func NewTrafficController() *TrafficController {
-	return &TrafficController{}
-}
-func (tc *TrafficController) ApplyLimit(pid int, upload, download float64) error {
-	if upload == 0 && download == 0 {
-		return tc.RemoveLimit(pid)
-	}
-
-	if upload > 0 {
-		if err := setupIngress(pid, upload); err != nil {
-			return err
-		}
-	}
-
-	if download > 0 {
-		if err := setupEgress(pid, download); err != nil {
-			return err
-		}
-	}
-	return nil
-}
-func (tc *TrafficController) RemoveLimit(pid int) error {
-	cmds := []string{
-		fmt.Sprintf("nsenter -t %d -n tc qdisc del dev eth0 root", pid),
-		fmt.Sprintf("nsenter -t %d -n tc qdisc del dev eth0 ingress", pid),
-		fmt.Sprintf("nsenter -t %d -n tc qdisc del dev ifb0 root", pid),
-		fmt.Sprintf("nsenter -t %d -n ip link del ifb0", pid),
-	}
-
-	for _, cmd := range cmds {
-		if err := exec.Command("sh", "-c", cmd).Run(); err != nil {
-			// 忽略"Device or resource busy"等错误
-			log.Errorf("cmd: %v. exec error: %v", cmd, err)
-		}
-	}
-	return nil
-}
-func setupIngress(pid int, rate float64) error {
-	if err := createIFB(pid); err != nil {
-		return err
-	}
-
-	cmds := []string{
-		fmt.Sprintf("nsenter -t %d -n tc qdisc add dev eth0 handle ffff: ingress", pid),
-		fmt.Sprintf("nsenter -t %d -n tc filter add dev eth0 parent ffff: protocol ip u32 match u32 0 0 action mirred egress redirect dev ifb0", pid),
-		fmt.Sprintf("nsenter -t %d -n tc qdisc add dev ifb0 root tbf rate %dmbit latency 100ms burst %d",
-			pid, rate*8, calculateBurst(rate)),
-	}
-
-	for _, cmd := range cmds {
-		if err := exec.Command("sh", "-c", cmd).Run(); err != nil {
-			log.Errorf("ingress setup failed: %v", err)
-			return fmt.Errorf("ingress setup failed: %v", err)
-		}
-	}
-	return nil
-}
-func setupEgress(pid int, rate float64) error {
-	cmd := fmt.Sprintf("nsenter -t %d -n tc qdisc add dev eth0 root tbf rate %dmbit latency 100ms burst %d",
-		pid, rate*8, calculateBurst(rate))
-	return exec.Command("sh", "-c", cmd).Run()
-}
-func createIFB(pid int) error {
-	cmds := []string{
-		"modprobe ifb",
-		fmt.Sprintf("ip link add ifb0 type ifb"),
-		fmt.Sprintf("ip link set ifb0 netns %d", pid),
-		fmt.Sprintf("nsenter -t %d -n ip link set ifb0 up", pid),
-	}
-
-	for _, cmd := range cmds {
-		if err := exec.Command("sh", "-c", cmd).Run(); err != nil {
-			return fmt.Errorf("IFB creation failed: %v", err)
-		}
-	}
-	return nil
-}
-
-func calculateBurst(rate float64) float64 {
-	if rate < 1 {
-		return 1000
-	}
-	return rate * 125000 // 1MB/s = 1,000,000 bytes
-}
-func getContainerPID(containerID string) (int, error) {
-	// 实现获取容器PID的逻辑（通过docker inspect）
-	// 返回PID和可能的错误
-	s := &internal.ContainerServer{}
-	pid, err := s.GetContainerPid(containerID)
-	if err != nil {
-		return 0, err
-	}
-	return pid, nil
-}

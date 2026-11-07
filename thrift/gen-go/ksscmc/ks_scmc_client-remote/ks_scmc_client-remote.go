@@ -75,18 +75,16 @@ func main() {
   flag.StringVar(&urlString, "u", "", "Specify the url")
   flag.BoolVar(&framed, "framed", false, "Use framed transport")
   flag.BoolVar(&useHttp, "http", false, "Use http")
-  flag.Var(headers, "H", "Headers to set on the http(s) request (e.g. -H \"Key: Value\")")
   flag.Parse()
   
   if len(urlString) > 0 {
-    var err error
-    parsedUrl, err = url.Parse(urlString)
+    parsedUrl, err := url.Parse(urlString)
     if err != nil {
       fmt.Fprintln(os.Stderr, "Error parsing URL: ", err)
       flag.Usage()
     }
     host = parsedUrl.Host
-    useHttp = len(parsedUrl.Scheme) <= 0 || parsedUrl.Scheme == "http" || parsedUrl.Scheme == "https"
+    useHttp = len(parsedUrl.Scheme) <= 0 || parsedUrl.Scheme == "http"
   } else if useHttp {
     _, err := url.Parse(fmt.Sprint("http://", host, ":", port))
     if err != nil {
@@ -99,12 +97,6 @@ func main() {
   var err error
   if useHttp {
     trans, err = thrift.NewTHttpClient(parsedUrl.String())
-    if len(headers) > 0 {
-      httptrans := trans.(*thrift.THttpClient)
-      for key, value := range headers {
-        httptrans.SetHeader(key, value)
-      }
-    }
   } else {
     portStr := fmt.Sprint(port)
     if strings.Contains(host, ":") {
@@ -147,18 +139,30 @@ func main() {
     Usage()
     os.Exit(1)
   }
-  iprot := protocolFactory.GetProtocol(trans)
-  oprot := protocolFactory.GetProtocol(trans)
-  client := ksscmc.NewKsScmcClientClient(thrift.NewTStandardClient(iprot, oprot))
+  client := ksscmc.NewKsScmcClientClientFactory(trans, protocolFactory)
   if err := trans.Open(); err != nil {
     fmt.Fprintln(os.Stderr, "Error opening socket to ", host, ":", port, " ", err)
     os.Exit(1)
   }
   
   switch cmd {
-  case "installContainer":
-    if flag.NArg() - 1 != 4 {
-      fmt.Fprintln(os.Stderr, "InstallContainer requires 4 args")
+  case "LoginV3":
+    if flag.NArg() - 1 != 3 {
+      fmt.Fprintln(os.Stderr, "LoginV3 requires 3 args")
+      flag.Usage()
+    }
+    argvalue0 := flag.Arg(1)
+    value0 := argvalue0
+    argvalue1 := flag.Arg(2)
+    value1 := argvalue1
+    argvalue2 := flag.Arg(3)
+    value2 := argvalue2
+    fmt.Print(client.LoginV3(value0, value1, value2))
+    fmt.Print("\n")
+    break
+  case "InstallContainer":
+    if flag.NArg() - 1 != 5 {
+      fmt.Fprintln(os.Stderr, "InstallContainer requires 5 args")
       flag.Usage()
     }
     argvalue0 := flag.Arg(1)
@@ -169,10 +173,12 @@ func main() {
     value2 := argvalue2
     argvalue3 := flag.Arg(4)
     value3 := argvalue3
-    fmt.Print(client.InstallContainer(context.Background(), value0, value1, value2, value3))
+    argvalue4 := flag.Arg(5)
+    value4 := argvalue4
+    fmt.Print(client.InstallContainer(value0, value1, value2, value3, value4))
     fmt.Print("\n")
     break
-  case "startContainer":
+  case "StartContainer":
     if flag.NArg() - 1 != 2 {
       fmt.Fprintln(os.Stderr, "StartContainer requires 2 args")
       flag.Usage()
@@ -181,10 +187,10 @@ func main() {
     value0 := argvalue0
     argvalue1 := flag.Arg(2)
     value1 := argvalue1
-    fmt.Print(client.StartContainer(context.Background(), value0, value1))
+    fmt.Print(client.StartContainer(value0, value1))
     fmt.Print("\n")
     break
-  case "stopContainer":
+  case "StopContainer":
     if flag.NArg() - 1 != 2 {
       fmt.Fprintln(os.Stderr, "StopContainer requires 2 args")
       flag.Usage()
@@ -193,10 +199,10 @@ func main() {
     value0 := argvalue0
     argvalue1 := flag.Arg(2)
     value1 := argvalue1
-    fmt.Print(client.StopContainer(context.Background(), value0, value1))
+    fmt.Print(client.StopContainer(value0, value1))
     fmt.Print("\n")
     break
-  case "uninstallContainer":
+  case "UninstallContainer":
     if flag.NArg() - 1 != 2 {
       fmt.Fprintln(os.Stderr, "UninstallContainer requires 2 args")
       flag.Usage()
@@ -205,7 +211,7 @@ func main() {
     value0 := argvalue0
     argvalue1 := flag.Arg(2)
     value1 := argvalue1
-    fmt.Print(client.UninstallContainer(context.Background(), value0, value1))
+    fmt.Print(client.UninstallContainer(value0, value1))
     fmt.Print("\n")
     break
   case "getContainerStatus":
@@ -217,7 +223,7 @@ func main() {
     value0 := argvalue0
     argvalue1 := flag.Arg(2)
     value1 := argvalue1
-    fmt.Print(client.GetContainerStatus(context.Background(), value0, value1))
+    fmt.Print(client.GetContainerStatus(value0, value1))
     fmt.Print("\n")
     break
   case "getContainerMetrics":
@@ -229,7 +235,19 @@ func main() {
     value0 := argvalue0
     argvalue1 := flag.Arg(2)
     value1 := argvalue1
-    fmt.Print(client.GetContainerMetrics(context.Background(), value0, value1))
+    fmt.Print(client.GetContainerMetrics(value0, value1))
+    fmt.Print("\n")
+    break
+  case "GetContainerImageVers":
+    if flag.NArg() - 1 != 2 {
+      fmt.Fprintln(os.Stderr, "GetContainerImageVers requires 2 args")
+      flag.Usage()
+    }
+    argvalue0 := flag.Arg(1)
+    value0 := argvalue0
+    argvalue1 := flag.Arg(2)
+    value1 := argvalue1
+    fmt.Print(client.GetContainerImageVers(value0, value1))
     fmt.Print("\n")
     break
   case "getImageVer4Container":
@@ -241,7 +259,7 @@ func main() {
     value0 := argvalue0
     argvalue1 := flag.Arg(2)
     value1 := argvalue1
-    fmt.Print(client.GetImageVer4Container(context.Background(), value0, value1))
+    fmt.Print(client.GetImageVer4Container(value0, value1))
     fmt.Print("\n")
     break
   case "getContainer":
@@ -253,10 +271,10 @@ func main() {
     value0 := argvalue0
     argvalue1 := flag.Arg(2)
     value1 := argvalue1
-    fmt.Print(client.GetContainer(context.Background(), value0, value1))
+    fmt.Print(client.GetContainer(value0, value1))
     fmt.Print("\n")
     break
-  case "updateContainer":
+  case "UpdateContainer":
     if flag.NArg() - 1 != 3 {
       fmt.Fprintln(os.Stderr, "UpdateContainer requires 3 args")
       flag.Usage()
@@ -267,17 +285,17 @@ func main() {
     value1 := argvalue1
     argvalue2 := flag.Arg(3)
     value2 := argvalue2
-    fmt.Print(client.UpdateContainer(context.Background(), value0, value1, value2))
+    fmt.Print(client.UpdateContainer(value0, value1, value2))
     fmt.Print("\n")
     break
-  case "getAlarmList":
+  case "GetAlarmList":
     if flag.NArg() - 1 != 1 {
       fmt.Fprintln(os.Stderr, "GetAlarmList requires 1 args")
       flag.Usage()
     }
     argvalue0 := flag.Arg(1)
     value0 := argvalue0
-    fmt.Print(client.GetAlarmList(context.Background(), value0))
+    fmt.Print(client.GetAlarmList(value0))
     fmt.Print("\n")
     break
   case "getAllNodeList":
@@ -285,18 +303,40 @@ func main() {
       fmt.Fprintln(os.Stderr, "GetAllNodeList requires 0 args")
       flag.Usage()
     }
-    fmt.Print(client.GetAllNodeList(context.Background()))
+    fmt.Print(client.GetAllNodeList())
+    fmt.Print("\n")
+    break
+  case "GetAllContainers":
+    if flag.NArg() - 1 != 1 {
+      fmt.Fprintln(os.Stderr, "GetAllContainers requires 1 args")
+      flag.Usage()
+    }
+    argvalue0 := flag.Arg(1)
+    value0 := argvalue0
+    fmt.Print(client.GetAllContainers(value0))
+    fmt.Print("\n")
+    break
+  case "GetAllContainersV2":
+    if flag.NArg() - 1 != 1 {
+      fmt.Fprintln(os.Stderr, "GetAllContainersV2 requires 1 args")
+      flag.Usage()
+    }
+    argvalue0 := flag.Arg(1)
+    value0 := argvalue0
+    fmt.Print(client.GetAllContainersV2(value0))
     fmt.Print("\n")
     break
   case "getAllContainerList":
-    if flag.NArg() - 1 != 0 {
-      fmt.Fprintln(os.Stderr, "GetAllContainerList requires 0 args")
+    if flag.NArg() - 1 != 1 {
+      fmt.Fprintln(os.Stderr, "GetAllContainerList requires 1 args")
       flag.Usage()
     }
-    fmt.Print(client.GetAllContainerList(context.Background()))
+    argvalue0 := flag.Arg(1)
+    value0 := argvalue0
+    fmt.Print(client.GetAllContainerList(value0))
     fmt.Print("\n")
     break
-  case "getContainerNetwork":
+  case "GetContainerNetwork":
     if flag.NArg() - 1 != 2 {
       fmt.Fprintln(os.Stderr, "GetContainerNetwork requires 2 args")
       flag.Usage()
@@ -305,7 +345,7 @@ func main() {
     value0 := argvalue0
     argvalue1 := flag.Arg(2)
     value1 := argvalue1
-    fmt.Print(client.GetContainerNetwork(context.Background(), value0, value1))
+    fmt.Print(client.GetContainerNetwork(value0, value1))
     fmt.Print("\n")
     break
   case "getContainerNetRules":
@@ -317,7 +357,7 @@ func main() {
     value0 := argvalue0
     argvalue1 := flag.Arg(2)
     value1 := argvalue1
-    fmt.Print(client.GetContainerNetRules(context.Background(), value0, value1))
+    fmt.Print(client.GetContainerNetRules(value0, value1))
     fmt.Print("\n")
     break
   case "addContainerIpPort":
@@ -331,8 +371,8 @@ func main() {
     value1 := argvalue1
     argvalue2 := flag.Arg(3)
     value2 := argvalue2
-    tmp3, err97 := (strconv.Atoi(flag.Arg(4)))
-    if err97 != nil {
+    tmp3, err109 := (strconv.Atoi(flag.Arg(4)))
+    if err109 != nil {
       Usage()
       return
     }
@@ -340,7 +380,7 @@ func main() {
     value3 := argvalue3
     argvalue4 := flag.Arg(5)
     value4 := argvalue4
-    fmt.Print(client.AddContainerIpPort(context.Background(), value0, value1, value2, value3, value4))
+    fmt.Print(client.AddContainerIpPort(value0, value1, value2, value3, value4))
     fmt.Print("\n")
     break
   case "addContainerReqIpPort":
@@ -354,8 +394,8 @@ func main() {
     value1 := argvalue1
     argvalue2 := flag.Arg(3)
     value2 := argvalue2
-    tmp3, err102 := (strconv.Atoi(flag.Arg(4)))
-    if err102 != nil {
+    tmp3, err114 := (strconv.Atoi(flag.Arg(4)))
+    if err114 != nil {
       Usage()
       return
     }
@@ -363,10 +403,10 @@ func main() {
     value3 := argvalue3
     argvalue4 := flag.Arg(5)
     value4 := argvalue4
-    fmt.Print(client.AddContainerReqIpPort(context.Background(), value0, value1, value2, value3, value4))
+    fmt.Print(client.AddContainerReqIpPort(value0, value1, value2, value3, value4))
     fmt.Print("\n")
     break
-  case "addContainerEnv":
+  case "AddContainerEnv":
     if flag.NArg() - 1 != 4 {
       fmt.Fprintln(os.Stderr, "AddContainerEnv requires 4 args")
       flag.Usage()
@@ -379,7 +419,7 @@ func main() {
     value2 := argvalue2
     argvalue3 := flag.Arg(4)
     value3 := argvalue3
-    fmt.Print(client.AddContainerEnv(context.Background(), value0, value1, value2, value3))
+    fmt.Print(client.AddContainerEnv(value0, value1, value2, value3))
     fmt.Print("\n")
     break
   case "addContainerLocalVolume":
@@ -402,10 +442,10 @@ func main() {
     }
     argvalue4 := ksscmc.AccessAuth(tmp4)
     value4 := argvalue4
-    fmt.Print(client.AddContainerLocalVolume(context.Background(), value0, value1, value2, value3, value4))
+    fmt.Print(client.AddContainerLocalVolume(value0, value1, value2, value3, value4))
     fmt.Print("\n")
     break
-  case "setContainerDisplayV2":
+  case "SetContainerDisplayV2":
     if flag.NArg() - 1 != 4 {
       fmt.Fprintln(os.Stderr, "SetContainerDisplayV2 requires 4 args")
       flag.Usage()
@@ -418,10 +458,10 @@ func main() {
     value2 := argvalue2
     argvalue3 := flag.Arg(4)
     value3 := argvalue3
-    fmt.Print(client.SetContainerDisplayV2(context.Background(), value0, value1, value2, value3))
+    fmt.Print(client.SetContainerDisplayV2(value0, value1, value2, value3))
     fmt.Print("\n")
     break
-  case "setContainerQuota":
+  case "SetContainerQuota":
     if flag.NArg() - 1 != 3 {
       fmt.Fprintln(os.Stderr, "SetContainerQuota requires 3 args")
       flag.Usage()
@@ -430,24 +470,24 @@ func main() {
     value0 := argvalue0
     argvalue1 := flag.Arg(2)
     value1 := argvalue1
-    arg118 := flag.Arg(3)
-    mbTrans119 := thrift.NewTMemoryBufferLen(len(arg118))
-    defer mbTrans119.Close()
-    _, err120 := mbTrans119.WriteString(arg118)
-    if err120 != nil {
+    arg130 := flag.Arg(3)
+    mbTrans131 := thrift.NewTMemoryBufferLen(len(arg130))
+    defer mbTrans131.Close()
+    _, err132 := mbTrans131.WriteString(arg130)
+    if err132 != nil {
       Usage()
       return
     }
-    factory121 := thrift.NewTJSONProtocolFactory()
-    jsProt122 := factory121.GetProtocol(mbTrans119)
+    factory133 := thrift.NewTSimpleJSONProtocolFactory()
+    jsProt134 := factory133.GetProtocol(mbTrans131)
     argvalue2 := ksscmc.NewContainerLimit()
-    err123 := argvalue2.Read(context.Background(), jsProt122)
-    if err123 != nil {
+    err135 := argvalue2.Read(jsProt134)
+    if err135 != nil {
       Usage()
       return
     }
     value2 := argvalue2
-    fmt.Print(client.SetContainerQuota(context.Background(), value0, value1, value2))
+    fmt.Print(client.SetContainerQuota(value0, value1, value2))
     fmt.Print("\n")
     break
   case "setContainerPrivileged":
@@ -461,7 +501,7 @@ func main() {
     value1 := argvalue1
     argvalue2 := flag.Arg(3) == "true"
     value2 := argvalue2
-    fmt.Print(client.SetContainerPrivileged(context.Background(), value0, value1, value2))
+    fmt.Print(client.SetContainerPrivileged(value0, value1, value2))
     fmt.Print("\n")
     break
   case "setContainerSysctls":
@@ -477,7 +517,7 @@ func main() {
     value2 := argvalue2
     argvalue3 := flag.Arg(4)
     value3 := argvalue3
-    fmt.Print(client.SetContainerSysctls(context.Background(), value0, value1, value2, value3))
+    fmt.Print(client.SetContainerSysctls(value0, value1, value2, value3))
     fmt.Print("\n")
     break
   case "setContainerExtraHosts":
@@ -489,53 +529,35 @@ func main() {
     value0 := argvalue0
     argvalue1 := flag.Arg(2)
     value1 := argvalue1
-    arg133 := flag.Arg(3)
-    mbTrans134 := thrift.NewTMemoryBufferLen(len(arg133))
-    defer mbTrans134.Close()
-    _, err135 := mbTrans134.WriteString(arg133)
-    if err135 != nil { 
+    arg145 := flag.Arg(3)
+    mbTrans146 := thrift.NewTMemoryBufferLen(len(arg145))
+    defer mbTrans146.Close()
+    _, err147 := mbTrans146.WriteString(arg145)
+    if err147 != nil { 
       Usage()
       return
     }
-    factory136 := thrift.NewTJSONProtocolFactory()
-    jsProt137 := factory136.GetProtocol(mbTrans134)
+    factory148 := thrift.NewTSimpleJSONProtocolFactory()
+    jsProt149 := factory148.GetProtocol(mbTrans146)
     containerStruct2 := ksscmc.NewKsScmcClientSetContainerExtraHostsArgs()
-    err138 := containerStruct2.ReadField3(context.Background(), jsProt137)
-    if err138 != nil {
+    err150 := containerStruct2.ReadField3(jsProt149)
+    if err150 != nil {
       Usage()
       return
     }
     argvalue2 := containerStruct2.ContainerExtrahosts
     value2 := argvalue2
-    fmt.Print(client.SetContainerExtraHosts(context.Background(), value0, value1, value2))
+    fmt.Print(client.SetContainerExtraHosts(value0, value1, value2))
     fmt.Print("\n")
     break
   case "getImagesList":
-    if flag.NArg() - 1 != 2 {
-      fmt.Fprintln(os.Stderr, "GetImagesList requires 2 args")
+    if flag.NArg() - 1 != 1 {
+      fmt.Fprintln(os.Stderr, "GetImagesList requires 1 args")
       flag.Usage()
     }
     argvalue0 := flag.Arg(1)
     value0 := argvalue0
-    arg140 := flag.Arg(2)
-    mbTrans141 := thrift.NewTMemoryBufferLen(len(arg140))
-    defer mbTrans141.Close()
-    _, err142 := mbTrans141.WriteString(arg140)
-    if err142 != nil { 
-      Usage()
-      return
-    }
-    factory143 := thrift.NewTJSONProtocolFactory()
-    jsProt144 := factory143.GetProtocol(mbTrans141)
-    containerStruct1 := ksscmc.NewKsScmcClientGetImagesListArgs()
-    err145 := containerStruct1.ReadField2(context.Background(), jsProt144)
-    if err145 != nil {
-      Usage()
-      return
-    }
-    argvalue1 := containerStruct1.ImageList
-    value1 := argvalue1
-    fmt.Print(client.GetImagesList(context.Background(), value0, value1))
+    fmt.Print(client.GetImagesList(value0))
     fmt.Print("\n")
     break
   case "loadImage":
@@ -547,7 +569,7 @@ func main() {
     value0 := argvalue0
     argvalue1 := flag.Arg(2)
     value1 := argvalue1
-    fmt.Print(client.LoadImage(context.Background(), value0, value1))
+    fmt.Print(client.LoadImage(value0, value1))
     fmt.Print("\n")
     break
   case "pauseContainer":
@@ -559,7 +581,7 @@ func main() {
     value0 := argvalue0
     argvalue1 := flag.Arg(2)
     value1 := argvalue1
-    fmt.Print(client.PauseContainer(context.Background(), value0, value1))
+    fmt.Print(client.PauseContainer(value0, value1))
     fmt.Print("\n")
     break
   case "unpauseContainer":
@@ -571,17 +593,7 @@ func main() {
     value0 := argvalue0
     argvalue1 := flag.Arg(2)
     value1 := argvalue1
-    fmt.Print(client.UnpauseContainer(context.Background(), value0, value1))
-    fmt.Print("\n")
-    break
-  case "GetAllContainers":
-    if flag.NArg() - 1 != 1 {
-      fmt.Fprintln(os.Stderr, "GetAllContainers requires 1 args")
-      flag.Usage()
-    }
-    argvalue0 := flag.Arg(1)
-    value0 := argvalue0
-    fmt.Print(client.GetAllContainers(context.Background(), value0))
+    fmt.Print(client.UnpauseContainer(value0, value1))
     fmt.Print("\n")
     break
   case "":

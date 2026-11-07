@@ -1,35 +1,43 @@
 package thriftapi
 
 import (
+	"context"
+	"encoding/json"
+	"fmt"
+	"io"
 	"log"
+	"net"
+	"os"
+	"scmc/server/args"
+	"sort"
 	"strconv"
-        "context"
-        "time"
-        "sync"
-        "sort"
-        "strings"
-        "net"
-        "fmt"
-        "os"
+	"strings"
+	"sync"
+	"time"
 
-        "scmc/thrift/gen-go/ksscmc"
-	"scmc/model/db"
 	"scmc/common"
+	"scmc/model/db"
+	containerPB "scmc/rpc/pb/container"
+	imagePB "scmc/rpc/pb/image"
 	networkPB "scmc/rpc/pb/network"
 	nodePB "scmc/rpc/pb/node"
-	containerPB "scmc/rpc/pb/container"
 	securityPB "scmc/rpc/pb/security"
 	"scmc/server/controller/internal"
+	"scmc/thrift/gen-go/ksscmc"
 
+	"git.apache.org/thrift.git/lib/go/thrift"
 	"github.com/sirupsen/logrus"
-	"github.com/apache/thrift/lib/go/thrift"
 )
 
-type KsScmcHandler struct{
+type KsScmcHandler struct {
 }
 
-func (h *KsScmcHandler) InstallContainer(ctx context.Context, node_nameorip string, image_name string, image_ver string, container_name string) (int32, error) {
-	
+func (h *KsScmcHandler) InstallContainer(node_name string, image string, ver string, name string, desc string) (r string, err error) {
+	code, err := h._InstallContainer(node_name, image, ver, name)
+	return Response2String(code), nil
+}
+
+func (h *KsScmcHandler) _InstallContainer(node_nameorip string, image_name string, image_ver string, container_name string) (int32, error) {
 	//通过node_nameorip查找node的ID
 	nodeInfo, err := GetNodeId(node_nameorip)
 	if err != nil {

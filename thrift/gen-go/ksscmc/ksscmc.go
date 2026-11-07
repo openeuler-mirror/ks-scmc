@@ -1050,49 +1050,38 @@ func (p *ContainerImage)  ReadField2(iprot thrift.TProtocol) error {
   return nil
 }
 
-func (p *ContainerImage) Write(ctx context.Context, oprot thrift.TProtocol) error {
-  if err := oprot.WriteStructBegin(ctx, "ContainerImage"); err != nil {
+func (p *ContainerImage) Write(oprot thrift.TProtocol) error {
+  if err := oprot.WriteStructBegin("ContainerImage"); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err) }
   if p != nil {
-    if err := p.writeField1(ctx, oprot); err != nil { return err }
-    if err := p.writeField2(ctx, oprot); err != nil { return err }
+    if err := p.writeField1(oprot); err != nil { return err }
+    if err := p.writeField2(oprot); err != nil { return err }
   }
-  if err := oprot.WriteFieldStop(ctx); err != nil {
+  if err := oprot.WriteFieldStop(); err != nil {
     return thrift.PrependError("write field stop error: ", err) }
-  if err := oprot.WriteStructEnd(ctx); err != nil {
+  if err := oprot.WriteStructEnd(); err != nil {
     return thrift.PrependError("write struct stop error: ", err) }
   return nil
 }
 
-func (p *ContainerImage) writeField1(ctx context.Context, oprot thrift.TProtocol) (err error) {
-  if err := oprot.WriteFieldBegin(ctx, "image_name", thrift.STRING, 1); err != nil {
+func (p *ContainerImage) writeField1(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("image_name", thrift.STRING, 1); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field begin error 1:image_name: ", p), err) }
-  if err := oprot.WriteString(ctx, string(p.ImageName)); err != nil {
+  if err := oprot.WriteString(string(p.ImageName)); err != nil {
   return thrift.PrependError(fmt.Sprintf("%T.image_name (1) field write error: ", p), err) }
-  if err := oprot.WriteFieldEnd(ctx); err != nil {
+  if err := oprot.WriteFieldEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field end error 1:image_name: ", p), err) }
   return err
 }
 
-func (p *ContainerImage) writeField2(ctx context.Context, oprot thrift.TProtocol) (err error) {
-  if err := oprot.WriteFieldBegin(ctx, "inuse_version", thrift.STRING, 2); err != nil {
+func (p *ContainerImage) writeField2(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("inuse_version", thrift.STRING, 2); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field begin error 2:inuse_version: ", p), err) }
-  if err := oprot.WriteString(ctx, string(p.InuseVersion)); err != nil {
+  if err := oprot.WriteString(string(p.InuseVersion)); err != nil {
   return thrift.PrependError(fmt.Sprintf("%T.inuse_version (2) field write error: ", p), err) }
-  if err := oprot.WriteFieldEnd(ctx); err != nil {
+  if err := oprot.WriteFieldEnd(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write field end error 2:inuse_version: ", p), err) }
   return err
-}
-
-func (p *ContainerImage) Equals(other *ContainerImage) bool {
-  if p == other {
-    return true
-  } else if p == nil || other == nil {
-    return false
-  }
-  if p.ImageName != other.ImageName { return false }
-  if p.InuseVersion != other.InuseVersion { return false }
-  return true
 }
 
 func (p *ContainerImage) String() string {

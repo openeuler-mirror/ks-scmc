@@ -1186,8 +1186,8 @@ func (p *ContainerAlarm)  ReadField1(iprot thrift.TProtocol) error {
   return nil
 }
 
-func (p *ContainerAlarm)  ReadField2(ctx context.Context, iprot thrift.TProtocol) error {
-  if v, err := iprot.ReadI32(ctx); err != nil {
+func (p *ContainerAlarm)  ReadField2(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadI32(); err != nil {
   return thrift.PrependError("error reading field 2: ", err)
 } else {
   temp := AlarmStatus(v)

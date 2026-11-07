@@ -738,7 +738,7 @@ type StatsReply struct {
 func (x *StatsReply) Reset() {
 	*x = StatsReply{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_container_proto_msgTypes[1]
+		mi := &file_container_proto_msgTypes[12]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}

@@ -1391,8 +1391,8 @@ func (p *ContainerNetInfo)  ReadField2(iprot thrift.TProtocol) error {
   return nil
 }
 
-func (p *ContainerNetInfo)  ReadField3(ctx context.Context, iprot thrift.TProtocol) error {
-  if v, err := iprot.ReadString(ctx); err != nil {
+func (p *ContainerNetInfo)  ReadField3(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadString(); err != nil {
   return thrift.PrependError("error reading field 3: ", err)
 } else {
   p.Gateway = v

@@ -717,7 +717,7 @@ func (x *StatsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use StatsRequest.ProtoReflect.Descriptor instead.
 func (*StatsRequest) Descriptor() ([]byte, []int) {
-	return file_container_proto_rawDescGZIP(), []int{0}
+	return file_container_proto_rawDescGZIP(), []int{11}
 }
 
 func (x *StatsRequest) GetHostId() string {

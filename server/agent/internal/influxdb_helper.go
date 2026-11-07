@@ -167,7 +167,7 @@ func influxdbQuery(start, end int64, interval uint, containerName string) (*pb.M
 	}
 
 	for i, r := range response.Results {
-		if len(hooks) > i+1 {
+		if len(hooks) >= i+1 {
 			var list []*pb.MonitorSample
 			for _, s := range r.Series {
 				for _, v := range s.Values {

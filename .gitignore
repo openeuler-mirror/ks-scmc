@@ -1,28 +1,3 @@
-<<<<<<< HEAD
-ks-scmc-server
-ks-scmc-authz
-ks-scmc-user
-ks-scmc-encrypt
-ks-scmc-dstats
-
-buildrpm/_buildres
-buildrpm/_buildtmp
-
-buildrun/*.run
-buildrun/*.readme
-buildrun/*.md5.txt
-buildrun/*.zip
-buildrun/ks-run/ks-scmc/1.1/*.sh
-buildrun/ks-run/ks-scmc/1.1/**/*.rpm
-
-.vscode/***
-.idea
-
-# comment off when coding, comment on when you need to merge code
-# go.mod
-# go.sum
-# vendor/
-# rpc/pb/***
 ks-scmc-server
 ks-scmc-authz
 ks-scmc-user

@@ -1041,8 +1041,8 @@ func (p *ContainerImage)  ReadField1(iprot thrift.TProtocol) error {
   return nil
 }
 
-func (p *ContainerImage)  ReadField2(ctx context.Context, iprot thrift.TProtocol) error {
-  if v, err := iprot.ReadString(ctx); err != nil {
+func (p *ContainerImage)  ReadField2(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadString(); err != nil {
   return thrift.PrependError("error reading field 2: ", err)
 } else {
   p.InuseVersion = v

@@ -2,13 +2,10 @@ package internal
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
-	"github.com/docker/docker/pkg/jsonmessage"
 	"io"
-	"io/ioutil"
 	"os"
-	"path"
+	"path/filepath"
 	"reflect"
 	"regexp"
 	"strings"
@@ -38,88 +35,31 @@ import (
 	"scmc/model/opensnitch"
 	"scmc/rpc"
 	pb "scmc/rpc/pb/container"
+	secpb "scmc/rpc/pb/security"
+
+	// "scmc/rpc/pb/logging"
 	"scmc/server/args"
 )
 
-const (
-	defaultCPUShares   = 1024
-	maxCPUShares       = 3072
-	maxBlkioWeight     = 1000
-	defaultBlkioWeight = 0
-	bufSize            = 4 * 1024 * 1024
-	dockerTimeout      = 10 * time.Minute
-	hostsPath          = "/var/lib/docker/containers"
+//const defaultCPUShares = 1024
+//const updateContainerFlagFile = "/var/lib/ks-scmc/networks/iptables/updateIptables.flag"
+var (
+	defaultCPUShares int64 = 1024
+	updateContainerFlagFile string = filepath.Join(common.Config.Network.IPtablesPath, "updateIptables.flag")
 )
 
-//--cpushares不设置的话，docker默认是1024
-//优先级为1,设置为默认值的1.25倍
-//优先级为2,设置为默认值的1.5倍
-//优先级为3,设置为默认值的2倍
-//优先级为4,设置为默认值的2.5倍
-//优先级为5,设置为默认值的3倍
-var cpuShareMap = map[int64]int64{
-	1: 1280,
-	2: 1536,
-	3: 2048,
-	4: 2560,
-	5: maxCPUShares,
-}
-
-var blkioWeightMap = map[int64]uint16{
-	1: 600,
-	2: 700,
-	3: 800,
-	4: 900,
-	5: maxBlkioWeight,
-}
-
-//磁盘优先级=>blkioWeigh
-func toBlkioWeight(diskPrio int64) uint16 {
-	if diskPrio <= 0 {
-		return defaultBlkioWeight
-	}
-	if v, ok := blkioWeightMap[diskPrio]; ok {
-		return uint16(v)
-	}
-	return defaultBlkioWeight
-}
-
-//blkioWeight => 磁盘优先级
-func fromBlkioWeight(blkioWeight uint16) int64 {
-
-	if blkioWeight <= defaultBlkioWeight {
-		return 0
-	}
-	for k, v := range blkioWeightMap {
-		if v == blkioWeight {
-			return k
-		}
-	}
-	return 0
-}
-
 func toCPUShares(cpuPrio int64) int64 {
-	//小于等于0,或大于5都返回defaultCPUShares
 	if cpuPrio <= 0 {
 		return defaultCPUShares
 	}
-	if v, ok := cpuShareMap[cpuPrio]; ok {
-		return v
-	}
-	return defaultCPUShares
+	return cpuPrio + defaultCPUShares // default cpu shares 1024
 }
 
 func fromCPUShares(cpuShares int64) int64 {
-
 	if cpuShares <= defaultCPUShares {
 		return 0
 	}
-	for k, v := range cpuShareMap {
-		if v == cpuShares {
-			return k
-		}
-	}
-	return 0
+	return cpuShares - defaultCPUShares
 }
 
 func dockerResourceConfig(in *pb.ResourceLimit) container.Resources {
@@ -131,7 +71,6 @@ func dockerResourceConfig(in *pb.ResourceLimit) container.Resources {
 			r.NanoCPUs = int64(numCPU()) * 1e9
 		}
 		r.CPUShares = toCPUShares(in.CpuPrio)
-		r.BlkioWeight = toBlkioWeight(in.DiskPrio)
 		r.Memory = int64(in.MemoryLimit * megaBytes)
 		r.MemoryReservation = int64(in.MemorySoftLimit * megaBytes)
 		r.MemorySwap = -1 // prevent contaienr start error
@@ -154,6 +93,15 @@ type ContainerServer struct {
 	pb.UnimplementedContainerServer
 }
 
+// 确认是否为 IPC 容器, 如果为 IPC 容器就不展示出来
+func (s *ContainerServer) isIpcContainer(id string) bool {
+	_, err := litedb.GetIpcConfigByID(id)
+	if err != nil {
+		return false
+	}
+	return true
+}
+
 func (s *ContainerServer) List(ctx context.Context, in *pb.ListRequest) (*pb.ListReply, error) {
 	cli, err := docker.Client()
 	if err != nil {
@@ -174,6 +122,10 @@ func (s *ContainerServer) List(ctx context.Context, in *pb.ListRequest) (*pb.Lis
 
 	var reply pb.ListReply
 	for _, c := range containers {
+		if s.isIpcContainer(c.ID) { // 过滤掉 IPC 容器
+			continue
+		}
+
 		info := pb.ContainerInfo{
 			Id:           c.ID,
 			Image:        c.Image,
@@ -192,7 +144,72 @@ func (s *ContainerServer) List(ctx context.Context, in *pb.ListRequest) (*pb.Lis
 	return &reply, nil
 }
 
-func (s *ContainerServer) setSecurityConfig(id, uuid, name string, pid int, fromUpdate bool, sec *pb.SecurityConfig) error {
+
+func (s *ContainerServer) getHostIps(nodeid int64) ([]string, error) {
+	var result []string
+
+	//vip, err := extractVIPFromConfig("/etc/keepalived/keepalived.conf")
+	vip, err := getVIPAddr()
+	if err != nil {
+		log.Warnf("get platform vip failed, err: %v", err)
+	} else {
+		result = append(result, vip)
+	}
+
+	n, err := db.QueryNodeByID(nodeid)
+	if err != nil {
+		log.Warnf("get platform nodeip failed, err: %v", err)
+		return result, err
+	} else {
+		result = append(result, n.Address)
+	}
+
+	return result, nil
+}
+
+// 获取所有运行中容器的 IP 地址
+func (s *ContainerServer) getContainerIps(curContainerId string) ([]string, error) {
+
+	cli, err := docker.Client()
+	if err != nil {
+		return nil, rpc.ErrInternal
+	}
+
+	containers, err := cli.ContainerList(context.Background(), types.ContainerListOptions{})
+	if err != nil {
+		return nil, fmt.Errorf("get container list: %w", err)
+	}
+
+	var result []string
+	for _, container := range containers {
+
+		//如果为当前容器，则跳过该容器
+		if container.ID == curContainerId {
+			continue
+		}
+
+		// 获取容器详细信息
+		inspect, err := cli.ContainerInspect(context.Background(), container.ID)
+		if err != nil {
+			continue // 跳过无法获取详情的容器
+		}
+
+		// 提取主网络 IP
+		networkSettings := inspect.NetworkSettings
+		if networkSettings != nil {
+			for _, network := range networkSettings.Networks {
+				if network.IPAddress != "" {
+					result = append(result, network.IPAddress)
+					break
+				}
+			}
+		}
+	}
+
+	return result, nil
+}
+
+func (s *ContainerServer) setSecurityConfig(nodeid int64, id, uuid, name string, pid int, fromUpdate bool, sec *pb.SecurityConfig, oldsec *pb.SecurityConfig) error {
 	if sec == nil {
 		return nil
 	}
@@ -200,6 +217,13 @@ func (s *ContainerServer) setSecurityConfig(id, uuid, name string, pid int, from
 	if fromUpdate {
 		if err := kysec.CleanAll(id, false); err != nil {
 			log.Warnf("kysec.CleanAll: %v", err)
+			return rpc.ErrContainerFileProtection
+		}
+	}
+
+	if sec.FileProtection != nil {
+		if err := kysec.UpdateFileAccess(id, sec.FileProtection.IsOn, sec.FileProtection.FileList, []string{}); err != nil {
+			log.Warnf("UpdateFileAccess %v err: %v", id, err)
 			return rpc.ErrContainerFileProtection
 		}
 	}
@@ -221,51 +245,152 @@ func (s *ContainerServer) setSecurityConfig(id, uuid, name string, pid int, from
 		}
 	}
 
-	if sec.NprocProtection != nil {
-		var inRule = &litedb.ProcProtection{
-			IsOn:    sec.NprocProtection.IsOn,
-			ExeList: sec.NprocProtection.ExeList,
-		}
-
-		if err := opensnitch.SaveRule(inRule, id, uuid); err != nil {
-			log.Warnf("SaveRule id=%v err=%v", id, err)
-			return rpc.ErrContainerNprocProtection
-		}
+	// 支持安全分级模板
+	if sec.SecurityLevelTemplate < 1 || sec.SecurityLevelTemplate > 5 {
+		// 默认设置为 5 级模板
+		sec.SecurityLevelTemplate = 5
 	}
 
-	if sec.FileProtection != nil {
-		if err := kysec.UpdateFileAccess(id, sec.FileProtection.IsOn, sec.FileProtection.FileList, []string{}); err != nil {
-			log.Warnf("UpdateFileAccess %v err: %v", id, err)
-			return rpc.ErrContainerFileProtection
-		}
+	// 网络进程白名单比较独立，各个级别的模板都可以设置
+	if err := s.SetNprocProtection(id, uuid, sec.NprocProtection); err != nil {
+		log.Warnf("SaveRule id=%v err=%v", id, err)
+		return rpc.ErrContainerNprocProtection
 	}
 
+	if sec.NetworkRule == nil {
+		sec.NetworkRule = oldsec.NetworkRule
+	}
+
+	hostips, err := s.getHostIps(nodeid)
+	if err != nil {
+		log.Warnf("get host ips failed, %v", err)
+		return rpc.ErrContainerSecurityLevel
+	}
+
+	containerips, err := s.getContainerIps(id)
+	if err != nil {
+		log.Warnf("get container ips failed, %v", err)
+		return rpc.ErrContainerSecurityLevel
+	}
+
+	// 0:白名单 1:黑名单 2:黑白名单，白名单优先级高
+	listType := 0
+	var downloadRules []*litedb.NetworkRule
+
+	switch sec.SecurityLevelTemplate {
+	case 5:
+		// 5 级模板策略，全部可访问，配置了白名单，就按照白名单的规则走，无需处理
+		downloadRules = sec.NetworkRule.Rules
+	case 4:
+		// 4 级模板策略，全部不可访问，除非在白名单中，等效于强制开启白名单
+		sec.NetworkRule.IsOn = true
+		sec.DisableCmdOperation = true
+		downloadRules = sec.NetworkRule.Rules
+	case 3:
+		// 三级模板策略，能访问平台，平台外的通过白名单也可以访问，等效于强制开启白名单，且平台IP都在白名单内
+		sec.DisableCmdOperation = true
+		downloadRules = sec.NetworkRule.Rules
+		fallthrough
+	case 2:
+		// 三级模板策略网络规则等同于二级模板，只是少了启停控制
+		sec.NetworkRule.IsOn = true
+		for _, ip := range hostips {
+			rule := &litedb.NetworkRule{
+				Protocols: []string{"tcp", "udp", "icmp"},
+				Addr:      ip,
+				Port:      0,
+				Drop:      false,
+			}
+			if !containsRule(sec.NetworkRule.Rules, rule) {
+				downloadRules = append(downloadRules, rule)
+			}
+		}
+		downloadRules = append(downloadRules, sec.NetworkRule.Rules...)
+	case 1:
+		sec.NetworkRule.IsOn = true
+		var platformrules []*litedb.NetworkRule
+
+		if sec.NetworkAccessControll {
+			for _, ip := range append(hostips, containerips...) {
+				rule := &litedb.NetworkRule{
+					Protocols: []string{"tcp", "udp", "icmp"},
+					Addr:      ip,
+					Port:      0,
+					Drop:      false,
+				}
+				platformrules = append(platformrules, rule)
+			}
+			// 白名单打开，对外访问控制打开情况下，只有在白名单内的平台和容器IP可以访问
+			downloadRules, err = UnionNetworkRules(platformrules, sec.NetworkRule.Rules)
+			if err != nil {
+				log.Warnf("UnionNetworkRules failed, %v", err)
+				return rpc.ErrContainerSecurityLevel
+			}
+
+		} else {
+			// 白名单打开，对外访问控制关闭情况下，平台和容器IP且不在白名单内，禁止，加黑名单，其它流量，允许
+			// 换种方式实现，同时加白名单和黑名单，白名单的优先级高
+			for _, ip := range append(hostips, containerips...) {
+				rule := &litedb.NetworkRule{
+					Protocols: []string{"tcp", "udp", "icmp"},
+					Addr:      ip,
+					Port:      0,
+					Drop:      true,
+				}
+				platformrules = append(platformrules, rule)
+			}
+
+			downloadRules = append(sec.NetworkRule.Rules, platformrules...)
+			listType = 2
+		}
+	default:
+		log.Warnf("invalid parameter SecurityLevelTemplate: %v", sec.SecurityLevelTemplate)
+		return rpc.ErrContainerSecurityLevel
+	}
+
+	if err := s.SetNetworkRule(id, name, pid, sec.NetworkRule.IsOn, listType, downloadRules); err != nil {
+		log.Warnf("UpdateContainerIPtablesFile %v err: %v", name, err)
+		return rpc.ErrContainerNetworkRule
+	}
+
+	// 启停控制比较独立，各个级别的模板设置方式都一样
 	if err := authz.HandleSensitiveContainer(sec.DisableCmdOperation, fromUpdate, name, id); err != nil {
 		log.Warnf("HandleSensitiveContainer err=%v", err)
 		return rpc.ErrContainerCmdOperation
 	}
 
-	if sec.NetworkRule != nil {
-		var rules []*litedb.NetworkRule
-		for _, v := range sec.NetworkRule.Rules {
-			rules = append(rules, &litedb.NetworkRule{
-				Protocols: v.Protocols,
-				Addr:      v.Addr,
-				Port:      v.Port,
-			})
-		}
+	return nil
+}
 
-		fileName := id + "-" + name
-		if err := iptables.UpdateContainerIPtablesFile(fileName, sec.NetworkRule.IsOn, rules, pid); err != nil {
-			log.Warnf("UpdateContainerIPtablesFile %v err: %v", fileName, err)
-			return rpc.ErrContainerNetworkRule
-		}
+func (s *ContainerServer) SetNetworkRule(id, name string, pid int, on bool, blacklist int, rules []*litedb.NetworkRule) error {
+
+	fileName := id + "-" + name
+	if err := iptables.UpdateContainerIPtablesFile(fileName, pid, on, blacklist, rules); err != nil {
+		return rpc.ErrContainerNetworkRule
 	}
 
 	return nil
 }
 
-func (s *ContainerServer) create(configs *pb.ContainerConfigs) (string, error) {
+func (s *ContainerServer) SetNprocProtection(id, uuid string, cfg *secpb.ProcProtection) error {
+
+	if cfg == nil {
+		return nil
+	}
+
+	var inRule = &litedb.ProcProtection{
+		IsOn:    cfg.IsOn,
+		ExeList: cfg.ExeList,
+	}
+
+	if err := opensnitch.SaveRule(inRule, id, uuid); err != nil {
+		return rpc.ErrContainerNprocProtection
+	}
+
+	return nil
+}
+
+func (s *ContainerServer) create(nodeid int64, configs *pb.ContainerConfigs) (string, error) {
 	if configs == nil || configs.Image == "" {
 		return "", rpc.ErrInvalidArgument
 	} else if !regexp.MustCompile(containerNamePattern).MatchString(configs.Name) {
@@ -297,8 +422,19 @@ func (s *ContainerServer) create(configs *pb.ContainerConfigs) (string, error) {
 		config.Cmd = cmdSlice
 	}
 
+	/* 设置容器主机名称 */
+	if configs.Hostname != "" {
+		config.Hostname = configs.Hostname
+	}
+
 	hostConfig := container.HostConfig{
 		Privileged: false, // force non-privileged
+	}
+
+	// 设置 IPC 信息
+	if configs.Ipcname != "" {
+		modeName := "container:ipc." + configs.Ipcname
+		hostConfig.IpcMode = container.IpcMode(modeName)
 	}
 
 	for _, m := range configs.Mounts {
@@ -378,7 +514,8 @@ func (s *ContainerServer) create(configs *pb.ContainerConfigs) (string, error) {
 		}
 	}
 
-	if err := s.setSecurityConfig(body.ID, configs.Uuid, configs.Name, 0, false, configs.SecurityConfig); err != nil {
+	if err := s.setSecurityConfig(nodeid, body.ID, configs.Uuid, configs.Name, 0,
+		false, configs.SecurityConfig, nil); err != nil {
 		log.Warnf("setSecurityConfig failed err=%v", err)
 		if e := s.remove(cli, body.ID, true); e != nil {
 			log.Warnf("after setSecurityConfig failed remove container=%v err=%v", body.ID, e)
@@ -395,6 +532,7 @@ func (s *ContainerServer) Create(ctx context.Context, in *pb.CreateRequest) (*pb
 		return nil, rpc.ErrInvalidArgument
 	}
 
+	//in.Configs.Ipcname = "testipc"
 	uuid := uuid.New().String()
 	cfgs := litedb.ContainerConfig{
 		UUID:           uuid,
@@ -407,13 +545,33 @@ func (s *ContainerServer) Create(ctx context.Context, in *pb.CreateRequest) (*pb
 	}
 
 	in.Configs.Uuid = uuid
-	id, err := s.create(in.Configs)
+	id, err := s.create(in.NodeId, in.Configs)
+
+	// 通过 ipcname 获取 ipc容器的容器 id
+	ipcID := ""
+	if in.Configs.Ipcname != "" {
+		ipcInfo, err := litedb.GetIpcConfigByName(in.Configs.Ipcname)
+		if err != nil {
+			log.Warnf("GetIpcConfigByName name: %v, err: %v", in.Configs.Ipcname, err)
+		} else {
+			ipcID = ipcInfo.ContainerID
+		}
+	}
 
 	if err != nil {
 		litedb.RemoveContainerConfigByID(cfgs.ID)
 	} else {
 		cfgs.ContainerID = id
 		litedb.UpdateContainerConfig(&cfgs)
+
+		// 容器与IPC 容器映射表
+		ipcMapCfg := litedb.IpcmapConfig{
+			ContainerName: in.Configs.Name,    //容器名称
+			ContainerID:   id,                 // 容器ID
+			IpcName:       in.Configs.Ipcname, // IPC 容器名称，去掉头部的 ipc. 前缀
+			IpcID:         ipcID,              // IPC 容器对应的 容器ID
+		}
+		litedb.CreateIpcmapConfig(&ipcMapCfg)
 	}
 
 	return &pb.CreateReply{ContainerId: id}, err
@@ -451,6 +609,15 @@ func (s *ContainerServer) Start(ctx context.Context, in *pb.StartRequest) (*pb.S
 		}
 
 		reply.OkIds = append(reply.OkIds, id)
+	}
+
+	if len(reply.OkIds) > 0 {
+		// 容器启动成功，要通知所有容器更新 iptables 规则
+		file, err := os.OpenFile(updateContainerFlagFile, os.O_RDONLY|os.O_CREATE, 0644)
+		if err != nil {
+			log.Warnf("create flag failed when start contain: %v", updateContainerFlagFile)
+		}
+		defer file.Close()
 	}
 
 	return &reply, nil
@@ -516,6 +683,15 @@ func (s *ContainerServer) Stop(ctx context.Context, in *pb.StopRequest) (*pb.Sto
 		return nil, err
 	}
 
+	if len(okIDs) > 0 {
+		// 容器停止成功，要通知所有容器更新 iptables 规则
+		file, err := os.OpenFile(updateContainerFlagFile, os.O_RDONLY|os.O_CREATE, 0644)
+		if err != nil {
+			log.Warnf("create flag failed when stop contain: %v", updateContainerFlagFile)
+		}
+		defer file.Close()
+	}
+
 	return &pb.StopReply{
 		OkIds:     okIDs,
 		FailInfos: failInfos,
@@ -571,8 +747,6 @@ func (s *ContainerServer) Restart(ctx context.Context, in *pb.RestartRequest) (*
 func (s *ContainerServer) Update(ctx context.Context, in *pb.UpdateRequest) (*pb.UpdateReply, error) {
 	var reply pb.UpdateReply
 
-	log.Warnf("---------- container update")
-
 	if in.ContainerId == "" || (in.ResourceLimit == nil && in.RestartPolicy == nil && in.Networks == nil && in.SecurityConfig == nil) {
 		return nil, rpc.ErrInvalidArgument
 	}
@@ -623,7 +797,8 @@ func (s *ContainerServer) Update(ctx context.Context, in *pb.UpdateRequest) (*pb
 
 	updateNetwork(ctx, cli, in.ContainerId, in.Networks)
 
-	if err := s.setSecurityConfig(in.ContainerId, inspectConfigs.Uuid, inspectConfigs.Name, pid, true, in.SecurityConfig); err != nil {
+	if err := s.setSecurityConfig(in.NodeId, in.ContainerId, inspectConfigs.Uuid,
+		inspectConfigs.Name, pid, true, in.SecurityConfig, cfgs.SecurityConfig); err != nil {
 		log.Warnf("Update setSecurityConfig err=%v", err)
 		return nil, err
 	}
@@ -641,12 +816,6 @@ func (s *ContainerServer) Update(ctx context.Context, in *pb.UpdateRequest) (*pb
 		change |= docker.EnvBit
 		for k, v := range in.Envs {
 			envs = append(envs, k+"="+v)
-			//磁盘读写速度、磁盘读写频率
-			if k == "disk_wio" || k == "disk_rio" || k == "disk_rbw" || k == "disk_wbw" {
-				if err := docker.SetContainerDiskLimit(k, in.ContainerId, v); err != nil {
-					return nil, err
-				}
-			}
 		}
 		log.Debugf("%v envs change, %+v, %+v", inspectConfigs.ContainerId, in.Envs, envs)
 	}
@@ -657,7 +826,36 @@ func (s *ContainerServer) Update(ctx context.Context, in *pb.UpdateRequest) (*pb
 		log.Debugf("%v mounts change", inspectConfigs.ContainerId)
 	}
 
-	log.Warnf("---------- 1, change: %v docker.NoneBit: %v", change, docker.NoneBit)
+	// 获取容器与 ipcBase 的映射关系
+	ipcmapCfg, err := litedb.GetIpcmapConfigByCID(in.ContainerId)
+	if err != nil {
+		// 在创建的时候写入的数据，这里不应该失败
+		log.Warnf("Update GetIpcmapConfigByCID id: %v, err: %v", in.ContainerId, err)
+	} else {
+		//如果当前传递过来的和以前的不一样
+		if strings.TrimSpace(ipcmapCfg.IpcName) != strings.TrimSpace(in.Ipcname) {
+			// 获取 ipcBase 容器的容器ID
+			if strings.TrimSpace(in.Ipcname) != "" {
+				ipcInfo, err := litedb.GetIpcConfigByName(strings.TrimSpace(in.Ipcname))
+				if err != nil {
+					log.Warnf("Update litedb.GetIpcConfigByName %v, err: %v", in.Ipcname, err)
+				} else {
+					// 更新数据库
+					ipcmapCfg.IpcName = strings.TrimSpace(in.Ipcname)
+					ipcmapCfg.IpcID = ipcInfo.ContainerID
+					litedb.UpdateIpcmanConfig(ipcmapCfg)
+					change |= docker.IpcBit
+				}
+			} else {
+				ipcmapCfg.IpcName = ""
+				ipcmapCfg.IpcID = ""
+				litedb.UpdateIpcmanConfig(ipcmapCfg)
+				change |= docker.IpcBit
+			}
+		}
+	}
+
+	log.Warnf("change: %v docker.NoneBit: %v", change, docker.NoneBit)
 	if change != docker.NoneBit {
 		if err = docker.ModifyContainerConfig(inspectConfigs.ContainerId, change, envs, mountMap); err != nil {
 			log.Infof("UpdateContainerConfig err=%v", err)
@@ -681,6 +879,50 @@ func (s *ContainerServer) Update(ctx context.Context, in *pb.UpdateRequest) (*pb
 	}
 
 	return &reply, nil
+}
+
+func (s *ContainerServer) UpdateContainerVersion(ctx context.Context, in *pb.UpdateContainerVersionRequest) (*pb.UpdateContainerVersionReply, error) {
+
+	cli, err := docker.Client()
+	if err != nil {
+		return nil, rpc.ErrInternal
+	}
+
+	containerId := in.ContainerId
+
+	cfgs, err := litedb.GetContainerConfig(containerId)
+	if err != nil {
+		log.Warnf("db get container configs id=%v err=%v", containerId, err)
+		return nil, rpc.ErrInternal
+	}
+
+	// inspect container
+	configs, _, err := s.inspect(containerId, true)
+	if err != nil {
+		log.Warnf("inspect container=%v err=%v", containerId, err)
+		return nil, rpc.ErrInternal
+	}
+
+	// remove old container
+	if err := s.remove(cli, containerId, true); err != nil {
+		log.Warnf("remove container=%v err=%v", containerId, err)
+		return nil, rpc.ErrInternal
+	}
+
+	// create new contaienr
+	configs.Image = in.ImgName + ":" + in.ImgVersion
+
+	configs.SecurityConfig = cfgs.SecurityConfig
+	id, err := s.create(in.NodeId, configs)
+	if err != nil {
+		log.Warnf("create container err=%v", err)
+		return nil, rpc.ErrInternal
+	}
+
+	cfgs.ContainerID = id
+	litedb.UpdateContainerConfig(cfgs)
+
+	return &pb.UpdateContainerVersionReply{}, nil
 }
 
 func updateNetwork(ctx context.Context, cli *client.Client, containerID string, networks []*pb.NetworkConfig) error {
@@ -775,6 +1017,11 @@ func (s *ContainerServer) remove(cli *client.Client, containerID string, force b
 		log.Warnf("DelSensitiveContainers err=%v", err)
 	}
 
+	// 移除残余文件夹数据
+	hostPath := filepath.Join(common.Config.Agent.ContainerExtraDataBasedir, configs.Name)
+	log.Warnf("remove all : %v", hostPath)
+	os.RemoveAll(hostPath)
+
 	return nil
 }
 
@@ -804,11 +1051,13 @@ func (s *ContainerServer) Remove(ctx context.Context, in *pb.RemoveRequest) (*pb
 			continue
 		}
 		litedb.RemoveContainerConfig([]string{id})
+		litedb.IpcmapConfigRemoveByCID([]string{id}) // 删除容器与ipc 容器的映射数据
 
 		reply.OkIds = append(reply.OkIds, id)
 	}
 
 	litedb.RemoveContainerConfig(reply.OkIds)
+	litedb.IpcmapConfigRemoveByCID(reply.OkIds) // 删除容器与ipc 容器的映射数据
 	go s.removeContainerBackups(reply.OkIds)
 
 	return &reply, nil
@@ -876,7 +1125,6 @@ func (s *ContainerServer) inspect(id string, backup bool) (*pb.ContainerConfigs,
 		configs.ResouceLimit = &pb.ResourceLimit{
 			CpuLimit:        float64(info.HostConfig.Resources.NanoCPUs) / 1e9,
 			CpuPrio:         fromCPUShares(info.HostConfig.Resources.CPUShares),
-			DiskPrio:        fromBlkioWeight(info.HostConfig.Resources.BlkioWeight),
 			MemoryLimit:     float64(info.HostConfig.Resources.Memory) / megaBytes,
 			MemorySoftLimit: float64(info.HostConfig.Resources.MemoryReservation) / megaBytes,
 		}
@@ -884,6 +1132,18 @@ func (s *ContainerServer) inspect(id string, backup bool) (*pb.ContainerConfigs,
 		if s, ok := info.HostConfig.StorageOpt["size"]; ok {
 			fmt.Sscanf(s, "%fM", &configs.ResouceLimit.DiskLimit)
 		}
+
+		if info.HostConfig.IpcMode.IsContainer() {
+			parts := strings.SplitN(string(info.HostConfig.IpcMode), ":", 2) // parts[1] 为 IPC 容器的容器ID
+			// 容器ID转换为 ipc 名称
+			cfg, err := litedb.GetIpcConfigByID(strings.TrimSpace(parts[1]))
+			if err != nil {
+				configs.Ipcname = ""
+			} else {
+				configs.Ipcname = cfg.ContainerName
+			}
+		}
+
 	}
 
 	if info.NetworkSettings != nil {
@@ -920,6 +1180,9 @@ func (s *ContainerServer) inspectConfig(cli *client.Client, config *container.Co
 			}
 		}
 	}
+
+	// 返回容器主机名
+	ret.Hostname = config.Hostname
 }
 
 func (s *ContainerServer) inspectNetwork(id string, backup bool, settings *types.NetworkSettings, ret *pb.ContainerConfigs) {
@@ -1170,7 +1433,7 @@ func (s *ContainerServer) ResumeBackup(ctx context.Context, in *pb.ResumeBackupR
 	// create new contaienr
 	configs.Image = b.ImageRef
 	configs.SecurityConfig = cfgs.SecurityConfig
-	id, err := s.create(configs)
+	id, err := s.create(in.NodeId, configs)
 	if err != nil {
 		log.Warnf("create container err=%v", err)
 		return nil, rpc.ErrInternal
@@ -1570,217 +1833,9 @@ func (*ContainerServer) KillAppEntry(ctx context.Context, in *pb.KillAppEntryReq
 
 	return &pb.KillAppEntryReply{}, nil
 }
-func (*ContainerServer) Pause(ctx context.Context, in *pb.PauseRequest) (*pb.PauseReply, error) {
-	if in.ContainerId == "" {
-		return nil, rpc.ErrInvalidArgument
-	}
-	cli, err := docker.Client()
-	if err != nil {
-		return nil, rpc.ErrInternal
-	}
-	if err = cli.ContainerPause(ctx, in.ContainerId); err != nil {
-		log.Errorf("ContainerPause: id=%v %v", in.ContainerId, err)
-		return nil, transDockerError(err)
-	}
-	return &pb.PauseReply{}, nil
-}
-func (*ContainerServer) Unpause(ctx context.Context, in *pb.UnpauseRequest) (*pb.UnpauseReply, error) {
-	if in.ContainerId == "" {
-		return nil, rpc.ErrInvalidArgument
-	}
-	cli, err := docker.Client()
-	if err != nil {
-		return nil, rpc.ErrInternal
-	}
-	if err = cli.ContainerUnpause(ctx, in.ContainerId); err != nil {
-		log.Errorf("ContainerPause: id=%v %v", in.ContainerId, err)
-		return nil, transDockerError(err)
-	}
-	return &pb.UnpauseReply{}, nil
-}
-func (*ContainerServer) LoadImage(in *pb.LoadRequest, stream pb.Container_LoadImageServer) error {
-	if _, err := os.Stat(in.TarPath); err != nil {
-		log.Errorf("file not found err: %v", err)
-		return rpc.ErrInternal
-	}
-	pr, pw := io.Pipe()
-	defer pr.Close()
-	go func() {
-		defer pw.Close()
-		file, err := os.Open(in.TarPath)
-		if err != nil {
-			log.Errorf("open file failed: %v", err)
-			pw.CloseWithError(rpc.ErrNotFound)
-			return
-		}
-		defer file.Close()
-		buf := make([]byte, bufSize)
-		for {
-			n, err := file.Read(buf)
-			if err != nil && err != io.EOF {
-				log.Errorf("read tar file error: %v", err)
-				pw.CloseWithError(err)
-				return
-			}
-			if n > 0 {
-				if _, err := pw.Write(buf[:n]); err != nil {
-					log.Errorf("write to buf error: %v", err)
-					return
-				}
-				if err == io.EOF {
-					log.Infof("write to buf finished.")
-					return
-				}
-			}
-		}
-	}()
-	dockerCli, err := docker.ClientWithTimeout(dockerTimeout)
-	if err != nil {
-		log.Errorf("docker cli init error: %v", err)
-	}
-	defer dockerCli.Close()
-	ctx, cancel := context.WithTimeout(stream.Context(), dockerTimeout)
-	defer cancel()
-	resp, err := dockerCli.ImageLoad(ctx, pr, false)
-	if err != nil {
-		log.Errorf("image loaded error: %v", err)
-	}
-	defer resp.Body.Close()
-	decoder := json.NewDecoder(resp.Body)
-	var lastPercent float32
-	for {
-		var msg jsonmessage.JSONMessage
-		if err = decoder.Decode(&msg); err != nil {
-			if err == io.EOF {
-				return stream.Send(&pb.LoadProgress{
-					Update: &pb.LoadProgress_Result{
-						Result: &pb.LoadResult{
-							Success: true,
-							Detail:  "image load success",
-						},
-					},
-				})
-			}
-			log.Errorf("response resolve failed: %v", err)
-			return rpc.ErrInternal
-		}
-		if msg.Error != nil {
-			return stream.Send(&pb.LoadProgress{
-				Update: &pb.LoadProgress_Result{
-					Result: &pb.LoadResult{
-						Success: false,
-						Detail:  msg.Error.Message,
-					},
-				},
-			})
-		}
-		// 处理进度更新
-		if msg.Progress != nil {
-			currentPercent := calculatePercent(msg.Progress)
-			if currentPercent != lastPercent {
-				lastPercent = currentPercent
-				if err := stream.Send(&pb.LoadProgress{
-					Update: &pb.LoadProgress_Percent{Percent: currentPercent},
-				}); err != nil {
-					log.Error("image load progress update failed: %v", err)
-					return rpc.ErrInternal
-				}
-			}
-		}
-		if msg.Stream != "" {
-			if err := stream.Send(&pb.LoadProgress{
-				Update: &pb.LoadProgress_Message{Message: msg.Stream},
-			}); err != nil {
-				log.Error("image load message update failed: %v", err)
-				return rpc.ErrInternal
-			}
-		}
-	}
-}
-func calculatePercent(p *jsonmessage.JSONProgress) float32 {
-	if p.Total == 0 {
-		return 0
-	}
-	return float32(p.Current) / float32(p.Total) * 100
-}
-func (s *ContainerServer) SetContainerExtraHosts(ctx context.Context, in *pb.SetHostsRequest) (reply *pb.SetHostsReply, err error) {
-	hostsFile := path.Join(hostsPath, in.ContainerId, "hosts")
-	content, err := ioutil.ReadFile(hostsFile)
-	if err != nil {
-		log.Errorf("read container hosts file failed: %v", err)
-		return nil, rpc.ErrInternal
-	}
-	trimmedContent := strings.TrimRight(string(content), "\n")
-	var processedLines []string
-	for _, line := range in.ContainerExtrahosts {
-		processedLine := strings.ReplaceAll(line, ":", " ")
-		processedLines = append(processedLines, processedLine)
-	}
-	fullContent := trimmedContent + "\n" + strings.Join(processedLines, "\n") + "\n"
-	newHostsFilePath := path.Join(hostsPath, in.ContainerId, "new_hosts")
-	if err := ioutil.WriteFile(newHostsFilePath, []byte(fullContent), 0644); err != nil {
-		log.Errorf("write to new container hosts failed: %v", err)
-		return nil, rpc.ErrInternal
-	}
-	ctx_, cancel := context.WithCancel(context.Background())
-	defer cancel()
-	inspectReq := &pb.InspectRequest{
-		NodeId:      in.NodeId,
-		ContainerId: in.ContainerId,
-	}
-	inspectResp, err := s.Inspect(ctx_, inspectReq)
-	if err != nil {
-		log.Errorf("inspect container id=%v  error: %v", in.ContainerId, err)
-	}
-	containerConfigs := inspectResp.Configs
-	hostsMount := &pb.Mount{
-		Type:        "bind",
-		Source:      newHostsFilePath,
-		Target:      "/etc/hosts",
-		ReadOnly:    false,
-		Consistency: "consistent",
-	}
-	containerConfigs.Mounts = append(containerConfigs.Mounts, hostsMount)
-	updateRequest := &pb.UpdateRequest{
-		NodeId:        in.NodeId,
-		ContainerId:   in.ContainerId,
-		ResourceLimit: containerConfigs.ResouceLimit,
-		RestartPolicy: containerConfigs.RestartPolicy,
-		Networks:      containerConfigs.Networks,
-		Mounts:        containerConfigs.Mounts,
-	}
-	_, err = s.Update(ctx_, updateRequest)
-	if err != nil {
-		log.Errorf("update container id=%v hosts failed: %v", in.ContainerId, err)
-		return nil, rpc.ErrInternal
-	}
-	return reply, nil
-}
-func (s *ContainerServer) SetContainerQuota(ctx context.Context, in *pb.SetQuotaRequest) (reply *pb.SetQuotaReply, err error) {
-	//先将配置写入数据库
-	data := &db.ContainerLimits{
-		NodeId:      in.NodeId,
-		ContainerId: in.ContainerId,
-		UploadSpeed: in.ContainerLimit.NetWbw,
-		DownSpeed:   in.ContainerLimit.NetRbw,
-	}
-	if err := db.CreateContainerLimits(data); err != nil {
-		log.Errorf("create  container limits failed: %v", err)
-		return nil, rpc.ErrInternal
-	}
-	//开启协程监听docker事件，监听到start restart事件后，处理容器的限速功能
-	cli, err := docker.Client()
-	if err != nil {
-		return nil, rpc.ErrInternal
-	}
-	dm := docker.GetDockerManager(cli)
-	go dm.Start()
-	return reply, nil
-}
-func (s *ContainerServer) GetContainerPid(containerId string) (int, error) {
-	_, pid, err := s.inspect(containerId, false)
-	if err != nil {
-		return 0, fmt.Errorf("Get container Pid error: %v", err)
-	}
-	return pid, nil
+
+func (*ContainerServer) GetContainerStats(ctx context.Context, in *pb.StatsRequest) (*pb.StatsReply, error) {
+	// 这里并不关心 StatsRequest.HostId
+	json_str, _ := docker.HandleStatsRequest()
+	return &pb.StatsReply{StatsData: json_str}, nil
 }

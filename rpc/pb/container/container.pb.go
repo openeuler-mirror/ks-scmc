@@ -71,6 +71,615 @@ func (BACKUP_STATUS) EnumDescriptor() ([]byte, []int) {
 	return file_container_proto_rawDescGZIP(), []int{0}
 }
 
+type SetHostsRequest struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	NodeId              int64    `protobuf:"varint,1,opt,name=node_id,json=nodeId,proto3" json:"node_id,omitempty"`
+	ContainerId         string   `protobuf:"bytes,2,opt,name=container_id,json=containerId,proto3" json:"container_id,omitempty"`
+	ContainerExtrahosts []string `protobuf:"bytes,3,rep,name=container_extrahosts,json=containerExtrahosts,proto3" json:"container_extrahosts,omitempty"`
+}
+
+func (x *SetHostsRequest) Reset() {
+	*x = SetHostsRequest{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_container_proto_msgTypes[0]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *SetHostsRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SetHostsRequest) ProtoMessage() {}
+
+func (x *SetHostsRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_container_proto_msgTypes[0]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SetHostsRequest.ProtoReflect.Descriptor instead.
+func (*SetHostsRequest) Descriptor() ([]byte, []int) {
+	return file_container_proto_rawDescGZIP(), []int{0}
+}
+
+func (x *SetHostsRequest) GetNodeId() int64 {
+	if x != nil {
+		return x.NodeId
+	}
+	return 0
+}
+
+func (x *SetHostsRequest) GetContainerId() string {
+	if x != nil {
+		return x.ContainerId
+	}
+	return ""
+}
+
+func (x *SetHostsRequest) GetContainerExtrahosts() []string {
+	if x != nil {
+		return x.ContainerExtrahosts
+	}
+	return nil
+}
+
+type SetQuotaRequest struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	NodeId         int64           `protobuf:"varint,1,opt,name=node_id,json=nodeId,proto3" json:"node_id,omitempty"`
+	ContainerId    string          `protobuf:"bytes,2,opt,name=container_id,json=containerId,proto3" json:"container_id,omitempty"`
+	ContainerLimit *ContainerLimit `protobuf:"bytes,3,opt,name=container_limit,json=containerLimit,proto3" json:"container_limit,omitempty"`
+}
+
+func (x *SetQuotaRequest) Reset() {
+	*x = SetQuotaRequest{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_container_proto_msgTypes[1]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *SetQuotaRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SetQuotaRequest) ProtoMessage() {}
+
+func (x *SetQuotaRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_container_proto_msgTypes[1]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SetQuotaRequest.ProtoReflect.Descriptor instead.
+func (*SetQuotaRequest) Descriptor() ([]byte, []int) {
+	return file_container_proto_rawDescGZIP(), []int{1}
+}
+
+func (x *SetQuotaRequest) GetNodeId() int64 {
+	if x != nil {
+		return x.NodeId
+	}
+	return 0
+}
+
+func (x *SetQuotaRequest) GetContainerId() string {
+	if x != nil {
+		return x.ContainerId
+	}
+	return ""
+}
+
+func (x *SetQuotaRequest) GetContainerLimit() *ContainerLimit {
+	if x != nil {
+		return x.ContainerLimit
+	}
+	return nil
+}
+
+type ContainerLimit struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	NetRbw float64 `protobuf:"fixed64,1,opt,name=net_rbw,json=netRbw,proto3" json:"net_rbw,omitempty"`
+	NetWbw float64 `protobuf:"fixed64,2,opt,name=net_wbw,json=netWbw,proto3" json:"net_wbw,omitempty"`
+}
+
+func (x *ContainerLimit) Reset() {
+	*x = ContainerLimit{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_container_proto_msgTypes[2]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *ContainerLimit) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ContainerLimit) ProtoMessage() {}
+
+func (x *ContainerLimit) ProtoReflect() protoreflect.Message {
+	mi := &file_container_proto_msgTypes[2]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ContainerLimit.ProtoReflect.Descriptor instead.
+func (*ContainerLimit) Descriptor() ([]byte, []int) {
+	return file_container_proto_rawDescGZIP(), []int{2}
+}
+
+func (x *ContainerLimit) GetNetRbw() float64 {
+	if x != nil {
+		return x.NetRbw
+	}
+	return 0
+}
+
+func (x *ContainerLimit) GetNetWbw() float64 {
+	if x != nil {
+		return x.NetWbw
+	}
+	return 0
+}
+
+type SetQuotaReply struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+}
+
+func (x *SetQuotaReply) Reset() {
+	*x = SetQuotaReply{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_container_proto_msgTypes[3]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *SetQuotaReply) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SetQuotaReply) ProtoMessage() {}
+
+func (x *SetQuotaReply) ProtoReflect() protoreflect.Message {
+	mi := &file_container_proto_msgTypes[3]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SetQuotaReply.ProtoReflect.Descriptor instead.
+func (*SetQuotaReply) Descriptor() ([]byte, []int) {
+	return file_container_proto_rawDescGZIP(), []int{3}
+}
+
+type SetHostsReply struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+}
+
+func (x *SetHostsReply) Reset() {
+	*x = SetHostsReply{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_container_proto_msgTypes[4]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *SetHostsReply) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SetHostsReply) ProtoMessage() {}
+
+func (x *SetHostsReply) ProtoReflect() protoreflect.Message {
+	mi := &file_container_proto_msgTypes[4]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SetHostsReply.ProtoReflect.Descriptor instead.
+func (*SetHostsReply) Descriptor() ([]byte, []int) {
+	return file_container_proto_rawDescGZIP(), []int{4}
+}
+
+type LoadRequest struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	TarPath string `protobuf:"bytes,1,opt,name=tar_path,json=tarPath,proto3" json:"tar_path,omitempty"`
+	NodeId  int64  `protobuf:"varint,2,opt,name=node_id,json=nodeId,proto3" json:"node_id,omitempty"`
+}
+
+func (x *LoadRequest) Reset() {
+	*x = LoadRequest{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_container_proto_msgTypes[5]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *LoadRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*LoadRequest) ProtoMessage() {}
+
+func (x *LoadRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_container_proto_msgTypes[5]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use LoadRequest.ProtoReflect.Descriptor instead.
+func (*LoadRequest) Descriptor() ([]byte, []int) {
+	return file_container_proto_rawDescGZIP(), []int{5}
+}
+
+func (x *LoadRequest) GetTarPath() string {
+	if x != nil {
+		return x.TarPath
+	}
+	return ""
+}
+
+func (x *LoadRequest) GetNodeId() int64 {
+	if x != nil {
+		return x.NodeId
+	}
+	return 0
+}
+
+type LoadProgress struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	// Types that are assignable to Update:
+	//	*LoadProgress_Percent
+	//	*LoadProgress_Message
+	//	*LoadProgress_Result
+	Update isLoadProgress_Update `protobuf_oneof:"update"`
+}
+
+func (x *LoadProgress) Reset() {
+	*x = LoadProgress{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_container_proto_msgTypes[6]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *LoadProgress) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*LoadProgress) ProtoMessage() {}
+
+func (x *LoadProgress) ProtoReflect() protoreflect.Message {
+	mi := &file_container_proto_msgTypes[6]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use LoadProgress.ProtoReflect.Descriptor instead.
+func (*LoadProgress) Descriptor() ([]byte, []int) {
+	return file_container_proto_rawDescGZIP(), []int{6}
+}
+
+func (m *LoadProgress) GetUpdate() isLoadProgress_Update {
+	if m != nil {
+		return m.Update
+	}
+	return nil
+}
+
+func (x *LoadProgress) GetPercent() float32 {
+	if x, ok := x.GetUpdate().(*LoadProgress_Percent); ok {
+		return x.Percent
+	}
+	return 0
+}
+
+func (x *LoadProgress) GetMessage() string {
+	if x, ok := x.GetUpdate().(*LoadProgress_Message); ok {
+		return x.Message
+	}
+	return ""
+}
+
+func (x *LoadProgress) GetResult() *LoadResult {
+	if x, ok := x.GetUpdate().(*LoadProgress_Result); ok {
+		return x.Result
+	}
+	return nil
+}
+
+type isLoadProgress_Update interface {
+	isLoadProgress_Update()
+}
+
+type LoadProgress_Percent struct {
+	Percent float32 `protobuf:"fixed32,1,opt,name=percent,proto3,oneof"` // 进度百分比 (0~100)
+}
+
+type LoadProgress_Message struct {
+	Message string `protobuf:"bytes,2,opt,name=message,proto3,oneof"` // 状态消息
+}
+
+type LoadProgress_Result struct {
+	Result *LoadResult `protobuf:"bytes,3,opt,name=result,proto3,oneof"` // 最终结果
+}
+
+func (*LoadProgress_Percent) isLoadProgress_Update() {}
+
+func (*LoadProgress_Message) isLoadProgress_Update() {}
+
+func (*LoadProgress_Result) isLoadProgress_Update() {}
+
+type LoadResult struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Success bool   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	Detail  string `protobuf:"bytes,2,opt,name=detail,proto3" json:"detail,omitempty"`
+}
+
+func (x *LoadResult) Reset() {
+	*x = LoadResult{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_container_proto_msgTypes[7]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *LoadResult) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*LoadResult) ProtoMessage() {}
+
+func (x *LoadResult) ProtoReflect() protoreflect.Message {
+	mi := &file_container_proto_msgTypes[7]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use LoadResult.ProtoReflect.Descriptor instead.
+func (*LoadResult) Descriptor() ([]byte, []int) {
+	return file_container_proto_rawDescGZIP(), []int{7}
+}
+
+func (x *LoadResult) GetSuccess() bool {
+	if x != nil {
+		return x.Success
+	}
+	return false
+}
+
+func (x *LoadResult) GetDetail() string {
+	if x != nil {
+		return x.Detail
+	}
+	return ""
+}
+
+type UnpauseRequest struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	NodeId      int64  `protobuf:"varint,1,opt,name=node_id,json=nodeId,proto3" json:"node_id,omitempty"`
+	ContainerId string `protobuf:"bytes,2,opt,name=container_id,json=containerId,proto3" json:"container_id,omitempty"`
+}
+
+func (x *UnpauseRequest) Reset() {
+	*x = UnpauseRequest{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_container_proto_msgTypes[8]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *UnpauseRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UnpauseRequest) ProtoMessage() {}
+
+func (x *UnpauseRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_container_proto_msgTypes[8]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UnpauseRequest.ProtoReflect.Descriptor instead.
+func (*UnpauseRequest) Descriptor() ([]byte, []int) {
+	return file_container_proto_rawDescGZIP(), []int{8}
+}
+
+func (x *UnpauseRequest) GetNodeId() int64 {
+	if x != nil {
+		return x.NodeId
+	}
+	return 0
+}
+
+func (x *UnpauseRequest) GetContainerId() string {
+	if x != nil {
+		return x.ContainerId
+	}
+	return ""
+}
+
+type UnpauseReply struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+}
+
+func (x *UnpauseReply) Reset() {
+	*x = UnpauseReply{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_container_proto_msgTypes[9]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *UnpauseReply) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UnpauseReply) ProtoMessage() {}
+
+func (x *UnpauseReply) ProtoReflect() protoreflect.Message {
+	mi := &file_container_proto_msgTypes[9]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UnpauseReply.ProtoReflect.Descriptor instead.
+func (*UnpauseReply) Descriptor() ([]byte, []int) {
+	return file_container_proto_rawDescGZIP(), []int{9}
+}
+
+type PauseRequest struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	NodeId      int64  `protobuf:"varint,1,opt,name=node_id,json=nodeId,proto3" json:"node_id,omitempty"`
+	ContainerId string `protobuf:"bytes,2,opt,name=container_id,json=containerId,proto3" json:"container_id,omitempty"`
+}
+
+func (x *PauseRequest) Reset() {
+	*x = PauseRequest{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_container_proto_msgTypes[10]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *PauseRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PauseRequest) ProtoMessage() {}
+
+func (x *PauseRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_container_proto_msgTypes[10]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PauseRequest.ProtoReflect.Descriptor instead.
+func (*PauseRequest) Descriptor() ([]byte, []int) {
+	return file_container_proto_rawDescGZIP(), []int{10}
+}
+
+func (x *PauseRequest) GetNodeId() int64 {
+	if x != nil {
+		return x.NodeId
+	}
+	return 0
+}
+
+func (x *PauseRequest) GetContainerId() string {
+	if x != nil {
+		return x.ContainerId
+	}
+	return ""
+}
+
 type StatsRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache

@@ -10,6 +10,7 @@ import (
 	"scmc/model/db"
 	pb "scmc/rpc/pb/image"
 	"scmc/server/controller/internal"
+    "scmc/common"
 )
 
 type SyncImages struct {
@@ -23,7 +24,7 @@ func (s *SyncImages) RunAtInit() bool {
 	return true
 }
 func (s *SyncImages) Run() {
-	if isMaster() {
+	if common.IsMaster() {
 		SyncNodeImages()
 	}
 }

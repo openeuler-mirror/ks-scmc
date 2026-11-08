@@ -512,7 +512,7 @@ func (s *NetworkServer) RemoveIPtables(ctx context.Context, in *pb.RemoveIPtable
 }
 
 /* 删除 iptables 相关信息 */
-func deleteIptablesInfo(ipaddrInfo, parentNic string) {
+func deleteIptablesInfo(ipaddrInfo, parent_nic string) {
     if len(ipaddrInfo) == 0 {
         return
     }
@@ -524,7 +524,7 @@ func deleteIptablesInfo(ipaddrInfo, parentNic string) {
          _, ipnet, err := net.ParseCIDR(part)
         if err == nil {
 	    s := ipnet.String()
-            iptbInfo = "iptables -t nat -D POSTROUTING -s " + s + " -o " + parentNic + " -j MASQUERADE"
+            iptbInfo = "iptables -t nat -D POSTROUTING -s " + s + " -o " + parent_nic + " -j MASQUERADE"
             cird = s
         }
     }
@@ -536,7 +536,7 @@ func deleteIptablesInfo(ipaddrInfo, parentNic string) {
             "-t", "nat",
             "-D", "POSTROUTING",
             "-s", cird,
-            "-o", parentNic,
+            "-o", parent_nic,
             "-j", "MASQUERADE",
         )
 
@@ -548,7 +548,7 @@ func deleteIptablesInfo(ipaddrInfo, parentNic string) {
 }
 
 
-func insertAndDeleteLines(parentNic string, filePath string, startStr, endStr string, newContents []string) error {
+func insertAndDeleteLines(parent_nic string, filePath string, startStr, endStr string, newContents []string) error {
 	// 打开文件
 	file, err := os.Open(filePath)
 	if err != nil {
@@ -580,7 +580,7 @@ func insertAndDeleteLines(parentNic string, filePath string, startStr, endStr st
 
 	// 删除添加的 Iptables 信息
 	if len(ipaddrInfo) > 0 {
-		deleteIptablesInfo(ipaddrInfo, parentNic)
+		deleteIptablesInfo(ipaddrInfo, parent_nic)
 	}
 
 
@@ -732,21 +732,21 @@ func (s *NetworkServer) createNetwork(name, subnet, gateway, parent string) erro
 
 	// path := "/etc/sysconfig/network-scripts/ifcfg-" + parent
 	path, _ := getNicFileName(parent)
-	beginFlag := "# ks-scmc config begin, donot modify"
-	endFlag := "# ks-scmc config end, donot modify"
+	begin_flag := "# ks-scmc config begin, donot modify"
+	end_flag := "# ks-scmc config end, donot modify"
 
 	newlines := []string{}
 	add := ""
-	hostName := name + "-host"
+	host_name := name + "-host"
 
-	newlines = append(newlines, beginFlag)
+	newlines = append(newlines, begin_flag)
 	add = fmt.Sprintf("ip link set %s promisc on", parent)
 	newlines = append(newlines, add)
 
-	add = fmt.Sprintf("ip link add link %s %s type macvlan mode bridge", parent, hostName)
+	add = fmt.Sprintf("ip link add link %s %s type macvlan mode bridge", parent, host_name)
 	newlines = append(newlines, add)
 
-	add = fmt.Sprintf("ip link set dev %s up", hostName)
+	add = fmt.Sprintf("ip link set dev %s up", host_name)
 	newlines = append(newlines, add)
 
 	/*
@@ -756,20 +756,20 @@ func (s *NetworkServer) createNetwork(name, subnet, gateway, parent string) erro
 	// _, masklen, _ := parseSubnet(subnet)
 
 	//add = fmt.Sprintf("ip addr add %s/%d dev %s", firstip, masklen, host_name)
-	add = fmt.Sprintf("ip addr add %s/%d dev %s", macvlan_ip, masklen, hostName)
+	add = fmt.Sprintf("ip addr add %s/%d dev %s", macvlan_ip, masklen, host_name)
 	newlines = append(newlines, add)
 
 	// 路由信息在给 网卡配置 IP地址的时候会主动添加
 	//add = fmt.Sprintf("ip route add %s dev %s", subnet, host_name)
 	//newlines = append(newlines, add)
-	newlines = append(newlines, endFlag)
+	newlines = append(newlines, end_flag)
 
 	/*
 	// 添加一条 iptables 信息, 不能写入文件，会导致执行很多次
 	// add = fmt.Sprintf("iptables -t nat -A POSTROUTING -s %s -o %s -j MASQUERADE", subnet, parent)
 	// newlines = append(newlines, add)
 	*/
-	err = insertAndDeleteLines(parent, path, beginFlag, endFlag, newlines)
+	err = insertAndDeleteLines(parent, path, begin_flag, end_flag, newlines)
 	if err != nil {
 		log.Warnf("NetworkCreate name=%v err=%v", name, err)
 		return err
@@ -798,8 +798,8 @@ func (s *NetworkServer) createNetwork(name, subnet, gateway, parent string) erro
 			//return fmt.Errorf("failed to execute command: %v", cmd)
 			log.Warnf("failed to execute command: %v", cmd)
 		}
-		setVirtualNicMac(hostName)
-		log.Debugf("NetworkCreate parent=%v name=%v hostName=%v gateway=%v subnet=%v", parent, name, hostName, gateway, subnet)
+		setVirtualNicMac(host_name)
+		log.Debugf("NetworkCreate parent=%v name=%v host_name=%v gateway=%v subnet=%v", parent, name, host_name, gateway, subnet)
 	}()
 
 	return nil
@@ -874,9 +874,9 @@ func getPhysicalInterfaceName(virtualNicName string) (string, error) {
 
 func (s *NetworkServer) removeNetwork(name string) error {
 	//parent_nic, err_res := getPhysicalInterfaceName(name)
-	parent_nic, errRes := getParentInterface(name)
-	if errRes != nil {
-		log.Warnf("NetworkRemove name=%v err=%v", name, errRes)
+	parent_nic, err_res := getParentInterface(name)
+	if err_res != nil {
+		log.Warnf("NetworkRemove name=%v err=%v", name, err_res)
 		// 这里不退出了，继续下面的操作
 		parent_nic = ""
 		// return err_res
@@ -885,19 +885,19 @@ func (s *NetworkServer) removeNetwork(name string) error {
 	if parent_nic != "" {
 		//path := "/etc/sysconfig/network-scripts/ifcfg-" + parent_nic
 		path, _ := getNicFileName(parent_nic)
-		beginFlag := "# ks-scmc config begin, donot modify"
-		endFlag := "# ks-scmc config end, donot modify"
+		begin_flag := "# ks-scmc config begin, donot modify"
+		end_flag := "# ks-scmc config end, donot modify"
 		newlines := []string{}
 
-		errRes = insertAndDeleteLines(parent_nic, path, beginFlag, endFlag, newlines)
-		if errRes != nil {
-			log.Warnf("NetworkCreate name=%v err=%v", name, errRes)
+		err_res = insertAndDeleteLines(parent_nic, path, begin_flag, end_flag, newlines)
+		if err_res != nil {
+			log.Warnf("NetworkCreate name=%v err=%v", name, err_res)
 			// return err_res
 		}
 
 		cmd := exec.Command("ip", "link", "del", "link", parent_nic, name + "-host")
-		errRes = cmd.Run()
-		if errRes != nil {
+		err_res = cmd.Run()
+		if err_res != nil {
 			// return fmt.Errorf("failed to execute command: %v", cmd)
 			log.Warnf("failed to execute command: %v", cmd)
 		}

@@ -179,8 +179,8 @@ func _initNetlink(pid uint32) (int, error) {
 		return 0, err
 	}
 
-	msgType := setNlmsgType(NLMSG_COM_TYPE_HELLO, 0, 0)
-	if err = sendNetlink(fd, []byte{}, 0, msgType); err != nil {
+	msg_type := setNlmsgType(NLMSG_COM_TYPE_HELLO, 0, 0)
+	if err = sendNetlink(fd, []byte{}, 0, msg_type); err != nil {
 		return 0, err
 	}
 
@@ -193,12 +193,12 @@ func deinitNetlink(fd int) {
 	 unix.Close(fd)
 }
 
-func sendNetlink(fd int, msg []byte, len int, msgType uint16) error {
-	nlhLen := nlmsgSpace(len)
+func sendNetlink(fd int, msg []byte, len int, msg_type uint16) error {
+	nlh_len := nlmsgSpace(len)
 
 	nlh := &unix.NlMsghdr{
-		Len:  nlhLen,
-		Type: msgType,
+		Len:  nlh_len,
+		Type: msg_type,
 		Pid:  uint32(os.Getpid()),
 	}
 
@@ -209,7 +209,7 @@ func sendNetlink(fd int, msg []byte, len int, msgType uint16) error {
 	}
 
 	headLen := uint32(buf.Len())
-	supLen := nlhLen - headLen - uint32(len)
+	supLen := nlh_len - headLen - uint32(len)
 	if len > 0 {
 		buffer := make([]byte, supLen)
 		if binary.Write(buf, localEndian, msg) != nil ||
@@ -219,7 +219,7 @@ func sendNetlink(fd int, msg []byte, len int, msgType uint16) error {
 		}
 	}
 
-	log.Debugf("nlhLen:%v, len:%v, headLen:%v, suplen:%v, buflen:%v", nlhLen, len, headLen, supLen, buf.Len())
+	// log.Debugf("nlh_len:%v, len:%v, headLen:%v, suplen:%v, buflen:%v", nlh_len, len, headLen, supLen, buf.Len())
 	if err := unix.Sendto(fd, buf.Bytes(), 0, &unix.SockaddrNetlink{Family: unix.AF_NETLINK}); err != nil {
 		log.Warnf("Failed to send  whitelist netlink: %v", err)
 		return err

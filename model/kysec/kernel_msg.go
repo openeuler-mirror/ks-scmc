@@ -179,8 +179,8 @@ func _initNetlink(pid uint32) (int, error) {
 		return 0, err
 	}
 
-	msg_type := setNlmsgType(NLMSG_COM_TYPE_HELLO, 0, 0)
-	if err = sendNetlink(fd, []byte{}, 0, msg_type); err != nil {
+	msgType := setNlmsgType(NLMSG_COM_TYPE_HELLO, 0, 0)
+	if err = sendNetlink(fd, []byte{}, 0, msgType); err != nil {
 		return 0, err
 	}
 
@@ -193,12 +193,12 @@ func deinitNetlink(fd int) {
 	 unix.Close(fd)
 }
 
-func sendNetlink(fd int, msg []byte, len int, msg_type uint16) error {
-	nlh_len := nlmsgSpace(len)
+func sendNetlink(fd int, msg []byte, len int, msgType uint16) error {
+	nlhLen := nlmsgSpace(len)
 
 	nlh := &unix.NlMsghdr{
-		Len:  nlh_len,
-		Type: msg_type,
+		Len:  nlhLen,
+		Type: msgType,
 		Pid:  uint32(os.Getpid()),
 	}
 
@@ -209,7 +209,7 @@ func sendNetlink(fd int, msg []byte, len int, msg_type uint16) error {
 	}
 
 	headLen := uint32(buf.Len())
-	supLen := nlh_len - headLen - uint32(len)
+	supLen := nlhLen - headLen - uint32(len)
 	if len > 0 {
 		buffer := make([]byte, supLen)
 		if binary.Write(buf, localEndian, msg) != nil ||

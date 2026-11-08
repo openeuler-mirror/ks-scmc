@@ -145,5 +145,6 @@ func Server() (*grpc.Server, error) {
 	go internal.ContainerWhiteConfig()
 	go internal.CPUUsageProbe()
 	go internal.NodeNetworkControlConfig()
+    go internal.RuntimeLogWriter()
 	return s, nil
 }

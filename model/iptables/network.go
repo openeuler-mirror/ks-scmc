@@ -715,13 +715,13 @@ func ruleToCmd(filePath, fileName string, isOn bool, blacklist int, rules []*lit
 	for _, rule := range rules {
 		var curRule string
 		var addrstr string
-		var addrstr_dst string
+		var addrstrDst string
 		if rule.Addr != "" {
 			addrstr = "-s " + rule.Addr
-			addrstr_dst = "-d " + rule.Addr
+			addrstrDst = "-d " + rule.Addr
 			if net.ParseIP(rule.Addr) != nil {
 				addrstr += "/32"
-				addrstr_dst += "/32"
+				addrstrDst += "/32"
 			}
 		}
 

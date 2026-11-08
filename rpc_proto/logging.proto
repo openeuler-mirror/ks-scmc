@@ -132,6 +132,9 @@ enum EVENT_TYPE {
     WARN_NODE_OFFLINE      = 1002;
     WARN_ILLEGAL_CONTAINER = 1003;
     WARN_NODE_ABNORMAL     = 1004;
+
+    WARN_PROCESS_LIST   = 1101;
+    WARN_FILE_LIST      = 1102;
 }
 
 message RuntimeLog {

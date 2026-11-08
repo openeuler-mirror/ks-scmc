@@ -8,7 +8,7 @@ import (
 	"unsafe"
     "fmt"
     "time"
-    "sync"
+    // "sync"
 	// "strings"
 	// "io/ioutil"
 
@@ -117,6 +117,7 @@ func bCheckSysIsV6() bool {
 
 }
 
+/* 
 var (
     clifd int
     cliErr error
@@ -129,8 +130,17 @@ func initNetlink()(int, error) {
     })
     return clifd, cliErr
 }
+*/
 
-func _initNetlink() (int, error) {
+func initNetlink()(int, error) {
+    return _initNetlink(0)
+}
+
+func initNetlinkRecv()(int, error) {
+    return _initNetlink(uint32(os.Getpid()))
+}
+
+func _initNetlink(pid uint32) (int, error) {
 	// 以配置文件里面的为准 
 	protocol := NETLINK_WL
 	if common.Config.Netlink.Protocol != NETLINK_WL {
@@ -161,7 +171,7 @@ func _initNetlink() (int, error) {
 	lsa := &unix.SockaddrNetlink{
 		Family: unix.AF_NETLINK,
 		Groups: 0,
-		Pid:    uint32(os.Getpid()),
+        Pid: pid,
 	}
 
 	if err := unix.Bind(fd, lsa); err != nil {
@@ -178,9 +188,9 @@ func _initNetlink() (int, error) {
 }
 
 func deinitNetlink(fd int) {
-	// msgtype := setNlmsgType(NLMSG_COM_TYPE_QUIT, 0, 0)
-	// sendNetlink(fd, []byte{}, 0, msgtype)
-	// unix.Close(fd)
+	 msgtype := setNlmsgType(NLMSG_COM_TYPE_QUIT, 0, 0)
+	 sendNetlink(fd, []byte{}, 0, msgtype)
+	 unix.Close(fd)
 }
 
 func sendNetlink(fd int, msg []byte, len int, msg_type uint16) error {
@@ -220,7 +230,7 @@ func sendNetlink(fd int, msg []byte, len int, msg_type uint16) error {
 
 // 安全相关审计日志
 func recvNetlink()([]byte, error) {
-    fd, err := initNetlink()
+    fd, err := initNetlinkRecv()
     if err != nil {
         log.Warnf("recvNetlink initNetlink failed: %v", err)
         return nil, err

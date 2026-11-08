@@ -5,13 +5,16 @@ import (
 	"context"
 	"fmt"
 	"net"
+	"github.com/docker/docker/api/types/filters"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"regexp"
 	"sort"
 	"strings"
+	"sync"
 	"time"
-
+	"github.com/docker/docker/api/types/events"
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/mount"
@@ -21,6 +24,7 @@ import (
 	"scmc/common"
 	"scmc/model/docker"
 	"scmc/model/litedb"
+	"scmc/model/db"
 	pb "scmc/rpc/pb/container"
 )
 
@@ -411,4 +415,200 @@ func getRuleSignature(r *litedb.NetworkRule) string {
 		return ""
 	}
 	return fmt.Sprintf("%s:%d:%s", r.Addr, r.Port, strings.Join(r.Protocols, ","))
+}
+
+type DockerManager struct {
+	client       *client.Client
+	tcController *TrafficController
+	cancel       context.CancelFunc
+	startOnce    sync.Once  // 保证启动逻辑只执行一次
+	mu           sync.Mutex // 状态锁
+	isRunning    bool       // 运行状态标识
+}
+
+var (
+	instance *DockerManager
+	once     sync.Once
+)
+
+func GetDockerManager(cli *client.Client) *DockerManager {
+	once.Do(func() {
+		tc := NewTrafficController()
+		instance = &DockerManager{
+			client:       cli,
+			tcController: tc,
+		}
+	})
+	return instance
+}
+func (dm *DockerManager) Start() {
+	dm.startOnce.Do(func() {
+		dm.mu.Lock()
+		defer dm.mu.Unlock()
+
+		if !dm.isRunning {
+			go dm.startEventLoop() // 真正的启动逻辑
+			dm.isRunning = true
+		}
+	})
+}
+func (dm *DockerManager) startEventLoop() {
+	ctx, cancel := context.WithCancel(context.Background())
+	dm.cancel = cancel
+	options := types.EventsOptions{
+		Filters: filters.NewArgs(
+			filters.Arg("type", events.ContainerEventType),
+		),
+	}
+	for {
+		msgChan, errs := dm.client.Events(ctx, options)
+		select {
+		case msg := <-msgChan:
+			dm.handleEvent(msg)
+		case err := <-errs:
+			log.Printf("Docker event error: %v", err)
+		case <-ctx.Done():
+			return
+		}
+	}
+}
+func (dm *DockerManager) Stop() {
+	if dm.cancel != nil {
+		dm.cancel()
+	}
+}
+
+func (dm *DockerManager) handleEvent(msg events.Message) {
+	if msg.Type != events.ContainerEventType {
+		return
+	}
+
+	switch msg.Action {
+	case "start", "restart":
+		// 获取限速配置
+		limit, err := db.QueryContainerLimitsByContainerId(msg.Actor.ID)
+		if err != nil {
+			log.Errorf("Events: start or restart.Can not get container limit config,err: %v", err)
+			return
+		}
+
+		// 应用限速规则
+		if pid, err := getContainerPID(msg.Actor.ID); err == nil {
+			log.Errorf("Events: start or restart.Can not get container pid,err: %v", err)
+			if pid == 0 {
+				log.Errorf("container pid err.")
+				return
+			}
+			dm.tcController.ApplyLimit(pid, limit.UploadSpeed, limit.DownSpeed)
+		}
+
+	case "die", "destroy":
+		// 清理规则
+		if pid, err := getContainerPID(msg.Actor.ID); err == nil {
+			log.Errorf("Events: die or destroy.Can not get container limit config,err: %v", err)
+			if pid == 0 {
+				log.Errorf("Events: die or destroy.container pid err.")
+				return
+			}
+			dm.tcController.RemoveLimit(pid)
+		}
+		//dm.dbManager.DeleteLimit(event.ID)
+	}
+}
+
+type TrafficController struct{}
+
+func NewTrafficController() *TrafficController {
+	return &TrafficController{}
+}
+func (tc *TrafficController) ApplyLimit(pid int, upload, download float64) error {
+	if upload == 0 && download == 0 {
+		return tc.RemoveLimit(pid)
+	}
+
+	if upload > 0 {
+		if err := setupIngress(pid, upload); err != nil {
+			return err
+		}
+	}
+
+	if download > 0 {
+		if err := setupEgress(pid, download); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+func (tc *TrafficController) RemoveLimit(pid int) error {
+	cmds := []string{
+		fmt.Sprintf("nsenter -t %d -n tc qdisc del dev eth0 root", pid),
+		fmt.Sprintf("nsenter -t %d -n tc qdisc del dev eth0 ingress", pid),
+		fmt.Sprintf("nsenter -t %d -n tc qdisc del dev ifb0 root", pid),
+		fmt.Sprintf("nsenter -t %d -n ip link del ifb0", pid),
+	}
+
+	for _, cmd := range cmds {
+		if err := exec.Command("sh", "-c", cmd).Run(); err != nil {
+			// 忽略"Device or resource busy"等错误
+			log.Errorf("cmd: %v. exec error: %v", cmd, err)
+		}
+	}
+	return nil
+}
+func setupIngress(pid int, rate float64) error {
+	if err := createIFB(pid); err != nil {
+		return err
+	}
+
+	cmds := []string{
+		fmt.Sprintf("nsenter -t %d -n tc qdisc add dev eth0 handle ffff: ingress", pid),
+		fmt.Sprintf("nsenter -t %d -n tc filter add dev eth0 parent ffff: protocol ip u32 match u32 0 0 action mirred egress redirect dev ifb0", pid),
+		fmt.Sprintf("nsenter -t %d -n tc qdisc add dev ifb0 root tbf rate %dmbit latency 100ms burst %d",
+			pid, rate*8, calculateBurst(rate)),
+	}
+
+	for _, cmd := range cmds {
+		if err := exec.Command("sh", "-c", cmd).Run(); err != nil {
+			log.Errorf("ingress setup failed: %v", err)
+			return fmt.Errorf("ingress setup failed: %v", err)
+		}
+	}
+	return nil
+}
+func setupEgress(pid int, rate float64) error {
+	cmd := fmt.Sprintf("nsenter -t %d -n tc qdisc add dev eth0 root tbf rate %dmbit latency 100ms burst %d",
+		pid, rate*8, calculateBurst(rate))
+	return exec.Command("sh", "-c", cmd).Run()
+}
+func createIFB(pid int) error {
+	cmds := []string{
+		"modprobe ifb",
+		fmt.Sprintf("ip link add ifb0 type ifb"),
+		fmt.Sprintf("ip link set ifb0 netns %d", pid),
+		fmt.Sprintf("nsenter -t %d -n ip link set ifb0 up", pid),
+	}
+
+	for _, cmd := range cmds {
+		if err := exec.Command("sh", "-c", cmd).Run(); err != nil {
+			return fmt.Errorf("IFB creation failed: %v", err)
+		}
+	}
+	return nil
+}
+
+func calculateBurst(rate float64) float64 {
+	if rate < 1 {
+		return 1000
+	}
+	return rate * 125000 // 1MB/s = 1,000,000 bytes
+}
+func getContainerPID(containerID string) (int, error) {
+	// 实现获取容器PID的逻辑（通过docker inspect）
+	// 返回PID和可能的错误
+	s := &ContainerServer{}
+	pid, err := s.GetContainerPid(containerID)
+	if err != nil {
+		return 0, err
+	}
+	return pid, nil
 }

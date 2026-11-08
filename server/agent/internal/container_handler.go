@@ -905,7 +905,17 @@ func (s *ContainerServer) Update(ctx context.Context, in *pb.UpdateRequest) (*pb
 	if err != nil {
 		// 在创建的时候写入的数据，这里不应该失败
 		log.Warnf("Update GetIpcmapConfigByCID id: %v, err: %v", in.ContainerId, err)
-	} else {
+		// 创建一条新记录
+		ipcmapCfg = &litedb.IpcmapConfig {
+			ContainerName: cfgs.ContainerName, //容器名称
+			ContainerID : in.ContainerId, // 容器ID
+			IpcName: "", // IPC 容器名称，去掉头部的 ipc. 前缀
+			IpcID: "",  // IPC 容器对应的容器ID 
+		}
+		litedb.CreateIpcmapConfig(ipcmapCfg)
+	}
+
+	{
 		//如果当前传递过来的和以前的不一样
 		if strings.TrimSpace(ipcmapCfg.IpcName) != strings.TrimSpace(in.Ipcname) {
 			// 获取 ipcBase 容器的容器ID

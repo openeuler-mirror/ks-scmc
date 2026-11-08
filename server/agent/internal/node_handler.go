@@ -48,6 +48,8 @@ var blockedPorts = map[uint32]bool{
 	19091: true,
 	10051: true, // agent
 	10050: true, // controller
+	873: true, //rsyncd
+
 }
 
 func nodeStatus() (*pb.NodeStatus, error) {
@@ -231,13 +233,6 @@ func (s *NodeServer) UpdateNetworkRule(ctx context.Context, in *pb.UpdateNetwork
 		//keepalived
 		mergedRules = append(mergedRules, &litedb.NetworkRule{
 			Protocols: []string{"112"},
-			Addr:      "0.0.0.0/0",
-			Port:      0,
-		})
-
-		// rsyncd
-		mergedRules = append(mergedRules, &litedb.NetworkRule{
-			Protocols: []string{"873"},
 			Addr:      "0.0.0.0/0",
 			Port:      0,
 		})

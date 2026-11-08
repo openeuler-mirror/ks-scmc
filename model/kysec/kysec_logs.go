@@ -9,6 +9,7 @@ import (
 
 	log "github.com/sirupsen/logrus"
 	"scmc/model/db"
+    "scmc/model/litedb"
     "scmc/rpc/pb/logging"
 )
 
@@ -140,6 +141,7 @@ func FetchKernelLogs() {
         detail = strings.Trim(detail, "\x00")
 
         container_id := ""
+        container_name := ""
         ev_module := logging.EVENT_MODULE_NONE
         node_id, node_name, address, err := getNodeInfos()
         if err != nil {
@@ -152,6 +154,10 @@ func FetchKernelLogs() {
         } else {
             ev_module = logging.EVENT_MODULE_CONTAINER
             container_id = strings.Trim(string(adt_log.Id[:]), "\x00")
+            cfgs, err := litedb.GetContainerConfig(container_id)
+            if err == nil {
+                container_name = cfgs.ContainerName
+            }
         }
 
         nodeinfo := fmt.Sprintf("%s(%s)", node_name, address)
@@ -161,7 +167,7 @@ func FetchKernelLogs() {
             NodeId: int64(node_id),
             NodeInfo: nodeinfo,
             ContainerID: container_id,
-            ContainerName: "",
+            ContainerName: container_name,
             Detail: detail,
         })
 

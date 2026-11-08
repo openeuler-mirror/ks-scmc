@@ -61,8 +61,8 @@ func (h *KsScmcHandler) installContainerInternal(nodeNameorip string, imageName 
 
 	//组装PB数据
 	containerConfig := &containerPB.ContainerConfigs{
-		Name:  container_name,
-		Image: image_name + ":" + image_ver,
+		Name:  containerName,
+		Image: imageName + ":" + imageVer,
 		Networks: []*containerPB.NetworkConfig{
 			{Interface: networkInterfaceName},
 		},
@@ -104,14 +104,14 @@ func (h *KsScmcHandler) installContainerInternal(nodeNameorip string, imageName 
 	return 0, nil
 }
 
-func (h *KsScmcHandler) StartContainer(node_name string, name string) (string, error) {
-	code, _ := h._StartContainer(node_name, name)
+func (h *KsScmcHandler) StartContainer(nodeName string, name string) (string, error) {
+	code, _ := h.startContainerInternal(nodeName, name)
 	return Response2String(code), nil
 }
 
-func (h *KsScmcHandler) _StartContainer(node_nameorip string, container_name string) (int32, error) {
+func (h *KsScmcHandler) startContainerInternal(nodeNameorip string, containerName string) (int32, error) {
 
-	nodeInfo, err := GetNodeId(node_nameorip)
+	nodeInfo, err := GetNodeId(nodeNameorip)
 	if err != nil {
 		logrus.Error(err)
 		return 1, nil
@@ -126,7 +126,7 @@ func (h *KsScmcHandler) _StartContainer(node_nameorip string, container_name str
 
 	ctx_, cancel := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancel()
-	containerId, err := GetContainerId(cli, container_name, ctx_)
+	containerId, err := GetContainerId(cli, containerName, ctx_)
 	if err != nil {
 		logrus.Error(err)
 		return 3, nil
@@ -150,14 +150,14 @@ func (h *KsScmcHandler) _StartContainer(node_nameorip string, container_name str
 	return 0, nil
 }
 
-func (h *KsScmcHandler) StopContainer(node_name string, name string) (string, error) {
-	code, _ := h._StopContainer(node_name, name)
+func (h *KsScmcHandler) StopContainer(nodeName string, name string) (string, error) {
+	code, _ := h.stopContainerInternal(nodeName, name)
 	return Response2String(code), nil
 }
 
-func (h *KsScmcHandler) _StopContainer(node_nameorip string, container_name string) (int32, error) {
+func (h *KsScmcHandler) stopContainerInternal(nodeNameorip string, containerName string) (int32, error) {
 
-	nodeInfo, err := GetNodeId(node_nameorip)
+	nodeInfo, err := GetNodeId(nodeNameorip)
 	if err != nil {
 		logrus.Error(err)
 		return 1, nil
@@ -172,7 +172,7 @@ func (h *KsScmcHandler) _StopContainer(node_nameorip string, container_name stri
 	}
 
 	cli := containerPB.NewContainerClient(conn)
-	containerId, err := GetContainerId(cli, container_name, ctx_)
+	containerId, err := GetContainerId(cli, containerName, ctx_)
 	if err != nil {
 		logrus.Error(err)
 		return 3, nil
@@ -196,14 +196,14 @@ func (h *KsScmcHandler) _StopContainer(node_nameorip string, container_name stri
 	return 0, nil
 }
 
-func (h *KsScmcHandler) UninstallContainer(node_name string, name string) (string, error) {
-	code, _ := h._UninstallContainer(node_name, name)
+func (h *KsScmcHandler) UninstallContainer(nodeName string, name string) (string, error) {
+	code, _ := h.uninstallContainerInternal(nodeName, name)
 	return Response2String(code), nil
 }
 
-func (h *KsScmcHandler) _UninstallContainer(node_nameorip string, container_name string) (int32, error) {
+func (h *KsScmcHandler) uninstallContainerInternal(nodeNameorip string, containerName string) (int32, error) {
 
-	nodeInfo, err := GetNodeId(node_nameorip)
+	nodeInfo, err := GetNodeId(nodeNameorip)
 	if err != nil {
 		logrus.Error(err)
 		return 1, nil
@@ -219,7 +219,7 @@ func (h *KsScmcHandler) _UninstallContainer(node_nameorip string, container_name
 
 	cli := containerPB.NewContainerClient(conn)
 
-	containerId, err := GetContainerId(cli, container_name, ctx_)
+	containerId, err := GetContainerId(cli, containerName, ctx_)
 	if err != nil {
 		logrus.Error(err)
 		return 3, nil
@@ -257,9 +257,9 @@ func (h *KsScmcHandler) _UninstallContainer(node_nameorip string, container_name
 	return 0, nil
 }
 
-func (h *KsScmcHandler) GetContainerStatus(node_nameorip string, container_name string) (int32, error) {
+func (h *KsScmcHandler) GetContainerStatus(nodeNameorip string, containerName string) (int32, error) {
 
-	nodeInfo, err := GetNodeId(node_nameorip)
+	nodeInfo, err := GetNodeId(nodeNameorip)
 	if err != nil {
 		logrus.Error(err)
 		return 1, nil
@@ -282,7 +282,7 @@ func (h *KsScmcHandler) GetContainerStatus(node_nameorip string, container_name 
 
 	var containerInfo *containerPB.ContainerInfo
 	for i := range r.Containers {
-		if r.Containers[i].Info.Name == container_name {
+		if r.Containers[i].Info.Name == containerName {
 			containerInfo = r.Containers[i].Info
 		}
 	}
@@ -300,7 +300,7 @@ func (h *KsScmcHandler) GetContainerStatus(node_nameorip string, container_name 
 	return 0, nil
 }
 
-func (h *KsScmcHandler) GetContainerMetrics(node_nameorip string, container_name string) (*ksscmc.GetContainerMetricsResponse, error) {
+func (h *KsScmcHandler) GetContainerMetrics(nodeNameorip string, containerName string) (*ksscmc.GetContainerMetricsResponse, error) {
 
 	containerMetricResponse := &ksscmc.ContainerMetric{}
 	response := &ksscmc.GetContainerMetricsResponse{
@@ -308,7 +308,7 @@ func (h *KsScmcHandler) GetContainerMetrics(node_nameorip string, container_name
 		RetCode:         1, // 成功码
 	}
 
-	nodeInfo, err := GetNodeId(node_nameorip)
+	nodeInfo, err := GetNodeId(nodeNameorip)
 	if err != nil {
 		logrus.Error(err)
 		return response, nil
@@ -331,7 +331,7 @@ func (h *KsScmcHandler) GetContainerMetrics(node_nameorip string, container_name
 
 	var containerInfo *containerPB.ContainerInfo
 	for i := range r.Containers {
-		if r.Containers[i].Info.Name == container_name {
+		if r.Containers[i].Info.Name == containerName {
 			containerInfo = r.Containers[i].Info
 		}
 	}
@@ -374,8 +374,8 @@ func (h *KsScmcHandler) GetContainerMetrics(node_nameorip string, container_name
 	return response, nil
 }
 
-func (h *KsScmcHandler) GetContainerImageVers(node_nameorip string, name string) (r string, err error) {
-	res, _ := h.GetImageVer4Container(node_nameorip, name)
+func (h *KsScmcHandler) GetContainerImageVers(nodeNameorip string, name string) (r string, err error) {
+	res, _ := h.GetImageVer4Container(nodeNameorip, name)
 	retData := make(map[string]interface{})
 	retData["status"] = res.RetCode
 	retData["message"] = "failed"
@@ -398,13 +398,13 @@ func (h *KsScmcHandler) GetContainerImageVers(node_nameorip string, name string)
 	// return fmt.Sprintf("{\"image_name\":\"%s\",\"inuse_version\":\"%s\"}", res.ContainerImage.ImageName, res.ContainerImage.InuseVersion), nil
 }
 
-func (h *KsScmcHandler) GetImageVer4Container(node_nameorip string, container_name string) (*ksscmc.GetImageVer4ContainerResponse, error) {
+func (h *KsScmcHandler) GetImageVer4Container(nodeNameorip string, containerName string) (*ksscmc.GetImageVer4ContainerResponse, error) {
 	response := &ksscmc.GetImageVer4ContainerResponse{
 		ContainerImage: &ksscmc.ContainerImage{},
 		RetCode:        1, // 成功码
 	}
 
-	nodeInfo, err := GetNodeId(node_nameorip)
+	nodeInfo, err := GetNodeId(nodeNameorip)
 	if err != nil {
 		logrus.Error(err)
 		return response, nil
@@ -427,13 +427,13 @@ func (h *KsScmcHandler) GetImageVer4Container(node_nameorip string, container_na
 
 	var containerInfo *containerPB.ContainerInfo
 	for i := range r.Containers {
-		if r.Containers[i].Info.Name == container_name {
+		if r.Containers[i].Info.Name == containerName {
 			containerInfo = r.Containers[i].Info
 		}
 	}
 
 	if containerInfo == nil {
-		logrus.Errorf("Failed to find container: %s", container_name)
+		logrus.Errorf("Failed to find container: %s", containerName)
 		return response, nil
 	}
 
@@ -448,9 +448,9 @@ func (h *KsScmcHandler) GetImageVer4Container(node_nameorip string, container_na
 	return response, nil
 }
 
-func (h *KsScmcHandler) GetContainer(node_name string, container_name string) (int32, error) {
+func (h *KsScmcHandler) GetContainer(nodeName string, containerName string) (int32, error) {
 
-	nodeInfo, err := GetNodeId(node_name)
+	nodeInfo, err := GetNodeId(nodeName)
 	if err != nil {
 		logrus.Error(err)
 		return 1, nil
@@ -473,7 +473,7 @@ func (h *KsScmcHandler) GetContainer(node_name string, container_name string) (i
 
 	var containerInfo *containerPB.ContainerInfo
 	for i := range r.Containers {
-		if r.Containers[i].Info.Name == container_name {
+		if r.Containers[i].Info.Name == containerName {
 			containerInfo = r.Containers[i].Info
 		}
 	}
@@ -486,14 +486,14 @@ func (h *KsScmcHandler) GetContainer(node_name string, container_name string) (i
 	return 0, nil
 }
 
-func (h *KsScmcHandler) UpdateContainer(node_name string, container_name string, new_ver string) (string, error) {
-	code, _ := h._UpdateContainer(node_name, container_name, new_ver)
+func (h *KsScmcHandler) UpdateContainer(nodeName string, containerName string, newVer string) (string, error) {
+	code, _ := h.updateContainerInternal(nodeName, containerName, newVer)
 	return Response2String(code), nil
 }
 
-func (h *KsScmcHandler) _UpdateContainer(node_name string, container_name string, new_ver string) (int32, error) {
+func (h *KsScmcHandler) updateContainerInternal(nodeName string, containerName string, newVer string) (int32, error) {
 
-	nodeInfo, err := GetNodeId(node_name)
+	nodeInfo, err := GetNodeId(nodeName)
 	if err != nil {
 		logrus.Error(err)
 		return 1, nil
@@ -516,7 +516,7 @@ func (h *KsScmcHandler) _UpdateContainer(node_name string, container_name string
 
 	var containerInfo *containerPB.ContainerInfo
 	for i := range r.Containers {
-		if r.Containers[i].Info.Name == container_name {
+		if r.Containers[i].Info.Name == containerName {
 			containerInfo = r.Containers[i].Info
 		}
 	}
@@ -569,7 +569,7 @@ func (h *KsScmcHandler) _UpdateContainer(node_name string, container_name string
 	//create container
 	oldImage := inspectReply.Configs.Image
 	imageArr := strings.Split(oldImage, ":")
-	inspectReply.Configs.Image = imageArr[0] + ":" + new_ver
+	inspectReply.Configs.Image = imageArr[0] + ":" + newVer
 	createRequest := &containerPB.CreateRequest{
 		NodeId:  nodeInfo.ID,
 		Configs: inspectReply.Configs,
@@ -585,7 +585,7 @@ func (h *KsScmcHandler) _UpdateContainer(node_name string, container_name string
 	return 0, nil
 }
 
-func (h *KsScmcHandler) GetAlarmList(node_name string) (string, error) {
+func (h *KsScmcHandler) GetAlarmList(nodeName string) (string, error) {
 	alarmList := AlarmResponse{
 		Status:  1,
 		Message: "failed",
@@ -593,7 +593,7 @@ func (h *KsScmcHandler) GetAlarmList(node_name string) (string, error) {
 		HAlarms: []HAlarm{},
 	}
 	alarmListJson, _ := json.Marshal(alarmList)
-	nodeInfo, err := GetNodeId(node_name)
+	nodeInfo, err := GetNodeId(nodeName)
 	if err != nil {
 		logrus.Error(err)
 		return string(alarmListJson), nil
@@ -714,7 +714,7 @@ func (h *KsScmcHandler) GetAllNodeList() (*ksscmc.GetAllNodeListResponse, error)
 	return response, nil
 }
 
-func (h *KsScmcHandler) GetAllContainers(node_name string) (r string, err error) {
+func (h *KsScmcHandler) GetAllContainers(nodeName string) (r string, err error) {
 	response := map[string]interface{}{
 		"status":     0,
 		"message":    "success",
@@ -723,7 +723,7 @@ func (h *KsScmcHandler) GetAllContainers(node_name string) (r string, err error)
 
 	data := []ksscmc.GetAllContainersResponse{}
 
-	containersInfo, _ := h.GetAllContainerList(node_name)
+	containersInfo, _ := h.GetAllContainerList(nodeName)
 	for _, containerInfo := range containersInfo.Containerlist {
 		tmp := ksscmc.GetAllContainersResponse{
 			Name:      containerInfo.ContainerName,
@@ -745,7 +745,7 @@ func (h *KsScmcHandler) GetAllContainers(node_name string) (r string, err error)
 			Level:     0,
 			Nets:      nil,
 		}
-		networkInfo, _ := h._GetContainerNetwork(node_name, tmp.Name)
+		networkInfo, _ := h.getContainerNetworkInternal(nodeName, tmp.Name)
 		tmp.Nets = append(tmp.Nets, &ksscmc.NetworkInterface{
 			EthName: "",
 			IP:      networkInfo.ContainerNetInfo.IP,
@@ -810,7 +810,7 @@ func (h *KsScmcHandler) GetAllContainersV2(nid string) (r string, err error) {
 			Level:     0,
 			Nets:      nil,
 		}
-		networkInfo, _ := h._GetContainerNetwork(nodeInfo.Name, tmp.Name)
+		networkInfo, _ := h.getContainerNetworkInternal(nodeInfo.Name, tmp.Name)
 		tmp.Nets = append(tmp.Nets, &ksscmc.NetworkInterface{
 			EthName: "",
 			IP:      networkInfo.ContainerNetInfo.IP,
@@ -828,7 +828,7 @@ func (h *KsScmcHandler) GetAllContainersV2(nid string) (r string, err error) {
 	return string(jsonStr), nil
 }
 
-func (h *KsScmcHandler) GetAllContainerList(node_name string) (*ksscmc.GetAllContainerListResponse, error) {
+func (h *KsScmcHandler) GetAllContainerList(nodeName string) (*ksscmc.GetAllContainerListResponse, error) {
 	ctx_, cancel := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancel()
 	response := &ksscmc.GetAllContainerListResponse{
@@ -837,7 +837,7 @@ func (h *KsScmcHandler) GetAllContainerList(node_name string) (*ksscmc.GetAllCon
 	}
 
 	// nodes, err := db.ListNodes()
-	node, err := db.QueryNodeByName(node_name)
+	node, err := db.QueryNodeByName(nodeName)
 	nodes := []*db.NodeInfo{node}
 	if err != nil {
 		logrus.Error(err)
@@ -947,8 +947,8 @@ func (h *KsScmcHandler) GetAllContainerList(node_name string) (*ksscmc.GetAllCon
 	return response, nil
 }
 
-func (h *KsScmcHandler) GetContainerNetwork(node_nameorip string, container_name string) (r string, err error) {
-	res, err := h._GetContainerNetwork(node_nameorip, container_name)
+func (h *KsScmcHandler) GetContainerNetwork(nodeNameorip string, containerName string) (r string, err error) {
+	res, err := h.getContainerNetworkInternal(nodeNameorip, containerName)
 	if res.RetCode != 0 {
 		logrus.Error(err)
 		return fmt.Sprintf("{\"status\": %d, \"message\": %s}", res.RetCode, "failed"), nil
@@ -969,14 +969,14 @@ func (h *KsScmcHandler) GetContainerNetwork(node_nameorip string, container_name
 	return string(jsonData), nil
 }
 
-func (h *KsScmcHandler) _GetContainerNetwork(node_nameorip string, container_name string) (*ksscmc.GetContainerNetworkResponse, error) {
+func (h *KsScmcHandler) getContainerNetworkInternal(nodeNameorip string, containerName string) (*ksscmc.GetContainerNetworkResponse, error) {
 
 	response := &ksscmc.GetContainerNetworkResponse{
 		ContainerNetInfo: &ksscmc.ContainerNetInfo{},
 		RetCode:          1, // 成功码
 	}
 
-	nodeInfo, err := GetNodeId(node_nameorip)
+	nodeInfo, err := GetNodeId(nodeNameorip)
 	if err != nil {
 		logrus.Error(err)
 		return response, nil
@@ -991,7 +991,7 @@ func (h *KsScmcHandler) _GetContainerNetwork(node_nameorip string, container_nam
 	cli := containerPB.NewContainerClient(conn)
 	ctx_, cancel := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancel()
-	containerId, err := GetContainerId(cli, container_name, ctx_)
+	containerId, err := GetContainerId(cli, containerName, ctx_)
 	if err != nil {
 		logrus.Error(err)
 		return response, nil
@@ -1023,14 +1023,14 @@ func (h *KsScmcHandler) _GetContainerNetwork(node_nameorip string, container_nam
 	return response, nil
 }
 
-func (h *KsScmcHandler) GetContainerNetRules(node_name string, container_name string) (*ksscmc.GetContainerNetRulesResponse, error) {
+func (h *KsScmcHandler) GetContainerNetRules(nodeName string, containerName string) (*ksscmc.GetContainerNetRulesResponse, error) {
 
 	response := &ksscmc.GetContainerNetRulesResponse{
 		ContainerNetRules: []*ksscmc.ContainerNetRule{},
 		RetCode:           1, // 成功码
 	}
 
-	nodeInfo, err := GetNodeId(node_name)
+	nodeInfo, err := GetNodeId(nodeName)
 	if err != nil {
 		logrus.Error(err)
 		return response, nil
@@ -1045,7 +1045,7 @@ func (h *KsScmcHandler) GetContainerNetRules(node_name string, container_name st
 	cli := containerPB.NewContainerClient(conn)
 	ctx_, cancel := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancel()
-	containerId, err := GetContainerId(cli, container_name, ctx_)
+	containerId, err := GetContainerId(cli, containerName, ctx_)
 	if err != nil {
 		logrus.Error(err)
 		return response, nil
@@ -1075,8 +1075,8 @@ func (h *KsScmcHandler) GetContainerNetRules(node_name string, container_name st
 	return response, nil
 }
 
-func (h *KsScmcHandler) AddContainerIpPort(node_nameorip string, container_name string, ip_addr string, port int32, net_proto string) (int32, error) {
-	nodeInfo, err := GetNodeId(node_nameorip)
+func (h *KsScmcHandler) AddContainerIpPort(nodeNameorip string, containerName string, ipAddr string, port int32, net_proto string) (int32, error) {
+	nodeInfo, err := GetNodeId(nodeNameorip)
 	if err != nil {
 		logrus.Error(err)
 		return 1, nil
@@ -1092,7 +1092,7 @@ func (h *KsScmcHandler) AddContainerIpPort(node_nameorip string, container_name 
 
 	ctx_, cancel := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancel()
-	containerId, err := GetContainerId(cli, container_name, ctx_)
+	containerId, err := GetContainerId(cli, containerName, ctx_)
 	if err != nil {
 		logrus.Error(err)
 		return 3, nil
@@ -1121,7 +1121,7 @@ func (h *KsScmcHandler) AddContainerIpPort(node_nameorip string, container_name 
 		Cmd:            inspect.Configs.Cmd,
 	}
 	networkSettings := inspect.Configs.Networks
-	networkSettings[0].IpAddress = ip_addr
+	networkSettings[0].IpAddress = ipAddr
 	updateReq.Networks = append(updateReq.Networks, networkSettings...)
 	_, err = cli.Update(ctx_, &updateReq)
 	if err != nil {
@@ -1131,9 +1131,9 @@ func (h *KsScmcHandler) AddContainerIpPort(node_nameorip string, container_name 
 	return 0, nil
 }
 
-func (h *KsScmcHandler) AddContainerReqIpPort(node_name string, container_name string, ip_addr string, port int32, net_proto string) (int32, error) {
+func (h *KsScmcHandler) AddContainerReqIpPort(nodeName string, containerName string, ipAddr string, port int32, netProto string) (int32, error) {
 
-	nodeInfo, err := GetNodeId(node_name)
+	nodeInfo, err := GetNodeId(nodeName)
 	if err != nil {
 		logrus.Error(err)
 		return 1, nil
@@ -1147,7 +1147,7 @@ func (h *KsScmcHandler) AddContainerReqIpPort(node_name string, container_name s
 
 	ctx_, cancel := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancel()
-	containerId, err := GetContainerId(cli, container_name, ctx_)
+	containerId, err := GetContainerId(cli, containerName, ctx_)
 	if err != nil {
 		logrus.Error(err)
 		return 3, nil
@@ -1172,22 +1172,22 @@ func (h *KsScmcHandler) AddContainerReqIpPort(node_name string, container_name s
 	isExist := false
 	isContainProtocol := false
 	for _, rule := range securityCfg.NetworkRule.Rules {
-		if rule.Addr == ip_addr && rule.Port == uint32(port) {
+		if rule.Addr == ipAddr && rule.Port == uint32(port) {
 			isExist = true
 			for _, prot := range rule.Protocols {
-				if prot == net_proto {
+				if prot == netProto {
 					isContainProtocol = true
 				}
 			}
 			if !isContainProtocol {
-				rule.Protocols = append(rule.Protocols, net_proto)
+				rule.Protocols = append(rule.Protocols, netProto)
 			}
 		}
 	}
 	if !isExist {
 		securityCfg.NetworkRule.Rules = append(securityCfg.NetworkRule.Rules, &securityPB.NetworkRule{
-			Protocols: []string{net_proto},
-			Addr:      ip_addr,
+			Protocols: []string{netProto},
+			Addr:      ipAddr,
 			Port:      uint32(port),
 		})
 	}
@@ -1211,8 +1211,8 @@ func (h *KsScmcHandler) AddContainerReqIpPort(node_name string, container_name s
 	return 0, nil
 }
 
-func (h *KsScmcHandler) AddContainerEnv(node_nameorip string, container_name string, env_name string, env_value string) (r string, err error) {
-	retCode, err := h._AddContainerEnv(node_nameorip, container_name, env_name, env_value)
+func (h *KsScmcHandler) AddContainerEnv(nodeNameorip string, containerName string, envName string, envValue string) (r string, err error) {
+	retCode, err := h.addContainerEnvInternal(nodeNameorip, containerName, envName, envValue)
 	if err != nil {
 		logrus.Error(err)
 		return fmt.Sprintf("{\"status\": %d, \"message\": %s}", retCode, "failed"), nil
@@ -1220,8 +1220,8 @@ func (h *KsScmcHandler) AddContainerEnv(node_nameorip string, container_name str
 	return fmt.Sprintf("{\"status\": %d, \"message\": %s}", retCode, "success"), nil
 }
 
-func (h *KsScmcHandler) _AddContainerEnv(node_nameorip string, container_name string, env_name string, env_value string) (int32, error) {
-	nodeInfo, err := GetNodeId(node_nameorip)
+func (h *KsScmcHandler) addContainerEnvInternal(nodeNameorip string, containerName string, envName string, envValue string) (int32, error) {
+	nodeInfo, err := GetNodeId(nodeNameorip)
 	if err != nil {
 		logrus.Error(err)
 		return 1, nil
@@ -1235,13 +1235,13 @@ func (h *KsScmcHandler) _AddContainerEnv(node_nameorip string, container_name st
 
 	ctx_, cancel := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancel()
-	containerId, err := GetContainerId(cli, container_name, ctx_)
+	containerId, err := GetContainerId(cli, containerName, ctx_)
 	if err != nil {
 		logrus.Error(err)
 		return 3, nil
 	}
 	envs := map[string]string{
-		env_name: env_value,
+		envName: envValue,
 	}
 	containerServer := internal.ContainerServer{}
 	inspectReq := containerPB.InspectRequest{
@@ -1253,12 +1253,12 @@ func (h *KsScmcHandler) _AddContainerEnv(node_nameorip string, container_name st
 		logrus.Error(err)
 		return 4, nil
 	}
-	old_envs := inspect.Configs.Envs
-	if old_envs == nil {
-		old_envs = map[string]string{}
+	oldEnvs := inspect.Configs.Envs
+	if oldEnvs == nil {
+		oldEnvs = map[string]string{}
 	}
 	for k, v := range envs {
-		old_envs[k] = v
+		oldEnvs[k] = v
 	}
 	updateReq := containerPB.UpdateRequest{
 		NodeId:         nodeInfo.ID,
@@ -1268,7 +1268,7 @@ func (h *KsScmcHandler) _AddContainerEnv(node_nameorip string, container_name st
 		Networks:       inspect.Configs.Networks,
 		SecurityConfig: inspect.Configs.SecurityConfig,
 		Mounts:         inspect.Configs.Mounts,
-		Envs:           old_envs,
+		Envs:           oldEnvs,
 		Cmd:            inspect.Configs.Cmd,
 	}
 	_, err = cli.Update(ctx_, &updateReq)
@@ -1279,9 +1279,9 @@ func (h *KsScmcHandler) _AddContainerEnv(node_nameorip string, container_name st
 	return 0, nil
 }
 
-func (h *KsScmcHandler) AddContainerLocalVolume(node_nameorip string, container_name string, in_dir string, out_dir string, access_auth ksscmc.AccessAuth) (int32, error) {
+func (h *KsScmcHandler) AddContainerLocalVolume(nodeNameorip string, containerName string, inDir string, outDir string, accessAuth ksscmc.AccessAuth) (int32, error) {
 
-	nodeInfo, err := GetNodeId(node_nameorip)
+	nodeInfo, err := GetNodeId(nodeNameorip)
 	if err != nil {
 		logrus.Error(err)
 		return 1, nil
@@ -1296,7 +1296,7 @@ func (h *KsScmcHandler) AddContainerLocalVolume(node_nameorip string, container_
 
 	ctx_, cancel := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancel()
-	containerId, err := GetContainerId(cli, container_name, ctx_)
+	containerId, err := GetContainerId(cli, containerName, ctx_)
 	if err != nil {
 		logrus.Error(err)
 		return 3, nil
@@ -1316,15 +1316,15 @@ func (h *KsScmcHandler) AddContainerLocalVolume(node_nameorip string, container_
 
 	logrus.Warnf("container inspect: %v", inspect)
 
-	fileInfo, err := os.Stat(out_dir)
+	fileInfo, err := os.Stat(outDir)
 	if os.IsNotExist(err) {
-		err := os.MkdirAll(out_dir, 0755)
+		err := os.MkdirAll(outDir, 0755)
 		if err != nil {
-			logrus.Warnf("create dir: %v faied", out_dir)
+			logrus.Warnf("create dir: %v faied", outDir)
 			return 5, nil
 		}
 	} else if !fileInfo.IsDir() {
-		logrus.Warnf("%v exist and is not dir", out_dir)
+		logrus.Warnf("%v exist and is not dir", outDir)
 		return 6, nil
 	}
 
@@ -1342,9 +1342,9 @@ func (h *KsScmcHandler) AddContainerLocalVolume(node_nameorip string, container_
 	mountSettings := inspect.Configs.Mounts
 	mountSettings = append(mountSettings, &containerPB.Mount{
 		Type:     "bind",
-		Source:   out_dir,
-		Target:   in_dir,
-		ReadOnly: access_auth == ksscmc.AccessAuth_READ_ONLY,
+		Source:   outDir,
+		Target:   inDir,
+		ReadOnly: accessAuth == ksscmc.AccessAuth_READ_ONLY,
 	})
 
 	updateReq.Mounts = append(updateReq.Mounts, mountSettings...)
@@ -1359,12 +1359,12 @@ func (h *KsScmcHandler) AddContainerLocalVolume(node_nameorip string, container_
 	return 0, nil
 }
 
-func (h *KsScmcHandler) SetContainerDisplayV2(node_name string, container_name string, enabled bool, display string) (r string, err error) {
+func (h *KsScmcHandler) SetContainerDisplayV2(nodeName string, containerName string, enabled bool, display string) (r string, err error) {
 	return Response2String(1), nil
 }
 
-func (h *KsScmcHandler) SetContainerQuota(node_name string, container_name string, containerLimit *ksscmc.ContainerLimit) (r string, err error) {
-	res, err := h._SetContainerQuota(node_name, container_name, containerLimit)
+func (h *KsScmcHandler) SetContainerQuota(nodeName string, containerName string, containerLimit *ksscmc.ContainerLimit) (r string, err error) {
+	res, err := h.setContainerQuotaInternal(nodeName, containerName, containerLimit)
 	if err != nil {
 		logrus.Error(err)
 		return fmt.Sprintf("{\"status\": %d, \"message\": %s}", res, "failed"), nil
@@ -1372,9 +1372,9 @@ func (h *KsScmcHandler) SetContainerQuota(node_name string, container_name strin
 	return fmt.Sprintf("{\"status\": %d, \"message\": %s}", res, "success"), nil
 }
 
-func (h *KsScmcHandler) _SetContainerQuota(node_name string, container_name string, containerLimit *ksscmc.ContainerLimit) (int32, error) {
+func (h *KsScmcHandler) setContainerQuotaInternal(nodeName string, containerName string, containerLimit *ksscmc.ContainerLimit) (int32, error) {
 
-	nodeInfo, err := GetNodeId(node_name)
+	nodeInfo, err := GetNodeId(nodeName)
 	if err != nil {
 		logrus.Error(err)
 		return 1, nil
@@ -1390,7 +1390,7 @@ func (h *KsScmcHandler) _SetContainerQuota(node_name string, container_name stri
 	}
 
 	cli := containerPB.NewContainerClient(conn)
-	containerId, err := GetContainerId(cli, container_name, ctx_)
+	containerId, err := GetContainerId(cli, containerName, ctx_)
 	if err != nil {
 		logrus.Error(err)
 		return 3, nil
@@ -1469,16 +1469,16 @@ func (h *KsScmcHandler) _SetContainerQuota(node_name string, container_name stri
 	return 0, nil
 }
 
-func (h *KsScmcHandler) SetContainerPrivileged(node_ip string, container_name string, isPrivileged bool) (int32, error) {
+func (h *KsScmcHandler) SetContainerPrivileged(nodeIp string, containerName string, isPrivileged bool) (int32, error) {
 	return 0, nil
 }
 
-func (h *KsScmcHandler) SetContainerSysctls(node_ip string, container_name string, sysctl_name string, sysctl_value string) (int32, error) {
+func (h *KsScmcHandler) SetContainerSysctls(nodeIp string, containerName string, sysctlName string, sysctlValue string) (int32, error) {
 	return 0, nil
 }
 
-func (h *KsScmcHandler) SetContainerExtraHosts(node_ip string, container_name string, container_extrahosts []string) (int32, error) {
-	nodeInfo, err := GetNodeId(node_ip)
+func (h *KsScmcHandler) SetContainerExtraHosts(nodeIp string, containerName string, containerExtrahosts []string) (int32, error) {
+	nodeInfo, err := GetNodeId(nodeIp)
 	if err != nil {
 		logrus.Error(err)
 		return 1, nil
@@ -1493,7 +1493,7 @@ func (h *KsScmcHandler) SetContainerExtraHosts(node_ip string, container_name st
 
 	ctx_, cancel := context.WithCancel(context.Background())
 	defer cancel()
-	containerId, err := GetContainerId(cli, container_name, ctx_)
+	containerId, err := GetContainerId(cli, containerName, ctx_)
 	if err != nil {
 		logrus.Error(err)
 		return 3, nil
@@ -1501,7 +1501,7 @@ func (h *KsScmcHandler) SetContainerExtraHosts(node_ip string, container_name st
 	hostsRequest := &containerPB.SetHostsRequest{
 		NodeId:              nodeInfo.ID,
 		ContainerId:         containerId,
-		ContainerExtrahosts: container_extrahosts,
+		ContainerExtrahosts: containerExtrahosts,
 	}
 	_, err = cli.SetContainerExtraHosts(ctx_, hostsRequest)
 	if err != nil {
@@ -1511,13 +1511,13 @@ func (h *KsScmcHandler) SetContainerExtraHosts(node_ip string, container_name st
 	return 0, nil
 }
 
-func (h *KsScmcHandler) GetImagesList(node_ip string) (*ksscmc.GetImagesListResponse, error) {
+func (h *KsScmcHandler) GetImagesList(nodeIp string) (*ksscmc.GetImagesListResponse, error) {
 	ctx_, _ := context.WithTimeout(context.Background(), time.Second*5)
 	imageListResponse := &ksscmc.GetImagesListResponse{
 		ImageList: []string{},
 		RetCode:   1,
 	}
-	nodeInfo, err := GetNodeId(node_ip)
+	nodeInfo, err := GetNodeId(nodeIp)
 	if err != nil {
 		logrus.Error(err)
 		return imageListResponse, nil
@@ -1543,9 +1543,9 @@ func (h *KsScmcHandler) GetImagesList(node_ip string) (*ksscmc.GetImagesListResp
 	return imageListResponse, nil
 }
 
-func (h *KsScmcHandler) LoadImage(node_ip string, tarPath string) (int32, error) {
+func (h *KsScmcHandler) LoadImage(nodeIp string, tarPath string) (int32, error) {
 	ctx_, _ := context.WithTimeout(context.Background(), time.Second*5)
-	nodeInfo, err := GetNodeId(node_ip)
+	nodeInfo, err := GetNodeId(nodeIp)
 	if err != nil {
 		logrus.Error(err)
 		return 1, nil
@@ -1595,8 +1595,8 @@ func (h *KsScmcHandler) LoadImage(node_ip string, tarPath string) (int32, error)
 
 }
 
-func (h *KsScmcHandler) PauseContainer(node_ip string, container_name string) (int32, error) {
-	nodeInfo, err := GetNodeId(node_ip)
+func (h *KsScmcHandler) PauseContainer(nodeIp string, containerName string) (int32, error) {
+	nodeInfo, err := GetNodeId(nodeIp)
 	if err != nil {
 		logrus.Error(err)
 		return 1, nil
@@ -1610,7 +1610,7 @@ func (h *KsScmcHandler) PauseContainer(node_ip string, container_name string) (i
 
 	ctx_, cancel := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancel()
-	containerId, err := GetContainerId(cli, container_name, ctx_)
+	containerId, err := GetContainerId(cli, containerName, ctx_)
 	if err != nil {
 		logrus.Error(err)
 		return 3, nil
@@ -1626,8 +1626,8 @@ func (h *KsScmcHandler) PauseContainer(node_ip string, container_name string) (i
 	return 0, nil
 }
 
-func (h *KsScmcHandler) UnpauseContainer(node_ip string, container_name string) (int32, error) {
-	nodeInfo, err := GetNodeId(node_ip)
+func (h *KsScmcHandler) UnpauseContainer(nodeIp string, containerName string) (int32, error) {
+	nodeInfo, err := GetNodeId(nodeIp)
 	if err != nil {
 		logrus.Error(err)
 		return 1, nil
@@ -1641,7 +1641,7 @@ func (h *KsScmcHandler) UnpauseContainer(node_ip string, container_name string) 
 
 	ctx_, cancel := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancel()
-	containerId, err := GetContainerId(cli, container_name, ctx_)
+	containerId, err := GetContainerId(cli, containerName, ctx_)
 	if err != nil {
 		logrus.Error(err)
 		return 3, nil
@@ -1657,7 +1657,7 @@ func (h *KsScmcHandler) UnpauseContainer(node_ip string, container_name string) 
 	return 0, nil
 }
 
-func (h *KsScmcHandler) LoginV3(user string, passwd string, node_ip string) (r string, err error) {
+func (h *KsScmcHandler) LoginV3(user string, passwd string, nodeIp string) (r string, err error) {
 	return "", nil
 }
 

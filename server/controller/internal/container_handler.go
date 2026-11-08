@@ -8,15 +8,18 @@ import (
 	"strings"
 	"sync"
 	"time"
+    "fmt"
 
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"google.golang.org/grpc/metadata"
 
 	"scmc/model/db"
 	"scmc/rpc"
 	pb "scmc/rpc/pb/container"
 	"scmc/server/args"
+    "scmc/rpc/middleware/auth"
 )
 
 type ExportBackupStream struct {
@@ -148,6 +151,15 @@ func (s *ContainerServer) Create(ctx context.Context, in *pb.CreateRequest) (*pb
 	if err != nil {
 		return nil, rpc.ErrInternal
 	}
+
+    // user_id 传递到 agent
+    uid, ok := auth.UserIDFromContext(ctx)
+    if ok {
+        md := metadata.New(map[string]string{
+            "user_id" : fmt.Sprintf("%d", uid),
+        })
+        ctx = metadata.NewOutgoingContext(ctx, md)
+    }
 
 	return pb.NewContainerClient(conn).Create(ctx, in)
 }
@@ -465,6 +477,15 @@ func (s *ContainerServer) Update(ctx context.Context, in *pb.UpdateRequest) (*pb
 	if err != nil {
 		return nil, rpc.ErrInternal
 	}
+
+    // user_id 传递到 agent
+    uid, ok := auth.UserIDFromContext(ctx)
+    if ok {
+        md := metadata.New(map[string]string{
+            "user_id" : fmt.Sprintf("%d", uid),
+        })
+        ctx = metadata.NewOutgoingContext(ctx, md)
+    }
 
 	return pb.NewContainerClient(conn).Update(ctx, in)
 }

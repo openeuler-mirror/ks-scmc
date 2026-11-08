@@ -625,13 +625,13 @@ func getUIDFromCtx(ctx context.Context) int64 {
     return uid
 }
 
-func initCreateRuntimeLog(netlog *db.RuntimeLog, ctx context.Context, in *pb.CreateRequest) {
+func initRuntimeLog(netlog *db.RuntimeLog, ctx context.Context, NodeId int64, ContainerName string, eventType int64) {
     netlog.UserID = getUIDFromCtx(ctx)
-    netlog.NodeId = in.NodeId
-    netlog.EventType = int64(logging.EVENT_TYPE_CREATE_CONTAINER)
+    netlog.NodeId = NodeId
+    netlog.EventType = eventType 
     netlog.EventModule = int64(logging.EVENT_MODULE_CONTAINER)
-    if in.Configs != nil {
-        netlog.Target = fmt.Sprintf("容器名=%v", in.Configs.Name)
+    if ContainerName != "" {
+        netlog.Target = fmt.Sprintf("容器名=%v", ContainerName)
     }
 }
 
@@ -641,7 +641,7 @@ func (s *ContainerServer) Create(ctx context.Context, in *pb.CreateRequest) (*pb
 	}
     
     var netlog db.RuntimeLog
-    initCreateRuntimeLog(&netlog, ctx, in)
+    initRuntimeLog(&netlog, ctx, in.NodeId, in.Configs.Name, int64(logging.EVENT_TYPE_CREATE_CONTAINER))
 
 	//in.Configs.Ipcname = "testipc"
 	uuid := uuid.New().String()
@@ -929,6 +929,9 @@ func (s *ContainerServer) Update(ctx context.Context, in *pb.UpdateRequest) (*pb
 		log.Infof("GetContainerConfig err=%v", err)
 		return nil, rpc.ErrDatabaseFail
 	}
+    
+    var netlog db.RuntimeLog
+    initRuntimeLog(&netlog, ctx, in.NodeId, cfgs.ContainerName, int64(logging.EVENT_TYPE_UPDATE_CONTAINER))
 
 	for _, v := range in.Networks {
 		if err := checkNetworkInfo(v.Interface, in.ContainerId, &v.IpAddress, int(v.IpPrefixLen)); err != nil {
@@ -968,7 +971,7 @@ func (s *ContainerServer) Update(ctx context.Context, in *pb.UpdateRequest) (*pb
 		log.Infof("ContainerUpdate result warnings: %v", body.Warnings)
 	}
 
-	updateNetwork(ctx, cli, in.ContainerId, in.Networks)
+	updateNetwork(ctx, cli, in.ContainerId, in.Networks, &netlog)
 
 	if err := s.setSecurityConfig(in.NodeId, in.ContainerId, inspectConfigs.Uuid,
 		inspectConfigs.Name, pid, true, in.SecurityConfig, cfgs.SecurityConfig); err != nil {
@@ -1068,6 +1071,10 @@ func (s *ContainerServer) Update(ctx context.Context, in *pb.UpdateRequest) (*pb
 	}
 
     s.disklimit(cfgs.ContainerName, in)
+    
+    if netlog.Detail != "" {
+        runtimeLogChan <- &netlog
+    }
 
 	return &reply, nil
 }
@@ -1115,7 +1122,7 @@ func (s *ContainerServer) UpdateContainerVersion(ctx context.Context, in *pb.Upd
 	return &pb.UpdateContainerVersionReply{}, nil
 }
 
-func updateNetwork(ctx context.Context, cli *client.Client, containerID string, networks []*pb.NetworkConfig) error {
+func updateNetwork(ctx context.Context, cli *client.Client, containerID string, networks []*pb.NetworkConfig, netlog *db.RuntimeLog) error {
 	if len(networks) == 0 {
 		return nil
 	}
@@ -1126,9 +1133,16 @@ func updateNetwork(ctx context.Context, cli *client.Client, containerID string, 
 		return transDockerError(err)
 	}
 
+    var addNetworkLog []string // 添加网络日志
+    var delNetworkLog []string // 删除网络日志
+    var modNetworkLog []string // 修改网络日志
+
 	if info.NetworkSettings == nil {
 		for _, v := range networks {
 			dockerNetworkConnect(ctx, cli, containerID, v)
+            if v.IpAddress != "" {
+                addNetworkLog = append(addNetworkLog, v.IpAddress)
+            }
 		}
 		return nil
 	}
@@ -1142,12 +1156,19 @@ func updateNetwork(ctx context.Context, cli *client.Client, containerID string, 
 			continue
 		}
 		dockerNetworkDisconnect(ctx, cli, containerID, k) // 被删除的连接
+        ipstr := info.NetworkSettings.Networks[k].IPAddress
+        if ipstr != "" {
+            delNetworkLog = append(delNetworkLog, ipstr)
+        }
 	}
 
 	for _, v := range networks {
 		_, ok := info.NetworkSettings.Networks[v.Interface]
 		if !ok {
 			dockerNetworkConnect(ctx, cli, containerID, v) // 新连接
+            if v.IpAddress != "" {
+                addNetworkLog = append(addNetworkLog, v.IpAddress)
+            }
 			continue
 		}
 
@@ -1155,8 +1176,24 @@ func updateNetwork(ctx context.Context, cli *client.Client, containerID string, 
 		if v.IpAddress != info.NetworkSettings.Networks[v.Interface].IPAddress {
 			dockerNetworkDisconnect(ctx, cli, containerID, v.Interface)
 			dockerNetworkConnect(ctx, cli, containerID, v)
+            dstStr := "dhcp"
+            if v.IpAddress != "" {
+                dstStr = v.IpAddress
+            }
+            modNetworkLog = append(modNetworkLog, fmt.Sprintf("%s->%s", info.NetworkSettings.Networks[v.Interface].IPAddress, dstStr))
 		}
 	}
+    
+    if netlog != nil && len(modNetworkLog) > 0 {
+        netlog.Detail = netlog.Detail + "修改网络: ["  + strings.Join(modNetworkLog, ",") + "] "
+    }
+    if netlog != nil && len(delNetworkLog) > 0 {
+        netlog.Detail = netlog.Detail + "删除网络: [" + strings.Join(delNetworkLog, ",") + "] "
+    }
+    if netlog != nil && len(addNetworkLog) > 0 {
+        netlog.Detail = netlog.Detail + "添加网络: [" + strings.Join(addNetworkLog, ",") + "]"
+    }
+
 	return nil
 }
 

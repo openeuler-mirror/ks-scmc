@@ -48,8 +48,7 @@ func (s *IpcBaseServer) List(ctx context.Context, in *pb.IpcListRequest) (*pb.Ip
 			StartTime : c.CreatedAt,
 		}
 		ipcMapcfg, err := litedb.IpcmapConfigByIPCName([]string{c.ContainerName})
-		if err != nil {
-		} else {
+		if err == nil {
 			for _, d := range ipcMapcfg {
 				info.Containers = append(info.Containers, d.ContainerName)
 			}

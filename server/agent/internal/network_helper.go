@@ -8,6 +8,8 @@ import (
 	"os"
 	"time"
 	"path/filepath"
+	"strings"
+	"bufio"
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/events"
@@ -348,3 +350,124 @@ func dockerNetworkConnect(ctx context.Context, cli *client.Client, containerID s
 	}
 	return nil
 }
+
+// 通过网卡名称，返回网卡对应的配置文件路径
+func getNicFileName(nicName string) (string, error) {
+	ifcfgPath := "/etc/sysconfig/network-script/" + "ifcfg-" + nicName
+	if nicFileExists(ifcfgPath) {
+		return ifcfgPath, nil
+	}
+
+	// 网卡名称与配置文件名称不匹配
+	links,  err := getAllifcfgFile()
+	if err != nil {
+		return ifcfgPath, err
+	}
+	
+	for _, filePath := range links {
+		config, err := ParseIfcfg(filePath)
+		if err != nil {
+			continue
+		}
+
+		if checkNicInMap(config, nicName) {
+			return filePath, nil
+		}
+	}
+
+	return ifcfgPath, fmt.Errorf("Unsupported interface %v", nicName)
+}
+
+// 判断文件是否存在
+func nicFileExists(path string) bool {
+	_, err := os.Stat(path)
+	if err == nil {
+		return true;
+	}
+	return false;
+}
+
+// 遍历目录返回文件路径
+func getAllifcfgFile() ([]string, error) {
+	sysPath := filepath.Join("/etc/sysconfig/network-scripts", "ifcfg-*")
+	links, err := filepath.Glob(sysPath)
+	if err != nil {
+		return nil, err
+	}
+	return links, nil
+}
+
+// 读取网卡的配置文件
+func ParseIfcfg(fileName string) (map[string]string, error) {
+	config := make(map[string]string)
+	file, err := os.Open(fileName)
+	if err != nil {
+		return nil, err 
+	}
+	defer file.Close()
+
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		line := strings.TrimSpace(scanner.Text())
+		if line == "" {
+			continue
+		}
+		if strings.HasPrefix(line, "#") {
+			continue
+		}
+		hashIndex := strings.Index(line, "#")
+		if hashIndex != -1 {
+			line := line[:hashIndex]
+			line = strings.TrimSpace(line)
+			if line == "" {
+				continue
+			}
+		}
+		parts := strings.SplitN(line, "=", 2)
+		if len(parts) != 2 {
+			continue
+		}
+
+		key := strings.TrimSpace(parts[0])
+		value := strings.TrimSpace(parts[1])
+
+		if len(value) >= 2 {
+			first := value[0]
+			last := value[len(value) - 1]
+			if (first == '"' && last == '"') || (first == '\'' && last == '\'') {
+				value = value[1 : len(value) - 1]
+			}
+		}
+
+		config[key] = value
+	}
+
+	if err = scanner.Err(); err != nil {
+		return nil, err
+	}
+
+	return config, nil
+}
+// 匹配网卡是否在 map 配置里面
+func checkNicInMap(kv map[string]string,  nicName string) (bool) {
+	if kv == nil || len(kv) == 0 {
+		return false
+	}
+
+	if value, ok := kv["DEVICE"]; ok {
+		if strings.TrimSpace(value) == strings.TrimSpace(nicName) {
+			return true;
+		}
+	}
+
+	if value, ok := kv["NAME"]; ok {
+		if strings.TrimSpace(value) == strings.TrimSpace(nicName) {
+			return true;
+		}
+	}
+
+	return false
+}
+
+// 通过网卡名称，返回网卡对应的配置文件路径
+

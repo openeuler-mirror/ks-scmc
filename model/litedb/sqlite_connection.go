@@ -69,6 +69,9 @@ func getConn() (*gorm.DB, error) {
 	if !m.HasTable(&IpcmapConfig{}) {
 		_ = m.CreateTable(&IpcmapConfig{})
 	}
+	if !m.HasTable(&ContainerLimit{}) {
+		_ = m.CreateTable(&ContainerLimit{})
+	}
 
 	conn, err := _db.DB()
 	if err != nil {

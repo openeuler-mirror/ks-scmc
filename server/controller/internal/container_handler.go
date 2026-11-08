@@ -443,6 +443,10 @@ func (s *ContainerServer) Update(ctx context.Context, in *pb.UpdateRequest) (*pb
 	}
 	if in.ResourceLimit != nil {
 		r := in.ResourceLimit
+		if r.DiskPrio == 0 {
+			r.DiskPrio = 5 //当前客户端无这个值的接口，提供默认值做兼容处理
+		}
+
 		if !args.Float64Resource.Check(r.CpuLimit, r.DiskLimit, r.MemoryLimit, r.MemorySoftLimit) ||
 			!args.Int64Resource.Check(r.CpuPrio, r.DiskPrio) {
 			return nil, rpc.ErrContainerResourceArgs

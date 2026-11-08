@@ -98,80 +98,80 @@ var auditLogChan = make(chan *AuditLog, 10)
 
 func FetchKernelLogs() {
     for r := range auditLogChan {
-        warn_logs := make([]*db.WarnLog, 0)
-        adt_log := r
-        if adt_log == nil {
+        warnLogs := make([]*db.WarnLog, 0)
+        adtLog := r
+        if adtLog == nil {
             continue
         }
         
         detail := ""
-        ev_type := logging.EVENT_TYPE_WARN_FILE_LIST
-        if adt_log.Type == 1 {
-            ev_type = logging.EVENT_TYPE_WARN_PROCESS_LIST
+        evType := logging.EVENT_TYPE_WARN_FILE_LIST
+        if adtLog.Type == 1 {
+            evType = logging.EVENT_TYPE_WARN_PROCESS_LIST
             detail = detail + "进程白名单:"
-        } else if adt_log.Type == 2 {
-            ev_type = logging.EVENT_TYPE_WARN_FILE_LIST
+        } else if adtLog.Type == 2 {
+            evType = logging.EVENT_TYPE_WARN_FILE_LIST
             detail = detail + "文件保护:"
         } else {
-            log.Warnf("FetchKernelLogs log type invalide: %d", adt_log.Type)
+            log.Warnf("FetchKernelLogs log type invalide: %d", adtLog.Type)
             continue
         }
 
-        detail = detail + strings.Trim(string(adt_log.Sub[:]), "\x00")
-        if adt_log.Op == 1 {
+        detail = detail + strings.Trim(string(adtLog.Sub[:]), "\x00")
+        if adtLog.Op == 1 {
             detail = detail + " 执行"
-        } else if adt_log.Op == 2 {
+        } else if adtLog.Op == 2 {
             detail = detail + " 修改"
         } else {
-            log.Warnf("FetchKernelLogs invalide Op value: %d", adt_log.Op)
+            log.Warnf("FetchKernelLogs invalide Op value: %d", adtLog.Op)
             continue
         }
 
-        detail = detail + strings.TrimSpace(adt_log.Path) + " 操作结果:"
-        if adt_log.Result == 0 {
+        detail = detail + strings.TrimSpace(adtLog.Path) + " 操作结果:"
+        if adtLog.Result == 0 {
             detail = detail + "放行"
-        } else if adt_log.Result == 1 {
+        } else if adtLog.Result == 1 {
             detail = detail + "拒绝"
         } else {
-            log.Warnf("FetchKernelLogs invalide Result value: %d", adt_log.Result)
+            log.Warnf("FetchKernelLogs invalide Result value: %d", adtLog.Result)
             continue
         }
 
         detail = strings.TrimSpace(detail)
         detail = strings.Trim(detail, "\x00")
 
-        container_id := ""
-        container_name := ""
-        ev_module := logging.EVENT_MODULE_NONE
+        containerId := ""
+        containerName := ""
+        evModule := logging.EVENT_MODULE_NONE
         node_id, node_name, address, err := getNodeInfos()
         if err != nil {
             log.Warnf("FetchKernelLogs get node id failed!")
             continue
         }
 
-        if strings.Trim(string(adt_log.Id[:]), "\x00") == "localhost" {
-            ev_module = logging.EVENT_MODULE_NONE
+        if strings.Trim(string(adtLog.Id[:]), "\x00") == "localhost" {
+            evModule = logging.EVENT_MODULE_NONE
         } else {
-            ev_module = logging.EVENT_MODULE_CONTAINER
-            container_id = strings.Trim(string(adt_log.Id[:]), "\x00")
-            cfgs, err := litedb.GetContainerConfig(container_id)
+            evModule = logging.EVENT_MODULE_CONTAINER
+            containerId = strings.Trim(string(adtLog.Id[:]), "\x00")
+            cfgs, err := litedb.GetContainerConfig(containerId)
             if err == nil {
-                container_name = cfgs.ContainerName
+                containerName = cfgs.ContainerName
             }
         }
 
         nodeinfo := fmt.Sprintf("%s(%s)", node_name, address)
-        warn_logs = append(warn_logs, &db.WarnLog{
-            EventType : int64(ev_type),
-            EventModule : int64(ev_module),
+        warnLogs = append(warnLogs, &db.WarnLog{
+            EventType : int64(evType),
+            EventModule : int64(evModule),
             NodeId: int64(node_id),
             NodeInfo: nodeinfo,
-            ContainerID: container_id,
-            ContainerName: container_name,
+            ContainerID: containerId,
+            ContainerName: containerName,
             Detail: detail,
         })
 
-        err = db.CreateWarnLog(warn_logs)
+        err = db.CreateWarnLog(warnLogs)
         if err != nil {
             log.Warnf("create kernel warn log failed!")
             continue

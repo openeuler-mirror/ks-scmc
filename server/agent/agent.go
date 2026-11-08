@@ -146,5 +146,7 @@ func Server() (*grpc.Server, error) {
 	go internal.CPUUsageProbe()
 	go internal.NodeNetworkControlConfig()
     go internal.RuntimeLogWriter()
+    go kysec.GetAuditLog()
+    go kysec.FetchKernelLogs()
 	return s, nil
 }

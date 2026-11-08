@@ -6,6 +6,8 @@ import (
 	"encoding/hex"
 	"os"
 	"unsafe"
+    "fmt"
+    "time"
 	// "strings"
 	// "io/ioutil"
 
@@ -36,7 +38,20 @@ const (
 	WL_HASH_SIZE = 16
 	ID_MAX_SIZE  = 64
 	MSG_SIZE     = 84
+
+    TASK_COMM_LEN = 16
 )
+
+type AuditLog struct {
+    TvSec   uint64
+    Type    uint8
+    Id      [ID_MAX_SIZE]byte
+    Sub     [TASK_COMM_LEN]byte
+    Op      uint8
+    Result  uint8
+    ObjLen  int32
+    Path    string
+}
 
 var localEndian binary.ByteOrder = binary.LittleEndian
 
@@ -133,7 +148,7 @@ func initNetlink() (int, error) {
 	lsa := &unix.SockaddrNetlink{
 		Family: unix.AF_NETLINK,
 		Groups: 0,
-		Pid:    0,
+		Pid:    uint32(os.Getpid()),
 	}
 
 	if err := unix.Bind(fd, lsa); err != nil {
@@ -189,6 +204,74 @@ func sendNetlink(fd int, msg []byte, len int, msg_type uint16) error {
 
 	return nil
 }
+
+// 安全相关审计日志
+func recvNetlink()([]byte, error) {
+    fd, err := initNetlink()
+    if err != nil {
+        log.Warnf("recvNetlink initNetlink failed: %v", err)
+        return nil, err
+    }
+    
+    recvLen := 0
+    buf := make([]byte, 1024)
+    for tryCnt := 0; tryCnt < 3; tryCnt++ {
+        n, _, err := unix.Recvfrom(fd, buf, unix.MSG_PEEK)
+        if err == nil {
+            recvLen = n
+            break
+        }
+
+        if err == unix.EAGAIN || err == unix.EWOULDBLOCK {
+            time.Sleep(100 * time.Millisecond)
+            continue
+        }
+
+        deinitNetlink(fd)
+        return nil, err
+    }
+
+    if recvLen <= 0 {
+        deinitNetlink(fd)
+        return nil, fmt.Errorf("recvNet try max times")
+    }
+    
+    if recvLen > len(buf) {
+        buf = make([]byte, recvLen)
+    }
+
+    recvLen, _, err = unix.Recvfrom(fd, buf, 0)
+    deinitNetlink(fd)
+    if err != nil {
+        return nil, err
+    }
+
+    nlhdrLen := int(unsafe.Sizeof(unix.NlMsghdr{}))
+    if recvLen <= nlhdrLen {
+        return nil, fmt.Errorf("recvNetlink msg too short: %v", recvLen)
+    } 
+    
+    res := make([]byte, recvLen - nlhdrLen)
+    copy(res, buf[nlhdrLen : recvLen])
+    return res, nil
+}
+
+func GetAuditLog() () {
+    for {
+        buf , err := recvNetlink()
+        if err != nil {
+            //log.Warnf("GetAuditLog recvNetlink failed: %v", err)
+            continue
+        } else {
+            logHdrlen := int32(unsafe.Sizeof(AuditLog{})) - int32(unsafe.Sizeof(""))
+            adtLog := *(*AuditLog)(unsafe.Pointer(&buf[0]))
+            adtLog.Path = string(buf[logHdrlen: logHdrlen + adtLog.ObjLen])
+            //log.Warnf("adtLog: %++v", adtLog)
+            auditLogChan <- &adtLog
+        }
+    }
+}
+// ----------------------------------------
 
 func updateWhiteListToKern(fd int, id, hash, name []byte, add bool) error {
 	if id == nil || hash == nil {

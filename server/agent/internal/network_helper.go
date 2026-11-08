@@ -173,7 +173,7 @@ func checkNetworkInfo(ifaceName, containerId string, ipAddr *string, masklen int
 func setdisklimit(containerId string) {
     disklimitCfg, err := litedb.GetContainerLimitByCID(containerId)
     if err != nil {
-        return;
+        return
     }
 
     r_str := fmt.Sprintf("%d", disklimitCfg.DiskRbw)

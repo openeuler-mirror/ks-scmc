@@ -3,11 +3,11 @@ package thriftapi
 import (
 	"context"
 	"time"
-	// "strings"
+	"strings"
 
 	"scmc/rpc/pb/container"
 	"scmc/server/controller/internal"
-	// log "github.com/sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 )
 
 
@@ -27,7 +27,6 @@ func GetContainerStats(hostid string) (string, error) {
 	return reply.StatsData , nil
 }
 
-/*
 func (h *KsScmcHandler) GetAllContainers(ctx context.Context, node_name string) (r string, err error) {
 	log.Infof("GetAllContainers node_name: %s", node_name)
 
@@ -48,4 +47,3 @@ func (h *KsScmcHandler) GetAllContainers(ctx context.Context, node_name string) 
 
 	return json_str, nil
 }
-*/

@@ -561,7 +561,7 @@ func insertAndDeleteLines(parent_nic string, filePath string, startStr, endStr s
 		return fmt.Errorf("failed to read file: %v", filePath)
 	}
 
-    var routeInfo string
+	var routeInfo string
 	// 查找开始和结束的行索引
 	startIndex, endIndex := -1, -1
 	for i, line := range lines {
@@ -572,15 +572,15 @@ func insertAndDeleteLines(parent_nic string, filePath string, startStr, endStr s
 			endIndex = i
 			break // 找到结束索引后退出循环
 		}
-        if strings.Contains(line, "ip route add") {
-            routeInfo = line
-        }
+		if strings.Contains(line, "ip route add") {
+			routeInfo = line
+		}
 	}
 
-    // 删除添加的 Iptables 信息
-    if len(routeInfo) > 0 {
-        deleteIptablesInfo(routeInfo, parent_nic)
-    }
+	// 删除添加的 Iptables 信息
+	if len(routeInfo) > 0 {
+		deleteIptablesInfo(routeInfo, parent_nic)
+	}
 
 
 	// 检查是否找到了开始和结束的行
@@ -786,15 +786,17 @@ func (s *NetworkServer) createNetwork(name, subnet, gateway, parent string) erro
 	}
 	/* 添加规则 */
 
-	cmd = exec.Command("systemctl", "restart", "network")
-	err = cmd.Run()
-	if err != nil {
-		return fmt.Errorf("failed to execute command: %v", cmd)
-	}
+	go func() {
+		cmd = exec.Command("systemctl", "restart", "network")
+		err = cmd.Run()
+		if err != nil {
+			//return fmt.Errorf("failed to execute command: %v", cmd)
+			log.Warnf("failed to execute command: %v", cmd)
+		}
+		setVirtualNicMac(host_name)
+		log.Debugf("NetworkCreate parent=%v name=%v host_name=%v gateway=%v subnet=%v", parent, name, host_name, gateway, subnet)
+	}()
 
-	setVirtualNicMac(host_name)
-
-	log.Debugf("NetworkCreate parent=%v name=%v host_name=%v gateway=%v subnet=%v", parent, name, host_name, gateway, subnet)
 	return nil
 }
 

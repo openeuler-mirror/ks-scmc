@@ -5640,6 +5640,13 @@ func (x *ContainerConfigs) GetResouceLimit() *ResourceLimit {
 	return nil
 }
 
+func (x *ContainerConfigs) GetMiscConfig() *ContainerMiscConfig {
+	if x != nil {
+		return x.MiscConfig
+	}
+	return nil
+}
+
 func (x *ContainerConfigs) GetSecurityConfig() *SecurityConfig {
 	if x != nil {
 		return x.SecurityConfig

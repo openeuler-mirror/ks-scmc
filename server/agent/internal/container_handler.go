@@ -16,6 +16,7 @@ import (
 	"sync"
 	"syscall"
 	"time"
+    "strconv"
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
@@ -28,6 +29,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"google.golang.org/grpc/metadata"
 
 	"scmc/common"
 	"scmc/model/authz"
@@ -41,7 +43,7 @@ import (
 	pb "scmc/rpc/pb/container"
 	secpb "scmc/rpc/pb/security"
 
-	// "scmc/rpc/pb/logging"
+	"scmc/rpc/pb/logging"
 	"scmc/server/args"
 )
 
@@ -459,7 +461,7 @@ func (s *ContainerServer) SetNprocProtection(id, uuid string, cfg *secpb.ProcPro
 	return nil
 }
 
-func (s *ContainerServer) create(nodeid int64, configs *pb.ContainerConfigs) (string, error) {
+func (s *ContainerServer) create(nodeid int64, configs *pb.ContainerConfigs, netlog *db.RuntimeLog) (string, error) {
 	if configs == nil || configs.Image == "" {
 		return "", rpc.ErrInvalidArgument
 	} else if !regexp.MustCompile(containerNamePattern).MatchString(configs.Name) {
@@ -540,6 +542,9 @@ func (s *ContainerServer) create(nodeid int64, configs *pb.ContainerConfigs) (st
 	networkConfig := &network.NetworkingConfig{
 		EndpointsConfig: make(map[string]*network.EndpointSettings, len(configs.Networks)),
 	}
+    
+    var loginfo []string
+
 	for _, v := range configs.Networks {
 		if err := checkNetworkInfo(v.Interface, "", &v.IpAddress, int(v.IpPrefixLen)); err != nil {
 			return "", err
@@ -554,7 +559,15 @@ func (s *ContainerServer) create(nodeid int64, configs *pb.ContainerConfigs) (st
 			MacAddress:  v.MacAddress,
 			Gateway:     v.Gateway,
 		}
+
+        if v.IpAddress != "" {
+            loginfo = append(loginfo, fmt.Sprintf("%s", v.IpAddress))
+        }
 	}
+
+    if netlog != nil && len(loginfo) != 0 {
+        netlog.Detail = "创建网络: [" + strings.Join(loginfo, ",") + "]"
+    }
 
 	var networkConfigCreate *network.NetworkingConfig
 	if len(configs.Networks) > 0 {
@@ -596,10 +609,39 @@ func (s *ContainerServer) create(nodeid int64, configs *pb.ContainerConfigs) (st
 	return body.ID, nil
 }
 
+// 要从 controller 传递过来才有
+func getUIDFromCtx(ctx context.Context) int64 {
+    var uid int64 = 0
+    md, ok := metadata.FromIncomingContext(ctx)
+    if ok {
+        values := md["user_id"]
+        if len(values) > 0 {
+            id, err := strconv.ParseInt(values[0], 10, 64)
+            if err == nil {
+                uid = id
+            }
+        }
+    }
+    return uid
+}
+
+func initCreateRuntimeLog(netlog *db.RuntimeLog, ctx context.Context, in *pb.CreateRequest) {
+    netlog.UserID = getUIDFromCtx(ctx)
+    netlog.NodeId = in.NodeId
+    netlog.EventType = int64(logging.EVENT_TYPE_CREATE_CONTAINER)
+    netlog.EventModule = int64(logging.EVENT_MODULE_CONTAINER)
+    if in.Configs != nil {
+        netlog.Target = fmt.Sprintf("容器名=%v", in.Configs.Name)
+    }
+}
+
 func (s *ContainerServer) Create(ctx context.Context, in *pb.CreateRequest) (*pb.CreateReply, error) {
 	if in.Configs == nil {
 		return nil, rpc.ErrInvalidArgument
 	}
+    
+    var netlog db.RuntimeLog
+    initCreateRuntimeLog(&netlog, ctx, in)
 
 	//in.Configs.Ipcname = "testipc"
 	uuid := uuid.New().String()
@@ -614,7 +656,7 @@ func (s *ContainerServer) Create(ctx context.Context, in *pb.CreateRequest) (*pb
 	}
 
 	in.Configs.Uuid = uuid
-	id, err := s.create(in.NodeId, in.Configs)
+	id, err := s.create(in.NodeId, in.Configs, &netlog)
 
 	// 通过 ipcname 获取 ipc容器的容器 id
 	ipcID := ""
@@ -656,6 +698,10 @@ func (s *ContainerServer) Create(ctx context.Context, in *pb.CreateRequest) (*pb
         }
         litedb.CreateContainerLimit(&disklimitCfg)
 	}
+
+    if err == nil && netlog.Detail != "" {
+        runtimeLogChan <- &netlog
+    }
 
 	return &pb.CreateReply{ContainerId: id}, err
 }
@@ -1057,7 +1103,7 @@ func (s *ContainerServer) UpdateContainerVersion(ctx context.Context, in *pb.Upd
 	configs.Image = in.ImgName + ":" + in.ImgVersion
 
 	configs.SecurityConfig = cfgs.SecurityConfig
-	id, err := s.create(in.NodeId, configs)
+	id, err := s.create(in.NodeId, configs, nil) //netlog
 	if err != nil {
 		log.Warnf("create container err=%v", err)
 		return nil, rpc.ErrInternal
@@ -1590,7 +1636,7 @@ func (s *ContainerServer) ResumeBackup(ctx context.Context, in *pb.ResumeBackupR
 	// create new contaienr
 	configs.Image = b.ImageRef
 	configs.SecurityConfig = cfgs.SecurityConfig
-	id, err := s.create(in.NodeId, configs)
+	id, err := s.create(in.NodeId, configs, nil) //netlog
 	if err != nil {
 		log.Warnf("create container err=%v", err)
 		return nil, rpc.ErrInternal

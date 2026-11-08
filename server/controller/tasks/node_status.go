@@ -14,6 +14,7 @@ import (
 	"scmc/rpc/pb/logging"
 	pb "scmc/rpc/pb/node"
 	"scmc/server/controller/internal"
+    "scmc/common"
 )
 
 type NodeStatus struct{}
@@ -27,7 +28,7 @@ func (n *NodeStatus) RunAtInit() bool {
 }
 
 func (n *NodeStatus) Run() {
-	if isMaster() {
+	if common.IsMaster() {
 		nodeData := getAllNodeData(true)
 		for _, n := range nodeData {
 			go writeNodeWatchLogs(n)

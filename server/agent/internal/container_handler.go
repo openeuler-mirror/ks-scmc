@@ -890,25 +890,25 @@ func (s *ContainerServer) disklimit(containerName string, in *pb.UpdateRequest) 
             DiskWbw: w,
         }
         litedb.CreateContainerLimit(disklimitCfg)
-        rStr := fmt.Sprintf("%d", r)
-        wStr := fmt.Sprintf("%d", w)
-        docker.SetContainerDiskLimit("disk_rbw", in.ContainerId, rStr)
-        docker.SetContainerDiskLimit("disk_wbw", in.ContainerId, wStr)
+        r_str := fmt.Sprintf("%d", r)
+        w_str := fmt.Sprintf("%d", w)
+        docker.SetContainerDiskLimit("disk_rbw", in.ContainerId, r_str)
+        docker.SetContainerDiskLimit("disk_wbw", in.ContainerId, w_str)
     } else {
         chg := false
         if in.ResourceLimit != nil {
             if disklimitCfg.DiskRbw != in.ResourceLimit.DiskRbw {
                 disklimitCfg.DiskRbw = in.ResourceLimit.DiskRbw
                 r := in.ResourceLimit.DiskRbw
-                rStr := fmt.Sprintf("%d", r)
-                docker.SetContainerDiskLimit("disk_rbw", in.ContainerId, rStr)
+                r_str := fmt.Sprintf("%d", r)
+                docker.SetContainerDiskLimit("disk_rbw", in.ContainerId, r_str)
                 chg = true
             }
             if disklimitCfg.DiskWbw != in.ResourceLimit.DiskWbw {
                 disklimitCfg.DiskWbw = in.ResourceLimit.DiskWbw
                 w := in.ResourceLimit.DiskWbw
-                wStr := fmt.Sprintf("%d", w)
-                docker.SetContainerDiskLimit("disk_wbw", in.ContainerId, wStr)
+                w_str := fmt.Sprintf("%d", w)
+                docker.SetContainerDiskLimit("disk_wbw", in.ContainerId, w_str)
                 chg = true
             }
             if chg {

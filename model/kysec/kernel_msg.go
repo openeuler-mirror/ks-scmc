@@ -8,7 +8,6 @@ import (
 	"unsafe"
     "fmt"
     "time"
-    // "sync"
 	// "strings"
 	// "io/ioutil"
 
@@ -117,30 +116,8 @@ func bCheckSysIsV6() bool {
 
 }
 
-/* 
-var (
-    clifd int
-    cliErr error
-    cliOnce sync.Once
-)
 
-func initNetlink()(int, error) {
-    cliOnce.Do(func(){
-        clifd, cliErr = _initNetlink()
-    })
-    return clifd, cliErr
-}
-*/
-
-func initNetlink()(int, error) {
-    return _initNetlink(0)
-}
-
-func initNetlinkRecv()(int, error) {
-    return _initNetlink(uint32(os.Getpid()))
-}
-
-func _initNetlink(pid uint32) (int, error) {
+func initNetlink() (int, error) {
 	// 以配置文件里面的为准 
 	protocol := NETLINK_WL
 	if common.Config.Netlink.Protocol != NETLINK_WL {
@@ -171,7 +148,7 @@ func _initNetlink(pid uint32) (int, error) {
 	lsa := &unix.SockaddrNetlink{
 		Family: unix.AF_NETLINK,
 		Groups: 0,
-        Pid: pid,
+		Pid:    uint32(os.Getpid()),
 	}
 
 	if err := unix.Bind(fd, lsa); err != nil {
@@ -188,9 +165,9 @@ func _initNetlink(pid uint32) (int, error) {
 }
 
 func deinitNetlink(fd int) {
-	 msgtype := setNlmsgType(NLMSG_COM_TYPE_QUIT, 0, 0)
-	 sendNetlink(fd, []byte{}, 0, msgtype)
-	 unix.Close(fd)
+	msgtype := setNlmsgType(NLMSG_COM_TYPE_QUIT, 0, 0)
+	sendNetlink(fd, []byte{}, 0, msgtype)
+	unix.Close(fd)
 }
 
 func sendNetlink(fd int, msg []byte, len int, msg_type uint16) error {
@@ -230,7 +207,7 @@ func sendNetlink(fd int, msg []byte, len int, msg_type uint16) error {
 
 // 安全相关审计日志
 func recvNetlink()([]byte, error) {
-    fd, err := initNetlinkRecv()
+    fd, err := initNetlink()
     if err != nil {
         log.Warnf("recvNetlink initNetlink failed: %v", err)
         return nil, err
@@ -287,13 +264,7 @@ func GetAuditLog() () {
             continue
         } else {
             logHdrlen := int32(unsafe.Sizeof(AuditLog{})) - int32(unsafe.Sizeof(""))
-            if int32(len(buf)) < int32(logHdrlen) {
-                continue
-            }
             adtLog := *(*AuditLog)(unsafe.Pointer(&buf[0]))
-            if int32(len(buf)) < int32(logHdrlen + adtLog.ObjLen) {
-                continue
-            }
             adtLog.Path = string(buf[logHdrlen: logHdrlen + adtLog.ObjLen])
             //log.Warnf("adtLog: %++v", adtLog)
             auditLogChan <- &adtLog

@@ -732,64 +732,64 @@ func ruleToCmd(filePath, fileName string, isOn bool, blacklist int, rules []*lit
 				continue
 			}
 			var arr []string
-			var arr_output []string
+			var arrOutput []string
 			if blacklist == 2 {
 				if rule.Drop {
 					arr = append(arr, "-A BLACKLIST ")
-					arr_output = append(arr_output, "-A BLACKLIST ")
+					arrOutput = append(arrOutput, "-A BLACKLIST ")
 				} else {
 					arr = append(arr, "-A WHITELIST ")
-					arr_output = append(arr_output, "-A WHITELIST ")
+					arrOutput = append(arrOutput, "-A WHITELIST ")
 				}
 			} else {
 				arr = append(arr, "-A INPUT ")
-				arr_output = append(arr_output, "-A OUTPUT ")
+				arrOutput = append(arrOutput, "-A OUTPUT ")
 			}
 			arr = append(arr, addrstr)
-			arr_output = append(arr_output, addrstr_dst)
+			arrOutput = append(arrOutput, addrstrDst)
 			str := "-p " + protocol
 			arr = append(arr, str)
-			arr_output = append(arr_output, str)
+			arrOutput = append(arrOutput, str)
 			if (protocol == "tcp" || protocol == "udp") && rule.Port != 0 {
 				str = fmt.Sprintf("--dport %d", rule.Port)
 				// str = fmt.Sprintf("--sport %d", rule.Port)
 				arr = append(arr, str)
-				arr_output = append(arr_output, str)
+				arrOutput = append(arrOutput, str)
 			}
 			if blacklist == 0 {
 				arr = append(arr, " -j ACCEPT")
-				arr_output = append(arr_output, " -j ACCEPT")
+				arrOutput = append(arrOutput, " -j ACCEPT")
 			} else if blacklist == 1 {
 				arr = append(arr, " -j DROP")
-				arr_output = append(arr_output, " -j DROP")
+				arrOutput = append(arrOutput, " -j DROP")
 			} else if !rule.Drop {
 				arr = append(arr, " -j ACCEPT")
-				arr_output = append(arr_output, " -j ACCEPT")
+				arrOutput = append(arrOutput, " -j ACCEPT")
 			} else {
 				arr = append(arr, " -j DROP")
-				arr_output = append(arr_output, " -j DROP")
+				arrOutput = append(arrOutput, " -j DROP")
 			}
 
 			res := strings.Join(arr, " ") + "\n"
 			curRule = curRule + res
-			res = strings.Join(arr_output, " ") + "\n"
+			res = strings.Join(arrOutput, " ") + "\n"
 			curRule = curRule + res
 		}
 
 		//只有ip没有协议情况处理
-		if curRule == "" && addrstr != "" && addrstr_dst != "" {
+		if curRule == "" && addrstr != "" && addrstrDst != "" {
 			if blacklist == 0 {
 				curRule = "-A INPUT " + " " + addrstr + " -j ACCEPT" + "\n"
-				curRule = "-A OUTPUT " + " " + addrstr_dst + " -j ACCEPT" + "\n"
+				curRule = "-A OUTPUT " + " " + addrstrDst + " -j ACCEPT" + "\n"
 			} else if blacklist == 1 {
 				curRule = "-A INPUT " + " " + addrstr + " -j DROP" + "\n"
-				curRule = "-A OUTPUT " + " " + addrstr_dst + " -j DROP" + "\n"
+				curRule = "-A OUTPUT " + " " + addrstrDst + " -j DROP" + "\n"
 			} else if !rule.Drop {
 				curRule = "-A INPUT " + " " + addrstr + " -j ACCEPT" + "\n"
-				curRule = "-A OUTPUT " + " " + addrstr_dst + " -j ACCEPT" + "\n"
+				curRule = "-A OUTPUT " + " " + addrstrDst + " -j ACCEPT" + "\n"
 			} else {
 				curRule = "-A INPUT " + " " + addrstr + " -j DROP" + "\n"
-				curRule = "-A OUTPUT " + " " + addrstr_dst + " -j DROP" + "\n"
+				curRule = "-A OUTPUT " + " " + addrstrDst + " -j DROP" + "\n"
 			}
 		}
 

@@ -32,14 +32,14 @@ import (
 type KsScmcHandler struct {
 }
 
-func (h *KsScmcHandler) InstallContainer(node_name string, image string, ver string, name string, desc string) (r string, err error) {
-	code, err := h._InstallContainer(node_name, image, ver, name)
+func (h *KsScmcHandler) InstallContainer(nodeName string, image string, ver string, name string, desc string) (r string, err error) {
+	code, err := h.installContainerInternal(nodeName, image, ver, name)
 	return Response2String(code), nil
 }
 
-func (h *KsScmcHandler) _InstallContainer(node_nameorip string, image_name string, image_ver string, container_name string) (int32, error) {
+func (h *KsScmcHandler) installContainerInternal(nodeNameorip string, imageName string, imageVer string, containerName string) (int32, error) {
 	//通过node_nameorip查找node的ID
-	nodeInfo, err := GetNodeId(node_nameorip)
+	nodeInfo, err := GetNodeId(nodeNameorip)
 	if err != nil {
 		logrus.Error(err)
 		return 1, nil

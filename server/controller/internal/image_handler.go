@@ -370,6 +370,7 @@ func (s *ImageServer) Download(in *pb.DownloadRequest, stream pb.Image_DownloadS
 			Checksum: img.CheckSum,
 			Size:     img.FileSize,
 		},
+		ChunkData: img.Signature, // 如果有 签名数据一起返回
 	}
 
 	if err := stream.Send(&reply); err != nil {

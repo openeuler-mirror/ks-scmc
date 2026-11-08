@@ -1,7 +1,7 @@
 variables:
   RPM_BUILD_REQUIRES: 'git golang make coreutils'
   PROEJCT_EXCLUSIONS: 'vendor/**,**/*.pb.go,**/*_test.go'
-  EXCLUDE_PATH: '**/rpc/**,**/thrift/**'
+  EXCLUDE_PATH: 'rpc/**,thrift/**,vendor/**,**/test/**'
 
 include:
   - project: 'os/ks-devops'

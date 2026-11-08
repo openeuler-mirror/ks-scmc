@@ -2,17 +2,17 @@
 package litedb
 
 import (
-	log "github.com/sirupsen/logrus"
+    log "github.com/sirupsen/logrus"
 )
 
 type ContainerLimit struct {
-        ID      int64   `gorm:"primaryKey;not null"`
-        ContainerID     string `gorm:"unique"`
-        ContainerName   string `gorm:"unique"`
-	DiskRbw		int64
-	DiskWbw		int64
-        CreatedAt       int64   `gorm:"autoCreateTime"`
-        UpdateAt        int64   `gorm:"autoUpdateTime"`
+    ID              int64   `gorm:"primaryKey;not null"`
+    ContainerID     string `gorm:"unique"`
+    ContainerName   string `gorm:"unique"`
+    DiskRbw		    int64
+    DiskWbw		    int64
+    CreatedAt       int64   `gorm:"autoCreateTime"`
+    UpdateAt        int64   `gorm:"autoUpdateTime"`
 }
 
 func CreateContainerLimit(data *ContainerLimit) error {

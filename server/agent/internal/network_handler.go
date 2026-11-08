@@ -512,19 +512,20 @@ func (s *NetworkServer) RemoveIPtables(ctx context.Context, in *pb.RemoveIPtable
 }
 
 /* 删除 iptables 相关信息 */
-func deleteIptablesInfo(routeInfo , parent_nic string) {
-    if len(routeInfo) == 0 {
+func deleteIptablesInfo(ipaddrInfo, parent_nic string) {
+    if len(ipaddrInfo) == 0 {
         return
     }
 
     var iptbInfo string
     var cird string
-    parts := strings.Fields(routeInfo)
+    parts := strings.Fields(ipaddrInfo)
     for _, part := range parts {
-         _, _, err := net.ParseCIDR(part)
+         _, ipnet, err := net.ParseCIDR(part)
         if err == nil {
-            iptbInfo = "iptables -t nat -D POSTROUTING -s " + part  + " -o " + parent_nic + " -j MASQUERADE"
-            cird = part
+	    s := ipnet.String()
+            iptbInfo = "iptables -t nat -D POSTROUTING -s " + s + " -o " + parent_nic + " -j MASQUERADE"
+            cird = s
         }
     }
 
@@ -561,7 +562,7 @@ func insertAndDeleteLines(parent_nic string, filePath string, startStr, endStr s
 		return fmt.Errorf("failed to read file: %v", filePath)
 	}
 
-	var routeInfo string
+	var ipaddrInfo string
 	// 查找开始和结束的行索引
 	startIndex, endIndex := -1, -1
 	for i, line := range lines {
@@ -572,14 +573,14 @@ func insertAndDeleteLines(parent_nic string, filePath string, startStr, endStr s
 			endIndex = i
 			break // 找到结束索引后退出循环
 		}
-		if strings.Contains(line, "ip route add") {
-			routeInfo = line
+		if strings.Contains(line, "ip addr add") {
+			ipaddrInfo = line
 		}
 	}
 
 	// 删除添加的 Iptables 信息
-	if len(routeInfo) > 0 {
-		deleteIptablesInfo(routeInfo, parent_nic)
+	if len(ipaddrInfo) > 0 {
+		deleteIptablesInfo(ipaddrInfo, parent_nic)
 	}
 
 
@@ -755,8 +756,9 @@ func (s *NetworkServer) createNetwork(name, subnet, gateway, parent string) erro
 	add = fmt.Sprintf("ip addr add %s/%d dev %s", macvlan_ip, masklen, host_name)
 	newlines = append(newlines, add)
 
-	add = fmt.Sprintf("ip route add %s dev %s", subnet, host_name)
-	newlines = append(newlines, add)
+	// 路由信息在给 网卡配置 IP地址的时候会主动添加
+	//add = fmt.Sprintf("ip route add %s dev %s", subnet, host_name)
+	//newlines = append(newlines, add)
 	newlines = append(newlines, end_flag)
 
 	/*

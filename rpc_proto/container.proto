@@ -596,10 +596,15 @@ message ContainerConfigs {
     map<string, string>    envs           = 23;  // 环境变量
     RestartPolicy          restart_policy = 24;  // 重启策略(高可用)
     ResourceLimit          resouce_limit  = 25;
+    ContainerMiscConfig    misc_config    = 26; // 其他配置选项
 
     SecurityConfig security_config = 31;  // 安全配置
     string	ipcname = 32; //IPC基准名称
     string	hostname = 33; // 容器主机名称，可以为空
+}
+
+message ContainerMiscConfig {
+    bool app_run = 1;  // 是否开启 app 的高可用
 }
 
 message ContainerTemplate {

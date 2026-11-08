@@ -32,7 +32,7 @@ func CreateContainerLimit(data *ContainerLimit) error {
 }
 
 // 通过容器 ID 返回结构体
-func GetContinerLimitByCID(containerID string) (*ContainerLimit, error) {
+func GetContainerLimitByCID(containerID string) (*ContainerLimit, error) {
 	db, err := getConn()
 	if err != nil {
 		return nil, err

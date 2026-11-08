@@ -23,6 +23,7 @@ import (
 	"scmc/model/docker"
 	"scmc/model/iptables"
 	pb "scmc/rpc/pb/container"
+    "scmc/model/litedb"
 )
 
 func ipv4ToUint(ipaddr net.IP) uint32 {
@@ -168,6 +169,20 @@ func checkNetworkInfo(ifaceName, containerId string, ipAddr *string, masklen int
 	return nil
 }
 
+// 设置磁盘限速
+func setdisklimit(containerId string) {
+    disklimitCfg, err := litedb.GetContainerLimitByCID(containerId)
+    if err != nil {
+        return;
+    }
+
+    r_str := fmt.Sprintf("%d", disklimitCfg.DiskRbw)
+    docker.SetContainerDiskLimit("disk_rbw", containerId, r_str)
+
+    w_str := fmt.Sprintf("%d", disklimitCfg.DiskWbw)
+    docker.SetContainerDiskLimit("disk_wbw", containerId, w_str)
+}
+
 func ContainerWhiteConfig() error {
 	eventProcessor := func(cli *client.Client, e events.Message) {
 		switch e.Status {
@@ -177,6 +192,7 @@ func ContainerWhiteConfig() error {
 				if err != nil || info.State.Pid == 0 {
 					log.Warnf("%v call ContainerInspect err(%v) or container not start", e.ID, err)
 				} else {
+                    setdisklimit(e.ID)
 					var name string
 					if e.Actor.Attributes != nil {
 						name = e.Actor.Attributes["name"]
@@ -212,6 +228,7 @@ func ContainerWhiteConfig() error {
 			}
 		}
 	}
+
 	for {
 		cli, err := docker.Client()
 		if err != nil {

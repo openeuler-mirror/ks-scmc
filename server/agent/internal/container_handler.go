@@ -830,12 +830,10 @@ func (s *ContainerServer) Restart(ctx context.Context, in *pb.RestartRequest) (*
 
 func (s *ContainerServer) disklimit(containerName string, in *pb.UpdateRequest) {
     // 磁盘限速，如果没有记录，就创建一条新记录
-    var w, r int64 = 0, 0
-    chg := false
     disklimitCfg, err := litedb.GetContainerLimitByCID(in.ContainerId);
     if err != nil {
+        var w, r int64 = 0, 0
         if in.ResourceLimit != nil {
-            chg = true
             w = in.ResourceLimit.DiskWbw
             r = in.ResourceLimit.DiskRbw
         }
@@ -846,29 +844,31 @@ func (s *ContainerServer) disklimit(containerName string, in *pb.UpdateRequest) 
             DiskWbw: w,
         }
         litedb.CreateContainerLimit(disklimitCfg)
+        r_str := fmt.Sprintf("%d", r)
+        w_str := fmt.Sprintf("%d", w)
+        docker.SetContainerDiskLimit("disk_rbw", in.ContainerId, r_str)
+        docker.SetContainerDiskLimit("disk_wbw", in.ContainerId, w_str)
     } else {
+        chg := false
         if in.ResourceLimit != nil {
             if disklimitCfg.DiskRbw != in.ResourceLimit.DiskRbw {
-                chg = true
                 disklimitCfg.DiskRbw = in.ResourceLimit.DiskRbw
-                r = in.ResourceLimit.DiskRbw
+                r := in.ResourceLimit.DiskRbw
+                r_str := fmt.Sprintf("%d", r)
+                docker.SetContainerDiskLimit("disk_rbw", in.ContainerId, r_str)
+                chg = true
             }
             if disklimitCfg.DiskWbw != in.ResourceLimit.DiskWbw {
-                chg = true
                 disklimitCfg.DiskWbw = in.ResourceLimit.DiskWbw
-                w = in.ResourceLimit.DiskWbw
+                w := in.ResourceLimit.DiskWbw
+                w_str := fmt.Sprintf("%d", w)
+                docker.SetContainerDiskLimit("disk_wbw", in.ContainerId, w_str)
+                chg = true
             }
             if chg {
                 litedb.UpdateContainerLimit(disklimitCfg) // 更新数据库
             }
         }
-    }
-
-    if (chg) {
-        r_str := fmt.Sprintf("%d", r)
-        w_str := fmt.Sprintf("%d", w)
-        docker.SetContainerDiskLimit("disk_rbw", in.ContainerId, r_str)
-        docker.SetContainerDiskLimit("disk_wbw", in.ContainerId, w_str)
     }
 }
 

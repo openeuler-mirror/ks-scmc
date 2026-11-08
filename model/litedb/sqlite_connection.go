@@ -72,6 +72,9 @@ func getConn() (*gorm.DB, error) {
 	if !m.HasTable(&ContainerLimit{}) {
 		_ = m.CreateTable(&ContainerLimit{})
 	}
+	if !m.HasTable(&ContainerMisc{}) {
+		_ = m.CreateTable(&ContainerMisc{})
+	}
 
 	conn, err := _db.DB()
 	if err != nil {

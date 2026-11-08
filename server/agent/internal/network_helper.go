@@ -176,11 +176,11 @@ func setdisklimit(containerId string) {
         return
     }
 
-    rStr := fmt.Sprintf("%d", disklimitCfg.DiskRbw)
-    docker.SetContainerDiskLimit("disk_rbw", containerId, rStr)
+    r_str := fmt.Sprintf("%d", disklimitCfg.DiskRbw)
+    docker.SetContainerDiskLimit("disk_rbw", containerId, r_str)
 
-    wStr := fmt.Sprintf("%d", disklimitCfg.DiskWbw)
-    docker.SetContainerDiskLimit("disk_wbw", containerId, wStr)
+    w_str := fmt.Sprintf("%d", disklimitCfg.DiskWbw)
+    docker.SetContainerDiskLimit("disk_wbw", containerId, w_str)
 }
 
 func ContainerWhiteConfig() error {

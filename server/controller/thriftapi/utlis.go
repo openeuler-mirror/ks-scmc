@@ -9,10 +9,10 @@ import (
 )
 
 // 通过node name or ip查找node info
-func GetNodeId(nodeNameorip string) (*db.NodeInfo, error) {
-	nodeInfo, err := db.QueryNodeByAddr(nodeNameorip)
+func GetNodeId(node_nameorip string) (*db.NodeInfo, error) {
+	nodeInfo, err := db.QueryNodeByAddr(node_nameorip)
 	if err != nil {
-		nodeInfo, err = db.QueryNodeByName(nodeNameorip)
+		nodeInfo, err = db.QueryNodeByName(node_nameorip)
 		if err != nil {
 			return nil, err
 		}

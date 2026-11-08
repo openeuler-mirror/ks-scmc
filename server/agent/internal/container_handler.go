@@ -641,6 +641,20 @@ func (s *ContainerServer) Create(ctx context.Context, in *pb.CreateRequest) (*pb
 			IpcID:         ipcID,              // IPC 容器对应的 容器ID
 		}
 		litedb.CreateIpcmapConfig(&ipcMapCfg)
+
+        // 容器磁盘限制相关数据
+        var w, r int64 = int64(0), int64(0)
+        if in.Configs.ResouceLimit != nil {
+            w = in.Configs.ResouceLimit.DiskWbw
+            r = in.Configs.ResouceLimit.DiskRbw
+        }
+        disklimitCfg := litedb.ContainerLimit {
+            ContainerID: id,
+            ContainerName: in.Configs.Name,
+            DiskRbw: r,
+            DiskWbw: w,
+        }
+        litedb.CreateContainerLimit(&disklimitCfg)
 	}
 
 	return &pb.CreateReply{ContainerId: id}, err
@@ -813,6 +827,49 @@ func (s *ContainerServer) Restart(ctx context.Context, in *pb.RestartRequest) (*
 	}, nil
 }
 
+
+func (s *ContainerServer) disklimit(containerName string, in *pb.UpdateRequest) {
+    // 磁盘限速，如果没有记录，就创建一条新记录
+    disklimitCfg, err := litedb.GetContainerLimitByCID(in.ContainerId);
+    if err != nil {
+        var w, r int64 = 0, 0
+        if in.ResourceLimit != nil {
+            w = in.ResourceLimit.DiskWbw
+            r = in.ResourceLimit.DiskRbw
+        }
+        disklimitCfg = &litedb.ContainerLimit {
+            ContainerID: in.ContainerId,
+            ContainerName:containerName,
+            DiskRbw: r,
+            DiskWbw: w,
+        }
+        litedb.CreateContainerLimit(disklimitCfg)
+        r_str := fmt.Sprintf("%d", r)
+        w_str := fmt.Sprintf("%d", w)
+        docker.SetContainerDiskLimit("disk_rbw", in.ContainerId, r_str)
+        docker.SetContainerDiskLimit("disk_wbw", in.ContainerId, w_str)
+    } else {
+        if in.ResourceLimit != nil {
+            chg := false
+            if disklimitCfg.DiskRbw != in.ResourceLimit.DiskRbw {
+                chg = true
+                r_str := fmt.Sprintf("%d", in.ResourceLimit.DiskRbw)
+                docker.SetContainerDiskLimit("disk_rbw", in.ContainerId, r_str)
+            }
+            if disklimitCfg.DiskWbw != in.ResourceLimit.DiskWbw {
+                chg = true
+                w_str := fmt.Sprintf("%d", in.ResourceLimit.DiskWbw)
+                docker.SetContainerDiskLimit("disk_wbw", in.ContainerId, w_str)
+            }
+            if chg {
+                disklimitCfg.DiskRbw = in.ResourceLimit.DiskRbw
+                disklimitCfg.DiskWbw = in.ResourceLimit.DiskWbw
+                litedb.UpdateContainerLimit(disklimitCfg) // 更新数据库
+            }
+        }
+    }
+}
+
 func (s *ContainerServer) Update(ctx context.Context, in *pb.UpdateRequest) (*pb.UpdateReply, error) {
 	var reply pb.UpdateReply
 	if in.ContainerId == "" || (in.ResourceLimit == nil && in.RestartPolicy == nil && in.Networks == nil && in.SecurityConfig == nil) {
@@ -961,6 +1018,8 @@ func (s *ContainerServer) Update(ctx context.Context, in *pb.UpdateRequest) (*pb
 		}
 		log.Infof("modify %v end, change:%v", in.ContainerId, change)
 	}
+
+    s.disklimit(cfgs.ContainerName, in)
 
 	return &reply, nil
 }
@@ -1198,6 +1257,16 @@ func (s *ContainerServer) inspect(id string, backup bool) (*pb.ContainerConfigs,
 			ReadOnly: !m.RW,
 		})
 	}
+   
+    var w, r int64 = 0, 0
+    disklimitCfg, err := litedb.GetContainerLimitByCID(info.ID) 
+    if err != nil {
+        w = 0
+        r = 0
+    } else {
+        w = disklimitCfg.DiskWbw
+        r = disklimitCfg.DiskRbw
+    }
 
 	if info.HostConfig != nil {
 		configs.RestartPolicy = &pb.RestartPolicy{
@@ -1211,6 +1280,8 @@ func (s *ContainerServer) inspect(id string, backup bool) (*pb.ContainerConfigs,
 			DiskPrio:        fromBlkioWeight(info.HostConfig.Resources.BlkioWeight),
 			MemoryLimit:     float64(info.HostConfig.Resources.Memory) / megaBytes,
 			MemorySoftLimit: float64(info.HostConfig.Resources.MemoryReservation) / megaBytes,
+            DiskWbw: w,
+            DiskRbw: r,
 		}
 
 		if s, ok := info.HostConfig.StorageOpt["size"]; ok {

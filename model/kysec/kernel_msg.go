@@ -8,6 +8,7 @@ import (
 	"unsafe"
     "fmt"
     "time"
+    "sync"
 	// "strings"
 	// "io/ioutil"
 
@@ -116,8 +117,20 @@ func bCheckSysIsV6() bool {
 
 }
 
+var (
+    clifd int
+    cliErr error
+    cliOnce sync.Once
+)
 
-func initNetlink() (int, error) {
+func initNetlink()(int, error) {
+    cliOnce.Do(func(){
+        clifd, cliErr = _initNetlink()
+    })
+    return clifd, cliErr
+}
+
+func _initNetlink() (int, error) {
 	// 以配置文件里面的为准 
 	protocol := NETLINK_WL
 	if common.Config.Netlink.Protocol != NETLINK_WL {
@@ -165,9 +178,9 @@ func initNetlink() (int, error) {
 }
 
 func deinitNetlink(fd int) {
-	msgtype := setNlmsgType(NLMSG_COM_TYPE_QUIT, 0, 0)
-	sendNetlink(fd, []byte{}, 0, msgtype)
-	unix.Close(fd)
+	// msgtype := setNlmsgType(NLMSG_COM_TYPE_QUIT, 0, 0)
+	// sendNetlink(fd, []byte{}, 0, msgtype)
+	// unix.Close(fd)
 }
 
 func sendNetlink(fd int, msg []byte, len int, msg_type uint16) error {
@@ -264,7 +277,13 @@ func GetAuditLog() () {
             continue
         } else {
             logHdrlen := int32(unsafe.Sizeof(AuditLog{})) - int32(unsafe.Sizeof(""))
+            if int32(len(buf)) < int32(logHdrlen) {
+                continue
+            }
             adtLog := *(*AuditLog)(unsafe.Pointer(&buf[0]))
+            if int32(len(buf)) < int32(logHdrlen + adtLog.ObjLen) {
+                continue
+            }
             adtLog.Path = string(buf[logHdrlen: logHdrlen + adtLog.ObjLen])
             //log.Warnf("adtLog: %++v", adtLog)
             auditLogChan <- &adtLog

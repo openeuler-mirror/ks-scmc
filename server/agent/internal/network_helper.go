@@ -183,6 +183,55 @@ func setdisklimit(containerId string) {
     docker.SetContainerDiskLimit("disk_wbw", containerId, wStr)
 }
 
+// 容器启动，启动容器内配置的相关应用
+func runAppEntry(containerId string) {
+    allApp, err := litedb.ListAppEntry(containerId)
+    if err != nil || len(allApp) == 0 {
+        return
+    }
+
+    cli, err := docker.Client()
+    if err != nil {
+        return
+    }
+
+    if !containerIsRunning(context.Background(), cli, containerId) {
+        return
+    }
+
+    for _, app := range allApp {
+        if app.IsGUI {
+            continue
+        }
+
+        if appIsRunningWithCli(context.Background(), cli, app.IDResponse) {
+            continue
+        }
+
+        idRes, err := cli.ContainerExecCreate(context.Background(), containerId, types.ExecConfig{
+            Cmd : strings.Split(app.ExePath, " "),
+        })
+
+        if err != nil || idRes.ID == "" {
+            continue
+        }
+
+        if err := cli.ContainerExecStart(context.Background(), idRes.ID, types.ExecStartCheck{
+            Detach: true,
+            Tty: false,
+        }); err != nil {
+            log.Warnf("err = %v", err)
+            continue
+        }
+        
+        app.IDResponse = idRes.ID
+        if err := litedb.UpdateAppEntry(app); err != nil {
+            log.Warnf("err = %v", err)
+            continue
+        }
+    }
+}
+
 func ContainerWhiteConfig() error {
 	eventProcessor := func(cli *client.Client, e events.Message) {
 		switch e.Status {

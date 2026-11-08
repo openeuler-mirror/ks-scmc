@@ -728,7 +728,8 @@ func (s *NetworkServer) createNetwork(name, subnet, gateway, parent string) erro
 	}
 	*/
 
-	path := "/etc/sysconfig/network-scripts/ifcfg-" + parent
+	// path := "/etc/sysconfig/network-scripts/ifcfg-" + parent
+	path, _ := getNicFileName(parent)
 	begin_flag := "# ks-scmc config begin, donot modify"
 	end_flag := "# ks-scmc config end, donot modify"
 
@@ -880,7 +881,8 @@ func (s *NetworkServer) removeNetwork(name string) error {
 	}
 
 	if parent_nic != "" {
-		path := "/etc/sysconfig/network-scripts/ifcfg-" + parent_nic
+		//path := "/etc/sysconfig/network-scripts/ifcfg-" + parent_nic
+		path, _ := getNicFileName(parent_nic)
 		begin_flag := "# ks-scmc config begin, donot modify"
 		end_flag := "# ks-scmc config end, donot modify"
 		newlines := []string{}

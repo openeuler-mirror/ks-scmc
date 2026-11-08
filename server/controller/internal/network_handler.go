@@ -2,7 +2,7 @@ package internal
 
 import (
 	"context"
-
+	"net"
 	log "github.com/sirupsen/logrus"
 
 	"scmc/model/db"
@@ -260,6 +260,18 @@ func (*NetworkServer) RemoveNic(ctx context.Context, in *pb.RemoveNicRequest) (*
 
 func (*NetworkServer) UpdateNic(ctx context.Context, in *pb.UpdateNicRequest) (*pb.UpdateNicReply, error) {
 	if in.Name == "" || in.NodeId == 0 {
+		return nil, rpc.ErrInvalidArgument
+	}
+
+	ip, _, err := net.ParseCIDR(in.Subnet)
+        if err != nil {
+		log.Warnf("UpdateNicRequest: %v", in)
+                return nil, rpc.ErrInvalidArgument
+        }
+
+	ip4 := ip.To4()
+	if ip4 == nil || ip4[3] == 0 {
+		log.Warnf("UpdateNicRequest: %v", in)
 		return nil, rpc.ErrInvalidArgument
 	}
 

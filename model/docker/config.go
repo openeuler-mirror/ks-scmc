@@ -302,11 +302,40 @@ func ModifyContainerConfig(containerId string, which int, envs []string, mounts 
 
 	return err
 }
+
+// 设置容器磁盘限制
+func readSysFile(filename string) (string, error) {
+	data, err := ioutil.ReadFile(filename)
+	if err != nil {
+		return "", err
+	}
+	return strings.TrimSpace(string(data)), nil
+}
+
+func getDevID() ([]string, error) {
+	var id []string
+	sysPath := "/sys/block/*/dev"
+	paths, err := filepath.Glob(sysPath)
+	if err != nil || len(paths) == 0 {
+		return id, err
+	}
+	for _, path := range paths {
+		devid, err := readSysFile(path)
+		if err != nil {
+			continue;
+		}
+		id = append(id, devid)
+	}
+	return id, nil
+}
+
 func SetContainerDiskLimit(key, containerID string, value string) error {
 	file, ok := setters[key]
 	if !ok {
+		log.Warnf("invalid key: %s", key)
 		return errors.New("invalid key: " + key)
 	}
+
 	var numValue int64
 	var err error
 	switch {

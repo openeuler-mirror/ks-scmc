@@ -276,7 +276,7 @@ func ListWarnLogAll(pageSize, pageNo int64, nodeID, eventModule int64) (*Pager, 
 }
 
 // 查询未读，不分页，NR要求：默认获取最新50条未读告警信息。如未读告警数量小于50，则获取最新未读告警信息和最新已读告警共50条（保证所有未读告警获取到）
-func GetUnreadWarnLog(pageSize, is_read int, nodeID, eventModule int64) ([]*WarnLog, error) {
+func GetUnreadWarnLog(pageSize, isRead int, nodeID, eventModule int64) ([]*WarnLog, error) {
 	db, err := getConn()
 	if err != nil {
 		return nil, err
@@ -289,7 +289,7 @@ func GetUnreadWarnLog(pageSize, is_read int, nodeID, eventModule int64) ([]*Warn
 	if eventModule > 0 {
 		query.Where("event_module = ?", eventModule)
 	}
-	query.Where("have_read = ?", is_read)
+	query.Where("have_read = ?", isRead)
 	var data []*WarnLog
 	result := query.Order("created_at DESC").Limit(pageSize).Find(&data)
 	if result.Error != nil {

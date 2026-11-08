@@ -5498,22 +5498,23 @@ type ContainerConfigs struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	ContainerId    string            `protobuf:"bytes,1,opt,name=container_id,json=containerId,proto3" json:"container_id,omitempty"` // 展示用
-	Uuid           string            `protobuf:"bytes,2,opt,name=uuid,proto3" json:"uuid,omitempty"`                                  // 内部使用 labels[KS_SCMC_UUID]
-	Name           string            `protobuf:"bytes,3,opt,name=name,proto3" json:"name,omitempty"`                                  // 容器名 必填 不支持中文字符
-	Status         string            `protobuf:"bytes,4,opt,name=status,proto3" json:"status,omitempty"`
-	Desc           string            `protobuf:"bytes,5,opt,name=desc,proto3" json:"desc,omitempty"`                                         // 描述信息 支持中文 对应LABELS[KS_SCMC_DESC]
-	Image          string            `protobuf:"bytes,6,opt,name=image,proto3" json:"image,omitempty"`                                       // 必填 镜像
-	EnableGraphic  bool              `protobuf:"varint,7,opt,name=enable_graphic,json=enableGraphic,proto3" json:"enable_graphic,omitempty"` // 开启图形化 对应LABELS[KS_SCMC_GRAPHIC]
-	Cmd            string            `protobuf:"bytes,8,opt,name=cmd,proto3" json:"cmd,omitempty"`
-	Mounts         []*Mount          `protobuf:"bytes,21,rep,name=mounts,proto3" json:"mounts,omitempty"`                                                                                     // 共享目录
-	Networks       []*NetworkConfig  `protobuf:"bytes,22,rep,name=networks,proto3" json:"networks,omitempty"`                                                                                 // 网络信息
-	Envs           map[string]string `protobuf:"bytes,23,rep,name=envs,proto3" json:"envs,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"` // 环境变量
-	RestartPolicy  *RestartPolicy    `protobuf:"bytes,24,opt,name=restart_policy,json=restartPolicy,proto3" json:"restart_policy,omitempty"`                                                  // 重启策略(高可用)
-	ResouceLimit   *ResourceLimit    `protobuf:"bytes,25,opt,name=resouce_limit,json=resouceLimit,proto3" json:"resouce_limit,omitempty"`
-	SecurityConfig *SecurityConfig   `protobuf:"bytes,31,opt,name=security_config,json=securityConfig,proto3" json:"security_config,omitempty"` // 安全配置
-	Ipcname        string            `protobuf:"bytes,32,opt,name=ipcname,proto3" json:"ipcname,omitempty"`                                     //IPC基准名称
-	Hostname       string            `protobuf:"bytes,33,opt,name=hostname,proto3" json:"hostname,omitempty"`                                   // 容器主机名称，可以为空
+	ContainerId    string               `protobuf:"bytes,1,opt,name=container_id,json=containerId,proto3" json:"container_id,omitempty"` // 展示用
+	Uuid           string               `protobuf:"bytes,2,opt,name=uuid,proto3" json:"uuid,omitempty"`                                  // 内部使用 labels[KS_SCMC_UUID]
+	Name           string               `protobuf:"bytes,3,opt,name=name,proto3" json:"name,omitempty"`                                  // 容器名 必填 不支持中文字符
+	Status         string               `protobuf:"bytes,4,opt,name=status,proto3" json:"status,omitempty"`
+	Desc           string               `protobuf:"bytes,5,opt,name=desc,proto3" json:"desc,omitempty"`                                         // 描述信息 支持中文 对应LABELS[KS_SCMC_DESC]
+	Image          string               `protobuf:"bytes,6,opt,name=image,proto3" json:"image,omitempty"`                                       // 必填 镜像
+	EnableGraphic  bool                 `protobuf:"varint,7,opt,name=enable_graphic,json=enableGraphic,proto3" json:"enable_graphic,omitempty"` // 开启图形化 对应LABELS[KS_SCMC_GRAPHIC]
+	Cmd            string               `protobuf:"bytes,8,opt,name=cmd,proto3" json:"cmd,omitempty"`
+	Mounts         []*Mount             `protobuf:"bytes,21,rep,name=mounts,proto3" json:"mounts,omitempty"`                                                                                     // 共享目录
+	Networks       []*NetworkConfig     `protobuf:"bytes,22,rep,name=networks,proto3" json:"networks,omitempty"`                                                                                 // 网络信息
+	Envs           map[string]string    `protobuf:"bytes,23,rep,name=envs,proto3" json:"envs,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"` // 环境变量
+	RestartPolicy  *RestartPolicy       `protobuf:"bytes,24,opt,name=restart_policy,json=restartPolicy,proto3" json:"restart_policy,omitempty"`                                                  // 重启策略(高可用)
+	ResouceLimit   *ResourceLimit       `protobuf:"bytes,25,opt,name=resouce_limit,json=resouceLimit,proto3" json:"resouce_limit,omitempty"`
+	MiscConfig     *ContainerMiscConfig `protobuf:"bytes,26,opt,name=misc_config,json=miscConfig,proto3" json:"misc_config,omitempty"`             // 其他配置选项
+	SecurityConfig *SecurityConfig      `protobuf:"bytes,31,opt,name=security_config,json=securityConfig,proto3" json:"security_config,omitempty"` // 安全配置
+	Ipcname        string               `protobuf:"bytes,32,opt,name=ipcname,proto3" json:"ipcname,omitempty"`                                     //IPC基准名称
+	Hostname       string               `protobuf:"bytes,33,opt,name=hostname,proto3" json:"hostname,omitempty"`                                   // 容器主机名称，可以为空
 }
 
 func (x *ContainerConfigs) Reset() {

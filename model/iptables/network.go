@@ -492,9 +492,9 @@ func ModifyRule(who int, containerId string, pid int, oldchain string, oldRule R
 		log.Warnf("invalid parameter:[%+v]", old)
 		return os.ErrInvalid
 	}
-	new, err := newRule.IPTables()
-	if err != nil || new == "" {
-		log.Warnf("invalid parameter:[%+v]", new)
+	newr, err := newRule.IPTables()
+	if err != nil || newr == "" {
+		log.Warnf("invalid parameter:[%+v]", newr)
 		return os.ErrInvalid
 	}
 
@@ -508,7 +508,7 @@ func ModifyRule(who int, containerId string, pid int, oldchain string, oldRule R
 		return err
 	}
 
-	newFullRule := fmt.Sprintf("-A %s %s", newchain, new)
+	newFullRule := fmt.Sprintf("-A %s %s", newchain, newr)
 	var cmd string
 	if who == OperateNode {
 		cmd = fmt.Sprintf("sed -i '%dd' %s && sed -i '%di %s' %s  && iptables-restore %s", linNum, fileName, linNum, newFullRule, fileName, fileName)

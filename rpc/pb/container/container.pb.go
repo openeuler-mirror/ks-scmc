@@ -3228,6 +3228,13 @@ func (x *UpdateRequest) GetIpcname() string {
 	return ""
 }
 
+func (x *UpdateRequest) GetMiscConfig() *ContainerMiscConfig {
+	if x != nil {
+		return x.MiscConfig
+	}
+	return nil
+}
+
 type UpdateReply struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache

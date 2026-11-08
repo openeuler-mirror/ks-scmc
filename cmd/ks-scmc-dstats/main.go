@@ -1,25 +1,25 @@
 package main
 
 import (
-	"log"
-        "context"
-        //"fmt"
-	"os"
-	//"encoding/json"
-	//"io"
-	//"bytes"
-        "github.com/apache/thrift/lib/go/thrift"
-	//"github.com/docker/docker/api/types"
-	"github.com/sirupsen/logrus"
-	//"github.com/KyleBanks/dockerstats"
-        "scmc/thrift/gen-go/node"
-	_ "scmc/model/docker"
-	"scmc/common"
-	"scmc/server/controller/thriftapi"
+	// "log"
+    // "context"
+    // "fmt"
+	// "os"
+	// "encoding/json"
+	// "io"
+	// "bytes"
+    // "github.com/apache/thrift/lib/go/thrift"
+	// "github.com/docker/docker/api/types"
+	// "github.com/sirupsen/logrus"
+	// "github.com/KyleBanks/dockerstats"
+    // "scmc/thrift/gen-go/node"
+	// "scmc/model/docker"
+	// "scmc/common"
+	// "scmc/server/controller/thriftapi"
 )
 
-type DockerStatsServer struct {
-}
+// type DockerStatsServer struct {
+// }
 
 /*
 func nodeStatus() {
@@ -63,6 +63,7 @@ func nodeStatus() {
 }
 */
 
+/*
 func (e *DockerStatsServer) GetAllContainers(ctx context.Context, node_name string) (r string, err error) {
 	logrus.Infof("GetAllContainers node_name: %s", node_name)
 
@@ -76,8 +77,10 @@ func (e *DockerStatsServer) GetAllContainers(ctx context.Context, node_name stri
 	}
 	return json_str, nil
 }
+*/
 
 func main() {
+    /*
 	if len(os.Args) != 2 {
 		usage()
 	}
@@ -134,8 +137,11 @@ func main() {
         if err := server.Serve(); err != nil {
                 panic(err)
         }
+    */
 }
 
 func usage() {
+    /*
 	log.Fatalf("Usage: %s CONFIG_FILE", os.Args[0])
+    */
 }

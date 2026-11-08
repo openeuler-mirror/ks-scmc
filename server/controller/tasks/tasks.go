@@ -1,15 +1,12 @@
 package tasks
 
 import (
-	"fmt"
-	"net"
+	// "fmt"
+	// "net"
 	"time"
-	"strings"
-
-
-	log "github.com/sirupsen/logrus"
-
-	"scmc/common"
+	// "strings"
+	// log "github.com/sirupsen/logrus"
+	// "scmc/common"
 )
 
 type Task interface {
@@ -33,6 +30,7 @@ func AddTask(ts ...Task) {
 	}
 }
 
+/*
 func extractIP(vip string) (string, error) {
 	ip, _, err := net.ParseCIDR(vip)
 	if err == nil {
@@ -83,3 +81,4 @@ func isMaster() bool {
 
 	return false
 }
+*/

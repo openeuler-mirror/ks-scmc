@@ -13,6 +13,7 @@ import (
 	pb "scmc/rpc/pb/container"
 	"scmc/rpc/pb/logging"
 	"scmc/server/controller/internal"
+    "scmc/common"
 )
 
 const (
@@ -99,7 +100,7 @@ func (i *IllegalContainer) ScanNodeContainers(images map[string]*db.ImageInfo, n
 }
 
 func (i *IllegalContainer) Run() {
-	if !isMaster() {
+	if !common.IsMaster() {
 		return
 	}
 

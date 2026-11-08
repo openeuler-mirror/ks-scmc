@@ -679,8 +679,10 @@ func setVirtualNicMac(nicName string) {
 
 func (s *NetworkServer) createNetwork(name, subnet, gateway, parent string) error {
 	driver := "bridge"
+	brgName := "scmc-" + name
 	if parent != "" {
 		driver = "macvlan"
+		brgName = name + "-host"
 	}
 
 	cli, err := docker.Client()
@@ -704,7 +706,7 @@ func (s *NetworkServer) createNetwork(name, subnet, gateway, parent string) erro
 		},
 		Options: map[string]string{
 			"parent":                         parent,
-			"com.docker.network.bridge.name": "scmc-" + name,
+			"com.docker.network.bridge.name": brgName,
 		},
 	}
 

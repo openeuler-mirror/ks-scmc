@@ -23,6 +23,7 @@ func (s *SyncImages) Interval() time.Duration {
 func (s *SyncImages) RunAtInit() bool {
 	return true
 }
+
 func (s *SyncImages) Run() {
 	if common.IsMaster() {
 		SyncNodeImages()

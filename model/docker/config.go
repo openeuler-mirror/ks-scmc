@@ -351,28 +351,33 @@ func SetContainerDiskLimit(key, containerID string, value string) error {
 	default:
 		return errors.New("unsupported key type")
 	}
+
 	if err != nil {
+		log.Warnf("invalid value %s for key %s: %v", value, key, err)
 		return fmt.Errorf("invalid value %s for key %s: %v", value, key, err)
 	}
 
+/*
 	device, err := findProcessDevice(containerID)
 	if err != nil {
 		return err
 	}
+*/
 
 	path := filepath.Join("/sys/fs/cgroup/blkio/docker", containerID, file)
-
 	if _, err := os.Stat(path); os.IsNotExist(err) {
 		return fmt.Errorf("cgroup path not found")
 	}
+
+/*
 	data, err := ioutil.ReadFile(path)
 	if err != nil {
-		return fmt.Errorf("load cgroup file $s failed: %v", file, err)
+		return fmt.Errorf("load cgroup file %s failed: %v", file, err)
 	}
 	lines := strings.Split(string(data), "\n")
 	newLines := make([]string, 0)
 	found := false
-	entry := fmt.Sprintf("%s %d", device, value)
+	entry := fmt.Sprintf("%s %d", device, numValue)
 	for _, line := range lines {
 		if strings.TrimSpace(line) == "" {
 			continue // 跳过空行
@@ -393,13 +398,28 @@ func SetContainerDiskLimit(key, containerID string, value string) error {
 	if !found && numValue != 0 {
 		newLines = append(newLines, entry)
 	}
-	// 写入文件
-	err = ioutil.WriteFile(path, []byte(strings.Join(newLines, "\n")), 0644)
-	if err != nil {
-		return fmt.Errorf("Failed to write to the file %s: %v", file, err)
+*/
+	
+	// 对所有设备都限速
+	var newLines []string
+	devIDs, _ := getDevID()
+	for _, devid := range devIDs {
+		entry := fmt.Sprintf("%s %d", devid, numValue)
+		newLines = append(newLines, entry)
 	}
+	
+	// 写入文件,只能一条一条的写入
+	for _, line := range newLines {
+		content := []byte(line + "\n")
+		err = ioutil.WriteFile(path, content, 0644)
+		if err != nil {
+			return fmt.Errorf("Failed to write to the file %s: %v", file, err)
+		}
+	}
+
 	return nil
 }
+
 func findProcessDevice(containerID string) (string, error) {
 	// 通过容器进程的cgroup信息查找
 	cgroupPath := filepath.Join("/sys/fs/cgroup/blkio/docker", containerID, "blkio.throttle.io_serviced")
@@ -445,6 +465,7 @@ func setContainerNetWbw(netWbw float64, containerPid string) error {
 	}
 	return nil
 }
+
 func setContainerNetRbw(netRbw float64, containerPid string) error {
 	rateMbit := int(netRbw * 8)                 //大B转小b
 	latency := 100 * time.Millisecond.Seconds() //0.1s
@@ -468,6 +489,7 @@ func setContainerNetRbw(netRbw float64, containerPid string) error {
 	}
 	return nil
 }
+
 func CompareMounts(src, dst []*pb.Mount) (map[string]*pb.Mount, bool) {
 	srcMap := make(map[string]*pb.Mount)
 	dstMap := make(map[string]*pb.Mount)
@@ -508,5 +530,3 @@ func CompareMounts(src, dst []*pb.Mount) (map[string]*pb.Mount, bool) {
 
 	return nil, true
 }
-
-

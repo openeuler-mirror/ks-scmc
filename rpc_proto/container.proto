@@ -560,6 +560,8 @@ message ResourceLimit {
   double memory_soft_limit = 12;  // 内存软限制 单位MB 数值低于memory_limit
   double disk_limit = 21;  // 磁盘使用限制 单位MB
   int64  disk_prio = 22;   // 磁盘优先级(0-5)
+  int64 disk_rbw = 23; // 磁盘读速率 单位 MB, 为 0 的时候表示不限制
+  int64 disk_wbw = 24; // 磁盘写速率 单位 MB, 为 0 的时候表示不限制
 }
 
 message SecurityConfig {

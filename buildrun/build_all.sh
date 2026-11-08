@@ -76,6 +76,10 @@ deppgs=\$(ls | grep -v '^$g_software_name')
 # task 46273
 if [[ \$WITHOUT_KERNEL == "1" ]];then
     deppgs=\$(ls | grep -v '^$g_software_name' | grep -v '^kernel-')
+else
+	if [[ "\${OS_VERSION}" == "3.3-6"* ]]; then
+		rpm -qa | grep kernel-headers && rpm -e kernel-headers --nodeps
+	fi
 fi
 
 kspkgs=\$(ls | grep -E "^$g_software_name")

@@ -350,6 +350,7 @@ message UpdateRequest {
     map<string, string>    envs            = 8;  // 环境变量
     string                 cmd             = 9;
     string		           ipcname	       =10; // IPC 基准名称
+    ContainerMiscConfig    misc_config     =11; // app 高可用 
 }
 
 message UpdateReply {}

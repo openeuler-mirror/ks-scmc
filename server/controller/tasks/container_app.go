@@ -29,8 +29,8 @@ func (s *AppRun) RunAtInit() bool {
 func (s *AppRun) Run() {
 	if common.IsMaster() { // 主机模式
         ContaierAppRun()
-	} else { // 非主机模式
-
+	} else {              // 非主机模式
+                          // 停止 app 的运行
     }
 }
 

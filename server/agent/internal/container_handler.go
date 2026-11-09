@@ -697,6 +697,15 @@ func (s *ContainerServer) Create(ctx context.Context, in *pb.CreateRequest) (*pb
             DiskWbw: w,
         }
         litedb.CreateContainerLimit(&disklimitCfg)
+
+        // 容器是否开启了 app 高可用
+        miscConfig := litedb.ContainerMisc {
+            UUID: uuid,
+            ContainerID: id,
+            ContainerName: in.Configs.Name,
+            MiscConfig: in.Configs.GetMiscConfig(), 
+        }
+        litedb.CreateContainerMiscConfig(&miscConfig)
 	}
 
     if err == nil && netlog.Detail != "" {

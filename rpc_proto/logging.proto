@@ -133,8 +133,8 @@ enum EVENT_TYPE {
     WARN_ILLEGAL_CONTAINER = 1003;
     WARN_NODE_ABNORMAL     = 1004;
 
-    WARN_PROCESS_LIST   = 1101;
-    WARN_FILE_LIST      = 1102;
+    WARN_PROCESS_LIST = 1101;
+    WARN_FILE_LIST    = 1102;
 }
 
 message RuntimeLog {

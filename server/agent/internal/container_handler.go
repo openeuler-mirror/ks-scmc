@@ -176,6 +176,26 @@ func (s *ContainerServer) isIpcContainer(id string) bool {
 	return true
 }
 
+
+func (s *ContainerServer) appEntrySync(app_run bool, name string) {
+    nodes, err := db.ListNodes()
+    if err != nil {
+        return
+    }
+
+    for _, node := range nodes {
+        sync := pb.SyncAppEntryRequest {
+            AppRun : app_run,
+            Name   : name,
+            Vip    : common.Config.Controller.VirtualIP,
+        }
+        _ = sync
+        _ = node
+    }
+}
+
+
+
 func (s *ContainerServer) List(ctx context.Context, in *pb.ListRequest) (*pb.ListReply, error) {
 	cli, err := docker.Client()
 	if err != nil {
@@ -1299,14 +1319,16 @@ func (s *ContainerServer) Remove(ctx context.Context, in *pb.RemoveRequest) (*pb
 		}
 		litedb.RemoveContainerConfig([]string{id})
 		litedb.IpcmapConfigRemoveByCID([]string{id}) // 删除容器与ipc 容器的映射数据
+        litedb.RemoveContainerMisc([]string{id})
 
 		reply.OkIds = append(reply.OkIds, id)
 	}
 
 	litedb.RemoveContainerConfig(reply.OkIds)
 	litedb.IpcmapConfigRemoveByCID(reply.OkIds) // 删除容器与ipc 容器的映射数据
-	go s.removeContainerBackups(reply.OkIds)
+    litedb.RemoveContainerMisc(reply.OkIds)
 
+	go s.removeContainerBackups(reply.OkIds)
 	return &reply, nil
 }
 
@@ -2325,4 +2347,35 @@ func (*ContainerServer) GetContainerStats(ctx context.Context, in *pb.StatsReque
 	// 这里并不关心 StatsRequest.HostId
 	json_str, _ := docker.HandleStatsRequest()
 	return &pb.StatsReply{StatsData: json_str}, nil
+}
+
+func (*ContainerServer) SyncAppConfig(ctx context.Context, in *pb.SyncAppEntryRequest) (*pb.SyncAppEntryReply, error) {
+    // VIP 不同直接返回
+    if in.GetVip() != common.Config.Controller.VirtualIP {
+        return &pb.SyncAppEntryReply{}, nil
+    }
+
+    // 遍历容器查找同名的容器
+    cli, err := docker.Client()
+    if err != nil {
+        return nil, rpc.ErrInternal
+    }
+
+	opts := types.ContainerListOptions{All: true, Size: true}
+	containers, err := cli.ContainerList(context.Background(), opts)
+    for _, c := range containers {
+        if containerName(c.Names) == strings.TrimSpace(in.GetName()) { // 找到同名的容器
+            misc, err := litedb.GetContainerMiscConfig(c.ID)
+            if err != nil {
+                return nil, rpc.ErrInternal
+            }
+            if misc.MiscConfig.AppRun == in.AppRun {
+                return &pb.SyncAppEntryReply{}, nil
+            } else {
+                misc.MiscConfig.AppRun = in.AppRun
+                litedb.UpdateContainerMiscConfig(misc)
+            }
+        }
+    }
+   return &pb.SyncAppEntryReply{}, nil
 }

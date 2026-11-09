@@ -599,11 +599,11 @@ message ContainerConfigs {
     map<string, string>    envs           = 23;  // 环境变量
     RestartPolicy          restart_policy = 24;  // 重启策略(高可用)
     ResourceLimit          resouce_limit  = 25;
-    ContainerMiscConfig    misc_config    = 26; // 其他配置选项
+    ContainerMiscConfig    misc_config    = 26;  // 其他配置选项
 
     SecurityConfig security_config = 31;  // 安全配置
-    string	ipcname = 32; //IPC基准名称
-    string	hostname = 33; // 容器主机名称，可以为空
+    string         ipcname         = 32;  //IPC基准名称
+    string         hostname        = 33;  // 容器主机名称，可以为空
 }
 
 message ContainerMiscConfig {
@@ -611,45 +611,53 @@ message ContainerMiscConfig {
 }
 
 message ContainerTemplate {
-  int64            id = 1;
-  ContainerConfigs conf = 2;
-  int64            node_id = 3;
+    int64            id      = 1;
+    ContainerConfigs conf    = 2;
+    int64            node_id = 3;
 }
 
 enum BACKUP_STATUS {
-  ONGOING = 0;  // 备份中
-  SUCCEED = 1;  // 成功
-  FAILED = 2;  // 失败
+    ONGOING = 0;  // 备份中
+    SUCCEED = 1;  // 成功
+    FAILED  = 2;  // 失败
 }
 
 message ContainerBackup {
-  int64  id = 1;
-  int64  node_id = 2;
-  string container_id = 3;
-  string uuid = 4;
-  string backup_name = 5;
-  string backup_desc = 6;
-  string image_ref = 7;   // 备份镜像
-  string image_id = 8;   // 备份镜像id
-  int64  image_size = 9;   // 备份镜像大小
-  int64  status = 10;  // 参考 BACKUP_STATUS 定义
-  int64  created_at = 21;
+    int64  id           = 1;
+    int64  node_id      = 2;
+    string container_id = 3;
+    string uuid         = 4;
+    string backup_name  = 5;
+    string backup_desc  = 6;
+    string image_ref    = 7;   // 备份镜像
+    string image_id     = 8;   // 备份镜像id
+    int64  image_size   = 9;   // 备份镜像大小
+    int64  status       = 10;  // 参考 BACKUP_STATUS 定义
+    int64  created_at   = 21;
 }
 
 message ContainerFailInfo {
-  string node_info = 1;
-  string container_id = 2;
-  string container_name = 3;
-  string fail_reason = 4;
+    string node_info      = 1;
+    string container_id   = 2;
+    string container_name = 3;
+    string fail_reason    = 4;
 }
 
 message UpdateContainerVersionRequest {
-    int64 node_id         = 1;
-    string container_id   = 2;
-    string img_name       = 3;
-    string img_version    = 4;
+    int64  node_id      = 1;
+    string container_id = 2;
+    string img_name     = 3;
+    string img_version  = 4;
 }
 
 message UpdateContainerVersionReply {
+}
 
+message SyncAppEntryRequest {
+    bool   app_run = 1;  // 是否开启了容器app 高可用
+    string name    = 2;  // 容器名称
+    string vip     = 3;  // VIP 地址
+}
+
+message SyncAppEntryReply {
 }

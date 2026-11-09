@@ -176,6 +176,17 @@ func (s *ContainerServer) isIpcContainer(id string) bool {
 	return true
 }
 
+/*
+    conn, err := getAgentConn(n.Address)
+    if err != nil {
+        log.Infof("getAgentConn error=%v", err)
+        return nil, rpc.ErrInternal
+    }
+    return pb.NewContainerClient(conn).Unpause(ctx, in)
+*/
+
+
+
 
 func (s *ContainerServer) appEntrySync(app_run bool, name string) {
     nodes, err := db.ListNodes()
@@ -189,8 +200,15 @@ func (s *ContainerServer) appEntrySync(app_run bool, name string) {
             Name   : name,
             Vip    : common.Config.Controller.VirtualIP,
         }
-        _ = sync
-        _ = node
+        conn, err := getAgentConn(node.Address)
+        if err != nil {
+            continue
+        }
+        go func() {
+            ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+            defer cancel()
+            pb.NewContainerClient(conn).SyncAppConfig(ctx, &sync);
+        }()
     }
 }
 
@@ -726,6 +744,8 @@ func (s *ContainerServer) Create(ctx context.Context, in *pb.CreateRequest) (*pb
             MiscConfig: in.Configs.GetMiscConfig(), 
         }
         litedb.CreateContainerMiscConfig(&miscConfig)
+
+        go s.appEntrySync(in.Configs.GetMiscConfig().GetAppRun(), in.Configs.Name)
 	}
 
     if err == nil && netlog.Detail != "" {
@@ -2374,8 +2394,10 @@ func (*ContainerServer) SyncAppConfig(ctx context.Context, in *pb.SyncAppEntryRe
             } else {
                 misc.MiscConfig.AppRun = in.AppRun
                 litedb.UpdateContainerMiscConfig(misc)
+                break
             }
         }
     }
+
    return &pb.SyncAppEntryReply{}, nil
 }

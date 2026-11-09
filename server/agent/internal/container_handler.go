@@ -1403,8 +1403,14 @@ func (s *ContainerServer) inspect(id string, backup bool) (*pb.ContainerConfigs,
 				configs.Ipcname = cfg.ContainerName
 			}
 		}
-
 	}
+
+    misc, err := litedb.GetContainerMiscConfig(info.ID)
+    if err != nil {
+        configs.MiscConfig.AppRun = false
+    } else {
+        configs.MiscConfig.AppRun = misc.MiscConfig.AppRun
+    }
 
 	if info.NetworkSettings != nil {
 		s.inspectNetwork(info.ID, backup, info.NetworkSettings, configs)

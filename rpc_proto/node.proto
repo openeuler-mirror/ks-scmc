@@ -192,87 +192,84 @@ message Log {
 }
 
 message GetFileProtectRequest {
-    int64 node_id      = 1;
+    int64 node_id = 1;
 }
 
 message GetFileProtectReply {
-    security.FileProtection  file_protection  = 13;  // 文件防篡改保护
-    
+    security.FileProtection file_protection = 13;  // 文件防篡改保护
 }
 
 message GetNetworkRuleRequest {
-     int64 node_id      = 1;
+    int64 node_id = 1;
 }
 
 message GetNetworkRuleReply {
-    security.NetworkRuleList network_rule     = 1;  // 网络访问规则
+    security.NetworkRuleList network_rule = 1;  // 网络访问规则
 }
 
 message GetNodeSecurityConfigRequest {
-     int64 node_id      = 1;
+    int64 node_id = 1;
 }
 
 message GetNodeSecurityConfigReply {
-    SecurityConfig    security_config = 1;   //节点安全配置
+    SecurityConfig security_config = 1;  //节点安全配置
 }
 
 message PortStatus {
-    uint32 port = 1;
-    bool blocked = 2;
+    uint32 port    = 1;
+    bool   blocked = 2;
 }
 
-message GetNodeDefaultPortRequest{
-    int64 node_id       = 1;
+message GetNodeDefaultPortRequest {
+    int64 node_id = 1;
 }
 
-message GetNodeDefaultPortReply{
+message GetNodeDefaultPortReply {
     repeated PortStatus blocked_ports = 1;
 }
 
-message UpdateProcessWhiteListRequest{
-    int64   node_id = 1;
-    SecurityConfig  security_config =   2;   
+message UpdateProcessWhiteListRequest {
+    int64          node_id         = 1;
+    SecurityConfig security_config = 2;
 }
-message UpdateProcessWhiteListReply{
-    
+message UpdateProcessWhiteListReply {
 }
-message GetProcessWhiteListRequest{
-    int64   node_id =   1;   
+message GetProcessWhiteListRequest {
+    int64 node_id = 1;
 }
-message GetProcessWhiteListReply{
-    security.ProcProtection  proc_protection    =   1;  // 进程保护
-}
-
-message GetNodeDefaultProcessWhiteListRequest{
-    int64   node_id =   1;
+message GetProcessWhiteListReply {
+    security.ProcProtection proc_protection = 1;  // 进程保护
 }
 
-message GetNodeDefaultProcessWhiteListReply{
-    repeated string process_names   =   1;
+message GetNodeDefaultProcessWhiteListRequest {
+    int64 node_id = 1;
 }
 
-
-message UpdateNetworkProcessWhiteListRequest{
-    int64   node_id                 =   1;
-    SecurityConfig  security_config =   2;   
+message GetNodeDefaultProcessWhiteListReply {
+    repeated string process_names = 1;
 }
 
-message UpdateNetworkProcessWhiteListReply{
-    repeated string process_names   =   1;
+message UpdateNetworkProcessWhiteListRequest {
+    int64          node_id         = 1;
+    SecurityConfig security_config = 2;
 }
 
-message GetNetworkProcessWhiteListRequest{
-    int64   node_id =   1;
+message UpdateNetworkProcessWhiteListReply {
+    repeated string process_names = 1;
 }
 
-message GetNetworkProcessWhiteListReply{
-    security.ProcProtection  nproc_protection = 1;  // 网络进程保护
+message GetNetworkProcessWhiteListRequest {
+    int64 node_id = 1;
 }
 
-message GetNodeDefaultNetProWhiteListRequest{
-    int64   node_id =   1;
+message GetNetworkProcessWhiteListReply {
+    security.ProcProtection nproc_protection = 1;  // 网络进程保护
 }
 
-message GetNodeDefaultNetProWhiteListReply{
-    repeated string process_names   =   1;
+message GetNodeDefaultNetProWhiteListRequest {
+    int64 node_id = 1;
+}
+
+message GetNodeDefaultNetProWhiteListReply {
+    repeated string process_names = 1;
 }

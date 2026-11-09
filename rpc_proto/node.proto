@@ -22,19 +22,19 @@ service Node {
     rpc Usage(UsageRequest) returns (UsageReply) {}
 
     // 安全配置
-    rpc UpdateFileProtect(UpdateFileProtectRequest) returns (UpdateFileProtectReply) {}  // 文件保护
-    rpc UpdateNetworkRule(UpdateNetworkRuleRequest) returns (UpdateNetworkRuleReply) {}  // 网络访问规则
+    rpc UpdateFileProtect(UpdateFileProtectRequest) returns (UpdateFileProtectReply) {}                                      // 文件保护
+    rpc UpdateNetworkRule(UpdateNetworkRuleRequest) returns (UpdateNetworkRuleReply) {}                                      // 网络访问规则
     rpc UpdateNetworkProcessWhiteList(UpdateNetworkProcessWhiteListRequest) returns (UpdateNetworkProcessWhiteListReply) {}  // 网络访问规则
-    rpc UpdateProcessWhiteList(UpdateProcessWhiteListRequest) returns (UpdateProcessWhiteListReply) {}  
-    
-    rpc GetFileProtect(GetFileProtectRequest) returns (GetFileProtectReply) {}  // 获取文件保护规则
-    rpc GetNetworkRule(GetNetworkRuleRequest) returns (GetNetworkRuleReply) {}  // 获取网络访问规则
+    rpc UpdateProcessWhiteList(UpdateProcessWhiteListRequest) returns (UpdateProcessWhiteListReply) {}
+
+    rpc GetFileProtect(GetFileProtectRequest) returns (GetFileProtectReply) {}                                      // 获取文件保护规则
+    rpc GetNetworkRule(GetNetworkRuleRequest) returns (GetNetworkRuleReply) {}                                      // 获取网络访问规则
     rpc GetNetworkProcessWhiteList(GetNetworkProcessWhiteListRequest) returns (GetNetworkProcessWhiteListReply) {}  // 获取网络访问规则
-    rpc GetNodeProcessWhiteList(GetProcessWhiteListRequest) returns (GetProcessWhiteListReply) {}  
+    rpc GetNodeProcessWhiteList(GetProcessWhiteListRequest) returns (GetProcessWhiteListReply) {}
     rpc GetNodeSecurityConfig(GetNodeSecurityConfigRequest) returns (GetNodeSecurityConfigReply) {}  // 获取节点全部配置
-    rpc GetNodeDefaultPort(GetNodeDefaultPortRequest) returns (GetNodeDefaultPortReply) {}    
-    rpc GetNodeDefaultProcessWhiteList(GetNodeDefaultProcessWhiteListRequest) returns (GetNodeDefaultProcessWhiteListReply) {}  
-    rpc GetNodeDefaultNetProWhiteList(GetNodeDefaultNetProWhiteListRequest) returns (GetNodeDefaultNetProWhiteListReply) {}    
+    rpc GetNodeDefaultPort(GetNodeDefaultPortRequest) returns (GetNodeDefaultPortReply) {}
+    rpc GetNodeDefaultProcessWhiteList(GetNodeDefaultProcessWhiteListRequest) returns (GetNodeDefaultProcessWhiteListReply) {}
+    rpc GetNodeDefaultNetProWhiteList(GetNodeDefaultNetProWhiteListRequest) returns (GetNodeDefaultNetProWhiteListReply) {}
 }
 
 message ListRequest {}

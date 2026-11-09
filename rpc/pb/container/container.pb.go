@@ -4411,7 +4411,8 @@ type ContainerInfo struct {
 	SizeRw       int64             `protobuf:"varint,8,opt,name=size_rw,json=sizeRw,proto3" json:"size_rw,omitempty"`
 	SizeRootFs   int64             `protobuf:"varint,9,opt,name=size_root_fs,json=sizeRootFs,proto3" json:"size_root_fs,omitempty"`
 	Labels       map[string]string `protobuf:"bytes,10,rep,name=labels,proto3" json:"labels,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
-	Started      int64             `protobuf:"varint,11,opt,name=started,proto3" json:"started,omitempty"` // 上次开机时间
+	Started      int64             `protobuf:"varint,11,opt,name=started,proto3" json:"started,omitempty"`                         // 上次开机时间
+	ActiveApps   int64             `protobuf:"varint,12,opt,name=active_apps,json=activeApps,proto3" json:"active_apps,omitempty"` // 容器活跃的 app 数
 	ResourceStat *ResourceStat     `protobuf:"bytes,101,opt,name=resource_stat,json=resourceStat,proto3" json:"resource_stat,omitempty"`
 }
 

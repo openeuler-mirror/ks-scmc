@@ -6093,6 +6093,107 @@ func (*UpdateContainerVersionReply) Descriptor() ([]byte, []int) {
 	return file_container_proto_rawDescGZIP(), []int{99}
 }
 
+type SyncAppEntryRequest struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	AppRun bool   `protobuf:"varint,1,opt,name=app_run,json=appRun,proto3" json:"app_run,omitempty"` // 是否开启了容器app 高可用
+	Name   string `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`                    // 容器名称
+	Vip    string `protobuf:"bytes,3,opt,name=vip,proto3" json:"vip,omitempty"`                      // VIP 地址
+}
+
+func (x *SyncAppEntryRequest) Reset() {
+	*x = SyncAppEntryRequest{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_container_proto_msgTypes[100]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *SyncAppEntryRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SyncAppEntryRequest) ProtoMessage() {}
+
+func (x *SyncAppEntryRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_container_proto_msgTypes[100]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SyncAppEntryRequest.ProtoReflect.Descriptor instead.
+func (*SyncAppEntryRequest) Descriptor() ([]byte, []int) {
+	return file_container_proto_rawDescGZIP(), []int{100}
+}
+
+func (x *SyncAppEntryRequest) GetAppRun() bool {
+	if x != nil {
+		return x.AppRun
+	}
+	return false
+}
+
+func (x *SyncAppEntryRequest) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *SyncAppEntryRequest) GetVip() string {
+	if x != nil {
+		return x.Vip
+	}
+	return ""
+}
+
+type SyncAppEntryReply struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+}
+
+func (x *SyncAppEntryReply) Reset() {
+	*x = SyncAppEntryReply{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_container_proto_msgTypes[101]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *SyncAppEntryReply) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SyncAppEntryReply) ProtoMessage() {}
+
+func (x *SyncAppEntryReply) ProtoReflect() protoreflect.Message {
+	mi := &file_container_proto_msgTypes[101]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SyncAppEntryReply.ProtoReflect.Descriptor instead.
+func (*SyncAppEntryReply) Descriptor() ([]byte, []int) {
+	return file_container_proto_rawDescGZIP(), []int{101}
+}
+
 var File_container_proto protoreflect.FileDescriptor
 
 var file_container_proto_rawDesc = []byte{

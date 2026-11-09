@@ -1055,6 +1055,17 @@ func (s *ContainerServer) Update(ctx context.Context, in *pb.UpdateRequest) (*pb
 			}
 		}
 	}
+    
+    //app 高可用状态是否变化
+    misc, err := litedb.GetContainerMiscConfig(in.ContainerId) 
+    if err != nil {
+        log.Warnf("GetContainerMiscConfig: err: %v, id: %s", err, in.ContainerId)
+    } else {
+        if misc.MiscConfig.GetAppRun() != in.MiscConfig.GetAppRun() {
+            misc.MiscConfig.AppRun = in.MiscConfig.AppRun
+            litedb.UpdateContainerMiscConfig(misc)
+        } 
+    } 
 
 	log.Warnf("change: %v docker.NoneBit: %v", change, docker.NoneBit)
 	if change != docker.NoneBit {

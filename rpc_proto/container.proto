@@ -351,232 +351,232 @@ message UpdateRequest {
     repeated Mount         mounts          = 7;  // 共享目录
     map<string, string>    envs            = 8;  // 环境变量
     string                 cmd             = 9;
-    string		           ipcname	       =10; // IPC 基准名称
-    ContainerMiscConfig    misc_config     =11; // app 高可用 
+    string                 ipcname         = 10;  // IPC 基准名称
+    ContainerMiscConfig    misc_config     = 11;  // app 高可用
 }
 
 message UpdateReply {}
 
 message RemoveRequest {
-  repeated ContainerIdList ids = 1;
-  bool                     remove_volumes = 2;
+    repeated ContainerIdList ids            = 1;
+    bool                     remove_volumes = 2;
 }
 
 message RemoveReply {
-  repeated string            ok_ids = 1;
-  repeated string            fail_ids = 2;
-  repeated ContainerFailInfo fail_infos = 3;
+    repeated string            ok_ids     = 1;
+    repeated string            fail_ids   = 2;
+    repeated ContainerFailInfo fail_infos = 3;
 }
 
 message StatusRequest {
-  int64 node_id = 1;
+    int64 node_id = 1;
 }
 
 message StatusReply {
-  repeated ResourceStat status = 1;
+    repeated ResourceStat status = 1;
 }
 
 message MonitorHistoryRequest {
-  int64  node_id = 1;
-  int64  start_time = 2;  // 起始时间 UNIX时间戳
-  int64  end_time = 3;  // 结束时间 UNIX时间戳
-  uint32 interval = 4;  // 取样间隔 单位分钟
-  string container_id = 5;  // 容器名 空表示取节点总和信息
+    int64  node_id      = 1;
+    int64  start_time   = 2;  // 起始时间 UNIX时间戳
+    int64  end_time     = 3;  // 结束时间 UNIX时间戳
+    uint32 interval     = 4;  // 取样间隔 单位分钟
+    string container_id = 5;  // 容器名 空表示取节点总和信息
 }
 
 message MonitorHistoryReply {
-  repeated MonitorSample cpu_usage = 1;
-  repeated MonitorSample memory_usage = 2;
-  repeated MonitorSample disk_usage = 3;
-  repeated MonitorSample net_rx = 4;
-  repeated MonitorSample net_tx = 5;
+    repeated MonitorSample cpu_usage    = 1;
+    repeated MonitorSample memory_usage = 2;
+    repeated MonitorSample disk_usage   = 3;
+    repeated MonitorSample net_rx       = 4;
+    repeated MonitorSample net_tx       = 5;
 
-  ResourceLimit rsc_limit = 11;  // 资源使用限制
+    ResourceLimit rsc_limit = 11;  // 资源使用限制
 }
 
 message ListTemplateRequest {
-  int64  per_page = 1;
-  int64  next_page = 2;
-  string sort = 3;
-  string like_search = 4;
+    int64  per_page    = 1;
+    int64  next_page   = 2;
+    string sort        = 3;
+    string like_search = 4;
 }
 
 message ListTemplateReply {
-  int64                      per_page = 1;
-  int64                      cur_page = 2;
-  int64                      total_rows = 3;
-  int64                      total_pages = 4;
-  repeated ContainerTemplate data = 5;
+    int64                      per_page    = 1;
+    int64                      cur_page    = 2;
+    int64                      total_rows  = 3;
+    int64                      total_pages = 4;
+    repeated ContainerTemplate data        = 5;
 }
 
 message CreateTemplateRequest {
-  ContainerTemplate data = 1;
+    ContainerTemplate data = 1;
 }
 
 message CreateTemplateReply {
-  int64 id = 1;
+    int64 id = 1;
 }
 
 message UpdateTemplateRequest {
-  ContainerTemplate data = 2;
+    ContainerTemplate data = 2;
 }
 
 message UpdateTemplateReply {}
 
 message RemoveTemplateRequest {
-  repeated int64 ids = 1;
+    repeated int64 ids = 1;
 }
 
 message RemoveTemplateReply {}
 
 message InspectTemplateRequest {
-  int64 id = 1;
+    int64 id = 1;
 }
 
 message InspectTemplateReply {
-  ContainerTemplate data = 1;
+    ContainerTemplate data = 1;
 }
 
 /***** DATA TYPES *****/
 
 message Port {
-  string ip = 1;
-  uint32 private_port = 2;
-  uint32 public_port = 3;
-  string type = 4;
+    string ip           = 1;
+    uint32 private_port = 2;
+    uint32 public_port  = 3;
+    string type         = 4;
 }
 
 message MountPoint {
-  string type = 1;
-  string name = 2;
-  string source = 3;
-  string destination = 4;
-  string driver = 5;
-  string mode = 6;
-  bool   rw = 7;
-  string propagation = 8;
+    string type        = 1;
+    string name        = 2;
+    string source      = 3;
+    string destination = 4;
+    string driver      = 5;
+    string mode        = 6;
+    bool   rw          = 7;
+    string propagation = 8;
 }
 
 message NodeContainer {
-  int64         node_id = 1;
-  string        node_address = 2;
-  ContainerInfo info = 10;
+    int64         node_id      = 1;
+    string        node_address = 2;
+    ContainerInfo info         = 10;
 }
 
 message ContainerInfo {
-  string              id = 1;
-  string              name = 2;
-  string              image = 3;
-  string              image_id = 4;
-  string              command = 5;
-  string              state = 6;  // "created", "running", "paused", "restarting", "removing", "exited", or "dead"
-  int64               created = 7;
-  int64               size_rw = 8;
-  int64               size_root_fs = 9;
-  map<string, string> labels = 10;
-  int64               started = 11;  // 上次开机时间
+    string              id           = 1;
+    string              name         = 2;
+    string              image        = 3;
+    string              image_id     = 4;
+    string              command      = 5;
+    string              state        = 6;  // "created", "running", "paused", "restarting", "removing", "exited", or "dead"
+    int64               created      = 7;
+    int64               size_rw      = 8;
+    int64               size_root_fs = 9;
+    map<string, string> labels       = 10;
+    int64               started      = 11;  // 上次开机时间
 
-  ResourceStat resource_stat = 101;
+    ResourceStat resource_stat = 101;
 }
 
 message ContainerIdList {
-  int64           node_id = 1;
-  repeated string container_ids = 2;
+    int64           node_id       = 1;
+    repeated string container_ids = 2;
 }
 
 message Mount {
-  string type = 1;  // "bind" "volume" "tmpfs" "npipe"
-  string source = 2;
-  string target = 3;
-  bool   read_only = 4;
-  string consistency = 5;  // "consistent" "cached" "delegated" "default"
+    string type        = 1;  // "bind" "volume" "tmpfs" "npipe"
+    string source      = 2;
+    string target      = 3;
+    bool   read_only   = 4;
+    string consistency = 5;  // "consistent" "cached" "delegated" "default"
 
-  // bind_options
-  // volume_options
-  // tmpfs_options
+    // bind_options
+    // volume_options
+    // tmpfs_options
 }
 
 message RestartPolicy {
-  string name = 1;
-  int32  max_retry = 2;
+    string name      = 1;
+    int32  max_retry = 2;
 }
 
 message DeviceMapping {
-  string path_on_host = 1;
-  string path_in_container = 2;
-  string cgroup_permissions = 3;
+    string path_on_host       = 1;
+    string path_in_container  = 2;
+    string cgroup_permissions = 3;
 }
 
 message CpuStat {
-  double core_used = 1;
+    double core_used = 1;
 }
 
 message MemoryStat {
-  double used = 1;
-  double limit = 2;
-  double percentage = 3;
+    double used       = 1;
+    double limit      = 2;
+    double percentage = 3;
 }
 
 message BlockStat {
-  double read = 1;
-  double write = 2;
+    double read  = 1;
+    double write = 2;
 }
 
 message DiskStat {
-  double used = 1;
-  double limit = 2;
+    double used  = 1;
+    double limit = 2;
 }
 
 message NetworkStats {
-  double rx = 1;
-  double tx = 2;
+    double rx = 1;
+    double tx = 2;
 }
 
 message ResourceStat {
-  string       id = 1;
-  string       state = 2;
-  CpuStat      cpu_stat = 3;
-  MemoryStat   mem_stat = 4;
-  DiskStat     disk_stat = 5;
-  BlockStat    block_stat = 6;
-  NetworkStats net_stat = 7;
+    string       id         = 1;
+    string       state      = 2;
+    CpuStat      cpu_stat   = 3;
+    MemoryStat   mem_stat   = 4;
+    DiskStat     disk_stat  = 5;
+    BlockStat    block_stat = 6;
+    NetworkStats net_stat   = 7;
 }
 
 message MonitorSample {
-  int64  timestamp = 1;
-  double value = 2;
+    int64  timestamp = 1;
+    double value     = 2;
 }
 
 message NetworkConfig {
-  string interface = 1;  // required
-  string container_id = 2;  // required
-  string ip_address = 3;  // required
-  int32  ip_prefix_len = 4;
-  string mac_address = 5;
-  string gateway = 6;
+    string interface     = 1;  // required
+    string container_id  = 2;  // required
+    string ip_address    = 3;  // required
+    int32  ip_prefix_len = 4;
+    string mac_address   = 5;
+    string gateway       = 6;
 }
 
 message ResourceLimit {
-  double cpu_limit = 1;   // CPU使用核心数限制; NanoCPUs = cpus * 1e9
-  int64  cpu_prio = 2;   // CPU优先级(0-5)
-  double memory_limit = 11;  // 内存限制 单位MB
-  double memory_soft_limit = 12;  // 内存软限制 单位MB 数值低于memory_limit
-  double disk_limit = 21;  // 磁盘使用限制 单位MB
-  int64  disk_prio = 22;   // 磁盘优先级(0-5)
-  int64 disk_rbw = 23; // 磁盘读速率 单位 MB, 为 0 的时候表示不限制
-  int64 disk_wbw = 24; // 磁盘写速率 单位 MB, 为 0 的时候表示不限制
+    double cpu_limit         = 1;   // CPU使用核心数限制; NanoCPUs = cpus * 1e9
+    int64  cpu_prio          = 2;   // CPU优先级(0-5)
+    double memory_limit      = 11;  // 内存限制 单位MB
+    double memory_soft_limit = 12;  // 内存软限制 单位MB 数值低于memory_limit
+    double disk_limit        = 21;  // 磁盘使用限制 单位MB
+    int64  disk_prio         = 22;  // 磁盘优先级(0-5)
+    int64  disk_rbw          = 23;  // 磁盘读速率 单位 MB, 为 0 的时候表示不限制
+    int64  disk_wbw          = 24;  // 磁盘写速率 单位 MB, 为 0 的时候表示不限制
 }
 
 message SecurityConfig {
-	bool disable_external_network = 1;  // 禁止访问外部网络
-	bool disable_cmd_operation    = 2;  // 禁止命令行控制容器(启停控制)
-	int64 security_level_template = 3;  // 安全等级模板
-	bool network_access_controll  = 4;  // 一级模板的对外访问控制
+    bool  disable_external_network = 1;  // 禁止访问外部网络
+    bool  disable_cmd_operation    = 2;  // 禁止命令行控制容器(启停控制)
+    int64 security_level_template  = 3;  // 安全等级模板
+    bool  network_access_controll  = 4;  // 一级模板的对外访问控制
 
-	security.ProcProtection  proc_protection = 11;  // 进程保护
-	security.ProcProtection  nproc_protection = 12;  // 网络进程保护
-	security.FileProtection  file_protection = 13;  // 文件防篡改保护
-	security.NetworkRuleList network_rule = 14;  // 网络访问规则
+    security.ProcProtection  proc_protection  = 11;  // 进程保护
+    security.ProcProtection  nproc_protection = 12;  // 网络进程保护
+    security.FileProtection  file_protection  = 13;  // 文件防篡改保护
+    security.NetworkRuleList network_rule     = 14;  // 网络访问规则
 }
 
 message ContainerConfigs {

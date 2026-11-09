@@ -4525,6 +4525,13 @@ func (x *ContainerInfo) GetStarted() int64 {
 	return 0
 }
 
+func (x *ContainerInfo) GetActiveApps() int64 {
+	if x != nil {
+		return x.ActiveApps
+	}
+	return 0
+}
+
 func (x *ContainerInfo) GetResourceStat() *ResourceStat {
 	if x != nil {
 		return x.ResourceStat

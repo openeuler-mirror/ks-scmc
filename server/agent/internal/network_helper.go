@@ -241,6 +241,9 @@ func ContainerWhiteConfig() error {
 				if err != nil || info.State.Pid == 0 {
 					log.Warnf("%v call ContainerInspect err(%v) or container not start", e.ID, err)
 				} else {
+                    if common.IsMaster() { // 主设备，同步启动 app
+                        runAppEntry(e.ID)
+                    }
                     setdisklimit(e.ID)
 					var name string
 					if e.Actor.Attributes != nil {

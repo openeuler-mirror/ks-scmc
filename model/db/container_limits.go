@@ -17,6 +17,7 @@ type ContainerLimits struct {
 func (ContainerLimits) TableName() string {
 	return "container_limits"
 }
+
 func CreateContainerLimits(data *ContainerLimits) error {
 	db, err := getConn()
 	if err != nil {
@@ -30,6 +31,7 @@ func CreateContainerLimits(data *ContainerLimits) error {
 	}
 	return nil
 }
+
 func UpdateContainerLimits(n *ContainerLimits) error {
 	db, err := getConn()
 	if err != nil {
@@ -43,6 +45,7 @@ func UpdateContainerLimits(n *ContainerLimits) error {
 	}
 	return nil
 }
+
 func QueryContainerLimitsByContainerId(containerId string) (*ContainerLimits, error) {
 	db, err := getConn()
 	if err != nil {

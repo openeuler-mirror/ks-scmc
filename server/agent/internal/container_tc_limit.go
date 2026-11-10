@@ -9,7 +9,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
-
+	log "github.com/sirupsen/logrus"
 	"scmc/model/docker"
 	"scmc/model/litedb"
 )
@@ -133,7 +133,10 @@ func (s *ContainerServer) ContainerTCConfig(containerID string, Nic string) {
 			litedb.UpdateNetworkLimit(data)
 		}
 
-		s.ApplyMultiInterfaceLimit(containerID, iface.Name, data.NetWbw, data.NetRbw)
+		err2 := s.ApplyMultiInterfaceLimit(containerID, iface.Name, data.NetWbw, data.NetRbw)
+		if err2 != nil {
+			log.Warnf("tc err: %v, containerID: %s, iface.Name: %v, NetWbw: %v, NetRbw: %v", err2, iface.Name, data.NetWbw, data.NetRbw)
+		}
 	}
 }
 

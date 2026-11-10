@@ -64,7 +64,6 @@ func GetIpcConfigByID(containerID string) (*IpcConfig, error) {
 	var data IpcConfig
 	result := db.First(&data, "container_id = ?", containerID)
 	if result.Error != nil {
-		log.Warnf("GetIpcConfigByID containerID=%v, err:%v", containerID, result.Error)
 		return nil, result.Error
 	}
 
@@ -81,7 +80,6 @@ func GetIpcConfigByName(name string) (*IpcConfig, error) {
 	var data IpcConfig
 	result := db.First(&data, "container_name = ?", name)
 	if result.Error != nil {
-		log.Warnf("GetIpcConfigByName name =%v, err:%v", name, result.Error)
 		return nil, result.Error
 	}
 
@@ -98,7 +96,6 @@ func UpdateIpcConfig(data *IpcConfig) error {
 	//result := db.Model(data).Select("IPC").Updates(data)
 	result := db.Save(data)
 	if result.Error != nil {
-		log.Warnf("UpdateIpcConfig data=%+v err=%v", data, result.Error)
 		return result.Error
 	}
 	return nil
@@ -113,7 +110,6 @@ func IpcConfigList() ([]*IpcConfig, error) {
 
 	var data []*IpcConfig
 	if r := db.Find(&data); r.Error != nil {
-		log.Warnf("db query ipc configs: %v", r.Error)
 		return nil, r.Error
 	}
 
@@ -129,7 +125,6 @@ func IpcConfigRemoveByID(id int64) error {
 
 	result := db.Where("id = ?", id).Delete(IpcConfig{})
 	if result.Error != nil {
-		log.Errorf("db remove ipc configs id=%v, err=%v", id, result.Error)
 		return result.Error
 	}
 

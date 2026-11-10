@@ -348,8 +348,8 @@ func (c *ContainerResourceMonitor) checkAndAlert(usage float64, resourceType str
 
 	alertKey := fmt.Sprintf("%s-%s-%s", container.ID, node.Address, resourceType)
 	if lastTime, exists := c.lastAlertTime.Load(alertKey); exists {
-		if time.Since(lastTime.(time.Time)) < 10*time.Minute {
-			log.Debugf("Alert suppressed for %s on container %s（within 10min）", resourceType, container.ID[:12])
+		if time.Since(lastTime.(time.Time)) < 1 * time.Minute { // 以前是 10 分钟上报一次，修改为 1 分钟上报一次
+			log.Debugf("Alert suppressed for %s on container %s（within 1 min）", resourceType, container.ID[:12])
 			return
 		}
 	}

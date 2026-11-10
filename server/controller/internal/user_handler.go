@@ -46,11 +46,11 @@ func (s *UserServer) Login(ctx context.Context, in *pb.LoginRequest) (*pb.LoginR
 	u, err := db.QueryUser(ctx, in.Username)
 	if err != nil {
 		if err == db.ErrRecordNotFound {
-			return nil, rpc.ErrNotFound
+			return nil, rpc.ErrWrongPassword
 		}
 		return nil, rpc.ErrInternal
 	} else if u == nil {
-		return nil, rpc.ErrNotFound
+		return nil, rpc.ErrWrongPassword
 	}
 
 	lockRemain := time.Until(time.Unix(u.LockUntil, 0))

@@ -1,19 +1,18 @@
-
 package tasks
 
 import (
 	"context"
+	"strings"
+	"syscall"
 	"time"
-    "strings"
-    "syscall"
 
-	log "github.com/sirupsen/logrus"
 	"github.com/docker/docker/api/types"
-    "github.com/docker/docker/client"
+	"github.com/docker/docker/client"
+	log "github.com/sirupsen/logrus"
 
+	"scmc/common"
+	"scmc/model/docker"
 	"scmc/model/litedb"
-    "scmc/model/docker"
-    "scmc/common"
 )
 
 type AppRun struct {

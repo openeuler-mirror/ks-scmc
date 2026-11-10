@@ -22,8 +22,10 @@ func cadvisorClient() (*client.Client, error) {
 func calculateNetworkTraffic(stats *v1.ContainerStats) (rxBytes, txBytes uint64) {
 	// 遍历所有网络接口
 	for _, iface := range stats.Network.Interfaces {
-		rxBytes += iface.RxBytes
-		txBytes += iface.TxBytes
+		if iface.Name != "lo" {
+			rxBytes += iface.RxBytes
+			txBytes += iface.TxBytes
+		}
 	}
 
 	return rxBytes, txBytes

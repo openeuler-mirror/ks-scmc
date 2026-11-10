@@ -7889,6 +7889,84 @@ func (p *KsScmcClientClient) recvStopContainerV3() (value string, err error) {
 // Parameters:
 //  - NodeName
 //  - Name
+func (p *KsScmcClientClient) RestartContainer(node_name string, name string) (r string, err error) {
+  if err = p.sendRestartContainer(node_name, name); err != nil { return }
+  return p.recvRestartContainer()
+}
+
+func (p *KsScmcClientClient) sendRestartContainer(node_name string, name string)(err error) {
+  oprot := p.OutputProtocol
+  if oprot == nil {
+    oprot = p.ProtocolFactory.GetProtocol(p.Transport)
+    p.OutputProtocol = oprot
+  }
+  p.SeqId++
+  if err = oprot.WriteMessageBegin("RestartContainer", thrift.CALL, p.SeqId); err != nil {
+      return
+  }
+  args := KsScmcClientRestartContainerArgs{
+  NodeName : node_name,
+  Name : name,
+  }
+  if err = args.Write(oprot); err != nil {
+      return
+  }
+  if err = oprot.WriteMessageEnd(); err != nil {
+      return
+  }
+  return oprot.Flush()
+}
+
+
+func (p *KsScmcClientClient) recvRestartContainer() (value string, err error) {
+  iprot := p.InputProtocol
+  if iprot == nil {
+    iprot = p.ProtocolFactory.GetProtocol(p.Transport)
+    p.InputProtocol = iprot
+  }
+  method, mTypeId, seqId, err := iprot.ReadMessageBegin()
+  if err != nil {
+    return
+  }
+  if method != "RestartContainer" {
+    err = thrift.NewTApplicationException(thrift.WRONG_METHOD_NAME, "RestartContainer failed: wrong method name")
+    return
+  }
+  if p.SeqId != seqId {
+    err = thrift.NewTApplicationException(thrift.BAD_SEQUENCE_ID, "RestartContainer failed: out of sequence response")
+    return
+  }
+  if mTypeId == thrift.EXCEPTION {
+    error28 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
+    var error29 error
+    error29, err = error28.Read(iprot)
+    if err != nil {
+      return
+    }
+    if err = iprot.ReadMessageEnd(); err != nil {
+      return
+    }
+    err = error29
+    return
+  }
+  if mTypeId != thrift.REPLY {
+    err = thrift.NewTApplicationException(thrift.INVALID_MESSAGE_TYPE_EXCEPTION, "RestartContainer failed: invalid message type")
+    return
+  }
+  result := KsScmcClientRestartContainerResult{}
+  if err = result.Read(iprot); err != nil {
+    return
+  }
+  if err = iprot.ReadMessageEnd(); err != nil {
+    return
+  }
+  value = result.GetSuccess()
+  return
+}
+
+// Parameters:
+//  - NodeName
+//  - Name
 func (p *KsScmcClientClient) UninstallContainer(node_name string, name string) (r string, err error) {
   if err = p.sendUninstallContainer(node_name, name); err != nil { return }
   return p.recvUninstallContainer()

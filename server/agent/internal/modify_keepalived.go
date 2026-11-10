@@ -2,9 +2,9 @@ package internal
 
 import (
 	"fmt"
+	log "github.com/sirupsen/logrus"
 	"os"
 	"regexp"
-        log "github.com/sirupsen/logrus"
 )
 
 // 修改keepalived配置中的vrrp_instance VI_1的interface字段
@@ -54,8 +54,8 @@ func modifyInterface(configPath, newInterface string) error {
 
 func ModifyInterface(newInterface string) {
 	configPath := "/etc/keepalived/keepalived.conf"
-        err := modifyInterface(configPath, newInterface)
-        if err != nil {
-            log.Warnf("modify keepalived config err: %v", err)
-        }
+	err := modifyInterface(configPath, newInterface)
+	if err != nil {
+		log.Warnf("modify keepalived config err: %v", err)
+	}
 }

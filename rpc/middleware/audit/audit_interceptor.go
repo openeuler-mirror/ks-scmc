@@ -53,7 +53,6 @@ func UnaryInterceptor() grpc.UnaryServerInterceptor {
 				}
 
 				writeLog(uid, req.(proto.Message), err)
-
 			}(ctx)
 		}
 		return handler(ctx, req)

@@ -977,52 +977,6 @@ func (s *ContainerServer) disklimit(containerName string, in *pb.UpdateRequest) 
 	}
 }
 
-/*
-func (s *ContainerServer) disklimit(containerName string, in *pb.UpdateRequest) {
-	// 磁盘限速，如果没有记录，就创建一条新记录
-	disklimitCfg, err := litedb.GetContainerLimitByCID(in.ContainerId)
-	if err != nil {
-		var w, r int64 = 0, 0
-		if in.ResourceLimit != nil {
-			w = in.ResourceLimit.DiskWbw
-			r = in.ResourceLimit.DiskRbw
-		}
-		disklimitCfg = &litedb.ContainerLimit{
-			ContainerID:   in.ContainerId,
-			ContainerName: containerName,
-			DiskRbw:       r,
-			DiskWbw:       w,
-		}
-		litedb.CreateContainerLimit(disklimitCfg)
-		rStr := fmt.Sprintf("%d", r)
-		wStr := fmt.Sprintf("%d", w)
-		docker.SetContainerDiskLimit("disk_rbw", in.ContainerId, rStr)
-		docker.SetContainerDiskLimit("disk_wbw", in.ContainerId, wStr)
-	} else {
-		chg := false
-		if in.ResourceLimit != nil {
-			if disklimitCfg.DiskRbw != in.ResourceLimit.DiskRbw {
-				disklimitCfg.DiskRbw = in.ResourceLimit.DiskRbw
-				r := in.ResourceLimit.DiskRbw
-				rStr := fmt.Sprintf("%d", r)
-				docker.SetContainerDiskLimit("disk_rbw", in.ContainerId, rStr)
-				chg = true
-			}
-			if disklimitCfg.DiskWbw != in.ResourceLimit.DiskWbw {
-				disklimitCfg.DiskWbw = in.ResourceLimit.DiskWbw
-				w := in.ResourceLimit.DiskWbw
-				wStr := fmt.Sprintf("%d", w)
-				docker.SetContainerDiskLimit("disk_wbw", in.ContainerId, wStr)
-				chg = true
-			}
-			if chg {
-				litedb.UpdateContainerLimit(disklimitCfg) // 更新数据库
-			}
-		}
-	}
-}
-*/
-
 func (s *ContainerServer) Update(ctx context.Context, in *pb.UpdateRequest) (*pb.UpdateReply, error) {
 	var reply pb.UpdateReply
 	if in.ContainerId == "" || (in.ResourceLimit == nil && in.RestartPolicy == nil && in.Networks == nil && in.SecurityConfig == nil) {
@@ -1113,22 +1067,6 @@ func (s *ContainerServer) Update(ctx context.Context, in *pb.UpdateRequest) (*pb
 		log.Debugf("%v mounts change", inspectConfigs.ContainerId)
 	}
 
-	/*
-		// 获取容器与 ipcBase 的映射关系
-		ipcmapCfg, err := litedb.GetIpcmapConfigByCID(in.ContainerId)
-		if err != nil {
-			// 在创建的时候写入的数据，这里不应该失败
-			log.Warnf("Update GetIpcmapConfigByCID id: %v, err: %v", in.ContainerId, err)
-			// 创建一条新记录
-			ipcmapCfg = &litedb.IpcmapConfig{
-				ContainerName: cfgs.ContainerName, //容器名称
-				ContainerID:   in.ContainerId,     // 容器ID
-				IpcName:       "",                 // IPC 容器名称，去掉头部的 ipc. 前缀
-				IpcID:         "",                 // IPC 容器对应的容器ID
-			}
-			litedb.CreateIpcmapConfig(ipcmapCfg)
-		}
-	*/
 	outCfg, err := litedb.GetContainerOutConfig(in.ContainerId)
 	if err != nil {
 		log.Warnf("GetContainerOutConfig id:%v, err:%v", in.ContainerId, err)
@@ -1419,17 +1357,12 @@ func (s *ContainerServer) Remove(ctx context.Context, in *pb.RemoveRequest) (*pb
 		}
 		litedb.RemoveContainerConfig([]string{id})
 		litedb.DeleteContainerOutConfigByIDs([]string{id})
-		// litedb.IpcmapConfigRemoveByCID([]string{id}) // 删除容器与ipc 容器的映射数据
-		// litedb.RemoveContainerMisc([]string{id})
 
 		reply.OkIds = append(reply.OkIds, id)
 	}
 
 	litedb.RemoveContainerConfig(reply.OkIds)
 	litedb.DeleteContainerOutConfigByIDs(reply.OkIds)
-
-	// litedb.IpcmapConfigRemoveByCID(reply.OkIds) // 删除容器与ipc 容器的映射数据
-	// litedb.RemoveContainerMisc(reply.OkIds)
 
 	go s.removeContainerBackups(reply.OkIds)
 	return &reply, nil
@@ -1491,14 +1424,11 @@ func (s *ContainerServer) inspect(id string, backup bool) (*pb.ContainerConfigs,
 
 	var w, r int64 = 0, 0
 	var AppRun bool = false
-	//disklimitCfg, err := litedb.GetContainerLimitByCID(info.ID)
 	outCfg, err := litedb.GetContainerOutConfig(info.ID)
 	if err != nil {
 		w = 0
 		r = 0
 	} else {
-		//w = disklimitCfg.DiskWbw
-		//r = disklimitCfg.DiskRbw
 		w = outCfg.Config.DiskWbw
 		r = outCfg.Config.DiskRbw
 		AppRun = outCfg.Config.AppRun
@@ -1537,18 +1467,6 @@ func (s *ContainerServer) inspect(id string, backup bool) (*pb.ContainerConfigs,
 	}
 
 	configs.MiscConfig.AppRun = AppRun
-	/*
-		misc, err := litedb.GetContainerMiscConfigByName(configs.Name)
-		if err != nil {
-			configs.MiscConfig.AppRun = false
-		} else {
-			if misc.MiscConfig != nil {
-				configs.MiscConfig.AppRun = misc.MiscConfig.AppRun
-			} else {
-				configs.MiscConfig.AppRun = false
-			}
-		}
-	*/
 
 	if info.NetworkSettings != nil {
 		s.inspectNetwork(info.ID, backup, info.NetworkSettings, configs)
@@ -2490,7 +2408,6 @@ func (*ContainerServer) SyncAppConfig(ctx context.Context, in *pb.SyncAppEntryRe
 	}
 
 	if outCfg.Config.AppRun != in.AppRun {
-
 		outCfg.Config.AppRun = in.AppRun
 		litedb.UpdateContainerOutConfig(outCfg)
 	}

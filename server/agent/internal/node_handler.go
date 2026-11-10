@@ -810,9 +810,47 @@ func (s *NodeServer) nodeConfigDataTableCreate(uuid string, nodeName string) err
 	return nil
 }
 
+func isLocalIP(targetIP string) bool {
+	targetIP = strings.ToLower(targetIP)
+	localIPs, err := common.GetAllIPs()
+	if err != nil {
+		return false
+	}
+	for _, ip := range localIPs {
+		if strings.ToLower(ip) == targetIP {
+			return true
+		}
+	}
+	return false
+}
+
+// 判断当前机器是否已经加入了集群
+func checkInCluster() bool {
+	dbs, err := db.ListNodes()
+	if err != nil {
+		return false
+	}
+
+	for _, db := range dbs {
+		if !db.Deleted && isLocalIP(db.Address) {
+			return true
+		}
+	}
+
+	return false
+}
+
 func (s *NodeServer) Create(ctx context.Context, in *pb.CreateRequest) (*pb.CreateReply, error) {
 	if len(in.Uuid) == 0 {
 		return nil, rpc.ErrInvalidArgument
+	}
+
+	if checkInCluster() {
+		return nil, status.Error(codes.Internal, "节点已加入其他集群")
+	}
+
+	if common.GetVIPAddr() == in.Address {
+		return nil, status.Error(codes.Internal, "VIP地址不能加入集群")
 	}
 
 	n, err := db.QueryNodeByAddr(in.Address)

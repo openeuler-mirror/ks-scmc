@@ -8895,7 +8895,7 @@ func (p *KsScmcClientClient) sendGetContainerNetwork(node_nameorip string, conta
 }
 
 
-func (p *KsScmcClientClient) recvStartContainer() (value string, err error) {
+func (p *KsScmcClientClient) recvGetContainerNetwork() (value string, err error) {
   iprot := p.InputProtocol
   if iprot == nil {
     iprot = p.ProtocolFactory.GetProtocol(p.Transport)

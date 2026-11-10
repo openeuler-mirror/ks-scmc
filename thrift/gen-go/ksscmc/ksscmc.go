@@ -8784,32 +8784,28 @@ func (p *KsScmcClientClient) recvCondGetAlarmListV3() (value string, err error) 
 }
 
 // Parameters:
+//  - SessionID
 //  - NodeName
-//  - Image
-//  - Ver
-//  - Name
-//  - Desc
-func (p *KsScmcClientClient) InstallContainer(node_name string, image string, ver string, name string, desc string) (r string, err error) {
-  if err = p.sendInstallContainer(node_name, image, ver, name, desc); err != nil { return }
-  return p.recvInstallContainer()
+//  - ID
+func (p *KsScmcClientClient) SetAlarmReadV3(session_id string, node_name string, id int32) (r string, err error) {
+  if err = p.sendSetAlarmReadV3(session_id, node_name, id); err != nil { return }
+  return p.recvSetAlarmReadV3()
 }
 
-func (p *KsScmcClientClient) sendInstallContainer(node_name string, image string, ver string, name string, desc string)(err error) {
+func (p *KsScmcClientClient) sendSetAlarmReadV3(session_id string, node_name string, id int32)(err error) {
   oprot := p.OutputProtocol
   if oprot == nil {
     oprot = p.ProtocolFactory.GetProtocol(p.Transport)
     p.OutputProtocol = oprot
   }
   p.SeqId++
-  if err = oprot.WriteMessageBegin("InstallContainer", thrift.CALL, p.SeqId); err != nil {
+  if err = oprot.WriteMessageBegin("SetAlarmReadV3", thrift.CALL, p.SeqId); err != nil {
       return
   }
-  args := KsScmcClientInstallContainerArgs{
+  args := KsScmcClientSetAlarmReadV3Args{
+  SessionID : session_id,
   NodeName : node_name,
-  Image : image,
-  Ver : ver,
-  Name : name,
-  Desc : desc,
+  ID : id,
   }
   if err = args.Write(oprot); err != nil {
       return

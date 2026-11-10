@@ -399,6 +399,52 @@ func main() {
     fmt.Print(client.GetAllContainerList(value0))
     fmt.Print("\n")
     break
+  case "CondGetAlarmListV3":
+    if flag.NArg() - 1 != 2 {
+      fmt.Fprintln(os.Stderr, "CondGetAlarmListV3 requires 2 args")
+      flag.Usage()
+    }
+    argvalue0 := flag.Arg(1)
+    value0 := argvalue0
+    arg130 := flag.Arg(2)
+    mbTrans131 := thrift.NewTMemoryBufferLen(len(arg130))
+    defer mbTrans131.Close()
+    _, err132 := mbTrans131.WriteString(arg130)
+    if err132 != nil {
+      Usage()
+      return
+    }
+    factory133 := thrift.NewTSimpleJSONProtocolFactory()
+    jsProt134 := factory133.GetProtocol(mbTrans131)
+    argvalue1 := ksscmc.NewGetAlarmCond()
+    err135 := argvalue1.Read(jsProt134)
+    if err135 != nil {
+      Usage()
+      return
+    }
+    value1 := argvalue1
+    fmt.Print(client.CondGetAlarmListV3(value0, value1))
+    fmt.Print("\n")
+    break
+  case "SetAlarmReadV3":
+    if flag.NArg() - 1 != 3 {
+      fmt.Fprintln(os.Stderr, "SetAlarmReadV3 requires 3 args")
+      flag.Usage()
+    }
+    argvalue0 := flag.Arg(1)
+    value0 := argvalue0
+    argvalue1 := flag.Arg(2)
+    value1 := argvalue1
+    tmp2, err138 := (strconv.Atoi(flag.Arg(3)))
+    if err138 != nil {
+      Usage()
+      return
+    }
+    argvalue2 := int32(tmp2)
+    value2 := argvalue2
+    fmt.Print(client.SetAlarmReadV3(value0, value1, value2))
+    fmt.Print("\n")
+    break
   case "GetContainerNetwork":
     if flag.NArg() - 1 != 2 {
       fmt.Fprintln(os.Stderr, "GetContainerNetwork requires 2 args")

@@ -1,13 +1,13 @@
 package internal
 
 import (
+	"bufio"
 	"context"
 	"fmt"
 	"os"
-        "os/exec"
-        "strings"
-	"bufio"
+	"os/exec"
 	"strconv"
+	"strings"
 	"time"
 
 	"scmc/model/docker"
@@ -46,56 +46,56 @@ func (s *ContainerServer) GetContainerNIC(containerID string) (map[string]string
 }
 
 // 获取容器里面的网卡信息
-func (s *ContainerServer) GetContainerInterfacesWithMAC(containerID string) ([]struct{ Name, MAC string}, error) {
+func (s *ContainerServer) GetContainerInterfacesWithMAC(containerID string) ([]struct{ Name, MAC string }, error) {
 	pidOut, err := s.GetContainerPid(containerID)
-        if err != nil {
-                return nil, err
-        }
+	if err != nil {
+		return nil, err
+	}
 
-        pid := strings.TrimSpace(string(pidOut))
-        if pid == "0" {
-                return nil, fmt.Errorf("container not running")
-        }
+	pid := strings.TrimSpace(string(pidOut))
+	if pid == "0" {
+		return nil, fmt.Errorf("container not running")
+	}
 
-        netns := "/proc/" + pid + "/ns/net"
-        if _, err := os.Stat(netns); os.IsNotExist(err) {
-                return nil, fmt.Errorf("netns not found")
-        }
+	netns := "/proc/" + pid + "/ns/net"
+	if _, err := os.Stat(netns); os.IsNotExist(err) {
+		return nil, fmt.Errorf("netns not found")
+	}
 
-        // 在容器 netns 中执行 ip -br link show
-        cmd := exec.Command("nsenter", "--net="+netns, "ip", "-br", "link", "show")
-        output, err := cmd.Output()
-        if err != nil {
-                return nil, fmt.Errorf("nsenter failed: %w", err)
-        }
+	// 在容器 netns 中执行 ip -br link show
+	cmd := exec.Command("nsenter", "--net="+netns, "ip", "-br", "link", "show")
+	output, err := cmd.Output()
+	if err != nil {
+		return nil, fmt.Errorf("nsenter failed: %w", err)
+	}
 
-        var interfaces []struct{ Name, MAC string }
-        scanner := bufio.NewScanner(strings.NewReader(string(output)))
-        for scanner.Scan() {
-                fields := strings.Fields(scanner.Text())
-                if len(fields) < 3 {
-                        continue
-                }
-                iface := fields[0]
-                mac := strings.ToLower(fields[2])
+	var interfaces []struct{ Name, MAC string }
+	scanner := bufio.NewScanner(strings.NewReader(string(output)))
+	for scanner.Scan() {
+		fields := strings.Fields(scanner.Text())
+		if len(fields) < 3 {
+			continue
+		}
+		iface := fields[0]
+		mac := strings.ToLower(fields[2])
 
-                if iface == "lo" || mac == "00:00:00:00:00:00" {
-                        continue
-                }
-
-		if !strings.HasPrefix(iface, "eth") { //是否为 eth 开头的网卡
+		if iface == "lo" || mac == "00:00:00:00:00:00" {
 			continue
 		}
 
-                // 去掉 @ifXX 后缀
-                if idx := strings.Index(iface, "@"); idx != -1 {
-                        iface = iface[:idx]
-                }
+		if !strings.HasPrefix(iface, "eth") { // 是否为 eth 开头的网卡
+			continue
+		}
 
-                interfaces = append(interfaces, struct{ Name, MAC string }{iface, mac})
-        }
+		// 去掉 @ifXX 后缀
+		if idx := strings.Index(iface, "@"); idx != -1 {
+			iface = iface[:idx]
+		}
 
-        return interfaces, nil
+		interfaces = append(interfaces, struct{ Name, MAC string }{iface, mac})
+	}
+
+	return interfaces, nil
 }
 
 func (s *ContainerServer) ContainerTCConfig(containerID string, Nic string) {
@@ -111,10 +111,10 @@ func (s *ContainerServer) ContainerTCConfig(containerID string, Nic string) {
 	}
 
 	interfaces, err := s.GetContainerInterfacesWithMAC(containerID)
-        if err != nil {
-                fmt.Fprintf(os.Stderr, "Error getting container interfaces: %v\n", err)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error getting container interfaces: %v\n", err)
 		return
-        }
+	}
 
 	for _, iface := range interfaces {
 		netName := macToNet[iface.MAC]
@@ -137,7 +137,7 @@ func (s *ContainerServer) ContainerTCConfig(containerID string, Nic string) {
 	}
 }
 
-func (s *ContainerServer)ApplyMultiInterfaceLimit(containerID, iface string, EgressMbps, IngressMbps float64) error {
+func (s *ContainerServer) ApplyMultiInterfaceLimit(containerID, iface string, EgressMbps, IngressMbps float64) error {
 	if EgressMbps < 0 {
 		EgressMbps = 0
 	}
@@ -283,9 +283,9 @@ func redirectIngressToIFB(netns, iface, ifbName string) error {
 		return fmt.Errorf("add ingress qdisc on %s: %w", iface, err)
 	}
 	if err := runInNetns(netns,
-	"tc", "filter", "add", "dev", iface, "parent", "ffff:",
-	"protocol", "all", "u32", "match", "u32", "0", "0",
-	"action", "mirred", "egress", "redirect", "dev", ifbName); err != nil {
+		"tc", "filter", "add", "dev", iface, "parent", "ffff:",
+		"protocol", "all", "u32", "match", "u32", "0", "0",
+		"action", "mirred", "egress", "redirect", "dev", ifbName); err != nil {
 		return fmt.Errorf("redirect %s to %s: %w", iface, ifbName, err)
 	}
 	return nil
@@ -297,9 +297,8 @@ func limitIngressViaIFB(netns, ifbName, rate string) error {
 		return fmt.Errorf("add root qdisc on %s: %w", ifbName, err)
 	}
 	if err := runInNetns(netns,
-	"tc", "class", "add", "dev", ifbName, "parent", "2:", "classid", "2:1", "htb", "rate", rate); err != nil {
+		"tc", "class", "add", "dev", ifbName, "parent", "2:", "classid", "2:1", "htb", "rate", rate); err != nil {
 		return fmt.Errorf("set ingress rate on %s: %w", ifbName, err)
 	}
 	return nil
 }
-

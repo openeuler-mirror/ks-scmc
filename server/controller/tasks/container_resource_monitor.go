@@ -198,10 +198,10 @@ func (c *ContainerResourceMonitor) checkContainerResourceUsage(container types.C
 		rxUsage := c.calculateNetworkMonitorUsage(rates.RxRate, netLimit.RxLimit)
 		txUsage := c.calculateNetworkMonitorUsage(rates.TxRate, netLimit.TxLimit)
 		if rates.RxRate > 0 && netLimit.RxLimit > 0 {
-			c.checkAndAlert(rxUsage, "netRx", ifaceName, container, node, resourceLimit, &netLimit, fmt.Sprintf("网卡[%s]接收速率达到95%阈值", ifaceName))
+			c.checkAndAlert(rxUsage, "netRx", ifaceName, container, node, resourceLimit, &netLimit, fmt.Sprintf("网卡[%s]接收速率达到90%阈值", ifaceName))
 		}
 		if rates.TxRate > 0 && netLimit.TxLimit > 0 {
-			c.checkAndAlert(txUsage, "netTx", ifaceName, container, node, resourceLimit, &netLimit, fmt.Sprintf("网卡[%s]发送速率达到95%阈值", ifaceName))
+			c.checkAndAlert(txUsage, "netTx", ifaceName, container, node, resourceLimit, &netLimit, fmt.Sprintf("网卡[%s]发送速率达到90%阈值", ifaceName))
 		}
 	}
 }
@@ -542,7 +542,7 @@ func (c *ContainerResourceMonitor) checkAndAlert(usage float64, resourceType str
 		return
 	}
 
-	thresholdPercent := 95.0
+	thresholdPercent := 90.0
 	if usage < thresholdPercent {
 		log.Debugf("Container %s %s: usage %.2f%% < %.1f%% threshold, skip alert",
 			container.ID[:12], resourceType, usage, thresholdPercent)
@@ -598,7 +598,7 @@ func (c *ContainerResourceMonitor) getResourceLimitStr(resourceType string, limi
 }
 
 func (c *ContainerResourceMonitor) getThresholdStr(resourceType string, limitValue float64) string {
-	threshold := limitValue * 0.95
+	threshold := limitValue * 0.90
 	switch resourceType {
 	case "cpu":
 		return fmt.Sprintf("%.2f 核心", threshold)

@@ -60,13 +60,13 @@ func cpuMaxQuery() string {
 	return f
 }
 
-func memMaxQuery() string {
+func diskMaxQuery() string {
 	f := `SELECT max(value) / 1048576 FROM "fs_usage"
 	WHERE ("container_name" = '/') AND time >= $start and time <= $end;`
 	return f
 }
 
-func diskMaxQuery() string {
+func memMaxQuery() string {
 	f := `SELECT max(value) / 1048576 FROM "memory_working_set"
 	WHERE ("container_name" = '/') AND time >= $start and time <= $end;`
 	return f

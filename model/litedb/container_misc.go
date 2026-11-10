@@ -34,7 +34,6 @@ func CreateContainerMiscConfig(data *ContainerMisc) error {
     return nil
 }
 
-/*
 func GetContainerMiscConfig(containerID string) (*ContainerMisc, error) {
     db, err := getConn()
     if err != nil {
@@ -48,7 +47,6 @@ func GetContainerMiscConfig(containerID string) (*ContainerMisc, error) {
     }
     return &data, nil
 }
-*/
 
 func GetContainerMiscConfigByName(containerName string) (*ContainerMisc, error) {
     db, err := getConn()
@@ -64,7 +62,6 @@ func GetContainerMiscConfigByName(containerName string) (*ContainerMisc, error) 
     return &data, nil
 }
 
-/*
 func GetContainerMiscConfigList(containerID []string)([]*ContainerMisc, error) {
     db, err := getConn()
     if err != nil {
@@ -78,7 +75,6 @@ func GetContainerMiscConfigList(containerID []string)([]*ContainerMisc, error) {
     }
     return data, nil
 }
-*/
 
 func UpdateContainerMiscConfig(data *ContainerMisc) error {
     db, err := getConn()
@@ -93,7 +89,7 @@ func UpdateContainerMiscConfig(data *ContainerMisc) error {
     return nil
 }
 
-func ContainerMiscList()([] *ContainerMisc, error) {
+func ContainerMiscList()([]*ContainerMisc, error) {
     db, err := getConn()
     if err != nil {
         return nil, err

@@ -18,12 +18,59 @@
   shell: |
     rm -rf /var/lib/influxdb/*
     ln -sf /usr/lib/influxdb/scripts/influxdb.service /usr/lib/systemd/system/influxdb.service
+- name: AGENT 临时禁用influxdb认证
+  shell: sed -i 's/^[[:space:]]*auth-enabled.*/auth-enabled = false/g' /etc/influxdb/influxdb.conf || true
 - name: AGENT 启动influxdb
   service: name=influxdb state=restarted enabled=true
-# 配置influxdb数据最多存储7天
-- name: AGENT influxdb配置策略
-  shell:
-    influx -execute 'CREATE DATABASE "cadvisor"; CREATE RETENTION POLICY "cadvisor_retention" ON "cadvisor" DURATION 7d REPLICATION 1 DEFAULT;'
+- name: AGENT 创建influxdb root用户
+  shell: influx -execute "CREATE USER root WITH PASSWORD 'root' WITH ALL PRIVILEGES"
+  ignore_errors: yes
+- name: AGENT 创建influxdb数据库和策略
+  shell: influx -username root -password root -execute 'CREATE DATABASE "cadvisor"; CREATE RETENTION POLICY "cadvisor_retention" ON "cadvisor" DURATION 7d REPLICATION 1 DEFAULT;'
+  ignore_errors: yes
+- name: AGENT 启用influxdb认证
+  shell: |
+    INFLUX_CONF="/etc/influxdb/influxdb.conf"
+    if [ -f "$INFLUX_CONF" ]; then      
+      sed -i 's/^[#[:space:]]*auth-enabled.*/auth-enabled = true/' "$INFLUX_CONF"
+      if ! grep -q "^auth-enabled" "$INFLUX_CONF"; then
+        awk '/^\[http\]/ { print; print "auth-enabled = true"; next }1' "$INFLUX_CONF" > "$INFLUX_CONF.tmp" && \mv "$INFLUX_CONF.tmp" "$INFLUX_CONF" || echo "auth-enabled = true" >> "$INFLUX_CONF"
+      fi
+    else
+      mkdir -p /etc/influxdb
+      cat > "$INFLUX_CONF" << 'INFLUXEOF'
+    [meta]
+      dir = "/var/lib/influxdb/meta"
+    
+    [data]
+      dir = "/var/lib/influxdb/data"
+      wal-dir = "/var/lib/influxdb/wal"
+    
+    [http]
+      auth-enabled = true
+    INFLUXEOF
+    fi
+- name: AGENT 重启influxdb应用认证
+  service: name=influxdb state=restarted
+# cadvisor组件配置
+- name: AGENT 配置cadvisor InfluxDB认证
+  shell: |
+    # 配置cadvisor InfluxDB认证用户
+    CADVISOR_CONFIG="/etc/sysconfig/cadvisor"
+    INFLUXDB_USER="{{ influxdb.influxdb_username }}"
+    INFLUXDB_PASS="{{ influxdb.influxdb_password }}"
+    if ! grep -q '^CADVISOR_STORAGE_DRIVER_USER=' "$CADVISOR_CONFIG" 2>/dev/null; then      
+      echo "CADVISOR_STORAGE_DRIVER_USER=\"$INFLUXDB_USER\"" >> "$CADVISOR_CONFIG"
+    else
+      sed -i "s/^CADVISOR_STORAGE_DRIVER_USER=.*/CADVISOR_STORAGE_DRIVER_USER=\"$INFLUXDB_USER\"/g" "$CADVISOR_CONFIG"
+    fi
+
+    # 配置cadvisor InfluxDB认证密码
+    if ! grep -q '^CADVISOR_STORAGE_DRIVER_PASSWORD=' "$CADVISOR_CONFIG" 2>/dev/null; then
+      echo "CADVISOR_STORAGE_DRIVER_PASSWORD=\"$INFLUXDB_PASS\"" >> "$CADVISOR_CONFIG"
+    else
+      sed -i "s/^CADVISOR_STORAGE_DRIVER_PASSWORD=.*/CADVISOR_STORAGE_DRIVER_PASSWORD=\"$INFLUXDB_PASS\"/g" "$CADVISOR_CONFIG"
+    fi
 # 更新docker服务配置
 - name: AGENT 配置容器运行时
   shell: |

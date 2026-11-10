@@ -27,7 +27,7 @@ func (s *AppRun) RunAtInit() bool {
 }
 
 func (s *AppRun) Run() {
-	if strings.TrimSpace(common.Config.Controller.VirtualIP) == "" || common.IsMaster() { // 主机模式
+	if common.IsMaster() { // 主机模式
 		ContaierAppRun()
 	} else { // 非主机模式
                 ContaierAppStop() // 停止备机 app 的运行

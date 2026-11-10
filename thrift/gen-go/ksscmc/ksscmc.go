@@ -8864,26 +8864,26 @@ func (p *KsScmcClientClient) recvSetAlarmReadV3() (value string, err error) {
 }
 
 // Parameters:
-//  - NodeName
-//  - Name
-func (p *KsScmcClientClient) StartContainer(node_name string, name string) (r string, err error) {
-  if err = p.sendStartContainer(node_name, name); err != nil { return }
-  return p.recvStartContainer()
+//  - NodeNameorip
+//  - ContainerName
+func (p *KsScmcClientClient) GetContainerNetwork(node_nameorip string, container_name string) (r string, err error) {
+  if err = p.sendGetContainerNetwork(node_nameorip, container_name); err != nil { return }
+  return p.recvGetContainerNetwork()
 }
 
-func (p *KsScmcClientClient) sendStartContainer(node_name string, name string)(err error) {
+func (p *KsScmcClientClient) sendGetContainerNetwork(node_nameorip string, container_name string)(err error) {
   oprot := p.OutputProtocol
   if oprot == nil {
     oprot = p.ProtocolFactory.GetProtocol(p.Transport)
     p.OutputProtocol = oprot
   }
   p.SeqId++
-  if err = oprot.WriteMessageBegin("StartContainer", thrift.CALL, p.SeqId); err != nil {
+  if err = oprot.WriteMessageBegin("GetContainerNetwork", thrift.CALL, p.SeqId); err != nil {
       return
   }
-  args := KsScmcClientStartContainerArgs{
-  NodeName : node_name,
-  Name : name,
+  args := KsScmcClientGetContainerNetworkArgs{
+  NodeNameorip : node_nameorip,
+  ContainerName : container_name,
   }
   if err = args.Write(oprot); err != nil {
       return

@@ -106,6 +106,14 @@ struct NetworkInterface {
     5: required string mask         // 网卡子网掩码
 }
 
+struct NetworkInterfaceWithAgentNode {
+    1: required string eth_name,    // 网卡名称
+    2: required string ip,          // 网卡ip地址
+    3: required string mac,         // 网卡mac地址
+    4: required string gateway,     // 网卡网关
+    5: required string netmask         // 网卡子网掩码
+}
+
 struct GetAllContainersResponse {
     1: required string name,        // 容器名称
     2: required i32 stat, // 容器状态

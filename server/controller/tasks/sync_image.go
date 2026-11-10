@@ -7,10 +7,10 @@ import (
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 
+	"scmc/common"
 	"scmc/model/db"
 	pb "scmc/rpc/pb/image"
 	"scmc/server/controller/internal"
-    "scmc/common"
 )
 
 type SyncImages struct {

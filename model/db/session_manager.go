@@ -99,7 +99,7 @@ func SessionManagerGetNodeIP(sessionID string) *string {
 func SessionManagerCreateSession(nodeIP string) (*string, error) {
 	db, err := getConn()
 	if err != nil {
-		log.Error("Failed to get database connection, because %s", err)
+		log.Errorf("Failed to get database connection, because %s", err)
 		return nil, err
 	}
 	tx := db.Begin()

@@ -5,7 +5,7 @@
 %global debug_package %{nil}
 
 %global pkg_name ks-scmc
-%global pkg_ver 1.1.1
+%global pkg_ver 1.2.1
 %global pkg_rel 10 
 
 Summary:        KylinSec security container magic cube
@@ -48,7 +48,6 @@ make DESTDIR=$RPM_BUILD_ROOT install && cd -
 %systemd_post %{name}-agent.service
 %systemd_post %{name}-controller.service
 %systemd_post %{name}-authz.service
-%systemd_post %{name}-dstats.service
 
 getent group %{name} >/dev/null || groupadd -r %{name}
 mkdir -p /home/%{name}
@@ -65,7 +64,6 @@ chmod 0744 %{_datadir}/ks-scmc/ks-scmc.version > /dev/null || :
 %systemd_preun %{name}-agent.service
 %systemd_preun %{name}-controller.service
 %systemd_preun %{name}-authz.service
-%systemd_preun %{name}-dstats.service
 
 rm -rf %{_datadir}/ks-scmc
 
@@ -75,16 +73,13 @@ rm -rf %{_datadir}/ks-scmc
 %{_bindir}/%{name}-authz
 %{_bindir}/%{name}-user
 %{_bindir}/%{name}-encrypt
-%{_bindir}/%{name}-dstats
 %{_unitdir}/%{name}-agent.service
 %{_unitdir}/%{name}-controller.service
 %{_unitdir}/%{name}-authz.service
-%{_unitdir}/%{name}-dstats.service
 %dir %attr(755, root, root) %{_var}/lib/%{name}
 %dir %attr(755, root, root) %{_var}/log/%{name}
 %dir %attr(755, root, root) %{_sysconfdir}/%{name}/
 %config(noreplace) %{_sysconfdir}/%{name}/server.toml
-%config(noreplace) %{_sysconfdir}/%{name}/dstats.toml
 %{_sysconfdir}/%{name}/access-container-gui
 %{_sysconfdir}/%{name}/graphic_rc
 %{_sysconfdir}/%{name}/setup_db.sh
@@ -105,6 +100,9 @@ rm -rf %{_datadir}/ks-scmc
 %{_sysconfdir}/sudoers.d/ks-scmc-sudoers
 
 %changelog
+* Thu Jul 31 2025 Shenghong Tang <tangshenghong@kylinos.com.cn> - 1.2.1-10.ky3
+- KYOS-F: Upgrade from 1.1.1 to 1.2.1. (#82292)
+
 * Tue Feb 18 2025 Shenghong Tang <tangshenghong@kylinos.com.cn> - 1.1.1-10.ky3
 - KYOS-F: add ks-scmc-dstats code. (#54966)
 

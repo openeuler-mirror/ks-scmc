@@ -53,25 +53,25 @@ func (s *IpcBaseServer) List(ctx context.Context, in *pb.IpcListRequest) (*pb.Ip
 				info.Containers = append(info.Containers, d.ContainerName)
 			}
 		}
-		rsp.IpcnameIds = append(rsp.IpcnameIds, &pb.IpcContainerData {Name: info.Name, Id: info.Id, StartTime: info.StartTime, Containers: info.Containers})
+		rsp.IpcnameIds = append(rsp.IpcnameIds, &pb.IpcContainerData{Name: info.Name, Id: info.Id, StartTime: info.StartTime, Containers: info.Containers})
 	}
 
 	/*
-	for _, c := range ipcAllData {
-		info := pb.IpcContainerData {
-			Name : c.ContainerName,
-			Id : c.ContainerID,
-			StartTime : c.CreatedAt,
-		}
-
-		if c.IPC != nil && len(*c.IPC) > 0 {
-			for key, value := range *c.IPC {
-				info.Containers = append(info.Containers, &pb.IpcContainerPair{Name: key, Id: value})
+		for _, c := range ipcAllData {
+			info := pb.IpcContainerData {
+				Name : c.ContainerName,
+				Id : c.ContainerID,
+				StartTime : c.CreatedAt,
 			}
-		}
 
-		rsp.IpcnameIds = append(rsp.IpcnameIds, &pb.IpcContainerData{Name:info.Name, Id:info.Id, StartTime: info.StartTime, Containers:info.Containers})
-	} */
+			if c.IPC != nil && len(*c.IPC) > 0 {
+				for key, value := range *c.IPC {
+					info.Containers = append(info.Containers, &pb.IpcContainerPair{Name: key, Id: value})
+				}
+			}
+
+			rsp.IpcnameIds = append(rsp.IpcnameIds, &pb.IpcContainerData{Name:info.Name, Id:info.Id, StartTime: info.StartTime, Containers:info.Containers})
+		} */
 
 	return &rsp, nil
 }
@@ -93,31 +93,31 @@ func (s *IpcBaseServer) create(Name string) (string, error) {
 	uuid := uuid.New().String()
 
 	// 容器配置
-	config := &container.Config {
+	config := &container.Config{
 		Image: "ipcbase:v1.0", //使用指定的镜像文件
-		Labels: map[string] string {
+		Labels: map[string]string{
 			"KS_SCMC_DESC": "ipc base container",
 			"KS_SCMC_UUID": uuid,
 		},
-		AttachStdin:true,
-		Tty:true,
-		Cmd: []string{"sleep", "infinity"}, // 容器启动命令
+		AttachStdin: true,
+		Tty:         true,
+		Cmd:         []string{"sleep", "infinity"}, // 容器启动命令
 	}
 
 	// 主机配置
-	hostConfig :=&container.HostConfig {
-		IpcMode: "shareable",
+	hostConfig := &container.HostConfig{
+		IpcMode:    "shareable",
 		Privileged: false,
 	}
 
 	// 创建容器
-	resp, err := cli.ContainerCreate (
+	resp, err := cli.ContainerCreate(
 		context.Background(),
 		config,
 		hostConfig,
-		nil, //网络配置
-		nil, //平台配置
-		"ipc." + Name, // 容器名称
+		nil,         //网络配置
+		nil,         //平台配置
+		"ipc."+Name, // 容器名称
 	)
 
 	if err != nil {
@@ -135,7 +135,7 @@ func (s *IpcBaseServer) create(Name string) (string, error) {
 
 /*
  * 创建 IPC 基础容器, 创建成功后写数据库
- * in.NodeId (int64) 
+ * in.NodeId (int64)
  * in.Name (string)
  */
 func (s *IpcBaseServer) Create(ctx context.Context, in *pb.IpcCreateRequest) (*pb.IpcCreateReply, error) {
@@ -146,10 +146,10 @@ func (s *IpcBaseServer) Create(ctx context.Context, in *pb.IpcCreateRequest) (*p
 		return nil, err
 	}
 
-	// 创建成功了，写数据库 
-	cfg := litedb.IpcConfig {
-		ContainerID : id,
-		ContainerName : in.Name,
+	// 创建成功了，写数据库
+	cfg := litedb.IpcConfig{
+		ContainerID:   id,
+		ContainerName: in.Name,
 	}
 
 	err = litedb.CreateIpcConfig(&cfg)
@@ -157,9 +157,8 @@ func (s *IpcBaseServer) Create(ctx context.Context, in *pb.IpcCreateRequest) (*p
 		log.Warnf("CreateIpcConfig error: %v, name:%v, id:%v", err, in.Name, id)
 	}
 
-	return &pb.IpcCreateReply{Name: in.Name, ContainerId:id, StartTime:cfg.CreatedAt} , nil
+	return &pb.IpcCreateReply{Name: in.Name, ContainerId: id, StartTime: cfg.CreatedAt}, nil
 }
-
 
 func IpcStopAndRemoveContainer(id string) {
 	cli, err := docker.Client()
@@ -178,7 +177,7 @@ func IpcStopAndRemoveContainer(id string) {
 
 	// 删除容器
 	opts := types.ContainerRemoveOptions{RemoveVolumes: true, Force: true}
-	err = cli.ContainerRemove(context.Background(), id, opts);
+	err = cli.ContainerRemove(context.Background(), id, opts)
 	if err != nil {
 		log.Warnf("IPC ContainerRemove id:%v, err:%v", id, err)
 		return
@@ -218,7 +217,6 @@ func (s *IpcBaseServer) Remove(ctx context.Context, in *pb.IpcRemoveRequest) (*p
 	return &pb.IpcRemoveReply{}, nil
 }
 
-
 // 判断是否在允许中，如果在允许中就不用重启了
 func isRunning(ID string) bool {
 	cli, err := docker.Client()
@@ -227,25 +225,25 @@ func isRunning(ID string) bool {
 	}
 
 	info, _, err := cli.ContainerInspectWithRaw(context.Background(), ID, true)
-    if err != nil {
-        return false
-    }
+	if err != nil {
+		return false
+	}
 
 	if info.State != nil {
 		return info.State.Status == "running"
 	}
 
-	return false;
+	return false
 }
 
 func startIpcContainer(ID string) {
 	if isRunning(ID) {
-		return;
+		return
 	}
 
 	cli, err := docker.Client()
 	if err != nil {
-		return 
+		return
 	}
 
 	for i := 0; i < 5; i++ {
@@ -253,7 +251,7 @@ func startIpcContainer(ID string) {
 			log.Warnf("IPC ContainerStart: id: %v, err :%v", ID, err)
 			time.Sleep(time.Second * 5)
 		} else {
-			return;
+			return
 		}
 	}
 }
@@ -275,6 +273,6 @@ func StartAllIpcContainer() {
 		}(c.ContainerID)
 	}
 
-	wg.Wait();
+	wg.Wait()
 	log.Warnf("All IPC Container Start Success!")
 }

@@ -1,10 +1,10 @@
 package common
 
 import (
-    "fmt"
-    "net"
-    "strings"
+	"fmt"
 	log "github.com/sirupsen/logrus"
+	"net"
+	"strings"
 )
 
 func extractIP(vip string) (string, error) {

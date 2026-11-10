@@ -76,6 +76,7 @@ func CreateContainerOutConfig(data *ContainerOutConfig) error {
 	result := db.Create(data)
 	if result.Error != nil {
 		log.Warnf("db create ContainerOutConfig err: %v", result.Error)
+		return result.Error
 	}
 	return nil
 }

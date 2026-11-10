@@ -15,6 +15,7 @@ const _sessionCheckInterval = 5 * time.Second
 
 // session 有效期为一天
 const _sessionKeepAliveTime = 24 * time.Hour
+
 // const _sessionKeepAliveTime = 10 * time.Second
 
 type _Session struct {

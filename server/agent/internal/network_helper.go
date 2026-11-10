@@ -245,7 +245,7 @@ func runAppEntry(containerId string) {
 func setnetworklimit(containerID string) {
 	cli, err := docker.Client()
 	if err != nil {
-		return 
+		return
 	}
 	info, _, err := cli.ContainerInspectWithRaw(context.Background(), containerID, true)
 	if err != nil {
@@ -255,14 +255,13 @@ func setnetworklimit(containerID string) {
 		return
 	}
 	s := &ContainerServer{}
-	for iface , _ := range info.NetworkSettings.Networks {
+	for iface := range info.NetworkSettings.Networks {
 		if isPredefinedNetwork(iface) {
 			continue
 		}
 		s.ContainerTCConfig(containerID, iface)
 	}
 }
-
 
 func ContainerWhiteConfig() error {
 	eventProcessor := func(cli *client.Client, e events.Message) {

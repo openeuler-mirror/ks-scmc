@@ -157,7 +157,8 @@ func containerResourceStat(realtimeStats map[string]*pb.ResourceStat, c *types.C
 		CpuStat: &pb.CpuStat{},
 		MemStat: &pb.MemoryStat{},
 		DiskStat: &pb.DiskStat{
-			Used: float64(c.SizeRw) / 1e6, // 与docker client保持一致
+			Used:  float64(c.SizeRw) / 1e6, // 与docker client保持一致
+			Limit: float64(c.SizeRootFs) / 1e6,
 		},
 	}
 

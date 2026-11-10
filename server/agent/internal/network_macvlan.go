@@ -19,7 +19,7 @@ func macvlanparseCIDR(cidr string) (net.IP, net.IPNet, error) {
 }
 
 // 获取指定网络接口的所有IP地址（IPv4）
-func getInterfaceIPs(ifaceName string) ([]net.IPNet, error) {
+func GetInterfaceIPs(ifaceName string) ([]net.IPNet, error) {
 	iface, err := net.InterfaceByName(ifaceName)
 	if err != nil {
 		return nil, fmt.Errorf("无法找到接口 %s: %v", ifaceName, err)
@@ -68,7 +68,7 @@ func CheckNicSameSubnet(targetCIDR, ifaceName string) bool {
         if err != nil {
             return false;
         }
-        ifaceIPs, err := getInterfaceIPs(ifaceName)
+        ifaceIPs, err := GetInterfaceIPs(ifaceName)
         if err != nil {
             return false
         }

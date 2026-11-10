@@ -198,10 +198,10 @@ func (c *ContainerResourceMonitor) checkContainerResourceUsage(container types.C
 		rxUsage := c.calculateNetworkMonitorUsage(rates.RxRate, netLimit.RxLimit)
 		txUsage := c.calculateNetworkMonitorUsage(rates.TxRate, netLimit.TxLimit)
 		if rates.RxRate > 0 && netLimit.RxLimit > 0 {
-			c.checkAndAlert(rxUsage, "netRx", ifaceName, container, node, resourceLimit, &netLimit, fmt.Sprintf("网卡[%s]接收速率达到90%%阈值", ifaceName))
+			c.checkAndAlert(rxUsage, "netRx", ifaceName, container, node, resourceLimit, &netLimit, fmt.Sprintf("网卡[%s]接收速率达到90%阈值", ifaceName))
 		}
 		if rates.TxRate > 0 && netLimit.TxLimit > 0 {
-			c.checkAndAlert(txUsage, "netTx", ifaceName, container, node, resourceLimit, &netLimit, fmt.Sprintf("网卡[%s]发送速率达到90%%阈值", ifaceName))
+			c.checkAndAlert(txUsage, "netTx", ifaceName, container, node, resourceLimit, &netLimit, fmt.Sprintf("网卡[%s]发送速率达到90%阈值", ifaceName))
 		}
 	}
 }
@@ -211,7 +211,7 @@ func (c *ContainerResourceMonitor) calculateNetworkMonitorUsage(netRate float64,
 		return 0.0
 	}
 	usage := (netRate / float64(netLimit)) * 100.0
-	log.Debugf("Container Network usage: %.2f%% (rate: %.2f MB/s, limit: %.2f MB/s)", usage, netRate, netLimit)
+	log.Debugf("Container Network usage: %.2f%% (rate: %.2f MB/s, limit: %d MB/s)", usage, netRate, netLimit)
 
 	return usage
 }

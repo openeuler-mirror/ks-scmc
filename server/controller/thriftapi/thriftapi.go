@@ -109,26 +109,15 @@ func (h *KsScmcHandler) installContainerInternal(nodeNameorip string, imageName 
 func (h *KsScmcHandler) StartContainerV3(session_id string, cid string) (string, error) {
 	nodeIP := db.SessionManagerGetNodeIP(session_id)
 	var containerName *string = nil
-	ctx_, cancel := context.WithTimeout(context.Background(), time.Second*5)
-	defer cancel()
-	conn, err := internal.GetAgentConn(*nodeIP)
+	containerInfos, err := h.GetAllContainerList(*nodeIP)
 	if err != nil {
-		logrus.Error("Failed to get agent connection, because ", err)
-		return ResponseFailed("Failed to get agent connection"), nil
+		return ResponseFailed(err.Error()), nil
 	}
-	cli := containerPB.NewContainerClient(conn)
-	containerListReply, err := cli.List(ctx_, &containerPB.ListRequest{
-		ListAll: true,
-	})
-	if err != nil {
-		logrus.Error("Failed to get containers ", err)
-		return ResponseFailed("Failed to get containers"), nil
-	}
-	for _, containerInfo := range containerListReply.Containers {
-		if containerInfo.Info.Id != cid {
+	for _, containerInfo := range containerInfos.Containerlist {
+		if containerInfo.ContainerID != cid {
 			continue
 		}
-		containerName = &containerInfo.Info.Name
+		containerName = &containerInfo.ContainerName
 	}
 	if containerName == nil {
 		logrus.Error("Failed to get containerName from containerID")
@@ -192,26 +181,15 @@ func (h *KsScmcHandler) StopContainer(nodeName string, name string) (string, err
 func (h *KsScmcHandler) StopContainerV3(session_id string, cid string) (string, error) {
 	nodeIP := db.SessionManagerGetNodeIP(session_id)
 	var containerName *string = nil
-	ctx_, cancel := context.WithTimeout(context.Background(), time.Second*5)
-	defer cancel()
-	conn, err := internal.GetAgentConn(*nodeIP)
+	containerInfos, err := h.GetAllContainerList(*nodeIP)
 	if err != nil {
-		logrus.Error("Failed to get agent connection, because ", err)
-		return ResponseFailed("Failed to get agent connection"), nil
+		return ResponseFailed(err.Error()), nil
 	}
-	cli := containerPB.NewContainerClient(conn)
-	containerListReply, err := cli.List(ctx_, &containerPB.ListRequest{
-		ListAll: true,
-	})
-	if err != nil {
-		logrus.Error("Failed to get containers ", err)
-		return ResponseFailed("Failed to get containers"), nil
-	}
-	for _, containerInfo := range containerListReply.Containers {
-		if containerInfo.Info.Id != cid {
+	for _, containerInfo := range containerInfos.Containerlist {
+		if containerInfo.ContainerID != cid {
 			continue
 		}
-		containerName = &containerInfo.Info.Name
+		containerName = &containerInfo.ContainerName
 	}
 	if containerName == nil {
 		logrus.Error("Failed to get containerName from containerID")

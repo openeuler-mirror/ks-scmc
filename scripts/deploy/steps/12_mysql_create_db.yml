@@ -1,4 +1,18 @@
 ---
+- name: 等待 MySQL socket 文件就绪
+  wait_for:
+    path: /var/lib/mysql/mysql.sock
+    timeout: 30
+    delay: 1
+
+- name: 等待 MySQL 服务可连接
+  shell: mysql -S /var/lib/mysql/mysql.sock -uroot -p'{{ mysql.root_password }}' -e "SELECT 1"
+  register: mysql_ready_check
+  until: mysql_ready_check.rc == 0
+  retries: 30
+  delay: 1
+  ignore_errors: false
+
 - name: MYSQL 创建数据库与用户
   run_once: true
   shell: |

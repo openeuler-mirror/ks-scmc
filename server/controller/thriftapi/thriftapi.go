@@ -17,6 +17,7 @@ import (
 
 	"scmc/common"
 	"scmc/model/db"
+	"scmc/model/docker"
 	containerPB "scmc/rpc/pb/container"
 	imagePB "scmc/rpc/pb/image"
 	"scmc/rpc/pb/logging"

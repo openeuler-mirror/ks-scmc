@@ -2,11 +2,11 @@ package internal
 
 import (
 	"context"
-	 _"errors"
-	 _"time"
-	 _"sort"
-	 _"strings"
-	 _"sync"
+	_ "errors"
+	_ "sort"
+	_ "strings"
+	_ "sync"
+	_ "time"
 
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc/codes"
@@ -24,7 +24,7 @@ type IpcBaseServer struct {
 
 /*
  * 返回 IPC 基础容器数据
- * in.NodeId (int64) 
+ * in.NodeId (int64)
  */
 func (s *IpcBaseServer) List(ctx context.Context, in *pb.IpcListRequest) (*pb.IpcListReply, error) {
 	/* 查询节点是否存在 */
@@ -65,7 +65,7 @@ func (s *IpcBaseServer) Create(ctx context.Context, in *pb.IpcCreateRequest) (*p
 		}
 		return nil, rpc.ErrDatabaseFail
 	}
-	// 检查镜像文件是否存在 
+	// 检查镜像文件是否存在
 	if err := CheckImageLegal(in.NodeId, "ipcbase:v1.0"); err != nil {
 		return nil, err
 	}

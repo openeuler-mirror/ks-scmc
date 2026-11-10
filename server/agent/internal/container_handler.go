@@ -739,6 +739,7 @@ func (s *ContainerServer) Create(ctx context.Context, in *pb.CreateRequest) (*pb
 			w = in.Configs.ResouceLimit.DiskWbw
 			r = in.Configs.ResouceLimit.DiskRbw
 		}
+
 		disklimitCfg := litedb.ContainerLimit{
 			ContainerID:   id,
 			ContainerName: in.Configs.Name,
@@ -746,6 +747,18 @@ func (s *ContainerServer) Create(ctx context.Context, in *pb.CreateRequest) (*pb
 			DiskWbw:       w,
 		}
 		litedb.CreateContainerLimit(&disklimitCfg)
+
+		outConfig := litedb.ContainerOutConfig {
+			ContainerID:	id,
+			ContainerName:	in.Configs.Name,
+			Config: litedb.KyConfig {
+				DiskRbw:	r,
+				DiskWbw:	w,
+				IpcName: in.Configs.Ipcname,
+				IpcID:	ipcID,
+			},
+		}
+		litedb.CreateContainerOutConfig(&outConfig)
 
 		misc, err := litedb.GetContainerMiscConfigByName(in.Configs.Name)
 		if err != nil {

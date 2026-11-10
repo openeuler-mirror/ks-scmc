@@ -6,6 +6,7 @@ import (
 	"context"
 	"crypto/sha256"
 	"encoding/hex"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"hash"
@@ -13,7 +14,6 @@ import (
 	"io/ioutil"
 	"os"
 	"strings"
-	"encoding/json"
 
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/crypto/openpgp"

@@ -8747,32 +8747,32 @@ func (p *KsScmcClientClient) recvCondGetAlarmListV3() (value string, err error) 
   if err != nil {
     return
   }
-  if method != "LoginV3" {
-    err = thrift.NewTApplicationException(thrift.WRONG_METHOD_NAME, "LoginV3 failed: wrong method name")
+  if method != "CondGetAlarmListV3" {
+    err = thrift.NewTApplicationException(thrift.WRONG_METHOD_NAME, "CondGetAlarmListV3 failed: wrong method name")
     return
   }
   if p.SeqId != seqId {
-    err = thrift.NewTApplicationException(thrift.BAD_SEQUENCE_ID, "LoginV3 failed: out of sequence response")
+    err = thrift.NewTApplicationException(thrift.BAD_SEQUENCE_ID, "CondGetAlarmListV3 failed: out of sequence response")
     return
   }
   if mTypeId == thrift.EXCEPTION {
-    error6 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
-    var error7 error
-    error7, err = error6.Read(iprot)
+    error53 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
+    var error54 error
+    error54, err = error53.Read(iprot)
     if err != nil {
       return
     }
     if err = iprot.ReadMessageEnd(); err != nil {
       return
     }
-    err = error7
+    err = error54
     return
   }
   if mTypeId != thrift.REPLY {
-    err = thrift.NewTApplicationException(thrift.INVALID_MESSAGE_TYPE_EXCEPTION, "LoginV3 failed: invalid message type")
+    err = thrift.NewTApplicationException(thrift.INVALID_MESSAGE_TYPE_EXCEPTION, "CondGetAlarmListV3 failed: invalid message type")
     return
   }
-  result := KsScmcClientLoginV3Result{}
+  result := KsScmcClientCondGetAlarmListV3Result{}
   if err = result.Read(iprot); err != nil {
     return
   }

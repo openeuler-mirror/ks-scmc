@@ -598,6 +598,10 @@ func (s *ContainerServer) CreateTemplate(ctx context.Context, in *pb.CreateTempl
 
 	if in.Data.Conf.ResouceLimit != nil {
 		r := in.Data.Conf.ResouceLimit
+		if r.CpuLimit == 0 {
+			r.CpuLimit = 1
+		}
+
 		if !args.Float64Resource.Check(r.CpuLimit, r.DiskLimit, r.MemoryLimit, r.MemorySoftLimit) ||
 			!args.Int64Resource.Check(r.CpuPrio) {
 			return nil, rpc.ErrContainerResourceArgs

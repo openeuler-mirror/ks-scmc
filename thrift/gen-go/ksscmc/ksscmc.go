@@ -2490,6 +2490,236 @@ func (p *NetworkInterface) String() string {
 }
 
 // Attributes:
+//  - EthName
+//  - IP
+//  - Mac
+//  - Gateway
+//  - Netmask
+type NetworkInterfaceWithAgentNode struct {
+  EthName string `thrift:"eth_name,1,required" db:"eth_name" json:"eth_name"`
+  IP string `thrift:"ip,2,required" db:"ip" json:"ip"`
+  Mac string `thrift:"mac,3,required" db:"mac" json:"mac"`
+  Gateway string `thrift:"gateway,4,required" db:"gateway" json:"gateway"`
+  Netmask string `thrift:"netmask,5,required" db:"netmask" json:"netmask"`
+}
+
+func NewNetworkInterfaceWithAgentNode() *NetworkInterfaceWithAgentNode {
+  return &NetworkInterfaceWithAgentNode{}
+}
+
+
+func (p *NetworkInterfaceWithAgentNode) GetEthName() string {
+  return p.EthName
+}
+
+func (p *NetworkInterfaceWithAgentNode) GetIP() string {
+  return p.IP
+}
+
+func (p *NetworkInterfaceWithAgentNode) GetMac() string {
+  return p.Mac
+}
+
+func (p *NetworkInterfaceWithAgentNode) GetGateway() string {
+  return p.Gateway
+}
+
+func (p *NetworkInterfaceWithAgentNode) GetNetmask() string {
+  return p.Netmask
+}
+func (p *NetworkInterfaceWithAgentNode) Read(iprot thrift.TProtocol) error {
+  if _, err := iprot.ReadStructBegin(); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
+  }
+
+  var issetEthName bool = false;
+  var issetIP bool = false;
+  var issetMac bool = false;
+  var issetGateway bool = false;
+  var issetNetmask bool = false;
+
+  for {
+    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin()
+    if err != nil {
+      return thrift.PrependError(fmt.Sprintf("%T field %d read error: ", p, fieldId), err)
+    }
+    if fieldTypeId == thrift.STOP { break; }
+    switch fieldId {
+    case 1:
+      if err := p.ReadField1(iprot); err != nil {
+        return err
+      }
+      issetEthName = true
+    case 2:
+      if err := p.ReadField2(iprot); err != nil {
+        return err
+      }
+      issetIP = true
+    case 3:
+      if err := p.ReadField3(iprot); err != nil {
+        return err
+      }
+      issetMac = true
+    case 4:
+      if err := p.ReadField4(iprot); err != nil {
+        return err
+      }
+      issetGateway = true
+    case 5:
+      if err := p.ReadField5(iprot); err != nil {
+        return err
+      }
+      issetNetmask = true
+    default:
+      if err := iprot.Skip(fieldTypeId); err != nil {
+        return err
+      }
+    }
+    if err := iprot.ReadFieldEnd(); err != nil {
+      return err
+    }
+  }
+  if err := iprot.ReadStructEnd(); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+  }
+  if !issetEthName{
+    return thrift.NewTProtocolExceptionWithType(thrift.INVALID_DATA, fmt.Errorf("Required field EthName is not set"));
+  }
+  if !issetIP{
+    return thrift.NewTProtocolExceptionWithType(thrift.INVALID_DATA, fmt.Errorf("Required field IP is not set"));
+  }
+  if !issetMac{
+    return thrift.NewTProtocolExceptionWithType(thrift.INVALID_DATA, fmt.Errorf("Required field Mac is not set"));
+  }
+  if !issetGateway{
+    return thrift.NewTProtocolExceptionWithType(thrift.INVALID_DATA, fmt.Errorf("Required field Gateway is not set"));
+  }
+  if !issetNetmask{
+    return thrift.NewTProtocolExceptionWithType(thrift.INVALID_DATA, fmt.Errorf("Required field Netmask is not set"));
+  }
+  return nil
+}
+
+func (p *NetworkInterfaceWithAgentNode)  ReadField1(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadString(); err != nil {
+  return thrift.PrependError("error reading field 1: ", err)
+} else {
+  p.EthName = v
+}
+  return nil
+}
+
+func (p *NetworkInterfaceWithAgentNode)  ReadField2(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadString(); err != nil {
+  return thrift.PrependError("error reading field 2: ", err)
+} else {
+  p.IP = v
+}
+  return nil
+}
+
+func (p *NetworkInterfaceWithAgentNode)  ReadField3(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadString(); err != nil {
+  return thrift.PrependError("error reading field 3: ", err)
+} else {
+  p.Mac = v
+}
+  return nil
+}
+
+func (p *NetworkInterfaceWithAgentNode)  ReadField4(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadString(); err != nil {
+  return thrift.PrependError("error reading field 4: ", err)
+} else {
+  p.Gateway = v
+}
+  return nil
+}
+
+func (p *NetworkInterfaceWithAgentNode)  ReadField5(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadString(); err != nil {
+  return thrift.PrependError("error reading field 5: ", err)
+} else {
+  p.Netmask = v
+}
+  return nil
+}
+
+func (p *NetworkInterfaceWithAgentNode) Write(oprot thrift.TProtocol) error {
+  if err := oprot.WriteStructBegin("NetworkInterfaceWithAgentNode"); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err) }
+  if p != nil {
+    if err := p.writeField1(oprot); err != nil { return err }
+    if err := p.writeField2(oprot); err != nil { return err }
+    if err := p.writeField3(oprot); err != nil { return err }
+    if err := p.writeField4(oprot); err != nil { return err }
+    if err := p.writeField5(oprot); err != nil { return err }
+  }
+  if err := oprot.WriteFieldStop(); err != nil {
+    return thrift.PrependError("write field stop error: ", err) }
+  if err := oprot.WriteStructEnd(); err != nil {
+    return thrift.PrependError("write struct stop error: ", err) }
+  return nil
+}
+
+func (p *NetworkInterfaceWithAgentNode) writeField1(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("eth_name", thrift.STRING, 1); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write field begin error 1:eth_name: ", p), err) }
+  if err := oprot.WriteString(string(p.EthName)); err != nil {
+  return thrift.PrependError(fmt.Sprintf("%T.eth_name (1) field write error: ", p), err) }
+  if err := oprot.WriteFieldEnd(); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write field end error 1:eth_name: ", p), err) }
+  return err
+}
+
+func (p *NetworkInterfaceWithAgentNode) writeField2(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("ip", thrift.STRING, 2); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write field begin error 2:ip: ", p), err) }
+  if err := oprot.WriteString(string(p.IP)); err != nil {
+  return thrift.PrependError(fmt.Sprintf("%T.ip (2) field write error: ", p), err) }
+  if err := oprot.WriteFieldEnd(); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write field end error 2:ip: ", p), err) }
+  return err
+}
+
+func (p *NetworkInterfaceWithAgentNode) writeField3(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("mac", thrift.STRING, 3); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write field begin error 3:mac: ", p), err) }
+  if err := oprot.WriteString(string(p.Mac)); err != nil {
+  return thrift.PrependError(fmt.Sprintf("%T.mac (3) field write error: ", p), err) }
+  if err := oprot.WriteFieldEnd(); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write field end error 3:mac: ", p), err) }
+  return err
+}
+
+func (p *NetworkInterfaceWithAgentNode) writeField4(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("gateway", thrift.STRING, 4); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write field begin error 4:gateway: ", p), err) }
+  if err := oprot.WriteString(string(p.Gateway)); err != nil {
+  return thrift.PrependError(fmt.Sprintf("%T.gateway (4) field write error: ", p), err) }
+  if err := oprot.WriteFieldEnd(); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write field end error 4:gateway: ", p), err) }
+  return err
+}
+
+func (p *NetworkInterfaceWithAgentNode) writeField5(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("netmask", thrift.STRING, 5); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write field begin error 5:netmask: ", p), err) }
+  if err := oprot.WriteString(string(p.Netmask)); err != nil {
+  return thrift.PrependError(fmt.Sprintf("%T.netmask (5) field write error: ", p), err) }
+  if err := oprot.WriteFieldEnd(); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write field end error 5:netmask: ", p), err) }
+  return err
+}
+
+func (p *NetworkInterfaceWithAgentNode) String() string {
+  if p == nil {
+    return "<nil>"
+  }
+  return fmt.Sprintf("NetworkInterfaceWithAgentNode(%+v)", *p)
+}
+
+// Attributes:
 //  - Name
 //  - Stat
 //  - UUID

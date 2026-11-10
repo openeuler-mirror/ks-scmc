@@ -284,10 +284,10 @@ func cleanupBandwidthRules(netns, iface string) error {
 
 // limitEgress applies egress (upload) bandwidth limit
 func limitEgress(netns, iface, rate string) error {
-	if err := runInNetns(netns, "tc", "qdisc", "add", "dev", iface, "root", "handle", "1:", "htb", "default", "10"); err != nil {
+	if err := runInNetns(netns, "tc", "qdisc", "add", "dev", iface, "root", "handle", "1:", "htb", "default", "1"); err != nil {
 		return fmt.Errorf("add root qdisc on %s: %w", iface, err)
 	}
-	if err := runInNetns(netns, "tc", "class", "add", "dev", iface, "parent", "1:", "classid", "1:1", "htb", "rate", rate); err != nil {
+	if err := runInNetns(netns, "tc", "class", "add", "dev", iface, "parent", "1:", "classid", "1:1", "htb", "rate", rate, "ceil", rate); err != nil {
 		return fmt.Errorf("set egress rate on %s: %w", iface, err)
 	}
 	return nil

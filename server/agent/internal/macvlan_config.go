@@ -4,6 +4,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"os"
 	"sync"
+        "fmt"
 )
 
 // 文件路径，根据实际情况修改
@@ -157,4 +158,67 @@ func CreateMacvlanConf() {
 		createMacvlanConf(upfilePath, upfileContent)
 		createMacvlanConf(downfilePath, downfileContent)
 	})
+}
+
+
+// Config 存储macvlan接口的配置参数
+type Config struct {
+	Device       string
+	Name         string
+	Type         string
+	PhysDev      string
+	MacvlanMode  string
+	BootProto    string
+	IPAddr       string
+	Netmask      string
+	Gateway      string
+	DefRoute     string
+	OnBoot       string
+}
+
+// DefaultConfig 返回默认配置
+func DefaultConfig() Config {
+	return Config{
+		Device:       "macvlan_host",
+		Name:         "macvlan_host",
+		Type:         "macvlan",
+		PhysDev:      "ens33",
+		MacvlanMode:  "bridge",
+		BootProto:    "static",
+		IPAddr:       "192.168.1.11",
+		Netmask:      "255.255.255.0",
+		Gateway:      "192.168.1.1",
+		DefRoute:     "no",
+		OnBoot:       "yes",
+	}
+}
+
+
+// GenerateConfigContent 生成配置文件内容
+func GenerateConfigContent(cfg Config) string {
+	content := fmt.Sprintf("DEVICE=%s\n", cfg.Device)
+	content += fmt.Sprintf("NAME=%s\n", cfg.Name)
+	content += fmt.Sprintf("TYPE=%s\n", cfg.Type)
+	content += fmt.Sprintf("PHYSDEV=%s      # 替换为你的物理接口名 (如 ens192, eno1)\n", cfg.PhysDev)
+	content += fmt.Sprintf("MACVLAN_MODE=%s # 必须与 Docker Macvlan 网络模式一致\n", cfg.MacvlanMode)
+	content += fmt.Sprintf("BOOTPROTO=%s    # 使用静态 IP\n", cfg.BootProto)
+	content += fmt.Sprintf("IPADDR=%s       # 替换为宿主机在 Macvlan 子网中的 IP\n", cfg.IPAddr)
+	content += fmt.Sprintf("NETMASK=%s      # 子网掩码 (或使用 PREFIX=24)\n", cfg.Netmask)
+	content += fmt.Sprintf("GATEWAY=%s      # 可选 - 仅当宿主机需通过此接口上网时添加\n", cfg.Gateway)
+	content += fmt.Sprintf("DEFROUTE=%s     # 重要！避免覆盖默认路由\n", cfg.DefRoute)
+	content += fmt.Sprintf("ONBOOT=%s       # 开机自动启用\n", cfg.OnBoot)
+	return content
+}
+
+// SaveToFile 将配置内容保存到文件
+func SaveToFile(content, filename string) error {
+	// Go 1.15中os.WriteFile是新增函数，为了兼容，这里使用传统方式实现
+	file, err := os.Create(filename)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	_, err = file.WriteString(content)
+	return err
 }

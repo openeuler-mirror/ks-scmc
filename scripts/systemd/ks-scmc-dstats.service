@@ -1,0 +1,9 @@
+[Unit]
+Description=KylinSec security magic Cube docker stats data service
+
+[Service]
+ExecStart=/usr/bin/ks-scmc-dstats /etc/ks-scmc/dstats.toml
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

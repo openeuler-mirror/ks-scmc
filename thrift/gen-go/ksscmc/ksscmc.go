@@ -9317,32 +9317,32 @@ func (p *KsScmcClientClient) recvAddContainerLocalVolume() (value int32, err err
   if err != nil {
     return
   }
-  if method != "GetContainerImageVers" {
-    err = thrift.NewTApplicationException(thrift.WRONG_METHOD_NAME, "GetContainerImageVers failed: wrong method name")
+  if method != "addContainerLocalVolume" {
+    err = thrift.NewTApplicationException(thrift.WRONG_METHOD_NAME, "addContainerLocalVolume failed: wrong method name")
     return
   }
   if p.SeqId != seqId {
-    err = thrift.NewTApplicationException(thrift.BAD_SEQUENCE_ID, "GetContainerImageVers failed: out of sequence response")
+    err = thrift.NewTApplicationException(thrift.BAD_SEQUENCE_ID, "addContainerLocalVolume failed: out of sequence response")
     return
   }
   if mTypeId == thrift.EXCEPTION {
-    error20 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
-    var error21 error
-    error21, err = error20.Read(iprot)
+    error67 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
+    var error68 error
+    error68, err = error67.Read(iprot)
     if err != nil {
       return
     }
     if err = iprot.ReadMessageEnd(); err != nil {
       return
     }
-    err = error21
+    err = error68
     return
   }
   if mTypeId != thrift.REPLY {
-    err = thrift.NewTApplicationException(thrift.INVALID_MESSAGE_TYPE_EXCEPTION, "GetContainerImageVers failed: invalid message type")
+    err = thrift.NewTApplicationException(thrift.INVALID_MESSAGE_TYPE_EXCEPTION, "addContainerLocalVolume failed: invalid message type")
     return
   }
-  result := KsScmcClientGetContainerImageVersResult{}
+  result := KsScmcClientAddContainerLocalVolumeResult{}
   if err = result.Read(iprot); err != nil {
     return
   }

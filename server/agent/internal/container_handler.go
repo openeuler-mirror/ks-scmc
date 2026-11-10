@@ -1466,13 +1466,14 @@ func (s *ContainerServer) inspect(id string, backup bool) (*pb.ContainerConfigs,
 		}
 	}
 
-    if configs.MiscConfig != nil {
-        misc, err := litedb.GetContainerMiscConfig(info.ID)
-        if err != nil {
-            configs.MiscConfig.AppRun = false
-        } else {
-            configs.MiscConfig.AppRun = misc.MiscConfig.AppRun
-        }
+    configs.MiscConfig = &pb.ContainerMiscConfig {
+        AppRun : false,
+    }
+    misc, err := litedb.GetContainerMiscConfig(info.ID)
+    if err != nil {
+        configs.MiscConfig.AppRun = false
+    } else {
+        configs.MiscConfig.AppRun = misc.MiscConfig.AppRun
     }
 
 	if info.NetworkSettings != nil {

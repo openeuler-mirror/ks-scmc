@@ -114,7 +114,7 @@ CREATE TABLE IF NOT EXISTS `warn_logs` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin ;
 
-CREATE TABLE `log_settings` (
+CREATE TABLE IF NOT EXISTS `log_settings` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `setting_name` varchar(255) COLLATE utf8mb4_bin  NOT NULL DEFAULT '' COMMENT '配置名',
   `setting_value` varchar(255) COLLATE utf8mb4_bin  NOT NULL DEFAULT '' COMMENT '配置值',

@@ -88,7 +88,6 @@ func influxdbQueryNodeMax(start, end int64) ([3]float64, error) {
 		Username: common.Config.InfluxDB.Username,
 		Password: password,
 	})
-	
 	if err != nil {
 		log.Warnf("get influxdb client error=%v", err)
 		return data, err
@@ -96,7 +95,6 @@ func influxdbQueryNodeMax(start, end int64) ([3]float64, error) {
 	log.Infof("get influxdb client success")
 
 	defer cli.Close()
-    
 
 	queries := strings.Join([]string{
 		cpuMaxQuery(),
@@ -149,7 +147,6 @@ func influxdbQuery(start, end int64, interval uint, containerName string) (*pb.M
 		Username: common.Config.InfluxDB.Username,
 		Password: password,
 	})
-
 	if err != nil {
 		log.Warnf("get influxdb client error=%v", err)
 		return nil, err

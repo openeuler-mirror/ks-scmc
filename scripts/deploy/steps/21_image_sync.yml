@@ -32,8 +32,6 @@
     content: |
       [scmc-images]
       path        = {{ image_dir }}
-      hosts allow = {{ other_host }}
-      hosts deny  = *
       list        = true
       uid         = root
       gid         = root

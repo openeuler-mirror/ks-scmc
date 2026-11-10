@@ -9233,32 +9233,32 @@ func (p *KsScmcClientClient) recvAddContainerEnv() (value string, err error) {
   if err != nil {
     return
   }
-  if method != "getContainerMetrics" {
-    err = thrift.NewTApplicationException(thrift.WRONG_METHOD_NAME, "getContainerMetrics failed: wrong method name")
+  if method != "AddContainerEnv" {
+    err = thrift.NewTApplicationException(thrift.WRONG_METHOD_NAME, "AddContainerEnv failed: wrong method name")
     return
   }
   if p.SeqId != seqId {
-    err = thrift.NewTApplicationException(thrift.BAD_SEQUENCE_ID, "getContainerMetrics failed: out of sequence response")
+    err = thrift.NewTApplicationException(thrift.BAD_SEQUENCE_ID, "AddContainerEnv failed: out of sequence response")
     return
   }
   if mTypeId == thrift.EXCEPTION {
-    error18 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
-    var error19 error
-    error19, err = error18.Read(iprot)
+    error65 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
+    var error66 error
+    error66, err = error65.Read(iprot)
     if err != nil {
       return
     }
     if err = iprot.ReadMessageEnd(); err != nil {
       return
     }
-    err = error19
+    err = error66
     return
   }
   if mTypeId != thrift.REPLY {
-    err = thrift.NewTApplicationException(thrift.INVALID_MESSAGE_TYPE_EXCEPTION, "getContainerMetrics failed: invalid message type")
+    err = thrift.NewTApplicationException(thrift.INVALID_MESSAGE_TYPE_EXCEPTION, "AddContainerEnv failed: invalid message type")
     return
   }
-  result := KsScmcClientGetContainerMetricsResult{}
+  result := KsScmcClientAddContainerEnvResult{}
   if err = result.Read(iprot); err != nil {
     return
   }

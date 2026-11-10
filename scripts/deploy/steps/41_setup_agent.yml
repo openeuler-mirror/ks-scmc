@@ -59,6 +59,7 @@
     
     [http]
       auth-enabled = true
+      ping-auth-enabled = true
     INFLUXEOF
     fi
 - name: AGENT 重启influxdb应用认证

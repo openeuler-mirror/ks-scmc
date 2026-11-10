@@ -11,6 +11,18 @@
     fi
     firewall-cmd --permanent --add-service=mysql >/dev/null 2>&1 || true
     firewall-cmd --reload >/dev/null 2>&1 || true
+    # 确保日志目录及父目录权限正确
+    mkdir -p /var/log/mysql
+    chown -R mysql:mysql /var/log/mysql
+    chmod -R 755 /var/log/mysql  # 目录权限
+    # 确保数据目录及父目录权限正确
+    mkdir -p /var/lib/mysql
+    chown -R mysql:mysql /var/lib/mysql
+    chmod -R 700 /var/lib/mysql  # MySQL数据目录通常需要更严格的权限（700）
+    # 确保PID文件目录存在且有权限
+    mkdir -p /var/run/mysqld
+    chown -R mysql:mysql /var/run/mysqld
+    chmod 755 /var/run/mysqld
     rm -rf /var/lib/mysql/*
     cat > /etc/my-kylin.cnf << EOF
     [mysqld]

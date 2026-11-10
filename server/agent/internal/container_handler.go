@@ -1114,17 +1114,24 @@ func (s *ContainerServer) Update(ctx context.Context, in *pb.UpdateRequest) (*pb
 			}
 		}
 	}
-    
+
     //app 高可用状态是否变化
     misc, err := litedb.GetContainerMiscConfig(in.ContainerId) 
     if err != nil {
         log.Warnf("GetContainerMiscConfig: err: %v, id: %s", err, in.ContainerId)
     } else {
-        if misc.MiscConfig.GetAppRun() != in.MiscConfig.GetAppRun() {
-            misc.MiscConfig.AppRun = in.MiscConfig.AppRun
+        if misc.MiscConfig != nil {
+            if misc.MiscConfig.GetAppRun() != in.MiscConfig.GetAppRun() {
+                misc.MiscConfig.AppRun = in.MiscConfig.AppRun
+                litedb.UpdateContainerMiscConfig(misc)
+            }
+        } else {
+            misc.MiscConfig = &pb.ContainerMiscConfig{
+                AppRun: in.MiscConfig.AppRun,
+            }
             litedb.UpdateContainerMiscConfig(misc)
-        } 
-    } 
+        }
+    }
 
 	log.Warnf("change: %v docker.NoneBit: %v", change, docker.NoneBit)
 	if change != docker.NoneBit {
@@ -1471,7 +1478,11 @@ func (s *ContainerServer) inspect(id string, backup bool) (*pb.ContainerConfigs,
     if err != nil {
         configs.MiscConfig.AppRun = false
     } else {
-        configs.MiscConfig.AppRun = misc.MiscConfig.AppRun
+        if misc.MiscConfig != nil  {
+            configs.MiscConfig.AppRun = misc.MiscConfig.AppRun
+        } else {
+            configs.MiscConfig.AppRun = false
+        }
     }
 
 	if info.NetworkSettings != nil {

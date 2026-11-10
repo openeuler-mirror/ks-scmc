@@ -787,14 +787,13 @@ func (s *ContainerServer) Create(ctx context.Context, in *pb.CreateRequest) (*pb
 	litedb.DelNetworkLimit(id)
 	for _, ifs := range in.Configs.Networks {
 		data := &litedb.NetworkLimit{
-			ContainerID : id,
+			ContainerID:         id,
 			DockerInterfaceName: ifs.Interface,
-			NetWbw: ifs.NetWbw,
-			NetRbw: ifs.NetRbw,
+			NetWbw:              ifs.NetWbw,
+			NetRbw:              ifs.NetRbw,
 		}
 		litedb.CreateNetworkLimit(data)
 	}
-
 
 	return &pb.CreateReply{ContainerId: id}, err
 }
@@ -1033,11 +1032,11 @@ func (s *ContainerServer) Update(ctx context.Context, in *pb.UpdateRequest) (*pb
 		// 支持网络限速配置
 		data, err := litedb.GetNetworkLimitByNic(in.ContainerId, v.Interface)
 		if err != nil { // 没有找到
-			data = &litedb.NetworkLimit {
-				ContainerID: in.ContainerId,
+			data = &litedb.NetworkLimit{
+				ContainerID:         in.ContainerId,
 				DockerInterfaceName: v.Interface,
-				NetWbw: v.NetWbw,
-				NetRbw: v.NetRbw,
+				NetWbw:              v.NetWbw,
+				NetRbw:              v.NetRbw,
 			}
 			litedb.CreateNetworkLimit(data)
 			s.ContainerTCConfig(in.ContainerId, v.Interface)
@@ -1258,7 +1257,7 @@ func (s *ContainerServer) UpdateContainerVersion(ctx context.Context, in *pb.Upd
 		}
 	}
 
-  	nlimitdata, err := litedb.ListNetworkLimit(containerId)	
+	nlimitdata, err := litedb.ListNetworkLimit(containerId)
 	if err == nil {
 		for _, entry := range nlimitdata {
 			entry.ContainerID = id
@@ -1484,11 +1483,11 @@ func (s *ContainerServer) inspect(id string, backup bool) (*pb.ContainerConfigs,
 	}
 
 	configs := &pb.ContainerConfigs{
-		ContainerId:  info.ID,
-		Name:         strings.TrimPrefix(info.Name, "/"),
-		Image:        info.Image,
+		ContainerId:   info.ID,
+		Name:          strings.TrimPrefix(info.Name, "/"),
+		Image:         info.Image,
 		ResourceLimit: &pb.ResourceLimit{},
-		MiscConfig:   &pb.ContainerMiscConfig{},
+		MiscConfig:    &pb.ContainerMiscConfig{},
 	}
 
 	var pid int
@@ -1606,7 +1605,7 @@ func (s *ContainerServer) inspectNetwork(id string, backup bool, settings *types
 			nwbw = data.NetWbw
 			nrbw = data.NetRbw
 		}
-			
+
 		var ipAddr string
 		if m.IPAMConfig != nil {
 			ipAddr = m.IPAMConfig.IPv4Address // 返回用户填的IP地址
@@ -1623,8 +1622,8 @@ func (s *ContainerServer) inspectNetwork(id string, backup bool, settings *types
 			IpPrefixLen: int32(m.IPPrefixLen),
 			MacAddress:  m.MacAddress,
 			Gateway:     m.Gateway,
-			NetWbw:	     nwbw,
-			NetRbw:	     nrbw,
+			NetWbw:      nwbw,
+			NetRbw:      nrbw,
 		})
 	}
 }

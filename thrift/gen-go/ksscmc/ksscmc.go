@@ -2759,83 +2759,83 @@ type ContainerInfo struct {
   Nets []*NetworkInterface `thrift:"nets,18,required" db:"nets" json:"nets"`
 }
 
-func NewGetAllContainersResponse() *GetAllContainersResponse {
-  return &GetAllContainersResponse{}
+func NewContainerInfo() *ContainerInfo {
+  return &ContainerInfo{}
 }
 
 
-func (p *GetAllContainersResponse) GetName() string {
+func (p *ContainerInfo) GetName() string {
   return p.Name
 }
 
-func (p *GetAllContainersResponse) GetStat() int32 {
+func (p *ContainerInfo) GetStat() int32 {
   return p.Stat
 }
 
-func (p *GetAllContainersResponse) GetUUID() string {
+func (p *ContainerInfo) GetUUID() string {
   return p.UUID
 }
 
-func (p *GetAllContainersResponse) GetCPU() float64 {
+func (p *ContainerInfo) GetCPU() float64 {
   return p.CPU
 }
 
-func (p *GetAllContainersResponse) GetCPUUsage() float64 {
+func (p *ContainerInfo) GetCPUUsage() float64 {
   return p.CPUUsage
 }
 
-func (p *GetAllContainersResponse) GetMemUsage() int32 {
+func (p *ContainerInfo) GetMemUsage() int32 {
   return p.MemUsage
 }
 
-func (p *GetAllContainersResponse) GetMemTotal() int32 {
+func (p *ContainerInfo) GetMemTotal() int32 {
   return p.MemTotal
 }
 
-func (p *GetAllContainersResponse) GetDiskUsage() float64 {
+func (p *ContainerInfo) GetDiskUsage() float64 {
   return p.DiskUsage
 }
 
-func (p *GetAllContainersResponse) GetDiskTotal() int32 {
+func (p *ContainerInfo) GetDiskTotal() int32 {
   return p.DiskTotal
 }
 
-func (p *GetAllContainersResponse) GetDiskRbw() float64 {
+func (p *ContainerInfo) GetDiskRbw() float64 {
   return p.DiskRbw
 }
 
-func (p *GetAllContainersResponse) GetDiskWbw() float64 {
+func (p *ContainerInfo) GetDiskWbw() float64 {
   return p.DiskWbw
 }
 
-func (p *GetAllContainersResponse) GetNetRbw() float64 {
+func (p *ContainerInfo) GetNetRbw() float64 {
   return p.NetRbw
 }
 
-func (p *GetAllContainersResponse) GetNetWbw() float64 {
+func (p *ContainerInfo) GetNetWbw() float64 {
   return p.NetWbw
 }
 
-func (p *GetAllContainersResponse) GetImage() string {
+func (p *ContainerInfo) GetImage() string {
   return p.Image
 }
 
-func (p *GetAllContainersResponse) GetVersion() string {
+func (p *ContainerInfo) GetVersion() string {
   return p.Version
 }
 
-func (p *GetAllContainersResponse) GetHa() string {
+func (p *ContainerInfo) GetHa() string {
   return p.Ha
 }
 
-func (p *GetAllContainersResponse) GetLevel() int32 {
+func (p *ContainerInfo) GetLevel() int32 {
   return p.Level
 }
 
-func (p *GetAllContainersResponse) GetNets() []*NetworkInterface {
+func (p *ContainerInfo) GetNets() []*NetworkInterface {
   return p.Nets
 }
-func (p *GetAllContainersResponse) Read(iprot thrift.TProtocol) error {
+func (p *ContainerInfo) Read(iprot thrift.TProtocol) error {
   if _, err := iprot.ReadStructBegin(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
   }

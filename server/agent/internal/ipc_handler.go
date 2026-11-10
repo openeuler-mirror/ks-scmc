@@ -47,17 +47,9 @@ func (s *IpcBaseServer) List(ctx context.Context, in *pb.IpcListRequest) (*pb.Ip
 			Id:        c.ContainerID,
 			StartTime: c.CreatedAt,
 		}
-		/*
-			ipcMapcfg, err := litedb.IpcmapConfigByIPCName([]string{c.ContainerName})
-			if err == nil {
-				for _, d := range ipcMapcfg {
-					info.Containers = append(info.Containers, d.ContainerName)
-				}
-			}
-		*/
-		outCfg, err := litedb.GetContainerOutConfigByJsonField("ipc_name", c.ContainerName)
+		ipcMapcfg, err := litedb.IpcmapConfigByIPCName([]string{c.ContainerName})
 		if err == nil {
-			for _, d := range outCfg {
+			for _, d := range ipcMapcfg {
 				info.Containers = append(info.Containers, d.ContainerName)
 			}
 		}
@@ -210,17 +202,15 @@ func (s *IpcBaseServer) Remove(ctx context.Context, in *pb.IpcRemoveRequest) (*p
 			continue
 		}
 
-		//ipcMapcfg, err := litedb.IpcmapConfigByIPCName([]string{cfg.ContainerName})
-		outCfg, err := litedb.GetContainerOutConfigByJsonField("ipc_name", cfg.ContainerName)
-		if err != nil || len(outCfg) == 0 { // err 不为 nil 说明 数据库里面没有记录，可以删除
+		ipcMapcfg, err := litedb.IpcmapConfigByIPCName([]string{cfg.ContainerName})
+		if err != nil || len(ipcMapcfg) == 0 { // err 不为 nil 说明 数据库里面没有记录，可以删除
 			containerID := cfg.ContainerID
 			IpcStopAndRemoveContainer(containerID)
 
 			//删除数据库里面的记录
 			litedb.IpcConfigRemoveByID(cfg.ID)
 		} else {
-			//log.Warnf("Find Success ContainerName: %v, len: %v", cfg.ContainerName, len(ipcMapcfg))
-			log.Warnf("Find Success ContainerName: %v, len: %v", cfg.ContainerName, len(outCfg))
+			log.Warnf("Find Success ContainerName: %v, len: %v", cfg.ContainerName, len(ipcMapcfg))
 		}
 	}
 

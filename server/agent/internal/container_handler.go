@@ -1988,6 +1988,14 @@ func (*ContainerServer) InspectBackup(ctx context.Context, in *pb.InspectBackupR
 
 func (*ContainerServer) AddAppEntry(ctx context.Context, in *pb.AddAppEntryRequest) (*pb.AddAppEntryReply, error) {
 	if in.App == nil {
+		log.Warnf("AddAppEntry err=(in.App==nil)")
+		return nil, rpc.ErrInvalidArgument
+	}
+
+	// 判断容器ID是否存在，不存在就不允许添加
+	_, err := litedb.GetContainerConfig(in.App.ContainerId)
+	if err != nil {
+		log.Warnf("AddAppEntry err = %v (ContainerID = %v, Name = %v)", err, in.App.ContainerId, in.App.Name)
 		return nil, rpc.ErrInvalidArgument
 	}
 

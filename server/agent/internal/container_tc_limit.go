@@ -137,7 +137,7 @@ func (s *ContainerServer) ContainerTCConfig(containerID string, Nic string) {
 
 		err2 := s.ApplyMultiInterfaceLimit(containerID, iface.Name, data.NetWbw, data.NetRbw)
 		if err2 != nil {
-			log.Warnf("tc err: %v, containerID: %s, iface.Name: %v, NetWbw: %v, NetRbw: %v", err2, iface.Name, data.NetWbw, data.NetRbw)
+			log.Warnf("TC err: %v, containerID: %s, iface.Name: %v, NetWbw: %v, NetRbw: %v", err2, iface.Name, data.NetWbw, data.NetRbw)
 		}
 	}
 }
@@ -145,16 +145,19 @@ func (s *ContainerServer) ContainerTCConfig(containerID string, Nic string) {
 // 删除容器里面的 ifb 网卡
 func delContainerNicIfb(containerID string, iface string) {
 	if iface == "" {
+		log.Debugf("Invalid parameter")
 		return
 	}
 
 	netns, err := getNetnsPath(containerID)
 	if err != nil {
+		log.Debugf("Get netns err: %v", err)
 		return
 	}
 
 	ifbName, err := ifbNameForInterface(iface)
 	if err != nil {
+		log.Debugf("Get ifbName err: %v", err)
 		return
 	}
 

@@ -172,6 +172,15 @@ func (s *ContainerServer) isIpcContainer(id string) bool {
 	return true
 }
 
+// 容器记录不再数据库中不展示
+func (s *ContainerServer) isContainerCreateByShell(id string) bool {
+	_, err := litedb.GetContainerConfig(id)
+	if err != nil { // 不存在数据库记录，说明非我们客户端创建
+		return true
+	}
+	return false
+}
+
 func (s *ContainerServer) appEntrySync(app_run bool, name string) {
 	nodes, err := db.ListNodes()
 	if err != nil {
@@ -236,7 +245,7 @@ func (s *ContainerServer) List(ctx context.Context, in *pb.ListRequest) (*pb.Lis
 
 	var reply pb.ListReply
 	for _, c := range containers {
-		if s.isIpcContainer(c.ID) { // 过滤掉 IPC 容器
+		if s.isIpcContainer(c.ID) || s.isContainerCreateByShell(c.ID) { // 过滤掉 IPC 容器 和 非客户创建的容器
 			continue
 		}
 

@@ -15,10 +15,6 @@
     mkdir -p /var/log/mysql
     chown -R mysql:mysql /var/log/mysql
     chmod -R 755 /var/log/mysql  # 目录权限
-    # 确保日志文件权限正确
-    touch /var/log/mysqld.log
-    chown mysql:mysql /var/log/mysqld.log
-    chmod 640 /var/log/mysqld.log
     # 确保数据目录及父目录权限正确
     mkdir -p /var/lib/mysql
     chown -R mysql:mysql /var/lib/mysql

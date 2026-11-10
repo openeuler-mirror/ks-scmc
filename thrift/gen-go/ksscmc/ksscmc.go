@@ -8249,16 +8249,16 @@ func (p *KsScmcClientClient) recvGetContainerImageVers() (value string, err erro
     return
   }
   if mTypeId == thrift.EXCEPTION {
-    error34 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
-    var error35 error
-    error35, err = error34.Read(iprot)
+    error36 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
+    var error37 error
+    error37, err = error36.Read(iprot)
     if err != nil {
       return
     }
     if err = iprot.ReadMessageEnd(); err != nil {
       return
     }
-    err = error35
+    err = error37
     return
   }
   if mTypeId != thrift.REPLY {
@@ -8327,16 +8327,16 @@ func (p *KsScmcClientClient) recvGetImageVer4Container() (value *GetImageVer4Con
     return
   }
   if mTypeId == thrift.EXCEPTION {
-    error36 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
-    var error37 error
-    error37, err = error36.Read(iprot)
+    error38 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
+    var error39 error
+    error39, err = error38.Read(iprot)
     if err != nil {
       return
     }
     if err = iprot.ReadMessageEnd(); err != nil {
       return
     }
-    err = error37
+    err = error39
     return
   }
   if mTypeId != thrift.REPLY {
@@ -8405,16 +8405,16 @@ func (p *KsScmcClientClient) recvGetContainer() (value int32, err error) {
     return
   }
   if mTypeId == thrift.EXCEPTION {
-    error38 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
-    var error39 error
-    error39, err = error38.Read(iprot)
+    error40 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
+    var error41 error
+    error41, err = error40.Read(iprot)
     if err != nil {
       return
     }
     if err = iprot.ReadMessageEnd(); err != nil {
       return
     }
-    err = error39
+    err = error41
     return
   }
   if mTypeId != thrift.REPLY {
@@ -8485,16 +8485,16 @@ func (p *KsScmcClientClient) recvUpdateContainer() (value string, err error) {
     return
   }
   if mTypeId == thrift.EXCEPTION {
-    error40 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
-    var error41 error
-    error41, err = error40.Read(iprot)
+    error42 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
+    var error43 error
+    error43, err = error42.Read(iprot)
     if err != nil {
       return
     }
     if err = iprot.ReadMessageEnd(); err != nil {
       return
     }
-    err = error41
+    err = error43
     return
   }
   if mTypeId != thrift.REPLY {
@@ -8561,16 +8561,16 @@ func (p *KsScmcClientClient) recvGetAlarmList() (value string, err error) {
     return
   }
   if mTypeId == thrift.EXCEPTION {
-    error42 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
-    var error43 error
-    error43, err = error42.Read(iprot)
+    error44 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
+    var error45 error
+    error45, err = error44.Read(iprot)
     if err != nil {
       return
     }
     if err = iprot.ReadMessageEnd(); err != nil {
       return
     }
-    err = error43
+    err = error45
     return
   }
   if mTypeId != thrift.REPLY {
@@ -8634,16 +8634,16 @@ func (p *KsScmcClientClient) recvGetAllNodeList() (value *GetAllNodeListResponse
     return
   }
   if mTypeId == thrift.EXCEPTION {
-    error44 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
-    var error45 error
-    error45, err = error44.Read(iprot)
+    error46 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
+    var error47 error
+    error47, err = error46.Read(iprot)
     if err != nil {
       return
     }
     if err = iprot.ReadMessageEnd(); err != nil {
       return
     }
-    err = error45
+    err = error47
     return
   }
   if mTypeId != thrift.REPLY {
@@ -8710,16 +8710,16 @@ func (p *KsScmcClientClient) recvGetAllContainers() (value string, err error) {
     return
   }
   if mTypeId == thrift.EXCEPTION {
-    error46 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
-    var error47 error
-    error47, err = error46.Read(iprot)
+    error48 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
+    var error49 error
+    error49, err = error48.Read(iprot)
     if err != nil {
       return
     }
     if err = iprot.ReadMessageEnd(); err != nil {
       return
     }
-    err = error47
+    err = error49
     return
   }
   if mTypeId != thrift.REPLY {
@@ -8786,16 +8786,16 @@ func (p *KsScmcClientClient) recvGetAllContainersV2() (value string, err error) 
     return
   }
   if mTypeId == thrift.EXCEPTION {
-    error48 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
-    var error49 error
-    error49, err = error48.Read(iprot)
+    error50 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
+    var error51 error
+    error51, err = error50.Read(iprot)
     if err != nil {
       return
     }
     if err = iprot.ReadMessageEnd(); err != nil {
       return
     }
-    err = error49
+    err = error51
     return
   }
   if mTypeId != thrift.REPLY {
@@ -8864,16 +8864,16 @@ func (p *KsScmcClientClient) recvGetAllContainersV3() (value string, err error) 
     return
   }
   if mTypeId == thrift.EXCEPTION {
-    error50 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
-    var error51 error
-    error51, err = error50.Read(iprot)
+    error52 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
+    var error53 error
+    error53, err = error52.Read(iprot)
     if err != nil {
       return
     }
     if err = iprot.ReadMessageEnd(); err != nil {
       return
     }
-    err = error51
+    err = error53
     return
   }
   if mTypeId != thrift.REPLY {
@@ -8940,16 +8940,16 @@ func (p *KsScmcClientClient) recvGetAllContainerList() (value *GetAllContainerLi
     return
   }
   if mTypeId == thrift.EXCEPTION {
-    error52 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
-    var error53 error
-    error53, err = error52.Read(iprot)
+    error54 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
+    var error55 error
+    error55, err = error54.Read(iprot)
     if err != nil {
       return
     }
     if err = iprot.ReadMessageEnd(); err != nil {
       return
     }
-    err = error53
+    err = error55
     return
   }
   if mTypeId != thrift.REPLY {
@@ -9018,16 +9018,16 @@ func (p *KsScmcClientClient) recvCondGetAlarmListV3() (value string, err error) 
     return
   }
   if mTypeId == thrift.EXCEPTION {
-    error54 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
-    var error55 error
-    error55, err = error54.Read(iprot)
+    error56 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
+    var error57 error
+    error57, err = error56.Read(iprot)
     if err != nil {
       return
     }
     if err = iprot.ReadMessageEnd(); err != nil {
       return
     }
-    err = error55
+    err = error57
     return
   }
   if mTypeId != thrift.REPLY {
@@ -9098,16 +9098,16 @@ func (p *KsScmcClientClient) recvSetAlarmReadV3() (value string, err error) {
     return
   }
   if mTypeId == thrift.EXCEPTION {
-    error56 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
-    var error57 error
-    error57, err = error56.Read(iprot)
+    error58 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
+    var error59 error
+    error59, err = error58.Read(iprot)
     if err != nil {
       return
     }
     if err = iprot.ReadMessageEnd(); err != nil {
       return
     }
-    err = error57
+    err = error59
     return
   }
   if mTypeId != thrift.REPLY {
@@ -9176,16 +9176,16 @@ func (p *KsScmcClientClient) recvGetContainerNetwork() (value string, err error)
     return
   }
   if mTypeId == thrift.EXCEPTION {
-    error58 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
-    var error59 error
-    error59, err = error58.Read(iprot)
+    error60 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
+    var error61 error
+    error61, err = error60.Read(iprot)
     if err != nil {
       return
     }
     if err = iprot.ReadMessageEnd(); err != nil {
       return
     }
-    err = error59
+    err = error61
     return
   }
   if mTypeId != thrift.REPLY {
@@ -9254,16 +9254,16 @@ func (p *KsScmcClientClient) recvGetContainerNetRules() (value *GetContainerNetR
     return
   }
   if mTypeId == thrift.EXCEPTION {
-    error60 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
-    var error61 error
-    error61, err = error60.Read(iprot)
+    error62 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
+    var error63 error
+    error63, err = error62.Read(iprot)
     if err != nil {
       return
     }
     if err = iprot.ReadMessageEnd(); err != nil {
       return
     }
-    err = error61
+    err = error63
     return
   }
   if mTypeId != thrift.REPLY {
@@ -9338,16 +9338,16 @@ func (p *KsScmcClientClient) recvAddContainerIpPort() (value int32, err error) {
     return
   }
   if mTypeId == thrift.EXCEPTION {
-    error62 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
-    var error63 error
-    error63, err = error62.Read(iprot)
+    error64 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
+    var error65 error
+    error65, err = error64.Read(iprot)
     if err != nil {
       return
     }
     if err = iprot.ReadMessageEnd(); err != nil {
       return
     }
-    err = error63
+    err = error65
     return
   }
   if mTypeId != thrift.REPLY {
@@ -9422,16 +9422,16 @@ func (p *KsScmcClientClient) recvAddContainerReqIpPort() (value int32, err error
     return
   }
   if mTypeId == thrift.EXCEPTION {
-    error64 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
-    var error65 error
-    error65, err = error64.Read(iprot)
+    error66 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
+    var error67 error
+    error67, err = error66.Read(iprot)
     if err != nil {
       return
     }
     if err = iprot.ReadMessageEnd(); err != nil {
       return
     }
-    err = error65
+    err = error67
     return
   }
   if mTypeId != thrift.REPLY {
@@ -9504,16 +9504,16 @@ func (p *KsScmcClientClient) recvAddContainerEnv() (value string, err error) {
     return
   }
   if mTypeId == thrift.EXCEPTION {
-    error66 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
-    var error67 error
-    error67, err = error66.Read(iprot)
+    error68 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
+    var error69 error
+    error69, err = error68.Read(iprot)
     if err != nil {
       return
     }
     if err = iprot.ReadMessageEnd(); err != nil {
       return
     }
-    err = error67
+    err = error69
     return
   }
   if mTypeId != thrift.REPLY {
@@ -9588,16 +9588,16 @@ func (p *KsScmcClientClient) recvAddContainerLocalVolume() (value int32, err err
     return
   }
   if mTypeId == thrift.EXCEPTION {
-    error68 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
-    var error69 error
-    error69, err = error68.Read(iprot)
+    error70 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
+    var error71 error
+    error71, err = error70.Read(iprot)
     if err != nil {
       return
     }
     if err = iprot.ReadMessageEnd(); err != nil {
       return
     }
-    err = error69
+    err = error71
     return
   }
   if mTypeId != thrift.REPLY {
@@ -9670,16 +9670,16 @@ func (p *KsScmcClientClient) recvSetContainerDisplayV2() (value string, err erro
     return
   }
   if mTypeId == thrift.EXCEPTION {
-    error70 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
-    var error71 error
-    error71, err = error70.Read(iprot)
+    error72 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
+    var error73 error
+    error73, err = error72.Read(iprot)
     if err != nil {
       return
     }
     if err = iprot.ReadMessageEnd(); err != nil {
       return
     }
-    err = error71
+    err = error73
     return
   }
   if mTypeId != thrift.REPLY {
@@ -9750,16 +9750,16 @@ func (p *KsScmcClientClient) recvSetContainerQuota() (value string, err error) {
     return
   }
   if mTypeId == thrift.EXCEPTION {
-    error72 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
-    var error73 error
-    error73, err = error72.Read(iprot)
+    error74 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
+    var error75 error
+    error75, err = error74.Read(iprot)
     if err != nil {
       return
     }
     if err = iprot.ReadMessageEnd(); err != nil {
       return
     }
-    err = error73
+    err = error75
     return
   }
   if mTypeId != thrift.REPLY {
@@ -9836,16 +9836,16 @@ func (p *KsScmcClientClient) recvSetContainerPrivileged() (value int32, err erro
     return
   }
   if mTypeId == thrift.EXCEPTION {
-    error74 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
-    var error75 error
-    error75, err = error74.Read(iprot)
+    error76 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
+    var error77 error
+    error77, err = error76.Read(iprot)
     if err != nil {
       return
     }
     if err = iprot.ReadMessageEnd(); err != nil {
       return
     }
-    err = error75
+    err = error77
     return
   }
   if mTypeId != thrift.REPLY {
@@ -9925,16 +9925,16 @@ func (p *KsScmcClientClient) recvSetContainerSysctls() (value int32, err error) 
     return
   }
   if mTypeId == thrift.EXCEPTION {
-    error76 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
-    var error77 error
-    error77, err = error76.Read(iprot)
+    error78 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
+    var error79 error
+    error79, err = error78.Read(iprot)
     if err != nil {
       return
     }
     if err = iprot.ReadMessageEnd(); err != nil {
       return
     }
-    err = error77
+    err = error79
     return
   }
   if mTypeId != thrift.REPLY {
@@ -10011,16 +10011,16 @@ func (p *KsScmcClientClient) recvSetContainerExtraHosts() (value int32, err erro
     return
   }
   if mTypeId == thrift.EXCEPTION {
-    error78 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
-    var error79 error
-    error79, err = error78.Read(iprot)
+    error80 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
+    var error81 error
+    error81, err = error80.Read(iprot)
     if err != nil {
       return
     }
     if err = iprot.ReadMessageEnd(); err != nil {
       return
     }
-    err = error79
+    err = error81
     return
   }
   if mTypeId != thrift.REPLY {
@@ -10092,16 +10092,16 @@ func (p *KsScmcClientClient) recvGetImagesList() (value *GetImagesListResponse, 
     return
   }
   if mTypeId == thrift.EXCEPTION {
-    error80 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
-    var error81 error
-    error81, err = error80.Read(iprot)
+    error82 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
+    var error83 error
+    error83, err = error82.Read(iprot)
     if err != nil {
       return
     }
     if err = iprot.ReadMessageEnd(); err != nil {
       return
     }
-    err = error81
+    err = error83
     return
   }
   if mTypeId != thrift.REPLY {
@@ -10175,16 +10175,16 @@ func (p *KsScmcClientClient) recvLoadImage() (value int32, err error) {
     return
   }
   if mTypeId == thrift.EXCEPTION {
-    error82 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
-    var error83 error
-    error83, err = error82.Read(iprot)
+    error84 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
+    var error85 error
+    error85, err = error84.Read(iprot)
     if err != nil {
       return
     }
     if err = iprot.ReadMessageEnd(); err != nil {
       return
     }
-    err = error83
+    err = error85
     return
   }
   if mTypeId != thrift.REPLY {
@@ -10258,16 +10258,16 @@ func (p *KsScmcClientClient) recvPauseContainer() (value int32, err error) {
     return
   }
   if mTypeId == thrift.EXCEPTION {
-    error84 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
-    var error85 error
-    error85, err = error84.Read(iprot)
+    error86 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
+    var error87 error
+    error87, err = error86.Read(iprot)
     if err != nil {
       return
     }
     if err = iprot.ReadMessageEnd(); err != nil {
       return
     }
-    err = error85
+    err = error87
     return
   }
   if mTypeId != thrift.REPLY {
@@ -10341,16 +10341,16 @@ func (p *KsScmcClientClient) recvUnpauseContainer() (value int32, err error) {
     return
   }
   if mTypeId == thrift.EXCEPTION {
-    error86 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
-    var error87 error
-    error87, err = error86.Read(iprot)
+    error88 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
+    var error89 error
+    error89, err = error88.Read(iprot)
     if err != nil {
       return
     }
     if err = iprot.ReadMessageEnd(); err != nil {
       return
     }
-    err = error87
+    err = error89
     return
   }
   if mTypeId != thrift.REPLY {
@@ -10389,46 +10389,47 @@ func (p *KsScmcClientProcessor) ProcessorMap() map[string]thrift.TProcessorFunct
 
 func NewKsScmcClientProcessor(handler KsScmcClient) *KsScmcClientProcessor {
 
-  self88 := &KsScmcClientProcessor{handler:handler, processorMap:make(map[string]thrift.TProcessorFunction)}
-  self88.processorMap["LoginV3"] = &ksScmcClientProcessorLoginV3{handler:handler}
-  self88.processorMap["GetVersionsV3"] = &ksScmcClientProcessorGetVersionsV3{handler:handler}
-  self88.processorMap["GetAgentNodesV3"] = &ksScmcClientProcessorGetAgentNodesV3{handler:handler}
-  self88.processorMap["InstallContainer"] = &ksScmcClientProcessorInstallContainer{handler:handler}
-  self88.processorMap["StartContainer"] = &ksScmcClientProcessorStartContainer{handler:handler}
-  self88.processorMap["StartContainerV3"] = &ksScmcClientProcessorStartContainerV3{handler:handler}
-  self88.processorMap["StopContainer"] = &ksScmcClientProcessorStopContainer{handler:handler}
-  self88.processorMap["StopContainerV3"] = &ksScmcClientProcessorStopContainerV3{handler:handler}
-  self88.processorMap["UninstallContainer"] = &ksScmcClientProcessorUninstallContainer{handler:handler}
-  self88.processorMap["getContainerStatus"] = &ksScmcClientProcessorGetContainerStatus{handler:handler}
-  self88.processorMap["getContainerMetrics"] = &ksScmcClientProcessorGetContainerMetrics{handler:handler}
-  self88.processorMap["GetContainerImageVers"] = &ksScmcClientProcessorGetContainerImageVers{handler:handler}
-  self88.processorMap["getImageVer4Container"] = &ksScmcClientProcessorGetImageVer4Container{handler:handler}
-  self88.processorMap["getContainer"] = &ksScmcClientProcessorGetContainer{handler:handler}
-  self88.processorMap["UpdateContainer"] = &ksScmcClientProcessorUpdateContainer{handler:handler}
-  self88.processorMap["GetAlarmList"] = &ksScmcClientProcessorGetAlarmList{handler:handler}
-  self88.processorMap["getAllNodeList"] = &ksScmcClientProcessorGetAllNodeList{handler:handler}
-  self88.processorMap["GetAllContainers"] = &ksScmcClientProcessorGetAllContainers{handler:handler}
-  self88.processorMap["GetAllContainersV2"] = &ksScmcClientProcessorGetAllContainersV2{handler:handler}
-  self88.processorMap["GetAllContainersV3"] = &ksScmcClientProcessorGetAllContainersV3{handler:handler}
-  self88.processorMap["getAllContainerList"] = &ksScmcClientProcessorGetAllContainerList{handler:handler}
-  self88.processorMap["CondGetAlarmListV3"] = &ksScmcClientProcessorCondGetAlarmListV3{handler:handler}
-  self88.processorMap["SetAlarmReadV3"] = &ksScmcClientProcessorSetAlarmReadV3{handler:handler}
-  self88.processorMap["GetContainerNetwork"] = &ksScmcClientProcessorGetContainerNetwork{handler:handler}
-  self88.processorMap["getContainerNetRules"] = &ksScmcClientProcessorGetContainerNetRules{handler:handler}
-  self88.processorMap["addContainerIpPort"] = &ksScmcClientProcessorAddContainerIpPort{handler:handler}
-  self88.processorMap["addContainerReqIpPort"] = &ksScmcClientProcessorAddContainerReqIpPort{handler:handler}
-  self88.processorMap["AddContainerEnv"] = &ksScmcClientProcessorAddContainerEnv{handler:handler}
-  self88.processorMap["addContainerLocalVolume"] = &ksScmcClientProcessorAddContainerLocalVolume{handler:handler}
-  self88.processorMap["SetContainerDisplayV2"] = &ksScmcClientProcessorSetContainerDisplayV2{handler:handler}
-  self88.processorMap["SetContainerQuota"] = &ksScmcClientProcessorSetContainerQuota{handler:handler}
-  self88.processorMap["setContainerPrivileged"] = &ksScmcClientProcessorSetContainerPrivileged{handler:handler}
-  self88.processorMap["setContainerSysctls"] = &ksScmcClientProcessorSetContainerSysctls{handler:handler}
-  self88.processorMap["setContainerExtraHosts"] = &ksScmcClientProcessorSetContainerExtraHosts{handler:handler}
-  self88.processorMap["getImagesList"] = &ksScmcClientProcessorGetImagesList{handler:handler}
-  self88.processorMap["loadImage"] = &ksScmcClientProcessorLoadImage{handler:handler}
-  self88.processorMap["pauseContainer"] = &ksScmcClientProcessorPauseContainer{handler:handler}
-  self88.processorMap["unpauseContainer"] = &ksScmcClientProcessorUnpauseContainer{handler:handler}
-return self88
+  self90 := &KsScmcClientProcessor{handler:handler, processorMap:make(map[string]thrift.TProcessorFunction)}
+  self90.processorMap["LoginV3"] = &ksScmcClientProcessorLoginV3{handler:handler}
+  self90.processorMap["GetVersionsV3"] = &ksScmcClientProcessorGetVersionsV3{handler:handler}
+  self90.processorMap["GetAgentNodesV3"] = &ksScmcClientProcessorGetAgentNodesV3{handler:handler}
+  self90.processorMap["InstallContainer"] = &ksScmcClientProcessorInstallContainer{handler:handler}
+  self90.processorMap["StartContainer"] = &ksScmcClientProcessorStartContainer{handler:handler}
+  self90.processorMap["StartContainerV3"] = &ksScmcClientProcessorStartContainerV3{handler:handler}
+  self90.processorMap["StopContainer"] = &ksScmcClientProcessorStopContainer{handler:handler}
+  self90.processorMap["StopContainerV3"] = &ksScmcClientProcessorStopContainerV3{handler:handler}
+  self90.processorMap["RestartContainer"] = &ksScmcClientProcessorRestartContainer{handler:handler}
+  self90.processorMap["UninstallContainer"] = &ksScmcClientProcessorUninstallContainer{handler:handler}
+  self90.processorMap["getContainerStatus"] = &ksScmcClientProcessorGetContainerStatus{handler:handler}
+  self90.processorMap["getContainerMetrics"] = &ksScmcClientProcessorGetContainerMetrics{handler:handler}
+  self90.processorMap["GetContainerImageVers"] = &ksScmcClientProcessorGetContainerImageVers{handler:handler}
+  self90.processorMap["getImageVer4Container"] = &ksScmcClientProcessorGetImageVer4Container{handler:handler}
+  self90.processorMap["getContainer"] = &ksScmcClientProcessorGetContainer{handler:handler}
+  self90.processorMap["UpdateContainer"] = &ksScmcClientProcessorUpdateContainer{handler:handler}
+  self90.processorMap["GetAlarmList"] = &ksScmcClientProcessorGetAlarmList{handler:handler}
+  self90.processorMap["getAllNodeList"] = &ksScmcClientProcessorGetAllNodeList{handler:handler}
+  self90.processorMap["GetAllContainers"] = &ksScmcClientProcessorGetAllContainers{handler:handler}
+  self90.processorMap["GetAllContainersV2"] = &ksScmcClientProcessorGetAllContainersV2{handler:handler}
+  self90.processorMap["GetAllContainersV3"] = &ksScmcClientProcessorGetAllContainersV3{handler:handler}
+  self90.processorMap["getAllContainerList"] = &ksScmcClientProcessorGetAllContainerList{handler:handler}
+  self90.processorMap["CondGetAlarmListV3"] = &ksScmcClientProcessorCondGetAlarmListV3{handler:handler}
+  self90.processorMap["SetAlarmReadV3"] = &ksScmcClientProcessorSetAlarmReadV3{handler:handler}
+  self90.processorMap["GetContainerNetwork"] = &ksScmcClientProcessorGetContainerNetwork{handler:handler}
+  self90.processorMap["getContainerNetRules"] = &ksScmcClientProcessorGetContainerNetRules{handler:handler}
+  self90.processorMap["addContainerIpPort"] = &ksScmcClientProcessorAddContainerIpPort{handler:handler}
+  self90.processorMap["addContainerReqIpPort"] = &ksScmcClientProcessorAddContainerReqIpPort{handler:handler}
+  self90.processorMap["AddContainerEnv"] = &ksScmcClientProcessorAddContainerEnv{handler:handler}
+  self90.processorMap["addContainerLocalVolume"] = &ksScmcClientProcessorAddContainerLocalVolume{handler:handler}
+  self90.processorMap["SetContainerDisplayV2"] = &ksScmcClientProcessorSetContainerDisplayV2{handler:handler}
+  self90.processorMap["SetContainerQuota"] = &ksScmcClientProcessorSetContainerQuota{handler:handler}
+  self90.processorMap["setContainerPrivileged"] = &ksScmcClientProcessorSetContainerPrivileged{handler:handler}
+  self90.processorMap["setContainerSysctls"] = &ksScmcClientProcessorSetContainerSysctls{handler:handler}
+  self90.processorMap["setContainerExtraHosts"] = &ksScmcClientProcessorSetContainerExtraHosts{handler:handler}
+  self90.processorMap["getImagesList"] = &ksScmcClientProcessorGetImagesList{handler:handler}
+  self90.processorMap["loadImage"] = &ksScmcClientProcessorLoadImage{handler:handler}
+  self90.processorMap["pauseContainer"] = &ksScmcClientProcessorPauseContainer{handler:handler}
+  self90.processorMap["unpauseContainer"] = &ksScmcClientProcessorUnpauseContainer{handler:handler}
+return self90
 }
 
 func (p *KsScmcClientProcessor) Process(iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
@@ -10439,12 +10440,12 @@ func (p *KsScmcClientProcessor) Process(iprot, oprot thrift.TProtocol) (success 
   }
   iprot.Skip(thrift.STRUCT)
   iprot.ReadMessageEnd()
-  x89 := thrift.NewTApplicationException(thrift.UNKNOWN_METHOD, "Unknown function " + name)
+  x91 := thrift.NewTApplicationException(thrift.UNKNOWN_METHOD, "Unknown function " + name)
   oprot.WriteMessageBegin(name, thrift.EXCEPTION, seqId)
-  x89.Write(oprot)
+  x91.Write(oprot)
   oprot.WriteMessageEnd()
   oprot.Flush()
-  return false, x89
+  return false, x91
 
 }
 
@@ -10815,6 +10816,54 @@ var retval string
     result.Success = &retval
 }
   if err2 = oprot.WriteMessageBegin("StopContainerV3", thrift.REPLY, seqId); err2 != nil {
+    err = err2
+  }
+  if err2 = result.Write(oprot); err == nil && err2 != nil {
+    err = err2
+  }
+  if err2 = oprot.WriteMessageEnd(); err == nil && err2 != nil {
+    err = err2
+  }
+  if err2 = oprot.Flush(); err == nil && err2 != nil {
+    err = err2
+  }
+  if err != nil {
+    return
+  }
+  return true, err
+}
+
+type ksScmcClientProcessorRestartContainer struct {
+  handler KsScmcClient
+}
+
+func (p *ksScmcClientProcessorRestartContainer) Process(seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
+  args := KsScmcClientRestartContainerArgs{}
+  if err = args.Read(iprot); err != nil {
+    iprot.ReadMessageEnd()
+    x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err.Error())
+    oprot.WriteMessageBegin("RestartContainer", thrift.EXCEPTION, seqId)
+    x.Write(oprot)
+    oprot.WriteMessageEnd()
+    oprot.Flush()
+    return false, err
+  }
+
+  iprot.ReadMessageEnd()
+  result := KsScmcClientRestartContainerResult{}
+var retval string
+  var err2 error
+  if retval, err2 = p.handler.RestartContainer(args.NodeName, args.Name); err2 != nil {
+    x := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing RestartContainer: " + err2.Error())
+    oprot.WriteMessageBegin("RestartContainer", thrift.EXCEPTION, seqId)
+    x.Write(oprot)
+    oprot.WriteMessageEnd()
+    oprot.Flush()
+    return true, err2
+  } else {
+    result.Success = &retval
+}
+  if err2 = oprot.WriteMessageBegin("RestartContainer", thrift.REPLY, seqId); err2 != nil {
     err = err2
   }
   if err2 = result.Write(oprot); err == nil && err2 != nil {
@@ -14005,6 +14054,215 @@ func (p *KsScmcClientStopContainerV3Result) String() string {
     return "<nil>"
   }
   return fmt.Sprintf("KsScmcClientStopContainerV3Result(%+v)", *p)
+}
+
+// Attributes:
+//  - NodeName
+//  - Name
+type KsScmcClientRestartContainerArgs struct {
+  NodeName string `thrift:"node_name,1" db:"node_name" json:"node_name"`
+  Name string `thrift:"name,2" db:"name" json:"name"`
+}
+
+func NewKsScmcClientRestartContainerArgs() *KsScmcClientRestartContainerArgs {
+  return &KsScmcClientRestartContainerArgs{}
+}
+
+
+func (p *KsScmcClientRestartContainerArgs) GetNodeName() string {
+  return p.NodeName
+}
+
+func (p *KsScmcClientRestartContainerArgs) GetName() string {
+  return p.Name
+}
+func (p *KsScmcClientRestartContainerArgs) Read(iprot thrift.TProtocol) error {
+  if _, err := iprot.ReadStructBegin(); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
+  }
+
+
+  for {
+    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin()
+    if err != nil {
+      return thrift.PrependError(fmt.Sprintf("%T field %d read error: ", p, fieldId), err)
+    }
+    if fieldTypeId == thrift.STOP { break; }
+    switch fieldId {
+    case 1:
+      if err := p.ReadField1(iprot); err != nil {
+        return err
+      }
+    case 2:
+      if err := p.ReadField2(iprot); err != nil {
+        return err
+      }
+    default:
+      if err := iprot.Skip(fieldTypeId); err != nil {
+        return err
+      }
+    }
+    if err := iprot.ReadFieldEnd(); err != nil {
+      return err
+    }
+  }
+  if err := iprot.ReadStructEnd(); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+  }
+  return nil
+}
+
+func (p *KsScmcClientRestartContainerArgs)  ReadField1(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadString(); err != nil {
+  return thrift.PrependError("error reading field 1: ", err)
+} else {
+  p.NodeName = v
+}
+  return nil
+}
+
+func (p *KsScmcClientRestartContainerArgs)  ReadField2(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadString(); err != nil {
+  return thrift.PrependError("error reading field 2: ", err)
+} else {
+  p.Name = v
+}
+  return nil
+}
+
+func (p *KsScmcClientRestartContainerArgs) Write(oprot thrift.TProtocol) error {
+  if err := oprot.WriteStructBegin("RestartContainer_args"); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err) }
+  if p != nil {
+    if err := p.writeField1(oprot); err != nil { return err }
+    if err := p.writeField2(oprot); err != nil { return err }
+  }
+  if err := oprot.WriteFieldStop(); err != nil {
+    return thrift.PrependError("write field stop error: ", err) }
+  if err := oprot.WriteStructEnd(); err != nil {
+    return thrift.PrependError("write struct stop error: ", err) }
+  return nil
+}
+
+func (p *KsScmcClientRestartContainerArgs) writeField1(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("node_name", thrift.STRING, 1); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write field begin error 1:node_name: ", p), err) }
+  if err := oprot.WriteString(string(p.NodeName)); err != nil {
+  return thrift.PrependError(fmt.Sprintf("%T.node_name (1) field write error: ", p), err) }
+  if err := oprot.WriteFieldEnd(); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write field end error 1:node_name: ", p), err) }
+  return err
+}
+
+func (p *KsScmcClientRestartContainerArgs) writeField2(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("name", thrift.STRING, 2); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write field begin error 2:name: ", p), err) }
+  if err := oprot.WriteString(string(p.Name)); err != nil {
+  return thrift.PrependError(fmt.Sprintf("%T.name (2) field write error: ", p), err) }
+  if err := oprot.WriteFieldEnd(); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write field end error 2:name: ", p), err) }
+  return err
+}
+
+func (p *KsScmcClientRestartContainerArgs) String() string {
+  if p == nil {
+    return "<nil>"
+  }
+  return fmt.Sprintf("KsScmcClientRestartContainerArgs(%+v)", *p)
+}
+
+// Attributes:
+//  - Success
+type KsScmcClientRestartContainerResult struct {
+  Success *string `thrift:"success,0" db:"success" json:"success,omitempty"`
+}
+
+func NewKsScmcClientRestartContainerResult() *KsScmcClientRestartContainerResult {
+  return &KsScmcClientRestartContainerResult{}
+}
+
+var KsScmcClientRestartContainerResult_Success_DEFAULT string
+func (p *KsScmcClientRestartContainerResult) GetSuccess() string {
+  if !p.IsSetSuccess() {
+    return KsScmcClientRestartContainerResult_Success_DEFAULT
+  }
+return *p.Success
+}
+func (p *KsScmcClientRestartContainerResult) IsSetSuccess() bool {
+  return p.Success != nil
+}
+
+func (p *KsScmcClientRestartContainerResult) Read(iprot thrift.TProtocol) error {
+  if _, err := iprot.ReadStructBegin(); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
+  }
+
+
+  for {
+    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin()
+    if err != nil {
+      return thrift.PrependError(fmt.Sprintf("%T field %d read error: ", p, fieldId), err)
+    }
+    if fieldTypeId == thrift.STOP { break; }
+    switch fieldId {
+    case 0:
+      if err := p.ReadField0(iprot); err != nil {
+        return err
+      }
+    default:
+      if err := iprot.Skip(fieldTypeId); err != nil {
+        return err
+      }
+    }
+    if err := iprot.ReadFieldEnd(); err != nil {
+      return err
+    }
+  }
+  if err := iprot.ReadStructEnd(); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+  }
+  return nil
+}
+
+func (p *KsScmcClientRestartContainerResult)  ReadField0(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadString(); err != nil {
+  return thrift.PrependError("error reading field 0: ", err)
+} else {
+  p.Success = &v
+}
+  return nil
+}
+
+func (p *KsScmcClientRestartContainerResult) Write(oprot thrift.TProtocol) error {
+  if err := oprot.WriteStructBegin("RestartContainer_result"); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err) }
+  if p != nil {
+    if err := p.writeField0(oprot); err != nil { return err }
+  }
+  if err := oprot.WriteFieldStop(); err != nil {
+    return thrift.PrependError("write field stop error: ", err) }
+  if err := oprot.WriteStructEnd(); err != nil {
+    return thrift.PrependError("write struct stop error: ", err) }
+  return nil
+}
+
+func (p *KsScmcClientRestartContainerResult) writeField0(oprot thrift.TProtocol) (err error) {
+  if p.IsSetSuccess() {
+    if err := oprot.WriteFieldBegin("success", thrift.STRING, 0); err != nil {
+      return thrift.PrependError(fmt.Sprintf("%T write field begin error 0:success: ", p), err) }
+    if err := oprot.WriteString(string(*p.Success)); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T.success (0) field write error: ", p), err) }
+    if err := oprot.WriteFieldEnd(); err != nil {
+      return thrift.PrependError(fmt.Sprintf("%T write field end error 0:success: ", p), err) }
+  }
+  return err
+}
+
+func (p *KsScmcClientRestartContainerResult) String() string {
+  if p == nil {
+    return "<nil>"
+  }
+  return fmt.Sprintf("KsScmcClientRestartContainerResult(%+v)", *p)
 }
 
 // Attributes:
@@ -19725,13 +19983,13 @@ func (p *KsScmcClientSetContainerExtraHostsArgs)  ReadField3(iprot thrift.TProto
   tSlice := make([]string, 0, size)
   p.ContainerExtrahosts =  tSlice
   for i := 0; i < size; i ++ {
-var _elem90 string
+var _elem92 string
     if v, err := iprot.ReadString(); err != nil {
     return thrift.PrependError("error reading field 0: ", err)
 } else {
-    _elem90 = v
+    _elem92 = v
 }
-    p.ContainerExtrahosts = append(p.ContainerExtrahosts, _elem90)
+    p.ContainerExtrahosts = append(p.ContainerExtrahosts, _elem92)
   }
   if err := iprot.ReadListEnd(); err != nil {
     return thrift.PrependError("error reading list end: ", err)

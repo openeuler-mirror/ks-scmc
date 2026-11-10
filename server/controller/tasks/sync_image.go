@@ -28,8 +28,8 @@ func (s *SyncImages) Run() {
 	if common.IsMaster() {
 		SyncNodeImages()
 	} else {
-                loadImages()
-        }
+		loadImages()
+	}
 }
 
 func loadImages() {
@@ -39,34 +39,33 @@ func loadImages() {
 		return
 	}
 
-        // 获取本机已经加载了的镜像文件
-        conn, err := internal.GetAgentConn("127.0.0.1")
-        nodeImages, err := listImage(conn)
-        if err != nil {
-            log.Warnf("listImage err=%v", err)
-            return
-        }
+	// 获取本机已经加载了的镜像文件
+	conn, err := internal.GetAgentConn("127.0.0.1")
+	nodeImages, err := listImage(conn)
+	if err != nil {
+		log.Warnf("listImage err=%v", err)
+		return
+	}
 
 	var req pb.AgentSyncRequest
 
-        // 上传且审批通过的镜像，节点中不存在，需要同步
-        for tag, info := range images {
-                if !nodeImages[tag] {
-                        req.ToLoad = append(req.ToLoad, &pb.LoadInfo{
-                                ImageId: info.ImageId,
-                                Path:    info.FilePath,
-                                Tag:     tag,
-                        })
-                }
-        }
+	// 上传且审批通过的镜像，节点中不存在，需要同步
+	for tag, info := range images {
+		if !nodeImages[tag] {
+			req.ToLoad = append(req.ToLoad, &pb.LoadInfo{
+				ImageId: info.ImageId,
+				Path:    info.FilePath,
+				Tag:     tag,
+			})
+		}
+	}
 
-        if len(req.ToRemove) == 0 && len(req.ToLoad) == 0 {
-                return // no changes
-        }
+	if len(req.ToRemove) == 0 && len(req.ToLoad) == 0 {
+		return // no changes
+	}
 
-        agentSync(conn, &req)
+	agentSync(conn, &req)
 }
-
 
 func listImage(conn *grpc.ClientConn) (map[string]bool, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)

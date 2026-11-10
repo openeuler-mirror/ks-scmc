@@ -86,6 +86,7 @@ func (s *ImageServer) noticeAgentSync(removes []string, newImg *db.ImageInfo) {
 			ToLoad:   loads,
 		}
 
+		req.Uuid = n.UUID
 		if _, err = pb.NewImageClient(conn).AgentSync(context.Background(), &req); err != nil {
 			log.Warnf("AgentSync req=%+v node=%+v err=%v", &req, n, err)
 		} else {

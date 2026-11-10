@@ -376,7 +376,7 @@ func (s *ContainerServer) setSecurityConfig(nodeid int64, id, uuid, name string,
 	// 网络进程白名单比较独立，各个级别的模板都可以设置
 	if err := s.SetNprocProtection(id, uuid, sec.NprocProtection); err != nil {
 		log.Warnf("SaveRule id=%v err=%v", id, err)
-		return rpc.ErrContainerNprocProtection
+		// return rpc.ErrContainerNprocProtection
 	}
 
 	if sec.NetworkRule == nil {

@@ -64,7 +64,7 @@ func getContainerStats() (map[string]*pb.ResourceStat, error) {
 		log.Warnf("get all container stats from cadvisor: %v", err)
 		return nil, err
 	}
-
+	const megaBytes = 1000 * 1000
 	m := make(map[string]*pb.ResourceStat)
 	for _, info := range infos {
 		var p *pb.ResourceStat
@@ -79,6 +79,12 @@ func getContainerStats() (map[string]*pb.ResourceStat, error) {
 				},
 			}
 
+			totalRx, totalTx := calculateNetworkTraffic(tail)
+			netStat := &pb.NetworkStats{
+				Rx: float64(totalRx) / megaBytes,
+				Tx: float64(totalTx) / megaBytes,
+			}
+
 			if len(info.Stats) > 1 {
 				duration := tail.Timestamp.Sub(head.Timestamp)
 				cpuPercent := float64(tail.Cpu.Usage.Total-head.Cpu.Usage.Total) / float64(duration.Nanoseconds())
@@ -87,17 +93,18 @@ func getContainerStats() (map[string]*pb.ResourceStat, error) {
 				}
 
 				// 获取最新两个统计点（用于计算网络速率）
-				prevStat := info.Stats[len(info.Stats)-2]
-				currStat := info.Stats[len(info.Stats)-1]
-				rxRate, txRate := calculateNetworkSpeed(prevStat, currStat)
-				p.NetStat = &pb.NetworkStats{
-					Rx: rxRate,
-					Tx: txRate,
-				}
+				// prevStat := info.Stats[len(info.Stats)-2]
+				// currStat := info.Stats[len(info.Stats)-1]
+				// rxRate, txRate := calculateNetworkSpeed(prevStat, currStat)
+				// p.NetStat = &pb.NetworkStats{
+				// 	Rx: rxRate,
+				// 	Tx: txRate,
+				// }
 
 				// log.Warnf("cadvisor get Rx: %v Tx: %v (B/s)", rxRate, txRate)
 
 			}
+			p.NetStat = netStat
 			m[info.Id] = p
 		}
 	}

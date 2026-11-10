@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"regexp"
+        log "github.com/sirupsen/logrus"
 )
 
 // 修改keepalived配置中的vrrp_instance VI_1的interface字段
@@ -51,16 +52,10 @@ func modifyInterface(configPath, newInterface string) error {
 	return nil
 }
 
-/*
-func main() {
+func ModifyInterface(newInterface string) {
 	configPath := "/etc/keepalived/keepalived.conf"
-	newInterface := "eth0" // 要修改的新网络接口
-
-	err := modifyInterface(configPath, newInterface)
-	if err != nil {
-		fmt.Printf("修改失败: %v\n", err)
-		return
-	}
-	fmt.Printf("成功将interface修改为: %s\n", newInterface)
+        err := modifyInterface(configPath, newInterface)
+        if err != nil {
+            log.Warnf("modify keepalived config err: %v", err)
+        }
 }
-*/

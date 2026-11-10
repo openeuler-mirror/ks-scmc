@@ -18,6 +18,7 @@ import (
 	pb "scmc/rpc/pb/image"
 )
 
+var loadingImages  sync.Map
 var imageSyncGuard sync.Mutex
 
 type ImageServer struct {
@@ -83,6 +84,16 @@ func (s *ImageServer) AgentSync(ctx context.Context, in *pb.AgentSyncRequest) (*
 	}
 
 	loadImage := func(path, id, tag string) {
+		// 1. 检查该镜像是否正在加载
+		if _, exists := loadingImages.Load(path); exists {
+			log.Infof("image %s is already loading, skip", path)
+			return
+		}
+
+		// 2、标记为正在加载
+		loadingImages.Store(path, struct{}{})
+		defer loadingImages.Delete(path) //加载完成/失败后移除标记
+
 		f, err := os.Open(path)
 		if err != nil {
 			log.Errorf("open image file '%s': %v", path, err)
@@ -101,7 +112,7 @@ func (s *ImageServer) AgentSync(ctx context.Context, in *pb.AgentSyncRequest) (*
 				log.Errorf("无法读取归档文件：", err)
 				return
 			}
-			log.Debugln(header.Name)
+			// log.Debugln(header.Name)
 			if header.Name == registry.ManifestFileName {
 				isTarFileSystem = false
 				break
@@ -114,7 +125,7 @@ func (s *ImageServer) AgentSync(ctx context.Context, in *pb.AgentSyncRequest) (*
 				log.Errorf("open image file '%s': %v", path, err)
 				return
 			}
-			defer f.Close()
+			defer tarf.Close()
 
 			resp, err := cli.ImageImport(bg, types.ImageImportSource{
 				Source:     tarf,
@@ -147,7 +158,7 @@ func (s *ImageServer) AgentSync(ctx context.Context, in *pb.AgentSyncRequest) (*
 				log.Errorf("open image file '%s': %v", path, err)
 				return
 			}
-			defer f.Close()
+			defer imgf.Close()
 			if _, err := cli.ImageLoad(bg, imgf, true); err != nil {
 				log.Errorf("load image file '%s': %v", path, err)
 				return

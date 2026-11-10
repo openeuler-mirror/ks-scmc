@@ -4,11 +4,12 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+
+	"github.com/sirupsen/logrus"
+
 	"scmc/model/db"
 	containerPB "scmc/rpc/pb/container"
 	"scmc/thrift/gen-go/ksscmc"
-
-	"github.com/sirupsen/logrus"
 )
 
 // 通过node name or ip查找node info
@@ -22,8 +23,8 @@ func GetNodeId(nodeNameorip string) (*db.NodeInfo, error) {
 	}
 	return nodeInfo, nil
 }
-func GetContainerId(cli containerPB.ContainerClient, containerName string, ctx context.Context) (containerId string, err error) {
 
+func GetContainerId(cli containerPB.ContainerClient, containerName string, ctx context.Context) (containerId string, err error) {
 	r, err := cli.List(ctx, &containerPB.ListRequest{
 		ListAll: true,
 	})

@@ -79,7 +79,7 @@ func influxdbQueryNodeMax(start, end int64) ([3]float64, error) {
 
 	password, err := common.Config.InfluxDB.DecryptPassword()
 	if err != nil {
-		log.Warnf("decrypt influxdb password error=%v", err)
+		log.Warnf("Decrypt influxdb password error=%v", err)
 		return data, err
 	}
 
@@ -89,7 +89,7 @@ func influxdbQueryNodeMax(start, end int64) ([3]float64, error) {
 		Password: password,
 	})
 	if err != nil {
-		log.Warnf("get influxdb client error=%v", err)
+		log.Warnf("Get influxdb client error=%v", err)
 		return data, err
 	}
 	log.Infof("get influxdb client success")
@@ -138,7 +138,7 @@ func influxdbQueryNodeMax(start, end int64) ([3]float64, error) {
 func influxdbQuery(start, end int64, interval uint, containerName string) (*pb.MonitorHistoryReply, error) {
 	password, err := common.Config.InfluxDB.DecryptPassword()
 	if err != nil {
-		log.Warnf("decrypt influxdb password error=%v", err)
+		log.Warnf("Decrypt influxdb password error=%v", err)
 		return nil, err
 	}
 
@@ -148,7 +148,7 @@ func influxdbQuery(start, end int64, interval uint, containerName string) (*pb.M
 		Password: password,
 	})
 	if err != nil {
-		log.Warnf("get influxdb client error=%v", err)
+		log.Warnf("Get influxdb client error=%v", err)
 		return nil, err
 	}
 

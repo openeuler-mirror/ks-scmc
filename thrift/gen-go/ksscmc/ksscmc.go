@@ -2738,7 +2738,7 @@ func (p *NetworkInterfaceWithAgentNode) String() string {
 //  - Ha
 //  - Level
 //  - Nets
-type GetAllContainersResponse struct {
+type ContainerInfo struct {
   Name string `thrift:"name,1,required" db:"name" json:"name"`
   Stat int32 `thrift:"stat,2,required" db:"stat" json:"stat"`
   UUID string `thrift:"uuid,3,required" db:"uuid" json:"uuid"`

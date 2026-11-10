@@ -32,9 +32,20 @@
   shell: |
     INFLUX_CONF="/etc/influxdb/influxdb.conf"
     if [ -f "$INFLUX_CONF" ]; then      
-      sed -i 's/^[#[:space:]]*auth-enabled.*/auth-enabled = true/' "$INFLUX_CONF"
-      if ! grep -q "^auth-enabled" "$INFLUX_CONF"; then
-        awk '/^\[http\]/ { print; print "auth-enabled = true"; next }1' "$INFLUX_CONF" > "$INFLUX_CONF.tmp" && \mv "$INFLUX_CONF.tmp" "$INFLUX_CONF" || echo "auth-enabled = true" >> "$INFLUX_CONF"
+      if ! grep -q "^[[:space:]]*auth-enabled[[:space:]]*=[[:space:]]*true" "$INFLUXDB_CONF"; then
+        if ! grep -q "^[[:space:]]*auth-enabled" "$INFLUXDB_CONF"; then
+          sed -i '/^\[http\]/a auth-enabled = true' "$INFLUXDB_CONF"
+        else
+          sed -i 's/^\([[:space:]]*\)auth-enabled[[:space:]]*=[[:space:]]*\(.*\)/\1auth-enabled = true/' "$INFLUXDB_CONF"
+        fi
+      fi
+
+      if ! grep -q "^[[:space:]]*ping-auth-enabled[[:space:]]*=[[:space:]]*true" "$INFLUXDB_CONF"; then
+        if ! grep -q "^[[:space:]]*ping-auth-enabled" "$INFLUXDB_CONF"; then
+          sed -i '/^\[http\]/a ping-auth-enabled = true' "$INFLUXDB_CONF"
+        else
+          sed -i 's/^\([[:space:]]*\)ping-auth-enabled[[:space:]]*=[[:space:]]*\(.*\)/\1ping-auth-enabled = true/' "$INFLUXDB_CONF"
+        fi
       fi
     else
       mkdir -p /etc/influxdb

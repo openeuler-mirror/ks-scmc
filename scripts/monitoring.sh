@@ -4,14 +4,18 @@ INFLUX_DATA="/var/lib/influxdb"
 mkdir -p ${INFLUX_DATA}
 docker run -d -p 8086:8086 \
       -v ${INFLUX_DATA}:${INFLUX_DATA} \
+      -e INFLUXDB_DB=cadvisor \
+      -e INFLUXDB_ADMIN_USER=root \
+      -e INFLUXDB_ADMIN_PASSWORD=root \
       --name=influxdb \
       --restart=unless-stopped \
       influxdb:1.8.10
 
-docker exec -it influxdb /bin/bash
-influx
-> CREATE DATABASE "cadvisor";
-> CREATE RETENTION POLICY "cadvisor_3d" ON cadvisor DURATION 3d REPLICATION 1 DEFAULT;
+# 等待influxdb启动
+sleep 5
+
+# 创建保留策略
+docker exec influxdb influx -username root -password root -execute 'CREATE RETENTION POLICY "cadvisor_3d" ON cadvisor DURATION 3d REPLICATION 1 DEFAULT;'
 #####################
 
 docker run -d -p 8080:8080 --name=cadvisor \
@@ -26,6 +30,7 @@ docker run -d -p 8080:8080 --name=cadvisor \
     --link influxdb:influxdb \
     google/cadvisor:v0.36.0 \
         -storage_driver=influxdb -storage_driver_db=cadvisor -storage_driver_host=influxdb:8086 \
+        -storage_driver_user=root -storage_driver_password=root \
         -disable_metrics=udp,advtcp,sched,process,tcp,percpu
 
 

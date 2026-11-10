@@ -4466,30 +4466,91 @@ func (p *GetImagesListResponse) String() string {
   return fmt.Sprintf("GetImagesListResponse(%+v)", *p)
 }
 
-// 获取 容器的状态信息，参考 docker stats 的输出
-// 返回值为 json 格式
-// 
+type Version struct {
+}
+
+func NewVersion() *Version {
+  return &Version{}
+}
+
+func (p *Version) Read(iprot thrift.TProtocol) error {
+  if _, err := iprot.ReadStructBegin(); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
+  }
+
+
+  for {
+    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin()
+    if err != nil {
+      return thrift.PrependError(fmt.Sprintf("%T field %d read error: ", p, fieldId), err)
+    }
+    if fieldTypeId == thrift.STOP { break; }
+    if err := iprot.Skip(fieldTypeId); err != nil {
+      return err
+    }
+    if err := iprot.ReadFieldEnd(); err != nil {
+      return err
+    }
+  }
+  if err := iprot.ReadStructEnd(); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+  }
+  return nil
+}
+
+func (p *Version) Write(oprot thrift.TProtocol) error {
+  if err := oprot.WriteStructBegin("Version"); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err) }
+  if p != nil {
+  }
+  if err := oprot.WriteFieldStop(); err != nil {
+    return thrift.PrependError("write field stop error: ", err) }
+  if err := oprot.WriteStructEnd(); err != nil {
+    return thrift.PrependError("write struct stop error: ", err) }
+  return nil
+}
+
+func (p *Version) String() string {
+  if p == nil {
+    return "<nil>"
+  }
+  return fmt.Sprintf("Version(%+v)", *p)
+}
+
 // Attributes:
-//  - ErrorCode
-//  - Reason
-type OperationFailed struct {
-  ErrorCode int32 `thrift:"error_code,1" db:"error_code" json:"error_code"`
-  Reason string `thrift:"reason,2" db:"reason" json:"reason"`
+//  - Name
+//  - UUID
+//  - Versions
+type NodeVersion struct {
+  Name string `thrift:"name,1" db:"name" json:"name"`
+  UUID string `thrift:"uuid,2" db:"uuid" json:"uuid"`
+  Versions *Version `thrift:"versions,3" db:"versions" json:"versions"`
 }
 
-func NewOperationFailed() *OperationFailed {
-  return &OperationFailed{}
+func NewNodeVersion() *NodeVersion {
+  return &NodeVersion{}
 }
 
 
-func (p *OperationFailed) GetErrorCode() int32 {
-  return p.ErrorCode
+func (p *NodeVersion) GetName() string {
+  return p.Name
 }
 
-func (p *OperationFailed) GetReason() string {
-  return p.Reason
+func (p *NodeVersion) GetUUID() string {
+  return p.UUID
 }
-func (p *OperationFailed) Read(iprot thrift.TProtocol) error {
+var NodeVersion_Versions_DEFAULT *Version
+func (p *NodeVersion) GetVersions() *Version {
+  if !p.IsSetVersions() {
+    return NodeVersion_Versions_DEFAULT
+  }
+return p.Versions
+}
+func (p *NodeVersion) IsSetVersions() bool {
+  return p.Versions != nil
+}
+
+func (p *NodeVersion) Read(iprot thrift.TProtocol) error {
   if _, err := iprot.ReadStructBegin(); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
   }

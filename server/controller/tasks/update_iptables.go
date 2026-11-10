@@ -21,20 +21,19 @@ import (
 	"strings"
 	"time"
 
+	"github.com/docker/docker/api/types"
+	log "github.com/sirupsen/logrus"
+
 	"scmc/model/db"
 	"scmc/model/docker"
 	"scmc/model/litedb"
 	pb "scmc/rpc/pb/container"
 	"scmc/server/controller/internal"
-
-	"github.com/docker/docker/api/types"
-	log "github.com/sirupsen/logrus"
 )
 
 const updateContainerFlagFile = "/var/lib/ks-scmc/networks/iptables/updateIptables.flag"
 
-type UpdateIptables struct {
-}
+type UpdateIptables struct{}
 
 func (s *UpdateIptables) Interval() time.Duration {
 	return time.Minute
@@ -54,7 +53,7 @@ func (s *UpdateIptables) Run() {
  * 如果 有  就不用管了。
  */
 func checkIptables(subnet, iface string) {
-	//ipcmd := fmt.Sprintf("iptables -t nat -C POSTROUTING -s %s -o %s -j MASQUERADE", subnet, iface)
+	// ipcmd := fmt.Sprintf("iptables -t nat -C POSTROUTING -s %s -o %s -j MASQUERADE", subnet, iface)
 	cmd := exec.Command(
 		"iptables",
 		"-t", "nat",
@@ -65,7 +64,7 @@ func checkIptables(subnet, iface string) {
 	)
 
 	_, err := cmd.CombinedOutput()
-	if err != nil { //报错说明没有记录，添加记录
+	if err != nil { // 报错说明没有记录，添加记录
 		cmd := exec.Command(
 			"iptables",
 			"-t", "nat",

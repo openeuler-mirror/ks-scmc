@@ -7,6 +7,8 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
+	"time"
 
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc/codes"
@@ -207,6 +209,100 @@ func (s *ImageServer) List(ctx context.Context, in *pb.ListRequest) (*pb.ListRep
 	return &reply, nil
 }
 
+func (s *ImageServer) ListDBEx(Address string) (*pb.ListDBReply, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*3)
+	defer cancel()
+
+	conn, err := getAgentConn(Address)
+	if err != nil {
+		log.Warnf("ListDBEx getAgentConn err: %v", err)
+		return nil, rpc.ErrInternal
+	}
+
+	originalReply, err := pb.NewImageClient(conn).ListDB(ctx, &pb.ListDBRequest{})
+	if err != nil {
+		return nil, err
+	}
+
+	newReply := &pb.ListDBReply{}
+	newReply.Images = make([]*pb.ImageDBInfo, 0, len(originalReply.Images))
+	for _, img := range originalReply.Images {
+		newImg := &pb.ImageDBInfo{
+			Id:             img.Id,
+			Name:           img.Name,
+			Version:        img.Version,
+			Description:    img.Description,
+			VerifyStatus:   img.VerifyStatus,
+			ApprovalStatus: img.ApprovalStatus,
+			Size:           img.Size,
+			UpdateAt:       img.UpdateAt,
+			RejectReason:   img.RejectReason,
+			LoadStatus:     img.LoadStatus,
+			NodeName:       Address,
+		}
+		newReply.Images = append(newReply.Images, newImg)
+	}
+
+	return newReply, nil
+}
+
+func (s *ImageServer) ListDB(ctx context.Context, in *pb.ListDBRequest) (*pb.ListDBReply, error) {
+	nodes, err := db.ListNodes()
+	if err != nil {
+		log.Warnf("Failed to list node images: %v", err)
+		return nil, rpc.ErrInternal
+	}
+
+	if len(nodes) == 0 {
+		return &pb.ListDBReply{}, nil
+	}
+
+	var wg sync.WaitGroup
+	resultCh := make(chan *pb.ListDBReply, len(nodes))
+	errCh := make(chan error, len(nodes))
+
+	wg.Add(len(nodes))
+	for _, n := range nodes {
+		node := n
+		go func() {
+			defer wg.Done()
+			reply, err := s.ListDBEx(node.Address)
+			if err != nil {
+				log.Warnf("ListDBEx for node %s err: %v", node.Address, err)
+				errCh <- err
+				return
+			}
+			resultCh <- reply
+		}()
+	}
+
+	go func() {
+		wg.Wait()
+		close(resultCh)
+		close(errCh)
+	}()
+
+	var finalReply pb.ListDBReply
+	var hasError bool
+	for reply := range resultCh {
+		finalReply.Images = append(finalReply.Images, reply.Images...)
+	}
+
+	for err := range errCh {
+		if err != nil {
+			hasError = true
+			log.Warnf("One or more nodes failed to get images: %v", err)
+		}
+	}
+
+	if hasError {
+		log.Warnf("Some nodes failed. but returning available images")
+	}
+
+	return &finalReply, nil
+}
+
+/*
 func (s *ImageServer) ListDB(ctx context.Context, in *pb.ListDBRequest) (*pb.ListDBReply, error) {
 	images, err := db.ListImages()
 	if err != nil {
@@ -231,6 +327,7 @@ func (s *ImageServer) ListDB(ctx context.Context, in *pb.ListDBRequest) (*pb.Lis
 
 	return &reply, nil
 }
+*/
 
 func (s *ImageServer) Upload(stream pb.Image_UploadServer) error {
 	// 镜像大小 版本 描述 签名(如果有)等信息在第一个数据包

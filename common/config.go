@@ -108,8 +108,21 @@ type LogConfig struct {
 }
 
 type ServiceConfig struct {
-	Addr string `mapstructure:"addr"`
+	Addr     string `mapstructure:"addr"`
+	Username string `mapstructure:"username"`
+	Password string `mapstructure:"password"`
 }
+
+// DecryptPassword 解密密码字段
+func (s *ServiceConfig) DecryptPassword() (string, error) {
+	log.Infof("decrypt password = %s", s.Password)
+	passwordDe, err := aes.Decrypt(s.Password)
+	if err != nil {
+		return "", err
+	}
+	return string(passwordDe), nil
+}
+
 type TLSConfig struct {
 	Enable     bool   `mapstructure:"enable"`
 	CA         string `mapstructure:"ca"`
@@ -422,6 +435,8 @@ func setDefault() {
 	viper.SetDefault("cadvisor.addr", "127.0.0.1:8080")
 
 	viper.SetDefault("influxdb.addr", "127.0.0.1:8086")
+	viper.SetDefault("influxdb.username", "root")
+	viper.SetDefault("influxdb.password", "root")
 
 	viper.SetDefault("network.iptables_json_file", "/var/lib/ks-scmc/networks/iptables/enable.json")
 	viper.SetDefault("network.iptables_path", "/var/lib/ks-scmc/networks/iptables")

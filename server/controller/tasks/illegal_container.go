@@ -47,7 +47,7 @@ func StopContainer(conn *grpc.ClientConn, id string) (*pb.StopReply, error) {
 type IllegalContainer struct{}
 
 func (i *IllegalContainer) Interval() time.Duration {
-	return time.Minute
+	return 2 * time.Second
 }
 
 func (i *IllegalContainer) RunAtInit() bool {

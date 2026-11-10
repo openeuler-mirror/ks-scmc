@@ -66,7 +66,6 @@ func TestListInterfaces(t *testing.T) {
 				} else {
 					t.Logf("\t%v %#v", a.Network(), a)
 				}
-
 			}
 
 			addrs, err = i.MulticastAddrs()

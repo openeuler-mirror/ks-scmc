@@ -10,14 +10,10 @@ import (
 	"time"
 	"unsafe"
 
-	// "sync"
-	// "strings"
-	// "io/ioutil"
-
-	"scmc/common"
-
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/sys/unix"
+
+	"scmc/common"
 )
 
 const (
@@ -78,7 +74,7 @@ func nlmsgSpace(len int) uint32 {
 	length := len + headlen
 	alignlen := ((length + alignto - 1) / alignto) * alignto
 
-	//log.Debugf("source len:%v, headlen: %v, alignlen:%v", len, headlen, alignlen)
+	// log.Debugf("source len:%v, headlen: %v, alignlen:%v", len, headlen, alignlen)
 	return uint32(alignlen)
 }
 
@@ -117,7 +113,6 @@ func bCheckSysIsV6() bool {
 		return os.IsNotExist(err)
 	}
 	return false
-
 }
 
 func initNetlink() (int, error) {
@@ -142,7 +137,7 @@ func _initNetlink(pid uint32) (int, error) {
 		}
 	}
 
-	//fd, err := unix.Socket(unix.AF_NETLINK, unix.SOCK_RAW, NETLINK_WL)
+	// fd, err := unix.Socket(unix.AF_NETLINK, unix.SOCK_RAW, NETLINK_WL)
 	fd, err := unix.Socket(unix.AF_NETLINK, unix.SOCK_RAW, protocol)
 	if err != nil {
 		log.Warnf("Failed to create the  whitelist netlink socket:%v, protocol: %d", err, protocol)
@@ -271,7 +266,7 @@ func GetAuditLog() {
 	for {
 		buf, err := recvNetlink()
 		if err != nil {
-			//log.Warnf("GetAuditLog recvNetlink failed: %v", err)
+			// log.Warnf("GetAuditLog recvNetlink failed: %v", err)
 			continue
 		} else {
 			logHdrlen := int32(unsafe.Sizeof(AuditLog{})) - int32(unsafe.Sizeof(""))
@@ -283,7 +278,7 @@ func GetAuditLog() {
 				continue
 			}
 			adtLog.Path = string(buf[logHdrlen : logHdrlen+adtLog.ObjLen])
-			//log.Warnf("adtLog: %++v", adtLog)
+			// log.Warnf("adtLog: %++v", adtLog)
 			auditLogChan <- &adtLog
 		}
 	}

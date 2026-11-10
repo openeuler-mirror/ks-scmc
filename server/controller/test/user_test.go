@@ -141,10 +141,10 @@ func TestUpdateUser(t *testing.T) {
 				t.Errorf("CreateTemplate() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-
 		})
 	}
 }
+
 func TestCreateUser(t *testing.T) {
 	ctx, conn, err := initTestRunner()
 	if err != nil {
@@ -213,7 +213,6 @@ func TestCreateUser(t *testing.T) {
 				t.Errorf("CreateTemplate() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-
 		})
 	}
 }
@@ -262,7 +261,6 @@ func TestRemoveUser(t *testing.T) {
 				t.Errorf("CreateTemplate() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-
 		})
 	}
 }
@@ -337,7 +335,6 @@ func TestCreateRole(t *testing.T) {
 				t.Errorf("CreateTemplate() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-
 		})
 	}
 }
@@ -447,7 +444,6 @@ func TestRemoveRole(t *testing.T) {
 				t.Errorf("CreateTemplate() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-
 		})
 	}
 }

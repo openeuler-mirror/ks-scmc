@@ -783,6 +783,19 @@ func (s *ContainerServer) Create(ctx context.Context, in *pb.CreateRequest) (*pb
 		runtimeLogChan <- &netlog
 	}
 
+	// 网络限速配置
+	litedb.DelNetworkLimit(id)
+	for _, ifs := range in.Configs.Networks {
+		data := &litedb.NetworkLimit{
+			ContainerID : id,
+			DockerInterfaceName: ifs.Interface,
+			NetWbw: ifs.NetWbw,
+			NetRbw: ifs.NetRbw,
+		}
+		litedb.CreateNetworkLimit(data)
+	}
+
+
 	return &pb.CreateReply{ContainerId: id}, err
 }
 

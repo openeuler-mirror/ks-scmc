@@ -413,3 +413,32 @@ func CleanLogs(saveLogDays int64) error {
 		saveLogDays)
 	return nil
 }
+
+func GetWarnLog(
+	readType int, entityType, _ []int, nodeID, startTime, endTime,
+	pageSize, pageNo int64, asc bool) (*Pager, []*WarnLog, error) {
+	qs := queries{
+		Where: &query{},
+		Model: &WarnLog{},
+		Order: "id ASC",
+	}
+
+	if nodeID > 0 {
+		qs.Where.And("node_id = ?", nodeID)
+	}
+	qs.Where.And("have_read = ?", readType)
+	qs.Where.And("event_module IN ?", entityType)
+	qs.Where.And("created_at > ?", startTime)
+	qs.Where.And("created_at < ?", endTime)
+	if asc {
+		qs.Order = "created_at ASC"
+	} else {
+		qs.Order = "created_at DESC"
+	}
+	var data []*WarnLog
+	pager, err := PageQuery(pageSize, pageNo, qs, &data)
+	if err != nil {
+		return nil, nil, err
+	}
+	return pager, data, nil
+}

@@ -8817,7 +8817,7 @@ func (p *KsScmcClientClient) sendSetAlarmReadV3(session_id string, node_name str
 }
 
 
-func (p *KsScmcClientClient) recvInstallContainer() (value string, err error) {
+func (p *KsScmcClientClient) recvSetAlarmReadV3() (value string, err error) {
   iprot := p.InputProtocol
   if iprot == nil {
     iprot = p.ProtocolFactory.GetProtocol(p.Transport)

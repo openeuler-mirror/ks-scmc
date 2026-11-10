@@ -28,8 +28,8 @@ func CreateContainerMiscConfig(data *ContainerMisc) error {
 	}
 	result := db.Create(data)
 	if result.Error != nil {
-		return result.Error
 		log.Warnf("db create container misc %v", result.Error)
+		return result.Error
 	}
 	return nil
 }

@@ -19,6 +19,7 @@ import (
 	"scmc/model/db"
 	containerPB "scmc/rpc/pb/container"
 	imagePB "scmc/rpc/pb/image"
+	"scmc/rpc/pb/logging"
 	networkPB "scmc/rpc/pb/network"
 	nodePB "scmc/rpc/pb/node"
 	securityPB "scmc/rpc/pb/security"

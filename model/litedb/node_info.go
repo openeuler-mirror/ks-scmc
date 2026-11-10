@@ -53,6 +53,6 @@ func GetNodeInfo(ID int64) (*NodeInfo, error) {
 		log.Warnf("GetNodeConfig Node_id=%v, err:%v", ID, result.Error)
 		return nil, result.Error
 	}
-	
+
 	return &data, nil
 }

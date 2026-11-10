@@ -280,12 +280,11 @@ func ModifyContainerConfig(containerId string, which int, envs []string, mounts 
 
 	// modify ipc
 	if which&IpcBit != 0 {
-		//ipcmapCfg, err := litedb.GetIpcmapConfigByCID(containerId)
-		outCfg, err := litedb.GetContainerOutConfig(containerId)
+		ipcmapCfg, err := litedb.GetIpcmapConfigByCID(containerId)
 		if err != nil {
 			log.Warnf("config GetIpcmapConfigByCID id: %v, err:%v", containerId, err)
 		} else {
-			modifyIPC(dataBuf, containerId, outCfg.Config.IpcID)
+			modifyIPC(dataBuf, containerId, ipcmapCfg.IpcID)
 		}
 	}
 

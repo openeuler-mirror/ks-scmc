@@ -40,11 +40,11 @@ func Server() (*grpc.Server, error) {
 			PermitWithoutStream: true,             // Allow pings even when there are no active streams
 		}),
 		grpc.KeepaliveParams(keepalive.ServerParameters{
-			MaxConnectionIdle:     60 * time.Second, // If a client is idle for 60 seconds, send a GOAWAY
-			MaxConnectionAge:      30 * time.Minute, // If any connection is alive for more than 30 minutes, send a GOAWAY
-			MaxConnectionAgeGrace: 5 * time.Second,  // Allow 5 seconds for pending RPCs to complete before forcibly closing connections
-			Time:                  20 * time.Second, // Ping the client if it is idle for 20 seconds to ensure the connection is still active
-			Timeout:               5 * time.Second,  // Wait 5 second for the ping ack before assuming the connection is dead
+			MaxConnectionIdle:     5 * 60 * time.Second, // If a client is idle for 300 seconds, send a GOAWAY
+			MaxConnectionAge:      30 * time.Minute,     // If any connection is alive for more than 30 minutes, send a GOAWAY
+			MaxConnectionAgeGrace: 15 * time.Second,     // Allow 15 seconds for pending RPCs to complete before forcibly closing connections
+			Time:                  20 * time.Second,     // Ping the client if it is idle for 20 seconds to ensure the connection is still active
+			Timeout:               5 * time.Second,      // Wait 5 second for the ping ack before assuming the connection is dead
 		}),
 		grpc.Creds(tlsCredentials),
 	)

@@ -407,7 +407,7 @@ func setDefault() {
 	viper.SetDefault("controller.port", 10050)
 	viper.SetDefault("controller.image-dir", "/var/lib/ks-scmc/images")
 	viper.SetDefault("controller.image-signer", "/var/lib/ks-scmc/images/public-key.txt")
-	viper.SetDefault("controller.image-max-size", 10*(1<<30))
+	viper.SetDefault("controller.image-max-size", 20*(1<<30))
 	viper.SetDefault("controller.session-timeout", 30*60)
 	viper.SetDefault("controller.super-user", false)
 

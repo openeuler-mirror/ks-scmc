@@ -254,6 +254,18 @@ func main() {
     fmt.Print(client.StopContainerV3(value0, value1))
     fmt.Print("\n")
     break
+  case "RestartContainer":
+    if flag.NArg() - 1 != 2 {
+      fmt.Fprintln(os.Stderr, "RestartContainer requires 2 args")
+      flag.Usage()
+    }
+    argvalue0 := flag.Arg(1)
+    value0 := argvalue0
+    argvalue1 := flag.Arg(2)
+    value1 := argvalue1
+    fmt.Print(client.RestartContainer(value0, value1))
+    fmt.Print("\n")
+    break
   case "UninstallContainer":
     if flag.NArg() - 1 != 2 {
       fmt.Fprintln(os.Stderr, "UninstallContainer requires 2 args")

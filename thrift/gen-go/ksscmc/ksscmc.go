@@ -9057,7 +9057,7 @@ func (p *KsScmcClientClient) sendAddContainerIpPort(node_nameorip string, contai
 }
 
 
-func (p *KsScmcClientClient) recvUninstallContainer() (value string, err error) {
+func (p *KsScmcClientClient) recvAddContainerIpPort() (value int32, err error) {
   iprot := p.InputProtocol
   if iprot == nil {
     iprot = p.ProtocolFactory.GetProtocol(p.Transport)

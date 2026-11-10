@@ -32,9 +32,10 @@ var (
 	ErrUnavailable        = status.Error(codes.Unavailable, "")   // framework error
 	ErrDataLoss           = status.Error(codes.DataLoss, "unknown")
 	ErrUnauthenticated    = status.Error(codes.Unauthenticated, "用户请求未认证")
-	ErrWrongPassword      = status.Error(codes.Code(pb.Errno_WrongPassword), "密码错误")
-	ErrInvalidImage       = status.Error(codes.Internal, "无效的镜像")
-	ErrDatabaseFail       = status.Error(codes.InvalidArgument, "内部错误：数据库访问失败")
+	// ErrWrongPassword      = status.Error(codes.Code(pb.Errno_WrongPassword), "密码错误")
+	ErrWrongPassword = status.Error(codes.Code(pb.Errno_WrongPassword), "验证没通过")
+	ErrInvalidImage  = status.Error(codes.Internal, "无效的镜像")
+	ErrDatabaseFail  = status.Error(codes.InvalidArgument, "内部错误：数据库访问失败")
 
 	ErrContainerResourceArgs            = status.Error(codes.InvalidArgument, "容器资源参数错误")
 	ErrRemoveContainerWhenRunning       = status.Error(codes.Internal, "容器正在运行，无法删除")

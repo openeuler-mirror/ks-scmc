@@ -3,6 +3,10 @@
   run_once: true
   shell: ks-scmc-encrypt '{{ mysql.scmc_password }}'
   register: MYSQL_SCMC_PASSWORD_EN
+- name: CONTROLLER InfluxDB密码加密
+  run_once: true
+  shell: ks-scmc-encrypt '{{ influxdb.influxdb_password }}'
+  register: INFLUXDB_PASSWORD_EN
 - name: CONTROLLER 更新后台服务配置文件
   template:
     src: template/server.toml.j2

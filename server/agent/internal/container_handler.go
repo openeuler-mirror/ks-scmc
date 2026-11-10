@@ -174,18 +174,6 @@ func (s *ContainerServer) isIpcContainer(id string) bool {
 	return true
 }
 
-/*
-    conn, err := getAgentConn(n.Address)
-    if err != nil {
-        log.Infof("getAgentConn error=%v", err)
-        return nil, rpc.ErrInternal
-    }
-    return pb.NewContainerClient(conn).Unpause(ctx, in)
-*/
-
-
-
-
 func (s *ContainerServer) appEntrySync(app_run bool, name string) {
     nodes, err := db.ListNodes()
     if err != nil {
@@ -212,21 +200,21 @@ func (s *ContainerServer) appEntrySync(app_run bool, name string) {
 
 // 容器中运行的 app 数
 func (s *ContainerServer) runAppCnt(ctx context.Context, containerID string) (int)  {
-    if containerID == "" { 
+    if containerID == "" {
         return 0
-    }    
+    }
 
     entries, err := litedb.ListAppEntry(containerID)
     if err != nil {
         return 0
-    }    
+    }
 
     var cnt int = 0
     for _, e := range entries {
             if appIsRunning(ctx, e.IDResponse) {
                 cnt = cnt + 1
             }
-    }    
+    }
     return cnt
 }
 
@@ -277,7 +265,6 @@ func (s *ContainerServer) List(ctx context.Context, in *pb.ListRequest) (*pb.Lis
 func (s *ContainerServer) getHostIps(nodeid int64) ([]string, error) {
 	var result []string
 
-	//vip, err := extractVIPFromConfig("/etc/keepalived/keepalived.conf")
 	vip, err := getVIPAddr()
 	if err != nil {
 		log.Warnf("get platform vip failed, err: %v", err)
@@ -597,7 +584,7 @@ func (s *ContainerServer) create(nodeid int64, configs *pb.ContainerConfigs, net
 	networkConfig := &network.NetworkingConfig{
 		EndpointsConfig: make(map[string]*network.EndpointSettings, len(configs.Networks)),
 	}
-    
+
     var loginfo []string
 
 	for _, v := range configs.Networks {
@@ -683,7 +670,7 @@ func getUIDFromCtx(ctx context.Context) int64 {
 func initRuntimeLog(netlog *db.RuntimeLog, ctx context.Context, NodeId int64, ContainerName string, eventType int64) {
     netlog.UserID = getUIDFromCtx(ctx)
     netlog.NodeId = NodeId
-    netlog.EventType = eventType 
+    netlog.EventType = eventType
     netlog.EventModule = int64(logging.EVENT_MODULE_CONTAINER)
     if ContainerName != "" {
         netlog.Target = fmt.Sprintf("容器名=%v", ContainerName)
@@ -694,7 +681,7 @@ func (s *ContainerServer) Create(ctx context.Context, in *pb.CreateRequest) (*pb
 	if in.Configs == nil {
 		return nil, rpc.ErrInvalidArgument
 	}
-    
+
     var netlog db.RuntimeLog
     initRuntimeLog(&netlog, ctx, in.NodeId, in.Configs.Name, int64(logging.EVENT_TYPE_CREATE_CONTAINER))
 
@@ -752,17 +739,21 @@ func (s *ContainerServer) Create(ctx context.Context, in *pb.CreateRequest) (*pb
             DiskWbw: w,
         }
         litedb.CreateContainerLimit(&disklimitCfg)
-
+/*
         // 容器是否开启了 app 高可用
         miscConfig := litedb.ContainerMisc {
             UUID: uuid,
             ContainerID: id,
             ContainerName: in.Configs.Name,
-            MiscConfig: in.Configs.GetMiscConfig(), 
+            MiscConfig: in.Configs.GetMiscConfig(),
         }
         litedb.CreateContainerMiscConfig(&miscConfig)
-
-        go s.appEntrySync(in.Configs.GetMiscConfig().GetAppRun(), in.Configs.Name)
+*/
+        if in.Configs.GetMiscConfig() != nil {
+            go s.appEntrySync(in.Configs.GetMiscConfig().GetAppRun(), in.Configs.Name)
+        } else {
+            go s.appEntrySync(false, in.Configs.Name)
+        }
 	}
 
     if err == nil && netlog.Detail != "" {
@@ -995,7 +986,7 @@ func (s *ContainerServer) Update(ctx context.Context, in *pb.UpdateRequest) (*pb
 		log.Infof("GetContainerConfig err=%v", err)
 		return nil, rpc.ErrDatabaseFail
 	}
-    
+
     var netlog db.RuntimeLog
     initRuntimeLog(&netlog, ctx, in.NodeId, cfgs.ContainerName, int64(logging.EVENT_TYPE_UPDATE_CONTAINER))
 
@@ -1113,22 +1104,8 @@ func (s *ContainerServer) Update(ctx context.Context, in *pb.UpdateRequest) (*pb
 		}
 	}
 
-    //app 高可用状态是否变化
-    misc, err := litedb.GetContainerMiscConfig(in.ContainerId) 
-    if err != nil {
-        log.Warnf("GetContainerMiscConfig: err: %v, id: %s", err, in.ContainerId)
-    } else {
-        if misc.MiscConfig != nil {
-            if misc.MiscConfig.GetAppRun() != in.MiscConfig.GetAppRun() {
-                misc.MiscConfig.AppRun = in.MiscConfig.AppRun
-                litedb.UpdateContainerMiscConfig(misc)
-            }
-        } else {
-            misc.MiscConfig = &pb.ContainerMiscConfig{
-                AppRun: in.MiscConfig.AppRun,
-            }
-            litedb.UpdateContainerMiscConfig(misc)
-        }
+    if in.GetMiscConfig() != nil {
+        go s.appEntrySync(in.GetMiscConfig().GetAppRun(), cfgs.ContainerName)
     }
 
 	log.Warnf("change: %v docker.NoneBit: %v", change, docker.NoneBit)
@@ -1155,7 +1132,7 @@ func (s *ContainerServer) Update(ctx context.Context, in *pb.UpdateRequest) (*pb
 	}
 
     s.disklimit(cfgs.ContainerName, in)
-    
+
     if netlog.Detail != "" {
         runtimeLogChan <- &netlog
     }
@@ -2399,34 +2376,35 @@ func (*ContainerServer) GetContainerStats(ctx context.Context, in *pb.StatsReque
 }
 
 func (*ContainerServer) SyncAppConfig(ctx context.Context, in *pb.SyncAppEntryRequest) (*pb.SyncAppEntryReply, error) {
-    // VIP 不同直接返回
-    if in.GetVip() != common.Config.Controller.VirtualIP {
+    if in.GetVip() != strings.TrimSpace(common.Config.Controller.VirtualIP) {
         return &pb.SyncAppEntryReply{}, nil
     }
 
-    // 遍历容器查找同名的容器
-    cli, err := docker.Client()
+    if in.GetName() == "" {
+        return &pb.SyncAppEntryReply{}, nil
+    }
+
+    misc, err := litedb.GetContainerMiscConfigByName(in.GetName())
     if err != nil {
-        return nil, rpc.ErrInternal
-    }
-
-	opts := types.ContainerListOptions{All: true, Size: true}
-	containers, err := cli.ContainerList(context.Background(), opts)
-    for _, c := range containers {
-        if containerName(c.Names) == strings.TrimSpace(in.GetName()) { // 找到同名的容器
-            misc, err := litedb.GetContainerMiscConfig(c.ID)
-            if err != nil {
-                return nil, rpc.ErrInternal
+        if err == db.ErrRecordNotFound {
+            uuid := uuid.New().String()
+            miscConfig := litedb.ContainerMisc {
+                UUID: uuid,
+                ContainerName: in.GetName(),
+                MiscConfig: &pb.ContainerMiscConfig {AppRun: in.AppRun,},
             }
-            if misc.MiscConfig.AppRun == in.AppRun {
-                return &pb.SyncAppEntryReply{}, nil
-            } else {
-                misc.MiscConfig.AppRun = in.AppRun
-                litedb.UpdateContainerMiscConfig(misc)
-                break
-            }
+            litedb.CreateContainerMiscConfig(&miscConfig)
         }
+        return &pb.SyncAppEntryReply{}, nil
     }
 
-   return &pb.SyncAppEntryReply{}, nil
+    if misc.MiscConfig != nil {
+        misc.MiscConfig.AppRun = in.AppRun
+        litedb.UpdateContainerMiscConfig(misc)
+    } else {
+        misc.MiscConfig= &pb.ContainerMiscConfig {AppRun: in.AppRun,}
+        litedb.UpdateContainerMiscConfig(misc)
+    }
+
+    return &pb.SyncAppEntryReply{}, nil
 }

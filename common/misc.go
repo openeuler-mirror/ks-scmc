@@ -22,6 +22,10 @@ func extractIP(vip string) (string, error) {
 }
 
 func IsMaster() bool {
+	return IsMasterNoIface()
+}
+
+func IsMasterIface() bool {
 	ifaceName, vip := Config.Controller.VirtualIf, Config.Controller.VirtualIP
 	if ifaceName == "" || vip == "" {
 		return true
@@ -59,42 +63,41 @@ func IsMaster() bool {
 }
 
 func IsMasterNoIface() bool {
+	vip := Config.Controller.VirtualIP
+	if vip == "" {
+		return true
+	}
 
-    vip := Config.Controller.VirtualIP
-    if vip == "" {
-        return true
-    }
+	vip, err := extractIP(vip)
+	if err != nil {
+		log.Warnf("extractIP err=%v", err)
+		return false
+	}
 
-    vip, err := extractIP(vip)
-    if err != nil {
-        log.Warnf("extractIP err=%v", err)
-        return false
-    }
+	interfaces, err := net.Interfaces() // 获取所有网卡
+	if err != nil {
+		log.Warnf("get net interfaces erro=%v", err)
+		return false
+	}
 
-    interfaces, err := net.Interfaces() // 获取所有网卡
-    if err != nil {
-        log.Warnf("get net interfaces erro=%v", err)
-        return false;
-    }
+	for _, iface := range interfaces {
+		addrs, err := iface.Addrs()
+		if err != nil {
+			continue
+		}
 
-    for _, iface := range interfaces {
-        addrs, err := iface.Addrs()
-        if err != nil {
-            continue;
-        }
+		for _, addr := range addrs {
+			ipNet, ok := addr.(*net.IPNet)
+			if !ok {
+				continue
+			}
+			if ipNet.IP.To4() != nil {
+				if vip == ipNet.IP.String() {
+					return true
+				}
+			}
+		}
+	}
 
-        for _, addr := range addrs {
-            ipNet, ok := addr.(*net.IPNet)
-            if !ok {
-                continue
-            }
-            if ipNet.IP.To4() != nil {
-                if vip == ipNet.IP.String() {
-                    return true
-                }
-            }
-        }
-    }
-
-    return false;
+	return false
 }

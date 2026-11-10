@@ -167,6 +167,26 @@ func main() {
     fmt.Print(client.LoginV3(value0, value1, value2))
     fmt.Print("\n")
     break
+  case "GetVersionsV3":
+    if flag.NArg() - 1 != 1 {
+      fmt.Fprintln(os.Stderr, "GetVersionsV3 requires 1 args")
+      flag.Usage()
+    }
+    argvalue0 := flag.Arg(1)
+    value0 := argvalue0
+    fmt.Print(client.GetVersionsV3(value0))
+    fmt.Print("\n")
+    break
+  case "GetAgentNodesV3":
+    if flag.NArg() - 1 != 1 {
+      fmt.Fprintln(os.Stderr, "GetAgentNodesV3 requires 1 args")
+      flag.Usage()
+    }
+    argvalue0 := flag.Arg(1)
+    value0 := argvalue0
+    fmt.Print(client.GetAgentNodesV3(value0))
+    fmt.Print("\n")
+    break
   case "InstallContainer":
     if flag.NArg() - 1 != 5 {
       fmt.Fprintln(os.Stderr, "InstallContainer requires 5 args")

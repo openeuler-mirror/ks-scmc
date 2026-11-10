@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/docker/docker/pkg/jsonmessage"
 	"io"
 	"io/ioutil"
 	"os"
@@ -17,6 +16,8 @@ import (
 	"sync"
 	"syscall"
 	"time"
+
+	"github.com/docker/docker/pkg/jsonmessage"
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"

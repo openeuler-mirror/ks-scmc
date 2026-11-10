@@ -4,6 +4,15 @@
   shell: sed -i 's/^X11Forwarding no/X11Forwarding yes/g' /etc/ssh/sshd_config
 - name: AGENT 重启sshd
   service: name=sshd state=restarted
+- name: cadvisor 配置异常重启
+  shell: |
+    mkdir -p /etc/systemd/system/cadvisor.service.d
+    cat > /etc/systemd/system/cadvisor.service.d/restart.conf << EOF
+    [Service]
+    Restart=on-failure
+    RestartSec=5s
+    EOF
+    systemctl daemon-reload
 # influxdb 数据库存储监控历史数据
 - name: AGENT 配置influxdb
   shell: |
@@ -15,23 +24,6 @@
 - name: AGENT influxdb配置策略
   shell:
     influx -execute 'CREATE DATABASE "cadvisor"; CREATE RETENTION POLICY "cadvisor_retention" ON "cadvisor" DURATION 7d REPLICATION 1 DEFAULT;'
-# 容器网络进程白名单功能依赖opensnitch
-#- name: AGENT 启动opensnitch
-#  service: name=opensnitch state=restarted enabled=true
-#- name: AGENT opensnitch配置系统规则
-#  copy:
-#    dest: /etc/opensnitchd/system-fw.json
-#    src: template/opensnitch-system-fw.json
-#    owner: root
-#    group: root
-#    mode: '0644'
-#- name: AGENT opensnitch配置规则
-#  copy:
-#    dest: /etc/opensnitchd/rules/0001-allow-by-default.json
-#    src: template/opensnitch-0001-allow-by-default.json
-#    owner: root
-#    group: root
-#    mode: '0644'
 # 更新docker服务配置
 - name: AGENT 配置容器运行时
   shell: |
@@ -61,7 +53,6 @@
     state: restarted
     enabled: true
   loop:
-#    - opensnitch
      - ks-scmc-authz  # 容器启停控制依赖 authz插件
      - ks-scmc-agent
      - docker

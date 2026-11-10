@@ -475,7 +475,7 @@ message ContainerInfo {
     int64               size_root_fs = 9;
     map<string, string> labels       = 10;
     int64               started      = 11;  // 上次开机时间
-
+    int64               active_apps  = 12; // 容器活跃的 app 数
     ResourceStat resource_stat = 101;
 }
 

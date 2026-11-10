@@ -6,18 +6,18 @@ import (
 
 // NetworkLimit 定义一个结构体来映射数据库表
 type NetworkLimit struct {
-	ID                     int64    `gorm:"primaryKey;not null"`
+	ID                     int64 `gorm:"primaryKey;not null"`
 	ContainerID            string
 	DockerInterfaceName    string
 	ContainerInterfaceName string
-	NetWbw		       float64 // 上行带宽(Mbps)
-	NetRbw		       float64 // 下行带宽(Mbps)
-	CreatedAt              int64	`gorm:"autoCreateTime"`
-	UpdatedAt              int64	`gorm:"autoUpdateTime"`
+	NetWbw                 float64 // 上行带宽(Mbps)
+	NetRbw                 float64 // 下行带宽(Mbps)
+	CreatedAt              int64   `gorm:"autoCreateTime"`
+	UpdatedAt              int64   `gorm:"autoUpdateTime"`
 }
 
 func (NetworkLimit) TableName() string {
-    return "container_network_limits"
+	return "container_network_limits"
 }
 
 func CreateNetworkLimit(data *NetworkLimit) error {
@@ -41,7 +41,7 @@ func UpdateNetworkLimit(data *NetworkLimit) error {
 	if err != nil {
 		return err
 	}
-	result :=db.Save(data)
+	result := db.Save(data)
 	if result.Error != nil {
 		return result.Error
 	}
@@ -63,47 +63,46 @@ func GetNetworkLimitByNic(containerID string, nic string) (*NetworkLimit, error)
 }
 
 func DelNetworkLimit(containerID string) error {
-        db, err := getConn()
-        if err != nil {
-                return err
-        }
+	db, err := getConn()
+	if err != nil {
+		return err
+	}
 
-        result := db.Where("container_id = ?", containerID).Delete(NetworkLimit{})
-        if result.Error != nil {
-                return result.Error
-        }
+	result := db.Where("container_id = ?", containerID).Delete(NetworkLimit{})
+	if result.Error != nil {
+		return result.Error
+	}
 
-        return nil
+	return nil
 }
 
-func DelNetworkLimitByDockNic(containerID , nic string) error {
-        db, err := getConn()
-        if err != nil {
-                return err
-        }
+func DelNetworkLimitByDockNic(containerID, nic string) error {
+	db, err := getConn()
+	if err != nil {
+		return err
+	}
 
-        result := db.Where("container_id = ? AND docker_interface_name = ?", containerID, nic).Delete(NetworkLimit{})
-        if result.Error != nil {
-                return result.Error
-        }
+	result := db.Where("container_id = ? AND docker_interface_name = ?", containerID, nic).Delete(NetworkLimit{})
+	if result.Error != nil {
+		return result.Error
+	}
 
-        return nil
+	return nil
 }
 
 func ListNetworkLimit(containerID string) ([]*NetworkLimit, error) {
-        if containerID == "" {
-                return nil, nil
-        }
+	if containerID == "" {
+		return nil, nil
+	}
 
-        db, err := getConn()
-        if err != nil {
-                return nil, err
-        }
-        var data []*NetworkLimit
-        if err := db.Where("container_id = ?", containerID).Find(&data).Error; err != nil {
-                log.Errorf("db query network limit entries err: %v", err)
-                return nil, err
-        }
-        return data, nil
+	db, err := getConn()
+	if err != nil {
+		return nil, err
+	}
+	var data []*NetworkLimit
+	if err := db.Where("container_id = ?", containerID).Find(&data).Error; err != nil {
+		log.Errorf("db query network limit entries err: %v", err)
+		return nil, err
+	}
+	return data, nil
 }
-

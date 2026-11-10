@@ -1,21 +1,21 @@
 package main
 
 import (
-	// "log"
-    // "context"
-    // "fmt"
-	// "os"
-	// "encoding/json"
-	// "io"
-	// "bytes"
-    // "github.com/apache/thrift/lib/go/thrift"
-	// "github.com/docker/docker/api/types"
-	// "github.com/sirupsen/logrus"
-	// "github.com/KyleBanks/dockerstats"
-    // "scmc/thrift/gen-go/node"
-	// "scmc/model/docker"
-	// "scmc/common"
-	// "scmc/server/controller/thriftapi"
+// "log"
+// "context"
+// "fmt"
+// "os"
+// "encoding/json"
+// "io"
+// "bytes"
+// "github.com/apache/thrift/lib/go/thrift"
+// "github.com/docker/docker/api/types"
+// "github.com/sirupsen/logrus"
+// "github.com/KyleBanks/dockerstats"
+// "scmc/thrift/gen-go/node"
+// "scmc/model/docker"
+// "scmc/common"
+// "scmc/server/controller/thriftapi"
 )
 
 // type DockerStatsServer struct {

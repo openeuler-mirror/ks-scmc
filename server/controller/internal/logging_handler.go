@@ -181,5 +181,5 @@ func (s *LoggingServer) GetLog(ctx context.Context, in *pb.GetLogRequest) (*pb.G
 		return nil, rpc.ErrInternal
 	}
 
-	return &pb.GetLogReply{SaveLogDays: num,}, nil
+	return &pb.GetLogReply{SaveLogDays: num}, nil
 }

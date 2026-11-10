@@ -1,9 +1,6 @@
 package litedb
 
 import (
-	//"encoding/json"
-	//"database/sql/driver"
-	//"errors"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -93,7 +90,7 @@ func UpdateIpcConfig(data *IpcConfig) error {
 		return err
 	}
 
-	//result := db.Model(data).Select("IPC").Updates(data)
+	// result := db.Model(data).Select("IPC").Updates(data)
 	result := db.Save(data)
 	if result.Error != nil {
 		return result.Error

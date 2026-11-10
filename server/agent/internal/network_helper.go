@@ -1,15 +1,15 @@
 package internal
 
 import (
+	"bufio"
 	"context"
 	"encoding/binary"
 	"fmt"
 	"net"
 	"os"
-	"time"
 	"path/filepath"
 	"strings"
-	"bufio"
+	"time"
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/events"

@@ -645,7 +645,7 @@ func (s *ContainerServer) create(nodeid int64, configs *pb.ContainerConfigs, net
 	if err := s.setSecurityConfig(nodeid, body.ID, configs.Uuid, configs.Name, 0,
 		false, configs.SecurityConfig, nil); err != nil {
 		log.Warnf("setSecurityConfig failed err=%v", err)
-		if e := s.remove(cli, body.ID, true); e != nil {
+		if e := s.remove(cli, body.ID, true, true); e != nil {
 			log.Warnf("after setSecurityConfig failed remove container=%v err=%v", body.ID, e)
 			return body.ID, err
 		}
@@ -1164,7 +1164,7 @@ func (s *ContainerServer) UpdateContainerVersion(ctx context.Context, in *pb.Upd
 	}
 
 	// remove old container
-	if err := s.remove(cli, containerId, true); err != nil {
+	if err := s.remove(cli, containerId, true, false); err != nil {
 		log.Warnf("remove container=%v err=%v", containerId, err)
 		return nil, rpc.ErrInternal
 	}
@@ -1181,6 +1181,24 @@ func (s *ContainerServer) UpdateContainerVersion(ctx context.Context, in *pb.Upd
 
 	cfgs.ContainerID = id
 	litedb.UpdateContainerConfig(cfgs)
+
+	// 更新 container_out_configs 表
+	outCfg, err := litedb.GetContainerOutConfigByName(cfgs.ContainerName)
+	if err != nil {
+	} else {
+		outCfg.ContainerID = id
+		litedb.UpdateContainerOutConfig(outCfg)
+	}
+
+	// 更新 app_entries 表
+	appEntry, err := litedb.ListAppEntry(containerId)
+	if err != nil {
+	} else {
+		for _, entry := range appEntry {
+			entry.ContainerID = id
+			litedb.UpdateAppEntry(entry)
+		}
+	}
 
 	return &pb.UpdateContainerVersionReply{}, nil
 }
@@ -1260,7 +1278,7 @@ func updateNetwork(ctx context.Context, cli *client.Client, containerID string, 
 	return nil
 }
 
-func (s *ContainerServer) remove(cli *client.Client, containerID string, force bool) error {
+func (s *ContainerServer) remove(cli *client.Client, containerID string, force bool, delapp bool) error {
 	if cli == nil {
 		c, err := docker.Client()
 		if err != nil {
@@ -1303,13 +1321,15 @@ func (s *ContainerServer) remove(cli *client.Client, containerID string, force b
 		log.Warnf("removeContainerGraphicSetup container=%v err=%v", containerID, err)
 	}
 
-	appEntry, err := litedb.ListAppEntry(containerID)
-	if err == nil {
-		var ids []int64
-		for _, app := range appEntry {
-			ids = append(ids, app.ID)
+	if delapp { // 更新容器版本的时候不能删
+		appEntry, err := litedb.ListAppEntry(containerID)
+		if err == nil {
+			var ids []int64
+			for _, app := range appEntry {
+				ids = append(ids, app.ID)
+			}
+			litedb.RemoveAppEntry(ids)
 		}
-		litedb.RemoveAppEntry(ids)
 	}
 
 	fileName := containerID + "-" + configs.Name
@@ -1339,7 +1359,7 @@ func (s *ContainerServer) Remove(ctx context.Context, in *pb.RemoveRequest) (*pb
 
 	var reply pb.RemoveReply
 	for _, id := range in.Ids[0].ContainerIds {
-		err := s.remove(cli, id, false)
+		err := s.remove(cli, id, false, true)
 		if err != nil {
 			var faileReason string
 			if s, _ := status.FromError(err); s != nil {
@@ -1744,7 +1764,7 @@ func (s *ContainerServer) ResumeBackup(ctx context.Context, in *pb.ResumeBackupR
 	}
 
 	// remove old container
-	if err := s.remove(cli, in.ContainerId, true); err != nil {
+	if err := s.remove(cli, in.ContainerId, true, true); err != nil {
 		log.Warnf("remove container=%v err=%v", in.ContainerId, err)
 		return nil, rpc.ErrInternal
 	}

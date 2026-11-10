@@ -503,8 +503,8 @@ func main() {
     value1 := argvalue1
     argvalue2 := flag.Arg(3)
     value2 := argvalue2
-    tmp3, err114 := (strconv.Atoi(flag.Arg(4)))
-    if err114 != nil {
+    tmp3, err151 := (strconv.Atoi(flag.Arg(4)))
+    if err151 != nil {
       Usage()
       return
     }

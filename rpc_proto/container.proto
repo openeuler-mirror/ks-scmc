@@ -554,6 +554,8 @@ message NetworkConfig {
     int32  ip_prefix_len = 4;
     string mac_address   = 5;
     string gateway       = 6;
+    double net_rbw	 = 7;
+    double net_wbw       = 8;
 }
 
 message ResourceLimit {

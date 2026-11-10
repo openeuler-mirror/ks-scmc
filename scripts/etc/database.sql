@@ -3,7 +3,7 @@ CHARACTER SET utf8mb4 COLLATE utf8mb4_bin ;	-- utf8mb4_0900_ai_ci utf8_general_c
 
 USE `ks-scmc`;
 
-CREATE TABLE `user_infos` (
+CREATE TABLE IF NOT EXISTS `user_infos` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `username` varchar(255) COLLATE utf8mb4_bin  NOT NULL DEFAULT '',
   `real_name` varchar(255) COLLATE utf8mb4_bin  NOT NULL DEFAULT '',

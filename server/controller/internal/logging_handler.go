@@ -17,7 +17,6 @@ type LoggingServer struct {
 }
 
 func (s *LoggingServer) SubscribeWarn(in *pb.SubscribeWarnRequest, stream pb.Logging_SubscribeWarnServer) error {
-
 	ch := warnlog.Subscribe()
 	defer warnlog.Evict(ch)
 
@@ -49,11 +48,9 @@ func (s *LoggingServer) SubscribeWarn(in *pb.SubscribeWarnRequest, stream pb.Log
 			return nil
 		}
 	}
-
 }
 
 func (s *LoggingServer) ListRuntime(ctx context.Context, in *pb.ListRuntimeRequest) (*pb.ListRuntimeReply, error) {
-
 	if in.StartTime < 0 || in.StartTime > in.EndTime {
 		log.Info("ListRuntime invalid timestamp args.")
 		return nil, rpc.ErrInvalidArgument
@@ -102,7 +99,6 @@ func (s *LoggingServer) ListRuntime(ctx context.Context, in *pb.ListRuntimeReque
 }
 
 func (s *LoggingServer) ListWarn(ctx context.Context, in *pb.ListWarnRequest) (*pb.ListWarnReply, error) {
-
 	p, data, err := db.ListWarnLog(in.PageSize, in.PageNo, in.NodeId, in.EventModule)
 	if err != nil {
 		log.Infof("ListRuntime db err=%v", err)
@@ -138,7 +134,6 @@ func (s *LoggingServer) ListWarn(ctx context.Context, in *pb.ListWarnRequest) (*
 }
 
 func (s *LoggingServer) ReadWarn(ctx context.Context, in *pb.ReadWarnRequest) (*pb.ReadWarnReply, error) {
-
 	if len(in.Ids) > 50 {
 		log.Infof("ReadWarn input id length=%v", len(in.Ids))
 		return nil, rpc.ErrInvalidArgument
@@ -153,7 +148,6 @@ func (s *LoggingServer) ReadWarn(ctx context.Context, in *pb.ReadWarnRequest) (*
 }
 
 func (s *LoggingServer) SetLog(ctx context.Context, in *pb.SetLogRequest) (*pb.SetLogReply, error) {
-
 	if in.SaveLogDays < 1 || in.SaveLogDays > 999 {
 		log.Infof("SetLog invalid parameter save_log_days: %v", in.SaveLogDays)
 		return nil, rpc.ErrInvalidArgument
@@ -168,7 +162,6 @@ func (s *LoggingServer) SetLog(ctx context.Context, in *pb.SetLogRequest) (*pb.S
 }
 
 func (s *LoggingServer) GetLog(ctx context.Context, in *pb.GetLogRequest) (*pb.GetLogReply, error) {
-
 	value, err := db.GetLog("saveLogDays")
 	if err != nil {
 		log.Infof("db.GetLog err=%v", err)

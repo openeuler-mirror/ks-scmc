@@ -10,7 +10,6 @@ import (
 	"fmt"
 
 	log "github.com/sirupsen/logrus"
-
 	"gorm.io/gorm"
 	"gorm.io/gorm/schema"
 )

@@ -105,7 +105,7 @@ func fromBlkioWeight(blkioWeight uint16) int64 {
 }
 
 var (
-	defaultCPUShares int64 = 1024
+	defaultCPUShares        int64  = 1024
 	updateContainerFlagFile string = filepath.Join(common.Config.Network.IPtablesPath, "updateIptables.flag")
 )
 
@@ -175,47 +175,47 @@ func (s *ContainerServer) isIpcContainer(id string) bool {
 }
 
 func (s *ContainerServer) appEntrySync(app_run bool, name string) {
-    nodes, err := db.ListNodes()
-    if err != nil {
-        return
-    }
+	nodes, err := db.ListNodes()
+	if err != nil {
+		return
+	}
 
-    for _, node := range nodes {
-        sync := pb.SyncAppEntryRequest {
-            AppRun : app_run,
-            Name   : name,
-            Vip    : common.Config.Controller.VirtualIP,
-        }
-        conn, err := getAgentConn(node.Address)
-        if err != nil {
-            continue
-        }
-        go func() {
-            ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
-            defer cancel()
-            pb.NewContainerClient(conn).SyncAppConfig(ctx, &sync);
-        }()
-    }
+	for _, node := range nodes {
+		sync := pb.SyncAppEntryRequest{
+			AppRun: app_run,
+			Name:   name,
+			Vip:    common.Config.Controller.VirtualIP,
+		}
+		conn, err := getAgentConn(node.Address)
+		if err != nil {
+			continue
+		}
+		go func() {
+			ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+			defer cancel()
+			pb.NewContainerClient(conn).SyncAppConfig(ctx, &sync)
+		}()
+	}
 }
 
 // 容器中运行的 app 数
-func (s *ContainerServer) runAppCnt(ctx context.Context, containerID string) (int)  {
-    if containerID == "" {
-        return 0
-    }
+func (s *ContainerServer) runAppCnt(ctx context.Context, containerID string) int {
+	if containerID == "" {
+		return 0
+	}
 
-    entries, err := litedb.ListAppEntry(containerID)
-    if err != nil {
-        return 0
-    }
+	entries, err := litedb.ListAppEntry(containerID)
+	if err != nil {
+		return 0
+	}
 
-    var cnt int = 0
-    for _, e := range entries {
-            if appIsRunning(ctx, e.IDResponse) {
-                cnt = cnt + 1
-            }
-    }
-    return cnt
+	var cnt int = 0
+	for _, e := range entries {
+		if appIsRunning(ctx, e.IDResponse) {
+			cnt = cnt + 1
+		}
+	}
+	return cnt
 }
 
 func (s *ContainerServer) List(ctx context.Context, in *pb.ListRequest) (*pb.ListReply, error) {
@@ -251,7 +251,7 @@ func (s *ContainerServer) List(ctx context.Context, in *pb.ListRequest) (*pb.Lis
 			Created:      c.Created,
 			Started:      containerStartedTime(ctx, cli, &c),
 			Name:         containerName(c.Names),
-            ActiveApps:   int64(s.runAppCnt(ctx, c.ID)),
+			ActiveApps:   int64(s.runAppCnt(ctx, c.ID)),
 			ResourceStat: containerResourceStat(stats, &c),
 		}
 
@@ -260,7 +260,6 @@ func (s *ContainerServer) List(ctx context.Context, in *pb.ListRequest) (*pb.Lis
 
 	return &reply, nil
 }
-
 
 func (s *ContainerServer) getHostIps(nodeid int64) ([]string, error) {
 	var result []string
@@ -585,7 +584,7 @@ func (s *ContainerServer) create(nodeid int64, configs *pb.ContainerConfigs, net
 		EndpointsConfig: make(map[string]*network.EndpointSettings, len(configs.Networks)),
 	}
 
-    var loginfo []string
+	var loginfo []string
 
 	for _, v := range configs.Networks {
 		if err := checkNetworkInfo(v.Interface, "", &v.IpAddress, int(v.IpPrefixLen)); err != nil {
@@ -602,14 +601,14 @@ func (s *ContainerServer) create(nodeid int64, configs *pb.ContainerConfigs, net
 			Gateway:     v.Gateway,
 		}
 
-        if v.IpAddress != "" {
-            loginfo = append(loginfo, fmt.Sprintf("%s", v.IpAddress))
-        }
+		if v.IpAddress != "" {
+			loginfo = append(loginfo, fmt.Sprintf("%s", v.IpAddress))
+		}
 	}
 
-    if netlog != nil && len(loginfo) != 0 {
-        netlog.Detail = "创建网络: [" + strings.Join(loginfo, ",") + "]"
-    }
+	if netlog != nil && len(loginfo) != 0 {
+		netlog.Detail = "创建网络: [" + strings.Join(loginfo, ",") + "]"
+	}
 
 	var networkConfigCreate *network.NetworkingConfig
 	if len(configs.Networks) > 0 {
@@ -653,28 +652,28 @@ func (s *ContainerServer) create(nodeid int64, configs *pb.ContainerConfigs, net
 
 // 要从 controller 传递过来才有
 func getUIDFromCtx(ctx context.Context) int64 {
-    var uid int64 = 0
-    md, ok := metadata.FromIncomingContext(ctx)
-    if ok {
-        values := md["user_id"]
-        if len(values) > 0 {
-            id, err := strconv.ParseInt(values[0], 10, 64)
-            if err == nil {
-                uid = id
-            }
-        }
-    }
-    return uid
+	var uid int64 = 0
+	md, ok := metadata.FromIncomingContext(ctx)
+	if ok {
+		values := md["user_id"]
+		if len(values) > 0 {
+			id, err := strconv.ParseInt(values[0], 10, 64)
+			if err == nil {
+				uid = id
+			}
+		}
+	}
+	return uid
 }
 
 func initRuntimeLog(netlog *db.RuntimeLog, ctx context.Context, NodeId int64, ContainerName string, eventType int64) {
-    netlog.UserID = getUIDFromCtx(ctx)
-    netlog.NodeId = NodeId
-    netlog.EventType = eventType
-    netlog.EventModule = int64(logging.EVENT_MODULE_CONTAINER)
-    if ContainerName != "" {
-        netlog.Target = fmt.Sprintf("容器名=%v", ContainerName)
-    }
+	netlog.UserID = getUIDFromCtx(ctx)
+	netlog.NodeId = NodeId
+	netlog.EventType = eventType
+	netlog.EventModule = int64(logging.EVENT_MODULE_CONTAINER)
+	if ContainerName != "" {
+		netlog.Target = fmt.Sprintf("容器名=%v", ContainerName)
+	}
 }
 
 func (s *ContainerServer) Create(ctx context.Context, in *pb.CreateRequest) (*pb.CreateReply, error) {
@@ -682,8 +681,8 @@ func (s *ContainerServer) Create(ctx context.Context, in *pb.CreateRequest) (*pb
 		return nil, rpc.ErrInvalidArgument
 	}
 
-    var netlog db.RuntimeLog
-    initRuntimeLog(&netlog, ctx, in.NodeId, in.Configs.Name, int64(logging.EVENT_TYPE_CREATE_CONTAINER))
+	var netlog db.RuntimeLog
+	initRuntimeLog(&netlog, ctx, in.NodeId, in.Configs.Name, int64(logging.EVENT_TYPE_CREATE_CONTAINER))
 
 	//in.Configs.Ipcname = "testipc"
 	uuid := uuid.New().String()
@@ -726,47 +725,47 @@ func (s *ContainerServer) Create(ctx context.Context, in *pb.CreateRequest) (*pb
 		}
 		litedb.CreateIpcmapConfig(&ipcMapCfg)
 
-        // 容器磁盘限制相关数据
-        var w, r int64 = int64(0), int64(0)
-        if in.Configs.ResouceLimit != nil {
-            w = in.Configs.ResouceLimit.DiskWbw
-            r = in.Configs.ResouceLimit.DiskRbw
-        }
-        disklimitCfg := litedb.ContainerLimit {
-            ContainerID: id,
-            ContainerName: in.Configs.Name,
-            DiskRbw: r,
-            DiskWbw: w,
-        }
-        litedb.CreateContainerLimit(&disklimitCfg)
+		// 容器磁盘限制相关数据
+		var w, r int64 = int64(0), int64(0)
+		if in.Configs.ResouceLimit != nil {
+			w = in.Configs.ResouceLimit.DiskWbw
+			r = in.Configs.ResouceLimit.DiskRbw
+		}
+		disklimitCfg := litedb.ContainerLimit{
+			ContainerID:   id,
+			ContainerName: in.Configs.Name,
+			DiskRbw:       r,
+			DiskWbw:       w,
+		}
+		litedb.CreateContainerLimit(&disklimitCfg)
 
-        misc, err := litedb.GetContainerMiscConfigByName(in.Configs.Name)
-        if err != nil {
-            if err ==  db.ErrRecordNotFound {
-                // 容器是否开启了 app 高可用
-                miscConfig := litedb.ContainerMisc {
-                    UUID: uuid,
-                    ContainerID: id,
-                    ContainerName: in.Configs.Name,
-                    MiscConfig: in.Configs.GetMiscConfig(),
-                }
-                litedb.CreateContainerMiscConfig(&miscConfig)
-            }
-        }  else {
-            misc.ContainerID = id
-            litedb.UpdateContainerMiscConfig(misc)
-        }
+		misc, err := litedb.GetContainerMiscConfigByName(in.Configs.Name)
+		if err != nil {
+			if err == db.ErrRecordNotFound {
+				// 容器是否开启了 app 高可用
+				miscConfig := litedb.ContainerMisc{
+					UUID:          uuid,
+					ContainerID:   id,
+					ContainerName: in.Configs.Name,
+					MiscConfig:    in.Configs.GetMiscConfig(),
+				}
+				litedb.CreateContainerMiscConfig(&miscConfig)
+			}
+		} else {
+			misc.ContainerID = id
+			litedb.UpdateContainerMiscConfig(misc)
+		}
 
-        if in.Configs.GetMiscConfig() != nil {
-            go s.appEntrySync(in.Configs.GetMiscConfig().GetAppRun(), in.Configs.Name)
-        } else {
-            go s.appEntrySync(false, in.Configs.Name)
-        }
+		if in.Configs.GetMiscConfig() != nil {
+			go s.appEntrySync(in.Configs.GetMiscConfig().GetAppRun(), in.Configs.Name)
+		} else {
+			go s.appEntrySync(false, in.Configs.Name)
+		}
 	}
 
-    if err == nil && netlog.Detail != "" {
-        runtimeLogChan <- &netlog
-    }
+	if err == nil && netlog.Detail != "" {
+		runtimeLogChan <- &netlog
+	}
 
 	return &pb.CreateReply{ContainerId: id}, err
 }
@@ -938,49 +937,48 @@ func (s *ContainerServer) Restart(ctx context.Context, in *pb.RestartRequest) (*
 	}, nil
 }
 
-
 func (s *ContainerServer) disklimit(containerName string, in *pb.UpdateRequest) {
-    // 磁盘限速，如果没有记录，就创建一条新记录
-    disklimitCfg, err := litedb.GetContainerLimitByCID(in.ContainerId);
-    if err != nil {
-        var w, r int64 = 0, 0
-        if in.ResourceLimit != nil {
-            w = in.ResourceLimit.DiskWbw
-            r = in.ResourceLimit.DiskRbw
-        }
-        disklimitCfg = &litedb.ContainerLimit {
-            ContainerID: in.ContainerId,
-            ContainerName:containerName,
-            DiskRbw: r,
-            DiskWbw: w,
-        }
-        litedb.CreateContainerLimit(disklimitCfg)
-        rStr := fmt.Sprintf("%d", r)
-        wStr := fmt.Sprintf("%d", w)
-        docker.SetContainerDiskLimit("disk_rbw", in.ContainerId, rStr)
-        docker.SetContainerDiskLimit("disk_wbw", in.ContainerId, wStr)
-    } else {
-        chg := false
-        if in.ResourceLimit != nil {
-            if disklimitCfg.DiskRbw != in.ResourceLimit.DiskRbw {
-                disklimitCfg.DiskRbw = in.ResourceLimit.DiskRbw
-                r := in.ResourceLimit.DiskRbw
-                rStr := fmt.Sprintf("%d", r)
-                docker.SetContainerDiskLimit("disk_rbw", in.ContainerId, rStr)
-                chg = true
-            }
-            if disklimitCfg.DiskWbw != in.ResourceLimit.DiskWbw {
-                disklimitCfg.DiskWbw = in.ResourceLimit.DiskWbw
-                w := in.ResourceLimit.DiskWbw
-                wStr := fmt.Sprintf("%d", w)
-                docker.SetContainerDiskLimit("disk_wbw", in.ContainerId, wStr)
-                chg = true
-            }
-            if chg {
-                litedb.UpdateContainerLimit(disklimitCfg) // 更新数据库
-            }
-        }
-    }
+	// 磁盘限速，如果没有记录，就创建一条新记录
+	disklimitCfg, err := litedb.GetContainerLimitByCID(in.ContainerId)
+	if err != nil {
+		var w, r int64 = 0, 0
+		if in.ResourceLimit != nil {
+			w = in.ResourceLimit.DiskWbw
+			r = in.ResourceLimit.DiskRbw
+		}
+		disklimitCfg = &litedb.ContainerLimit{
+			ContainerID:   in.ContainerId,
+			ContainerName: containerName,
+			DiskRbw:       r,
+			DiskWbw:       w,
+		}
+		litedb.CreateContainerLimit(disklimitCfg)
+		rStr := fmt.Sprintf("%d", r)
+		wStr := fmt.Sprintf("%d", w)
+		docker.SetContainerDiskLimit("disk_rbw", in.ContainerId, rStr)
+		docker.SetContainerDiskLimit("disk_wbw", in.ContainerId, wStr)
+	} else {
+		chg := false
+		if in.ResourceLimit != nil {
+			if disklimitCfg.DiskRbw != in.ResourceLimit.DiskRbw {
+				disklimitCfg.DiskRbw = in.ResourceLimit.DiskRbw
+				r := in.ResourceLimit.DiskRbw
+				rStr := fmt.Sprintf("%d", r)
+				docker.SetContainerDiskLimit("disk_rbw", in.ContainerId, rStr)
+				chg = true
+			}
+			if disklimitCfg.DiskWbw != in.ResourceLimit.DiskWbw {
+				disklimitCfg.DiskWbw = in.ResourceLimit.DiskWbw
+				w := in.ResourceLimit.DiskWbw
+				wStr := fmt.Sprintf("%d", w)
+				docker.SetContainerDiskLimit("disk_wbw", in.ContainerId, wStr)
+				chg = true
+			}
+			if chg {
+				litedb.UpdateContainerLimit(disklimitCfg) // 更新数据库
+			}
+		}
+	}
 }
 
 func (s *ContainerServer) Update(ctx context.Context, in *pb.UpdateRequest) (*pb.UpdateReply, error) {
@@ -995,8 +993,8 @@ func (s *ContainerServer) Update(ctx context.Context, in *pb.UpdateRequest) (*pb
 		return nil, rpc.ErrDatabaseFail
 	}
 
-    var netlog db.RuntimeLog
-    initRuntimeLog(&netlog, ctx, in.NodeId, cfgs.ContainerName, int64(logging.EVENT_TYPE_UPDATE_CONTAINER))
+	var netlog db.RuntimeLog
+	initRuntimeLog(&netlog, ctx, in.NodeId, cfgs.ContainerName, int64(logging.EVENT_TYPE_UPDATE_CONTAINER))
 
 	for _, v := range in.Networks {
 		if err := checkNetworkInfo(v.Interface, in.ContainerId, &v.IpAddress, int(v.IpPrefixLen)); err != nil {
@@ -1079,11 +1077,11 @@ func (s *ContainerServer) Update(ctx context.Context, in *pb.UpdateRequest) (*pb
 		// 在创建的时候写入的数据，这里不应该失败
 		log.Warnf("Update GetIpcmapConfigByCID id: %v, err: %v", in.ContainerId, err)
 		// 创建一条新记录
-		ipcmapCfg = &litedb.IpcmapConfig {
+		ipcmapCfg = &litedb.IpcmapConfig{
 			ContainerName: cfgs.ContainerName, //容器名称
-			ContainerID : in.ContainerId, // 容器ID
-			IpcName: "", // IPC 容器名称，去掉头部的 ipc. 前缀
-			IpcID: "",  // IPC 容器对应的容器ID 
+			ContainerID:   in.ContainerId,     // 容器ID
+			IpcName:       "",                 // IPC 容器名称，去掉头部的 ipc. 前缀
+			IpcID:         "",                 // IPC 容器对应的容器ID
 		}
 		litedb.CreateIpcmapConfig(ipcmapCfg)
 	}
@@ -1112,9 +1110,9 @@ func (s *ContainerServer) Update(ctx context.Context, in *pb.UpdateRequest) (*pb
 		}
 	}
 
-    if in.GetMiscConfig() != nil {
-        go s.appEntrySync(in.GetMiscConfig().GetAppRun(), cfgs.ContainerName)
-    }
+	if in.GetMiscConfig() != nil {
+		go s.appEntrySync(in.GetMiscConfig().GetAppRun(), cfgs.ContainerName)
+	}
 
 	log.Warnf("change: %v docker.NoneBit: %v", change, docker.NoneBit)
 	if change != docker.NoneBit {
@@ -1139,11 +1137,11 @@ func (s *ContainerServer) Update(ctx context.Context, in *pb.UpdateRequest) (*pb
 		log.Infof("modify %v end, change:%v", in.ContainerId, change)
 	}
 
-    s.disklimit(cfgs.ContainerName, in)
+	s.disklimit(cfgs.ContainerName, in)
 
-    if netlog.Detail != "" {
-        runtimeLogChan <- &netlog
-    }
+	if netlog.Detail != "" {
+		runtimeLogChan <- &netlog
+	}
 
 	return &reply, nil
 }
@@ -1202,16 +1200,16 @@ func updateNetwork(ctx context.Context, cli *client.Client, containerID string, 
 		return transDockerError(err)
 	}
 
-    var addNetworkLog []string // 添加网络日志
-    var delNetworkLog []string // 删除网络日志
-    var modNetworkLog []string // 修改网络日志
+	var addNetworkLog []string // 添加网络日志
+	var delNetworkLog []string // 删除网络日志
+	var modNetworkLog []string // 修改网络日志
 
 	if info.NetworkSettings == nil {
 		for _, v := range networks {
 			dockerNetworkConnect(ctx, cli, containerID, v)
-            if v.IpAddress != "" {
-                addNetworkLog = append(addNetworkLog, v.IpAddress)
-            }
+			if v.IpAddress != "" {
+				addNetworkLog = append(addNetworkLog, v.IpAddress)
+			}
 		}
 		return nil
 	}
@@ -1225,19 +1223,19 @@ func updateNetwork(ctx context.Context, cli *client.Client, containerID string, 
 			continue
 		}
 		dockerNetworkDisconnect(ctx, cli, containerID, k) // 被删除的连接
-        ipstr := info.NetworkSettings.Networks[k].IPAddress
-        if ipstr != "" {
-            delNetworkLog = append(delNetworkLog, ipstr)
-        }
+		ipstr := info.NetworkSettings.Networks[k].IPAddress
+		if ipstr != "" {
+			delNetworkLog = append(delNetworkLog, ipstr)
+		}
 	}
 
 	for _, v := range networks {
 		_, ok := info.NetworkSettings.Networks[v.Interface]
 		if !ok {
 			dockerNetworkConnect(ctx, cli, containerID, v) // 新连接
-            if v.IpAddress != "" {
-                addNetworkLog = append(addNetworkLog, v.IpAddress)
-            }
+			if v.IpAddress != "" {
+				addNetworkLog = append(addNetworkLog, v.IpAddress)
+			}
 			continue
 		}
 
@@ -1245,23 +1243,23 @@ func updateNetwork(ctx context.Context, cli *client.Client, containerID string, 
 		if v.IpAddress != info.NetworkSettings.Networks[v.Interface].IPAddress {
 			dockerNetworkDisconnect(ctx, cli, containerID, v.Interface)
 			dockerNetworkConnect(ctx, cli, containerID, v)
-            dstStr := "dhcp"
-            if v.IpAddress != "" {
-                dstStr = v.IpAddress
-            }
-            modNetworkLog = append(modNetworkLog, fmt.Sprintf("%s->%s", info.NetworkSettings.Networks[v.Interface].IPAddress, dstStr))
+			dstStr := "dhcp"
+			if v.IpAddress != "" {
+				dstStr = v.IpAddress
+			}
+			modNetworkLog = append(modNetworkLog, fmt.Sprintf("%s->%s", info.NetworkSettings.Networks[v.Interface].IPAddress, dstStr))
 		}
 	}
-    
-    if netlog != nil && len(modNetworkLog) > 0 {
-        netlog.Detail = netlog.Detail + "修改网络: ["  + strings.Join(modNetworkLog, ",") + "] "
-    }
-    if netlog != nil && len(delNetworkLog) > 0 {
-        netlog.Detail = netlog.Detail + "删除网络: [" + strings.Join(delNetworkLog, ",") + "] "
-    }
-    if netlog != nil && len(addNetworkLog) > 0 {
-        netlog.Detail = netlog.Detail + "添加网络: [" + strings.Join(addNetworkLog, ",") + "]"
-    }
+
+	if netlog != nil && len(modNetworkLog) > 0 {
+		netlog.Detail = netlog.Detail + "修改网络: [" + strings.Join(modNetworkLog, ",") + "] "
+	}
+	if netlog != nil && len(delNetworkLog) > 0 {
+		netlog.Detail = netlog.Detail + "删除网络: [" + strings.Join(delNetworkLog, ",") + "] "
+	}
+	if netlog != nil && len(addNetworkLog) > 0 {
+		netlog.Detail = netlog.Detail + "添加网络: [" + strings.Join(addNetworkLog, ",") + "]"
+	}
 
 	return nil
 }
@@ -1348,14 +1346,14 @@ func (s *ContainerServer) Remove(ctx context.Context, in *pb.RemoveRequest) (*pb
 		}
 		litedb.RemoveContainerConfig([]string{id})
 		litedb.IpcmapConfigRemoveByCID([]string{id}) // 删除容器与ipc 容器的映射数据
-        litedb.RemoveContainerMisc([]string{id})
+		litedb.RemoveContainerMisc([]string{id})
 
 		reply.OkIds = append(reply.OkIds, id)
 	}
 
 	litedb.RemoveContainerConfig(reply.OkIds)
 	litedb.IpcmapConfigRemoveByCID(reply.OkIds) // 删除容器与ipc 容器的映射数据
-    litedb.RemoveContainerMisc(reply.OkIds)
+	litedb.RemoveContainerMisc(reply.OkIds)
 
 	go s.removeContainerBackups(reply.OkIds)
 	return &reply, nil
@@ -1393,7 +1391,7 @@ func (s *ContainerServer) inspect(id string, backup bool) (*pb.ContainerConfigs,
 		Name:         strings.TrimPrefix(info.Name, "/"),
 		Image:        info.Image,
 		ResouceLimit: &pb.ResourceLimit{},
-        MiscConfig:   &pb.ContainerMiscConfig{},
+		MiscConfig:   &pb.ContainerMiscConfig{},
 	}
 
 	var pid int
@@ -1415,15 +1413,15 @@ func (s *ContainerServer) inspect(id string, backup bool) (*pb.ContainerConfigs,
 		})
 	}
 
-    var w, r int64 = 0, 0
-    disklimitCfg, err := litedb.GetContainerLimitByCID(info.ID) 
-    if err != nil {
-        w = 0
-        r = 0
-    } else {
-        w = disklimitCfg.DiskWbw
-        r = disklimitCfg.DiskRbw
-    }
+	var w, r int64 = 0, 0
+	disklimitCfg, err := litedb.GetContainerLimitByCID(info.ID)
+	if err != nil {
+		w = 0
+		r = 0
+	} else {
+		w = disklimitCfg.DiskWbw
+		r = disklimitCfg.DiskRbw
+	}
 
 	if info.HostConfig != nil {
 		configs.RestartPolicy = &pb.RestartPolicy{
@@ -1437,8 +1435,8 @@ func (s *ContainerServer) inspect(id string, backup bool) (*pb.ContainerConfigs,
 			DiskPrio:        fromBlkioWeight(info.HostConfig.Resources.BlkioWeight),
 			MemoryLimit:     float64(info.HostConfig.Resources.Memory) / megaBytes,
 			MemorySoftLimit: float64(info.HostConfig.Resources.MemoryReservation) / megaBytes,
-            DiskWbw: w,
-            DiskRbw: r,
+			DiskWbw:         w,
+			DiskRbw:         r,
 		}
 
 		if s, ok := info.HostConfig.StorageOpt["size"]; ok {
@@ -1457,16 +1455,16 @@ func (s *ContainerServer) inspect(id string, backup bool) (*pb.ContainerConfigs,
 		}
 	}
 
-    misc, err := litedb.GetContainerMiscConfigByName(configs.Name)
-    if err != nil {
-        configs.MiscConfig.AppRun = false
-    } else {
-        if misc.MiscConfig != nil  {
-            configs.MiscConfig.AppRun = misc.MiscConfig.AppRun
-        } else {
-            configs.MiscConfig.AppRun = false
-        }
-    }
+	misc, err := litedb.GetContainerMiscConfigByName(configs.Name)
+	if err != nil {
+		configs.MiscConfig.AppRun = false
+	} else {
+		if misc.MiscConfig != nil {
+			configs.MiscConfig.AppRun = misc.MiscConfig.AppRun
+		} else {
+			configs.MiscConfig.AppRun = false
+		}
+	}
 
 	if info.NetworkSettings != nil {
 		s.inspectNetwork(info.ID, backup, info.NetworkSettings, configs)
@@ -2384,35 +2382,35 @@ func (*ContainerServer) GetContainerStats(ctx context.Context, in *pb.StatsReque
 }
 
 func (*ContainerServer) SyncAppConfig(ctx context.Context, in *pb.SyncAppEntryRequest) (*pb.SyncAppEntryReply, error) {
-    if in.GetVip() != strings.TrimSpace(common.Config.Controller.VirtualIP) {
-        return &pb.SyncAppEntryReply{}, nil
-    }
+	if in.GetVip() != strings.TrimSpace(common.Config.Controller.VirtualIP) {
+		return &pb.SyncAppEntryReply{}, nil
+	}
 
-    if in.GetName() == "" {
-        return &pb.SyncAppEntryReply{}, nil
-    }
+	if in.GetName() == "" {
+		return &pb.SyncAppEntryReply{}, nil
+	}
 
-    misc, err := litedb.GetContainerMiscConfigByName(in.GetName())
-    if err != nil {
-        if err == db.ErrRecordNotFound {
-            uuid := uuid.New().String()
-            miscConfig := litedb.ContainerMisc {
-                UUID: uuid,
-                ContainerName: in.GetName(),
-                MiscConfig: &pb.ContainerMiscConfig {AppRun: in.AppRun,},
-            }
-            litedb.CreateContainerMiscConfig(&miscConfig)
-        }
-        return &pb.SyncAppEntryReply{}, nil
-    }
+	misc, err := litedb.GetContainerMiscConfigByName(in.GetName())
+	if err != nil {
+		if err == db.ErrRecordNotFound {
+			uuid := uuid.New().String()
+			miscConfig := litedb.ContainerMisc{
+				UUID:          uuid,
+				ContainerName: in.GetName(),
+				MiscConfig:    &pb.ContainerMiscConfig{AppRun: in.AppRun},
+			}
+			litedb.CreateContainerMiscConfig(&miscConfig)
+		}
+		return &pb.SyncAppEntryReply{}, nil
+	}
 
-    if misc.MiscConfig != nil {
-        misc.MiscConfig.AppRun = in.AppRun
-        litedb.UpdateContainerMiscConfig(misc)
-    } else {
-        misc.MiscConfig= &pb.ContainerMiscConfig {AppRun: in.AppRun,}
-        litedb.UpdateContainerMiscConfig(misc)
-    }
+	if misc.MiscConfig != nil {
+		misc.MiscConfig.AppRun = in.AppRun
+		litedb.UpdateContainerMiscConfig(misc)
+	} else {
+		misc.MiscConfig = &pb.ContainerMiscConfig{AppRun: in.AppRun}
+		litedb.UpdateContainerMiscConfig(misc)
+	}
 
-    return &pb.SyncAppEntryReply{}, nil
+	return &pb.SyncAppEntryReply{}, nil
 }

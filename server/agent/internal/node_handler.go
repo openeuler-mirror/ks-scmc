@@ -57,6 +57,15 @@ func isIpcContainer(id string) bool {
 	return true
 }
 
+// 容器记录不再数据库中不展示
+func isContainerCreateByShell(id string) bool {
+	_, err := litedb.GetContainerConfig(id)
+	if err != nil { // 不存在数据库记录，说明非我们客户端创建
+		return true
+	}
+	return false
+}
+
 func nodeStatus() (*pb.NodeStatus, error) {
 	cli, err := docker.Client()
 	if err != nil {
@@ -104,7 +113,7 @@ func nodeStatus() (*pb.NodeStatus, error) {
 		runnings := 0
 		ipcCnt := 0
 		for _, c := range containers {
-			if isIpcContainer(c.ID) { // 过滤掉 IPC 容器
+			if isIpcContainer(c.ID) || isContainerCreateByShell(c.ID) { // 过滤掉 IPC 容器 和 非我们客户端创建的
 				ipcCnt = ipcCnt + 1
 				continue
 			}

@@ -13,10 +13,12 @@ import (
 
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
 
 	"scmc/model/db"
 	"scmc/rpc"
+	"scmc/rpc/middleware/auth"
 	pb "scmc/rpc/pb/image"
 	"scmc/server/args"
 )
@@ -189,26 +191,60 @@ func (s *ImageServer) receiveImageFile(securitySwitch bool, img *db.ImageInfo, s
 }
 
 func (s *ImageServer) List(ctx context.Context, in *pb.ListRequest) (*pb.ListReply, error) {
-	images, err := db.ListImages()
+	log.Infof("ListRequest: %+v", in)
+
+	if in.NodeId <= 0 {
+		images, err := db.ListImages()
+		if err != nil {
+			log.Warnf("Failed to get images list: %v", err)
+			return nil, rpc.ErrInternal
+		}
+
+		var reply pb.ListReply
+		for _, i := range images {
+			if i.ApprovalStatus != db.ApprovalPass {
+				continue
+			}
+			reply.Images = append(reply.Images, &pb.ImageInfo{
+				Name: i.Name + ":" + i.Version,
+				Repo: i.Name,
+				Tag:  i.Version,
+				Size: i.FileSize,
+			})
+		}
+
+		return &reply, nil
+	}
+
+	// 如果指定了 node_id，查询该节点上的实际镜像
+	n, err := db.QueryNodeByID(in.NodeId)
 	if err != nil {
-		log.Warnf("Failed to get images list: %v", err)
+		if err == db.ErrRecordNotFound {
+			log.Warnf("Node not found: nodeId=%d", in.NodeId)
+			return nil, rpc.ErrNotFound
+		}
+		log.Warnf("Failed to query node: nodeId=%d, err=%v", in.NodeId, err)
+		return nil, rpc.ErrDatabaseFail
+	}
+
+	conn, err := GetAgentConn(n.Address)
+	if err != nil {
+		log.Warnf("Failed to get agent connection: nodeId=%d, address=%s, err=%v", in.NodeId, n.Address, err)
 		return nil, rpc.ErrInternal
 	}
 
-	var reply pb.ListReply
-	for _, i := range images {
-		if i.ApprovalStatus != db.ApprovalPass {
-			continue
-		}
-		reply.Images = append(reply.Images, &pb.ImageInfo{
-			Name: i.Name + ":" + i.Version,
-			Repo: i.Name,
-			Tag:  i.Version,
-			Size: i.FileSize,
+	// user_id 传递到 agent
+	uid, ok := auth.UserIDFromContext(ctx)
+	if ok {
+		md := metadata.New(map[string]string{
+			"user_id": fmt.Sprintf("%d", uid),
 		})
+		ctx = metadata.NewOutgoingContext(ctx, md)
 	}
 
-	return &reply, nil
+	// 调用 Agent 的 List 方法，获取该节点上的实际镜像列表
+	log.Debugf("Querying images from agent: nodeId=%d, address=%s", in.NodeId, n.Address)
+	return pb.NewImageClient(conn).List(ctx, in)
 }
 
 func (s *ImageServer) ListDBEx(Address string) (*pb.ListDBReply, error) {

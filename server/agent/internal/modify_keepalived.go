@@ -2,9 +2,10 @@ package internal
 
 import (
 	"fmt"
-	log "github.com/sirupsen/logrus"
 	"os"
 	"regexp"
+
+	log "github.com/sirupsen/logrus"
 )
 
 // 修改keepalived配置中的vrrp_instance VI_1的interface字段

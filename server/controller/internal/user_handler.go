@@ -39,7 +39,7 @@ type UserServer struct {
 func (s *UserServer) Login(ctx context.Context, in *pb.LoginRequest) (*pb.LoginReply, error) {
 	// check inputs
 	if len(in.Username) < 4 || len(in.Password) < 8 {
-		return nil, rpc.ErrInvalidArgument
+		return nil, rpc.ErrWrongPassword
 	}
 
 	// database operations

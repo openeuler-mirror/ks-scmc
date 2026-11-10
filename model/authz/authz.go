@@ -21,7 +21,6 @@ func authzClient(addr string) (authz.AuthzClient, error) {
 			return net.DialTimeout("unix", addr, time.Second)
 		}),
 	)
-
 	if err != nil {
 		log.Warnf("connect authz socket err=%v", err)
 		return nil, err

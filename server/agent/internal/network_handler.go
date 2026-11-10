@@ -26,9 +26,11 @@ import (
 	pb "scmc/rpc/pb/network"
 )
 
-const defaultContainerChain = "INPUT"
-const defaultNodeChain = "OUTPUT"
-const defaultPolicy = "ACCEPT"
+const (
+	defaultContainerChain = "INPUT"
+	defaultNodeChain      = "OUTPUT"
+	defaultPolicy         = "ACCEPT"
+)
 
 const VirtualNicBase = "/sys/devices/virtual/net"
 
@@ -219,7 +221,7 @@ func (s *NetworkServer) Connect(ctx context.Context, in *pb.ConnectRequest) (*pb
 		return nil, rpc.ErrInternal
 	}
 
-	var config = &network.EndpointSettings{
+	config := &network.EndpointSettings{
 		NetworkID:   in.Interface,
 		Gateway:     in.Gateway,
 		IPAddress:   in.IpAddress,
@@ -341,7 +343,6 @@ func (s *NetworkServer) EnableIPtables(ctx context.Context, in *pb.EnableIPtable
 	}
 
 	return &pb.EnableIPtablesReply{}, nil
-
 }
 
 func (s *NetworkServer) CreateIPtables(ctx context.Context, in *pb.CreateIPtablesRequest) (*pb.CreateIPtablesReply, error) {
@@ -806,7 +807,7 @@ func (s *NetworkServer) createNetwork(name, subnet, gateway, parent string) erro
 		cmd := exec.Command("systemctl", "restart", "network")
 		err = cmd.Run()
 		if err != nil {
-			//return fmt.Errorf("failed to execute command: %v", cmd)
+			// return fmt.Errorf("failed to execute command: %v", cmd)
 			log.Warnf("failed to execute command: %v", cmd)
 		}
 		setVirtualNicMac(hostName)
@@ -860,7 +861,7 @@ func getPhysicalInterfaceName(virtualNicName string) (string, error) {
 	cmd := exec.Command("ip", "link", "show", virtualNicName+"-host")
 	output, err := cmd.CombinedOutput()
 	if err != nil {
-		//return "", fmt.Errorf("failed to execute command: %v", cmd)
+		// return "", fmt.Errorf("failed to execute command: %v", cmd)
 		// 测试没有绑定物理网卡的情况
 		cmd = exec.Command("ip", "link", "show", "scmc-"+virtualNicName)
 		output, err = cmd.CombinedOutput()
@@ -890,7 +891,7 @@ func getPhysicalInterfaceName(virtualNicName string) (string, error) {
 }
 
 func (s *NetworkServer) removeNetwork(name string) error {
-	//parent_nic, err_res := getPhysicalInterfaceName(name)
+	// parent_nic, err_res := getPhysicalInterfaceName(name)
 	parent_nic, errRes := getParentInterface(name)
 	if errRes != nil {
 		log.Warnf("NetworkRemove name=%v err=%v", name, errRes)

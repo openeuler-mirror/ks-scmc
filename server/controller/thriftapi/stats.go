@@ -4,11 +4,8 @@ import (
 	"context"
 	"time"
 
-	// "strings"
-
 	"scmc/rpc/pb/container"
 	"scmc/server/controller/internal"
-	// log "github.com/sirupsen/logrus"
 )
 
 func GetContainerStats(hostid string) (string, error) {

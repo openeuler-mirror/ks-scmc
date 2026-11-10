@@ -7127,6 +7127,1635 @@ func (p *KsScmcClientClient) recvLoginV3() (value string, err error) {
     return
   }
   if mTypeId == thrift.EXCEPTION {
+    error11 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
+    var error12 error
+    error12, err = error11.Read(iprot)
+    if err != nil {
+      return
+    }
+    if err = iprot.ReadMessageEnd(); err != nil {
+      return
+    }
+    err = error12
+    return
+  }
+  if mTypeId != thrift.REPLY {
+    err = thrift.NewTApplicationException(thrift.INVALID_MESSAGE_TYPE_EXCEPTION, "LoginV3 failed: invalid message type")
+    return
+  }
+  result := KsScmcClientLoginV3Result{}
+  if err = result.Read(iprot); err != nil {
+    return
+  }
+  if err = iprot.ReadMessageEnd(); err != nil {
+    return
+  }
+  value = result.GetSuccess()
+  return
+}
+
+// Parameters:
+//  - SessionID
+func (p *KsScmcClientClient) GetVersionsV3(session_id string) (r string, err error) {
+  if err = p.sendGetVersionsV3(session_id); err != nil { return }
+  return p.recvGetVersionsV3()
+}
+
+func (p *KsScmcClientClient) sendGetVersionsV3(session_id string)(err error) {
+  oprot := p.OutputProtocol
+  if oprot == nil {
+    oprot = p.ProtocolFactory.GetProtocol(p.Transport)
+    p.OutputProtocol = oprot
+  }
+  p.SeqId++
+  if err = oprot.WriteMessageBegin("GetVersionsV3", thrift.CALL, p.SeqId); err != nil {
+      return
+  }
+  args := KsScmcClientGetVersionsV3Args{
+  SessionID : session_id,
+  }
+  if err = args.Write(oprot); err != nil {
+      return
+  }
+  if err = oprot.WriteMessageEnd(); err != nil {
+      return
+  }
+  return oprot.Flush()
+}
+
+
+func (p *KsScmcClientClient) recvGetVersionsV3() (value string, err error) {
+  iprot := p.InputProtocol
+  if iprot == nil {
+    iprot = p.ProtocolFactory.GetProtocol(p.Transport)
+    p.InputProtocol = iprot
+  }
+  method, mTypeId, seqId, err := iprot.ReadMessageBegin()
+  if err != nil {
+    return
+  }
+  if method != "GetVersionsV3" {
+    err = thrift.NewTApplicationException(thrift.WRONG_METHOD_NAME, "GetVersionsV3 failed: wrong method name")
+    return
+  }
+  if p.SeqId != seqId {
+    err = thrift.NewTApplicationException(thrift.BAD_SEQUENCE_ID, "GetVersionsV3 failed: out of sequence response")
+    return
+  }
+  if mTypeId == thrift.EXCEPTION {
+    error13 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
+    var error14 error
+    error14, err = error13.Read(iprot)
+    if err != nil {
+      return
+    }
+    if err = iprot.ReadMessageEnd(); err != nil {
+      return
+    }
+    err = error14
+    return
+  }
+  if mTypeId != thrift.REPLY {
+    err = thrift.NewTApplicationException(thrift.INVALID_MESSAGE_TYPE_EXCEPTION, "GetVersionsV3 failed: invalid message type")
+    return
+  }
+  result := KsScmcClientGetVersionsV3Result{}
+  if err = result.Read(iprot); err != nil {
+    return
+  }
+  if err = iprot.ReadMessageEnd(); err != nil {
+    return
+  }
+  value = result.GetSuccess()
+  return
+}
+
+// Parameters:
+//  - SessionID
+func (p *KsScmcClientClient) GetAgentNodesV3(session_id string) (r string, err error) {
+  if err = p.sendGetAgentNodesV3(session_id); err != nil { return }
+  return p.recvGetAgentNodesV3()
+}
+
+func (p *KsScmcClientClient) sendGetAgentNodesV3(session_id string)(err error) {
+  oprot := p.OutputProtocol
+  if oprot == nil {
+    oprot = p.ProtocolFactory.GetProtocol(p.Transport)
+    p.OutputProtocol = oprot
+  }
+  p.SeqId++
+  if err = oprot.WriteMessageBegin("GetAgentNodesV3", thrift.CALL, p.SeqId); err != nil {
+      return
+  }
+  args := KsScmcClientGetAgentNodesV3Args{
+  SessionID : session_id,
+  }
+  if err = args.Write(oprot); err != nil {
+      return
+  }
+  if err = oprot.WriteMessageEnd(); err != nil {
+      return
+  }
+  return oprot.Flush()
+}
+
+
+func (p *KsScmcClientClient) recvGetAgentNodesV3() (value string, err error) {
+  iprot := p.InputProtocol
+  if iprot == nil {
+    iprot = p.ProtocolFactory.GetProtocol(p.Transport)
+    p.InputProtocol = iprot
+  }
+  method, mTypeId, seqId, err := iprot.ReadMessageBegin()
+  if err != nil {
+    return
+  }
+  if method != "GetAgentNodesV3" {
+    err = thrift.NewTApplicationException(thrift.WRONG_METHOD_NAME, "GetAgentNodesV3 failed: wrong method name")
+    return
+  }
+  if p.SeqId != seqId {
+    err = thrift.NewTApplicationException(thrift.BAD_SEQUENCE_ID, "GetAgentNodesV3 failed: out of sequence response")
+    return
+  }
+  if mTypeId == thrift.EXCEPTION {
+    error15 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
+    var error16 error
+    error16, err = error15.Read(iprot)
+    if err != nil {
+      return
+    }
+    if err = iprot.ReadMessageEnd(); err != nil {
+      return
+    }
+    err = error16
+    return
+  }
+  if mTypeId != thrift.REPLY {
+    err = thrift.NewTApplicationException(thrift.INVALID_MESSAGE_TYPE_EXCEPTION, "GetAgentNodesV3 failed: invalid message type")
+    return
+  }
+  result := KsScmcClientGetAgentNodesV3Result{}
+  if err = result.Read(iprot); err != nil {
+    return
+  }
+  if err = iprot.ReadMessageEnd(); err != nil {
+    return
+  }
+  value = result.GetSuccess()
+  return
+}
+
+// Parameters:
+//  - NodeName
+//  - Image
+//  - Ver
+//  - Name
+//  - Desc
+func (p *KsScmcClientClient) InstallContainer(node_name string, image string, ver string, name string, desc string) (r string, err error) {
+  if err = p.sendInstallContainer(node_name, image, ver, name, desc); err != nil { return }
+  return p.recvInstallContainer()
+}
+
+func (p *KsScmcClientClient) sendInstallContainer(node_name string, image string, ver string, name string, desc string)(err error) {
+  oprot := p.OutputProtocol
+  if oprot == nil {
+    oprot = p.ProtocolFactory.GetProtocol(p.Transport)
+    p.OutputProtocol = oprot
+  }
+  p.SeqId++
+  if err = oprot.WriteMessageBegin("InstallContainer", thrift.CALL, p.SeqId); err != nil {
+      return
+  }
+  args := KsScmcClientInstallContainerArgs{
+  NodeName : node_name,
+  Image : image,
+  Ver : ver,
+  Name : name,
+  Desc : desc,
+  }
+  if err = args.Write(oprot); err != nil {
+      return
+  }
+  if err = oprot.WriteMessageEnd(); err != nil {
+      return
+  }
+  return oprot.Flush()
+}
+
+
+func (p *KsScmcClientClient) recvInstallContainer() (value string, err error) {
+  iprot := p.InputProtocol
+  if iprot == nil {
+    iprot = p.ProtocolFactory.GetProtocol(p.Transport)
+    p.InputProtocol = iprot
+  }
+  method, mTypeId, seqId, err := iprot.ReadMessageBegin()
+  if err != nil {
+    return
+  }
+  if method != "InstallContainer" {
+    err = thrift.NewTApplicationException(thrift.WRONG_METHOD_NAME, "InstallContainer failed: wrong method name")
+    return
+  }
+  if p.SeqId != seqId {
+    err = thrift.NewTApplicationException(thrift.BAD_SEQUENCE_ID, "InstallContainer failed: out of sequence response")
+    return
+  }
+  if mTypeId == thrift.EXCEPTION {
+    error17 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
+    var error18 error
+    error18, err = error17.Read(iprot)
+    if err != nil {
+      return
+    }
+    if err = iprot.ReadMessageEnd(); err != nil {
+      return
+    }
+    err = error18
+    return
+  }
+  if mTypeId != thrift.REPLY {
+    err = thrift.NewTApplicationException(thrift.INVALID_MESSAGE_TYPE_EXCEPTION, "InstallContainer failed: invalid message type")
+    return
+  }
+  result := KsScmcClientInstallContainerResult{}
+  if err = result.Read(iprot); err != nil {
+    return
+  }
+  if err = iprot.ReadMessageEnd(); err != nil {
+    return
+  }
+  value = result.GetSuccess()
+  return
+}
+
+// Parameters:
+//  - NodeName
+//  - Name
+func (p *KsScmcClientClient) StartContainer(node_name string, name string) (r string, err error) {
+  if err = p.sendStartContainer(node_name, name); err != nil { return }
+  return p.recvStartContainer()
+}
+
+func (p *KsScmcClientClient) sendStartContainer(node_name string, name string)(err error) {
+  oprot := p.OutputProtocol
+  if oprot == nil {
+    oprot = p.ProtocolFactory.GetProtocol(p.Transport)
+    p.OutputProtocol = oprot
+  }
+  p.SeqId++
+  if err = oprot.WriteMessageBegin("StartContainer", thrift.CALL, p.SeqId); err != nil {
+      return
+  }
+  args := KsScmcClientStartContainerArgs{
+  NodeName : node_name,
+  Name : name,
+  }
+  if err = args.Write(oprot); err != nil {
+      return
+  }
+  if err = oprot.WriteMessageEnd(); err != nil {
+      return
+  }
+  return oprot.Flush()
+}
+
+
+func (p *KsScmcClientClient) recvStartContainer() (value string, err error) {
+  iprot := p.InputProtocol
+  if iprot == nil {
+    iprot = p.ProtocolFactory.GetProtocol(p.Transport)
+    p.InputProtocol = iprot
+  }
+  method, mTypeId, seqId, err := iprot.ReadMessageBegin()
+  if err != nil {
+    return
+  }
+  if method != "StartContainer" {
+    err = thrift.NewTApplicationException(thrift.WRONG_METHOD_NAME, "StartContainer failed: wrong method name")
+    return
+  }
+  if p.SeqId != seqId {
+    err = thrift.NewTApplicationException(thrift.BAD_SEQUENCE_ID, "StartContainer failed: out of sequence response")
+    return
+  }
+  if mTypeId == thrift.EXCEPTION {
+    error19 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
+    var error20 error
+    error20, err = error19.Read(iprot)
+    if err != nil {
+      return
+    }
+    if err = iprot.ReadMessageEnd(); err != nil {
+      return
+    }
+    err = error20
+    return
+  }
+  if mTypeId != thrift.REPLY {
+    err = thrift.NewTApplicationException(thrift.INVALID_MESSAGE_TYPE_EXCEPTION, "StartContainer failed: invalid message type")
+    return
+  }
+  result := KsScmcClientStartContainerResult{}
+  if err = result.Read(iprot); err != nil {
+    return
+  }
+  if err = iprot.ReadMessageEnd(); err != nil {
+    return
+  }
+  value = result.GetSuccess()
+  return
+}
+
+// Parameters:
+//  - SessionID
+//  - Cid
+func (p *KsScmcClientClient) StartContainerV3(session_id string, cid string) (r string, err error) {
+  if err = p.sendStartContainerV3(session_id, cid); err != nil { return }
+  return p.recvStartContainerV3()
+}
+
+func (p *KsScmcClientClient) sendStartContainerV3(session_id string, cid string)(err error) {
+  oprot := p.OutputProtocol
+  if oprot == nil {
+    oprot = p.ProtocolFactory.GetProtocol(p.Transport)
+    p.OutputProtocol = oprot
+  }
+  p.SeqId++
+  if err = oprot.WriteMessageBegin("StartContainerV3", thrift.CALL, p.SeqId); err != nil {
+      return
+  }
+  args := KsScmcClientStartContainerV3Args{
+  SessionID : session_id,
+  Cid : cid,
+  }
+  if err = args.Write(oprot); err != nil {
+      return
+  }
+  if err = oprot.WriteMessageEnd(); err != nil {
+      return
+  }
+  return oprot.Flush()
+}
+
+
+func (p *KsScmcClientClient) recvStartContainerV3() (value string, err error) {
+  iprot := p.InputProtocol
+  if iprot == nil {
+    iprot = p.ProtocolFactory.GetProtocol(p.Transport)
+    p.InputProtocol = iprot
+  }
+  method, mTypeId, seqId, err := iprot.ReadMessageBegin()
+  if err != nil {
+    return
+  }
+  if method != "StartContainerV3" {
+    err = thrift.NewTApplicationException(thrift.WRONG_METHOD_NAME, "StartContainerV3 failed: wrong method name")
+    return
+  }
+  if p.SeqId != seqId {
+    err = thrift.NewTApplicationException(thrift.BAD_SEQUENCE_ID, "StartContainerV3 failed: out of sequence response")
+    return
+  }
+  if mTypeId == thrift.EXCEPTION {
+    error21 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
+    var error22 error
+    error22, err = error21.Read(iprot)
+    if err != nil {
+      return
+    }
+    if err = iprot.ReadMessageEnd(); err != nil {
+      return
+    }
+    err = error22
+    return
+  }
+  if mTypeId != thrift.REPLY {
+    err = thrift.NewTApplicationException(thrift.INVALID_MESSAGE_TYPE_EXCEPTION, "StartContainerV3 failed: invalid message type")
+    return
+  }
+  result := KsScmcClientStartContainerV3Result{}
+  if err = result.Read(iprot); err != nil {
+    return
+  }
+  if err = iprot.ReadMessageEnd(); err != nil {
+    return
+  }
+  value = result.GetSuccess()
+  return
+}
+
+// Parameters:
+//  - NodeName
+//  - Name
+func (p *KsScmcClientClient) StopContainer(node_name string, name string) (r string, err error) {
+  if err = p.sendStopContainer(node_name, name); err != nil { return }
+  return p.recvStopContainer()
+}
+
+func (p *KsScmcClientClient) sendStopContainer(node_name string, name string)(err error) {
+  oprot := p.OutputProtocol
+  if oprot == nil {
+    oprot = p.ProtocolFactory.GetProtocol(p.Transport)
+    p.OutputProtocol = oprot
+  }
+  p.SeqId++
+  if err = oprot.WriteMessageBegin("StopContainer", thrift.CALL, p.SeqId); err != nil {
+      return
+  }
+  args := KsScmcClientStopContainerArgs{
+  NodeName : node_name,
+  Name : name,
+  }
+  if err = args.Write(oprot); err != nil {
+      return
+  }
+  if err = oprot.WriteMessageEnd(); err != nil {
+      return
+  }
+  return oprot.Flush()
+}
+
+
+func (p *KsScmcClientClient) recvStopContainer() (value string, err error) {
+  iprot := p.InputProtocol
+  if iprot == nil {
+    iprot = p.ProtocolFactory.GetProtocol(p.Transport)
+    p.InputProtocol = iprot
+  }
+  method, mTypeId, seqId, err := iprot.ReadMessageBegin()
+  if err != nil {
+    return
+  }
+  if method != "StopContainer" {
+    err = thrift.NewTApplicationException(thrift.WRONG_METHOD_NAME, "StopContainer failed: wrong method name")
+    return
+  }
+  if p.SeqId != seqId {
+    err = thrift.NewTApplicationException(thrift.BAD_SEQUENCE_ID, "StopContainer failed: out of sequence response")
+    return
+  }
+  if mTypeId == thrift.EXCEPTION {
+    error23 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
+    var error24 error
+    error24, err = error23.Read(iprot)
+    if err != nil {
+      return
+    }
+    if err = iprot.ReadMessageEnd(); err != nil {
+      return
+    }
+    err = error24
+    return
+  }
+  if mTypeId != thrift.REPLY {
+    err = thrift.NewTApplicationException(thrift.INVALID_MESSAGE_TYPE_EXCEPTION, "StopContainer failed: invalid message type")
+    return
+  }
+  result := KsScmcClientStopContainerResult{}
+  if err = result.Read(iprot); err != nil {
+    return
+  }
+  if err = iprot.ReadMessageEnd(); err != nil {
+    return
+  }
+  value = result.GetSuccess()
+  return
+}
+
+// Parameters:
+//  - SessionID
+//  - Cid
+func (p *KsScmcClientClient) StopContainerV3(session_id string, cid string) (r string, err error) {
+  if err = p.sendStopContainerV3(session_id, cid); err != nil { return }
+  return p.recvStopContainerV3()
+}
+
+func (p *KsScmcClientClient) sendStopContainerV3(session_id string, cid string)(err error) {
+  oprot := p.OutputProtocol
+  if oprot == nil {
+    oprot = p.ProtocolFactory.GetProtocol(p.Transport)
+    p.OutputProtocol = oprot
+  }
+  p.SeqId++
+  if err = oprot.WriteMessageBegin("StopContainerV3", thrift.CALL, p.SeqId); err != nil {
+      return
+  }
+  args := KsScmcClientStopContainerV3Args{
+  SessionID : session_id,
+  Cid : cid,
+  }
+  if err = args.Write(oprot); err != nil {
+      return
+  }
+  if err = oprot.WriteMessageEnd(); err != nil {
+      return
+  }
+  return oprot.Flush()
+}
+
+
+func (p *KsScmcClientClient) recvStopContainerV3() (value string, err error) {
+  iprot := p.InputProtocol
+  if iprot == nil {
+    iprot = p.ProtocolFactory.GetProtocol(p.Transport)
+    p.InputProtocol = iprot
+  }
+  method, mTypeId, seqId, err := iprot.ReadMessageBegin()
+  if err != nil {
+    return
+  }
+  if method != "StopContainerV3" {
+    err = thrift.NewTApplicationException(thrift.WRONG_METHOD_NAME, "StopContainerV3 failed: wrong method name")
+    return
+  }
+  if p.SeqId != seqId {
+    err = thrift.NewTApplicationException(thrift.BAD_SEQUENCE_ID, "StopContainerV3 failed: out of sequence response")
+    return
+  }
+  if mTypeId == thrift.EXCEPTION {
+    error25 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
+    var error26 error
+    error26, err = error25.Read(iprot)
+    if err != nil {
+      return
+    }
+    if err = iprot.ReadMessageEnd(); err != nil {
+      return
+    }
+    err = error26
+    return
+  }
+  if mTypeId != thrift.REPLY {
+    err = thrift.NewTApplicationException(thrift.INVALID_MESSAGE_TYPE_EXCEPTION, "StopContainerV3 failed: invalid message type")
+    return
+  }
+  result := KsScmcClientStopContainerV3Result{}
+  if err = result.Read(iprot); err != nil {
+    return
+  }
+  if err = iprot.ReadMessageEnd(); err != nil {
+    return
+  }
+  value = result.GetSuccess()
+  return
+}
+
+// Parameters:
+//  - NodeName
+//  - Name
+func (p *KsScmcClientClient) UninstallContainer(node_name string, name string) (r string, err error) {
+  if err = p.sendUninstallContainer(node_name, name); err != nil { return }
+  return p.recvUninstallContainer()
+}
+
+func (p *KsScmcClientClient) sendUninstallContainer(node_name string, name string)(err error) {
+  oprot := p.OutputProtocol
+  if oprot == nil {
+    oprot = p.ProtocolFactory.GetProtocol(p.Transport)
+    p.OutputProtocol = oprot
+  }
+  p.SeqId++
+  if err = oprot.WriteMessageBegin("UninstallContainer", thrift.CALL, p.SeqId); err != nil {
+      return
+  }
+  args := KsScmcClientUninstallContainerArgs{
+  NodeName : node_name,
+  Name : name,
+  }
+  if err = args.Write(oprot); err != nil {
+      return
+  }
+  if err = oprot.WriteMessageEnd(); err != nil {
+      return
+  }
+  return oprot.Flush()
+}
+
+
+func (p *KsScmcClientClient) recvUninstallContainer() (value string, err error) {
+  iprot := p.InputProtocol
+  if iprot == nil {
+    iprot = p.ProtocolFactory.GetProtocol(p.Transport)
+    p.InputProtocol = iprot
+  }
+  method, mTypeId, seqId, err := iprot.ReadMessageBegin()
+  if err != nil {
+    return
+  }
+  if method != "UninstallContainer" {
+    err = thrift.NewTApplicationException(thrift.WRONG_METHOD_NAME, "UninstallContainer failed: wrong method name")
+    return
+  }
+  if p.SeqId != seqId {
+    err = thrift.NewTApplicationException(thrift.BAD_SEQUENCE_ID, "UninstallContainer failed: out of sequence response")
+    return
+  }
+  if mTypeId == thrift.EXCEPTION {
+    error27 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
+    var error28 error
+    error28, err = error27.Read(iprot)
+    if err != nil {
+      return
+    }
+    if err = iprot.ReadMessageEnd(); err != nil {
+      return
+    }
+    err = error28
+    return
+  }
+  if mTypeId != thrift.REPLY {
+    err = thrift.NewTApplicationException(thrift.INVALID_MESSAGE_TYPE_EXCEPTION, "UninstallContainer failed: invalid message type")
+    return
+  }
+  result := KsScmcClientUninstallContainerResult{}
+  if err = result.Read(iprot); err != nil {
+    return
+  }
+  if err = iprot.ReadMessageEnd(); err != nil {
+    return
+  }
+  value = result.GetSuccess()
+  return
+}
+
+// Parameters:
+//  - NodeNameorip
+//  - ContainerName
+func (p *KsScmcClientClient) GetContainerStatus(node_nameorip string, container_name string) (r int32, err error) {
+  if err = p.sendGetContainerStatus(node_nameorip, container_name); err != nil { return }
+  return p.recvGetContainerStatus()
+}
+
+func (p *KsScmcClientClient) sendGetContainerStatus(node_nameorip string, container_name string)(err error) {
+  oprot := p.OutputProtocol
+  if oprot == nil {
+    oprot = p.ProtocolFactory.GetProtocol(p.Transport)
+    p.OutputProtocol = oprot
+  }
+  p.SeqId++
+  if err = oprot.WriteMessageBegin("getContainerStatus", thrift.CALL, p.SeqId); err != nil {
+      return
+  }
+  args := KsScmcClientGetContainerStatusArgs{
+  NodeNameorip : node_nameorip,
+  ContainerName : container_name,
+  }
+  if err = args.Write(oprot); err != nil {
+      return
+  }
+  if err = oprot.WriteMessageEnd(); err != nil {
+      return
+  }
+  return oprot.Flush()
+}
+
+
+func (p *KsScmcClientClient) recvGetContainerStatus() (value int32, err error) {
+  iprot := p.InputProtocol
+  if iprot == nil {
+    iprot = p.ProtocolFactory.GetProtocol(p.Transport)
+    p.InputProtocol = iprot
+  }
+  method, mTypeId, seqId, err := iprot.ReadMessageBegin()
+  if err != nil {
+    return
+  }
+  if method != "getContainerStatus" {
+    err = thrift.NewTApplicationException(thrift.WRONG_METHOD_NAME, "getContainerStatus failed: wrong method name")
+    return
+  }
+  if p.SeqId != seqId {
+    err = thrift.NewTApplicationException(thrift.BAD_SEQUENCE_ID, "getContainerStatus failed: out of sequence response")
+    return
+  }
+  if mTypeId == thrift.EXCEPTION {
+    error29 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
+    var error30 error
+    error30, err = error29.Read(iprot)
+    if err != nil {
+      return
+    }
+    if err = iprot.ReadMessageEnd(); err != nil {
+      return
+    }
+    err = error30
+    return
+  }
+  if mTypeId != thrift.REPLY {
+    err = thrift.NewTApplicationException(thrift.INVALID_MESSAGE_TYPE_EXCEPTION, "getContainerStatus failed: invalid message type")
+    return
+  }
+  result := KsScmcClientGetContainerStatusResult{}
+  if err = result.Read(iprot); err != nil {
+    return
+  }
+  if err = iprot.ReadMessageEnd(); err != nil {
+    return
+  }
+  value = result.GetSuccess()
+  return
+}
+
+// Parameters:
+//  - NodeNameorip
+//  - ContainerName
+func (p *KsScmcClientClient) GetContainerMetrics(node_nameorip string, container_name string) (r *GetContainerMetricsResponse, err error) {
+  if err = p.sendGetContainerMetrics(node_nameorip, container_name); err != nil { return }
+  return p.recvGetContainerMetrics()
+}
+
+func (p *KsScmcClientClient) sendGetContainerMetrics(node_nameorip string, container_name string)(err error) {
+  oprot := p.OutputProtocol
+  if oprot == nil {
+    oprot = p.ProtocolFactory.GetProtocol(p.Transport)
+    p.OutputProtocol = oprot
+  }
+  p.SeqId++
+  if err = oprot.WriteMessageBegin("getContainerMetrics", thrift.CALL, p.SeqId); err != nil {
+      return
+  }
+  args := KsScmcClientGetContainerMetricsArgs{
+  NodeNameorip : node_nameorip,
+  ContainerName : container_name,
+  }
+  if err = args.Write(oprot); err != nil {
+      return
+  }
+  if err = oprot.WriteMessageEnd(); err != nil {
+      return
+  }
+  return oprot.Flush()
+}
+
+
+func (p *KsScmcClientClient) recvGetContainerMetrics() (value *GetContainerMetricsResponse, err error) {
+  iprot := p.InputProtocol
+  if iprot == nil {
+    iprot = p.ProtocolFactory.GetProtocol(p.Transport)
+    p.InputProtocol = iprot
+  }
+  method, mTypeId, seqId, err := iprot.ReadMessageBegin()
+  if err != nil {
+    return
+  }
+  if method != "getContainerMetrics" {
+    err = thrift.NewTApplicationException(thrift.WRONG_METHOD_NAME, "getContainerMetrics failed: wrong method name")
+    return
+  }
+  if p.SeqId != seqId {
+    err = thrift.NewTApplicationException(thrift.BAD_SEQUENCE_ID, "getContainerMetrics failed: out of sequence response")
+    return
+  }
+  if mTypeId == thrift.EXCEPTION {
+    error31 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
+    var error32 error
+    error32, err = error31.Read(iprot)
+    if err != nil {
+      return
+    }
+    if err = iprot.ReadMessageEnd(); err != nil {
+      return
+    }
+    err = error32
+    return
+  }
+  if mTypeId != thrift.REPLY {
+    err = thrift.NewTApplicationException(thrift.INVALID_MESSAGE_TYPE_EXCEPTION, "getContainerMetrics failed: invalid message type")
+    return
+  }
+  result := KsScmcClientGetContainerMetricsResult{}
+  if err = result.Read(iprot); err != nil {
+    return
+  }
+  if err = iprot.ReadMessageEnd(); err != nil {
+    return
+  }
+  value = result.GetSuccess()
+  return
+}
+
+// Parameters:
+//  - NodeName
+//  - Name
+func (p *KsScmcClientClient) GetContainerImageVers(node_name string, name string) (r string, err error) {
+  if err = p.sendGetContainerImageVers(node_name, name); err != nil { return }
+  return p.recvGetContainerImageVers()
+}
+
+func (p *KsScmcClientClient) sendGetContainerImageVers(node_name string, name string)(err error) {
+  oprot := p.OutputProtocol
+  if oprot == nil {
+    oprot = p.ProtocolFactory.GetProtocol(p.Transport)
+    p.OutputProtocol = oprot
+  }
+  p.SeqId++
+  if err = oprot.WriteMessageBegin("GetContainerImageVers", thrift.CALL, p.SeqId); err != nil {
+      return
+  }
+  args := KsScmcClientGetContainerImageVersArgs{
+  NodeName : node_name,
+  Name : name,
+  }
+  if err = args.Write(oprot); err != nil {
+      return
+  }
+  if err = oprot.WriteMessageEnd(); err != nil {
+      return
+  }
+  return oprot.Flush()
+}
+
+
+func (p *KsScmcClientClient) recvGetContainerImageVers() (value string, err error) {
+  iprot := p.InputProtocol
+  if iprot == nil {
+    iprot = p.ProtocolFactory.GetProtocol(p.Transport)
+    p.InputProtocol = iprot
+  }
+  method, mTypeId, seqId, err := iprot.ReadMessageBegin()
+  if err != nil {
+    return
+  }
+  if method != "GetContainerImageVers" {
+    err = thrift.NewTApplicationException(thrift.WRONG_METHOD_NAME, "GetContainerImageVers failed: wrong method name")
+    return
+  }
+  if p.SeqId != seqId {
+    err = thrift.NewTApplicationException(thrift.BAD_SEQUENCE_ID, "GetContainerImageVers failed: out of sequence response")
+    return
+  }
+  if mTypeId == thrift.EXCEPTION {
+    error33 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
+    var error34 error
+    error34, err = error33.Read(iprot)
+    if err != nil {
+      return
+    }
+    if err = iprot.ReadMessageEnd(); err != nil {
+      return
+    }
+    err = error34
+    return
+  }
+  if mTypeId != thrift.REPLY {
+    err = thrift.NewTApplicationException(thrift.INVALID_MESSAGE_TYPE_EXCEPTION, "GetContainerImageVers failed: invalid message type")
+    return
+  }
+  result := KsScmcClientGetContainerImageVersResult{}
+  if err = result.Read(iprot); err != nil {
+    return
+  }
+  if err = iprot.ReadMessageEnd(); err != nil {
+    return
+  }
+  value = result.GetSuccess()
+  return
+}
+
+// Parameters:
+//  - NodeNameorip
+//  - ContainerName
+func (p *KsScmcClientClient) GetImageVer4Container(node_nameorip string, container_name string) (r *GetImageVer4ContainerResponse, err error) {
+  if err = p.sendGetImageVer4Container(node_nameorip, container_name); err != nil { return }
+  return p.recvGetImageVer4Container()
+}
+
+func (p *KsScmcClientClient) sendGetImageVer4Container(node_nameorip string, container_name string)(err error) {
+  oprot := p.OutputProtocol
+  if oprot == nil {
+    oprot = p.ProtocolFactory.GetProtocol(p.Transport)
+    p.OutputProtocol = oprot
+  }
+  p.SeqId++
+  if err = oprot.WriteMessageBegin("getImageVer4Container", thrift.CALL, p.SeqId); err != nil {
+      return
+  }
+  args := KsScmcClientGetImageVer4ContainerArgs{
+  NodeNameorip : node_nameorip,
+  ContainerName : container_name,
+  }
+  if err = args.Write(oprot); err != nil {
+      return
+  }
+  if err = oprot.WriteMessageEnd(); err != nil {
+      return
+  }
+  return oprot.Flush()
+}
+
+
+func (p *KsScmcClientClient) recvGetImageVer4Container() (value *GetImageVer4ContainerResponse, err error) {
+  iprot := p.InputProtocol
+  if iprot == nil {
+    iprot = p.ProtocolFactory.GetProtocol(p.Transport)
+    p.InputProtocol = iprot
+  }
+  method, mTypeId, seqId, err := iprot.ReadMessageBegin()
+  if err != nil {
+    return
+  }
+  if method != "getImageVer4Container" {
+    err = thrift.NewTApplicationException(thrift.WRONG_METHOD_NAME, "getImageVer4Container failed: wrong method name")
+    return
+  }
+  if p.SeqId != seqId {
+    err = thrift.NewTApplicationException(thrift.BAD_SEQUENCE_ID, "getImageVer4Container failed: out of sequence response")
+    return
+  }
+  if mTypeId == thrift.EXCEPTION {
+    error35 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
+    var error36 error
+    error36, err = error35.Read(iprot)
+    if err != nil {
+      return
+    }
+    if err = iprot.ReadMessageEnd(); err != nil {
+      return
+    }
+    err = error36
+    return
+  }
+  if mTypeId != thrift.REPLY {
+    err = thrift.NewTApplicationException(thrift.INVALID_MESSAGE_TYPE_EXCEPTION, "getImageVer4Container failed: invalid message type")
+    return
+  }
+  result := KsScmcClientGetImageVer4ContainerResult{}
+  if err = result.Read(iprot); err != nil {
+    return
+  }
+  if err = iprot.ReadMessageEnd(); err != nil {
+    return
+  }
+  value = result.GetSuccess()
+  return
+}
+
+// Parameters:
+//  - NodeName
+//  - ContainerName
+func (p *KsScmcClientClient) GetContainer(node_name string, container_name string) (r int32, err error) {
+  if err = p.sendGetContainer(node_name, container_name); err != nil { return }
+  return p.recvGetContainer()
+}
+
+func (p *KsScmcClientClient) sendGetContainer(node_name string, container_name string)(err error) {
+  oprot := p.OutputProtocol
+  if oprot == nil {
+    oprot = p.ProtocolFactory.GetProtocol(p.Transport)
+    p.OutputProtocol = oprot
+  }
+  p.SeqId++
+  if err = oprot.WriteMessageBegin("getContainer", thrift.CALL, p.SeqId); err != nil {
+      return
+  }
+  args := KsScmcClientGetContainerArgs{
+  NodeName : node_name,
+  ContainerName : container_name,
+  }
+  if err = args.Write(oprot); err != nil {
+      return
+  }
+  if err = oprot.WriteMessageEnd(); err != nil {
+      return
+  }
+  return oprot.Flush()
+}
+
+
+func (p *KsScmcClientClient) recvGetContainer() (value int32, err error) {
+  iprot := p.InputProtocol
+  if iprot == nil {
+    iprot = p.ProtocolFactory.GetProtocol(p.Transport)
+    p.InputProtocol = iprot
+  }
+  method, mTypeId, seqId, err := iprot.ReadMessageBegin()
+  if err != nil {
+    return
+  }
+  if method != "getContainer" {
+    err = thrift.NewTApplicationException(thrift.WRONG_METHOD_NAME, "getContainer failed: wrong method name")
+    return
+  }
+  if p.SeqId != seqId {
+    err = thrift.NewTApplicationException(thrift.BAD_SEQUENCE_ID, "getContainer failed: out of sequence response")
+    return
+  }
+  if mTypeId == thrift.EXCEPTION {
+    error37 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
+    var error38 error
+    error38, err = error37.Read(iprot)
+    if err != nil {
+      return
+    }
+    if err = iprot.ReadMessageEnd(); err != nil {
+      return
+    }
+    err = error38
+    return
+  }
+  if mTypeId != thrift.REPLY {
+    err = thrift.NewTApplicationException(thrift.INVALID_MESSAGE_TYPE_EXCEPTION, "getContainer failed: invalid message type")
+    return
+  }
+  result := KsScmcClientGetContainerResult{}
+  if err = result.Read(iprot); err != nil {
+    return
+  }
+  if err = iprot.ReadMessageEnd(); err != nil {
+    return
+  }
+  value = result.GetSuccess()
+  return
+}
+
+// Parameters:
+//  - NodeName
+//  - ContainerName
+//  - NewVer_
+func (p *KsScmcClientClient) UpdateContainer(node_name string, container_name string, new_ver string) (r string, err error) {
+  if err = p.sendUpdateContainer(node_name, container_name, new_ver); err != nil { return }
+  return p.recvUpdateContainer()
+}
+
+func (p *KsScmcClientClient) sendUpdateContainer(node_name string, container_name string, new_ver string)(err error) {
+  oprot := p.OutputProtocol
+  if oprot == nil {
+    oprot = p.ProtocolFactory.GetProtocol(p.Transport)
+    p.OutputProtocol = oprot
+  }
+  p.SeqId++
+  if err = oprot.WriteMessageBegin("UpdateContainer", thrift.CALL, p.SeqId); err != nil {
+      return
+  }
+  args := KsScmcClientUpdateContainerArgs{
+  NodeName : node_name,
+  ContainerName : container_name,
+  NewVer_ : new_ver,
+  }
+  if err = args.Write(oprot); err != nil {
+      return
+  }
+  if err = oprot.WriteMessageEnd(); err != nil {
+      return
+  }
+  return oprot.Flush()
+}
+
+
+func (p *KsScmcClientClient) recvUpdateContainer() (value string, err error) {
+  iprot := p.InputProtocol
+  if iprot == nil {
+    iprot = p.ProtocolFactory.GetProtocol(p.Transport)
+    p.InputProtocol = iprot
+  }
+  method, mTypeId, seqId, err := iprot.ReadMessageBegin()
+  if err != nil {
+    return
+  }
+  if method != "UpdateContainer" {
+    err = thrift.NewTApplicationException(thrift.WRONG_METHOD_NAME, "UpdateContainer failed: wrong method name")
+    return
+  }
+  if p.SeqId != seqId {
+    err = thrift.NewTApplicationException(thrift.BAD_SEQUENCE_ID, "UpdateContainer failed: out of sequence response")
+    return
+  }
+  if mTypeId == thrift.EXCEPTION {
+    error39 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
+    var error40 error
+    error40, err = error39.Read(iprot)
+    if err != nil {
+      return
+    }
+    if err = iprot.ReadMessageEnd(); err != nil {
+      return
+    }
+    err = error40
+    return
+  }
+  if mTypeId != thrift.REPLY {
+    err = thrift.NewTApplicationException(thrift.INVALID_MESSAGE_TYPE_EXCEPTION, "UpdateContainer failed: invalid message type")
+    return
+  }
+  result := KsScmcClientUpdateContainerResult{}
+  if err = result.Read(iprot); err != nil {
+    return
+  }
+  if err = iprot.ReadMessageEnd(); err != nil {
+    return
+  }
+  value = result.GetSuccess()
+  return
+}
+
+// Parameters:
+//  - NodeName
+func (p *KsScmcClientClient) GetAlarmList(node_name string) (r string, err error) {
+  if err = p.sendGetAlarmList(node_name); err != nil { return }
+  return p.recvGetAlarmList()
+}
+
+func (p *KsScmcClientClient) sendGetAlarmList(node_name string)(err error) {
+  oprot := p.OutputProtocol
+  if oprot == nil {
+    oprot = p.ProtocolFactory.GetProtocol(p.Transport)
+    p.OutputProtocol = oprot
+  }
+  p.SeqId++
+  if err = oprot.WriteMessageBegin("GetAlarmList", thrift.CALL, p.SeqId); err != nil {
+      return
+  }
+  args := KsScmcClientGetAlarmListArgs{
+  NodeName : node_name,
+  }
+  if err = args.Write(oprot); err != nil {
+      return
+  }
+  if err = oprot.WriteMessageEnd(); err != nil {
+      return
+  }
+  return oprot.Flush()
+}
+
+
+func (p *KsScmcClientClient) recvGetAlarmList() (value string, err error) {
+  iprot := p.InputProtocol
+  if iprot == nil {
+    iprot = p.ProtocolFactory.GetProtocol(p.Transport)
+    p.InputProtocol = iprot
+  }
+  method, mTypeId, seqId, err := iprot.ReadMessageBegin()
+  if err != nil {
+    return
+  }
+  if method != "GetAlarmList" {
+    err = thrift.NewTApplicationException(thrift.WRONG_METHOD_NAME, "GetAlarmList failed: wrong method name")
+    return
+  }
+  if p.SeqId != seqId {
+    err = thrift.NewTApplicationException(thrift.BAD_SEQUENCE_ID, "GetAlarmList failed: out of sequence response")
+    return
+  }
+  if mTypeId == thrift.EXCEPTION {
+    error41 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
+    var error42 error
+    error42, err = error41.Read(iprot)
+    if err != nil {
+      return
+    }
+    if err = iprot.ReadMessageEnd(); err != nil {
+      return
+    }
+    err = error42
+    return
+  }
+  if mTypeId != thrift.REPLY {
+    err = thrift.NewTApplicationException(thrift.INVALID_MESSAGE_TYPE_EXCEPTION, "GetAlarmList failed: invalid message type")
+    return
+  }
+  result := KsScmcClientGetAlarmListResult{}
+  if err = result.Read(iprot); err != nil {
+    return
+  }
+  if err = iprot.ReadMessageEnd(); err != nil {
+    return
+  }
+  value = result.GetSuccess()
+  return
+}
+
+func (p *KsScmcClientClient) GetAllNodeList() (r *GetAllNodeListResponse, err error) {
+  if err = p.sendGetAllNodeList(); err != nil { return }
+  return p.recvGetAllNodeList()
+}
+
+func (p *KsScmcClientClient) sendGetAllNodeList()(err error) {
+  oprot := p.OutputProtocol
+  if oprot == nil {
+    oprot = p.ProtocolFactory.GetProtocol(p.Transport)
+    p.OutputProtocol = oprot
+  }
+  p.SeqId++
+  if err = oprot.WriteMessageBegin("getAllNodeList", thrift.CALL, p.SeqId); err != nil {
+      return
+  }
+  args := KsScmcClientGetAllNodeListArgs{
+  }
+  if err = args.Write(oprot); err != nil {
+      return
+  }
+  if err = oprot.WriteMessageEnd(); err != nil {
+      return
+  }
+  return oprot.Flush()
+}
+
+
+func (p *KsScmcClientClient) recvGetAllNodeList() (value *GetAllNodeListResponse, err error) {
+  iprot := p.InputProtocol
+  if iprot == nil {
+    iprot = p.ProtocolFactory.GetProtocol(p.Transport)
+    p.InputProtocol = iprot
+  }
+  method, mTypeId, seqId, err := iprot.ReadMessageBegin()
+  if err != nil {
+    return
+  }
+  if method != "getAllNodeList" {
+    err = thrift.NewTApplicationException(thrift.WRONG_METHOD_NAME, "getAllNodeList failed: wrong method name")
+    return
+  }
+  if p.SeqId != seqId {
+    err = thrift.NewTApplicationException(thrift.BAD_SEQUENCE_ID, "getAllNodeList failed: out of sequence response")
+    return
+  }
+  if mTypeId == thrift.EXCEPTION {
+    error43 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
+    var error44 error
+    error44, err = error43.Read(iprot)
+    if err != nil {
+      return
+    }
+    if err = iprot.ReadMessageEnd(); err != nil {
+      return
+    }
+    err = error44
+    return
+  }
+  if mTypeId != thrift.REPLY {
+    err = thrift.NewTApplicationException(thrift.INVALID_MESSAGE_TYPE_EXCEPTION, "getAllNodeList failed: invalid message type")
+    return
+  }
+  result := KsScmcClientGetAllNodeListResult{}
+  if err = result.Read(iprot); err != nil {
+    return
+  }
+  if err = iprot.ReadMessageEnd(); err != nil {
+    return
+  }
+  value = result.GetSuccess()
+  return
+}
+
+// Parameters:
+//  - NodeName
+func (p *KsScmcClientClient) GetAllContainers(node_name string) (r string, err error) {
+  if err = p.sendGetAllContainers(node_name); err != nil { return }
+  return p.recvGetAllContainers()
+}
+
+func (p *KsScmcClientClient) sendGetAllContainers(node_name string)(err error) {
+  oprot := p.OutputProtocol
+  if oprot == nil {
+    oprot = p.ProtocolFactory.GetProtocol(p.Transport)
+    p.OutputProtocol = oprot
+  }
+  p.SeqId++
+  if err = oprot.WriteMessageBegin("GetAllContainers", thrift.CALL, p.SeqId); err != nil {
+      return
+  }
+  args := KsScmcClientGetAllContainersArgs{
+  NodeName : node_name,
+  }
+  if err = args.Write(oprot); err != nil {
+      return
+  }
+  if err = oprot.WriteMessageEnd(); err != nil {
+      return
+  }
+  return oprot.Flush()
+}
+
+
+func (p *KsScmcClientClient) recvGetAllContainers() (value string, err error) {
+  iprot := p.InputProtocol
+  if iprot == nil {
+    iprot = p.ProtocolFactory.GetProtocol(p.Transport)
+    p.InputProtocol = iprot
+  }
+  method, mTypeId, seqId, err := iprot.ReadMessageBegin()
+  if err != nil {
+    return
+  }
+  if method != "GetAllContainers" {
+    err = thrift.NewTApplicationException(thrift.WRONG_METHOD_NAME, "GetAllContainers failed: wrong method name")
+    return
+  }
+  if p.SeqId != seqId {
+    err = thrift.NewTApplicationException(thrift.BAD_SEQUENCE_ID, "GetAllContainers failed: out of sequence response")
+    return
+  }
+  if mTypeId == thrift.EXCEPTION {
+    error45 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
+    var error46 error
+    error46, err = error45.Read(iprot)
+    if err != nil {
+      return
+    }
+    if err = iprot.ReadMessageEnd(); err != nil {
+      return
+    }
+    err = error46
+    return
+  }
+  if mTypeId != thrift.REPLY {
+    err = thrift.NewTApplicationException(thrift.INVALID_MESSAGE_TYPE_EXCEPTION, "GetAllContainers failed: invalid message type")
+    return
+  }
+  result := KsScmcClientGetAllContainersResult{}
+  if err = result.Read(iprot); err != nil {
+    return
+  }
+  if err = iprot.ReadMessageEnd(); err != nil {
+    return
+  }
+  value = result.GetSuccess()
+  return
+}
+
+// Parameters:
+//  - Nid
+func (p *KsScmcClientClient) GetAllContainersV2(nid string) (r string, err error) {
+  if err = p.sendGetAllContainersV2(nid); err != nil { return }
+  return p.recvGetAllContainersV2()
+}
+
+func (p *KsScmcClientClient) sendGetAllContainersV2(nid string)(err error) {
+  oprot := p.OutputProtocol
+  if oprot == nil {
+    oprot = p.ProtocolFactory.GetProtocol(p.Transport)
+    p.OutputProtocol = oprot
+  }
+  p.SeqId++
+  if err = oprot.WriteMessageBegin("GetAllContainersV2", thrift.CALL, p.SeqId); err != nil {
+      return
+  }
+  args := KsScmcClientGetAllContainersV2Args{
+  Nid : nid,
+  }
+  if err = args.Write(oprot); err != nil {
+      return
+  }
+  if err = oprot.WriteMessageEnd(); err != nil {
+      return
+  }
+  return oprot.Flush()
+}
+
+
+func (p *KsScmcClientClient) recvGetAllContainersV2() (value string, err error) {
+  iprot := p.InputProtocol
+  if iprot == nil {
+    iprot = p.ProtocolFactory.GetProtocol(p.Transport)
+    p.InputProtocol = iprot
+  }
+  method, mTypeId, seqId, err := iprot.ReadMessageBegin()
+  if err != nil {
+    return
+  }
+  if method != "GetAllContainersV2" {
+    err = thrift.NewTApplicationException(thrift.WRONG_METHOD_NAME, "GetAllContainersV2 failed: wrong method name")
+    return
+  }
+  if p.SeqId != seqId {
+    err = thrift.NewTApplicationException(thrift.BAD_SEQUENCE_ID, "GetAllContainersV2 failed: out of sequence response")
+    return
+  }
+  if mTypeId == thrift.EXCEPTION {
+    error47 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
+    var error48 error
+    error48, err = error47.Read(iprot)
+    if err != nil {
+      return
+    }
+    if err = iprot.ReadMessageEnd(); err != nil {
+      return
+    }
+    err = error48
+    return
+  }
+  if mTypeId != thrift.REPLY {
+    err = thrift.NewTApplicationException(thrift.INVALID_MESSAGE_TYPE_EXCEPTION, "GetAllContainersV2 failed: invalid message type")
+    return
+  }
+  result := KsScmcClientGetAllContainersV2Result{}
+  if err = result.Read(iprot); err != nil {
+    return
+  }
+  if err = iprot.ReadMessageEnd(); err != nil {
+    return
+  }
+  value = result.GetSuccess()
+  return
+}
+
+// Parameters:
+//  - SessionID
+//  - Nid
+func (p *KsScmcClientClient) GetAllContainersV3(session_id string, nid string) (r string, err error) {
+  if err = p.sendGetAllContainersV3(session_id, nid); err != nil { return }
+  return p.recvGetAllContainersV3()
+}
+
+func (p *KsScmcClientClient) sendGetAllContainersV3(session_id string, nid string)(err error) {
+  oprot := p.OutputProtocol
+  if oprot == nil {
+    oprot = p.ProtocolFactory.GetProtocol(p.Transport)
+    p.OutputProtocol = oprot
+  }
+  p.SeqId++
+  if err = oprot.WriteMessageBegin("GetAllContainersV3", thrift.CALL, p.SeqId); err != nil {
+      return
+  }
+  args := KsScmcClientGetAllContainersV3Args{
+  SessionID : session_id,
+  Nid : nid,
+  }
+  if err = args.Write(oprot); err != nil {
+      return
+  }
+  if err = oprot.WriteMessageEnd(); err != nil {
+      return
+  }
+  return oprot.Flush()
+}
+
+
+func (p *KsScmcClientClient) recvGetAllContainersV3() (value string, err error) {
+  iprot := p.InputProtocol
+  if iprot == nil {
+    iprot = p.ProtocolFactory.GetProtocol(p.Transport)
+    p.InputProtocol = iprot
+  }
+  method, mTypeId, seqId, err := iprot.ReadMessageBegin()
+  if err != nil {
+    return
+  }
+  if method != "GetAllContainersV3" {
+    err = thrift.NewTApplicationException(thrift.WRONG_METHOD_NAME, "GetAllContainersV3 failed: wrong method name")
+    return
+  }
+  if p.SeqId != seqId {
+    err = thrift.NewTApplicationException(thrift.BAD_SEQUENCE_ID, "GetAllContainersV3 failed: out of sequence response")
+    return
+  }
+  if mTypeId == thrift.EXCEPTION {
+    error49 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
+    var error50 error
+    error50, err = error49.Read(iprot)
+    if err != nil {
+      return
+    }
+    if err = iprot.ReadMessageEnd(); err != nil {
+      return
+    }
+    err = error50
+    return
+  }
+  if mTypeId != thrift.REPLY {
+    err = thrift.NewTApplicationException(thrift.INVALID_MESSAGE_TYPE_EXCEPTION, "GetAllContainersV3 failed: invalid message type")
+    return
+  }
+  result := KsScmcClientGetAllContainersV3Result{}
+  if err = result.Read(iprot); err != nil {
+    return
+  }
+  if err = iprot.ReadMessageEnd(); err != nil {
+    return
+  }
+  value = result.GetSuccess()
+  return
+}
+
+// Parameters:
+//  - NodeName
+func (p *KsScmcClientClient) GetAllContainerList(node_name string) (r *GetAllContainerListResponse, err error) {
+  if err = p.sendGetAllContainerList(node_name); err != nil { return }
+  return p.recvGetAllContainerList()
+}
+
+func (p *KsScmcClientClient) sendGetAllContainerList(node_name string)(err error) {
+  oprot := p.OutputProtocol
+  if oprot == nil {
+    oprot = p.ProtocolFactory.GetProtocol(p.Transport)
+    p.OutputProtocol = oprot
+  }
+  p.SeqId++
+  if err = oprot.WriteMessageBegin("getAllContainerList", thrift.CALL, p.SeqId); err != nil {
+      return
+  }
+  args := KsScmcClientGetAllContainerListArgs{
+  NodeName : node_name,
+  }
+  if err = args.Write(oprot); err != nil {
+      return
+  }
+  if err = oprot.WriteMessageEnd(); err != nil {
+      return
+  }
+  return oprot.Flush()
+}
+
+
+func (p *KsScmcClientClient) recvGetAllContainerList() (value *GetAllContainerListResponse, err error) {
+  iprot := p.InputProtocol
+  if iprot == nil {
+    iprot = p.ProtocolFactory.GetProtocol(p.Transport)
+    p.InputProtocol = iprot
+  }
+  method, mTypeId, seqId, err := iprot.ReadMessageBegin()
+  if err != nil {
+    return
+  }
+  if method != "getAllContainerList" {
+    err = thrift.NewTApplicationException(thrift.WRONG_METHOD_NAME, "getAllContainerList failed: wrong method name")
+    return
+  }
+  if p.SeqId != seqId {
+    err = thrift.NewTApplicationException(thrift.BAD_SEQUENCE_ID, "getAllContainerList failed: out of sequence response")
+    return
+  }
+  if mTypeId == thrift.EXCEPTION {
+    error51 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
+    var error52 error
+    error52, err = error51.Read(iprot)
+    if err != nil {
+      return
+    }
+    if err = iprot.ReadMessageEnd(); err != nil {
+      return
+    }
+    err = error52
+    return
+  }
+  if mTypeId != thrift.REPLY {
+    err = thrift.NewTApplicationException(thrift.INVALID_MESSAGE_TYPE_EXCEPTION, "getAllContainerList failed: invalid message type")
+    return
+  }
+  result := KsScmcClientGetAllContainerListResult{}
+  if err = result.Read(iprot); err != nil {
+    return
+  }
+  if err = iprot.ReadMessageEnd(); err != nil {
+    return
+  }
+  value = result.GetSuccess()
+  return
+}
+
+// Parameters:
+//  - SessionID
+//  - Cond
+func (p *KsScmcClientClient) CondGetAlarmListV3(session_id string, cond *GetAlarmCond) (r string, err error) {
+  if err = p.sendCondGetAlarmListV3(session_id, cond); err != nil { return }
+  return p.recvCondGetAlarmListV3()
+}
+
+func (p *KsScmcClientClient) sendCondGetAlarmListV3(session_id string, cond *GetAlarmCond)(err error) {
+  oprot := p.OutputProtocol
+  if oprot == nil {
+    oprot = p.ProtocolFactory.GetProtocol(p.Transport)
+    p.OutputProtocol = oprot
+  }
+  p.SeqId++
+  if err = oprot.WriteMessageBegin("CondGetAlarmListV3", thrift.CALL, p.SeqId); err != nil {
+      return
+  }
+  args := KsScmcClientCondGetAlarmListV3Args{
+  SessionID : session_id,
+  Cond : cond,
+  }
+  if err = args.Write(oprot); err != nil {
+      return
+  }
+  if err = oprot.WriteMessageEnd(); err != nil {
+      return
+  }
+  return oprot.Flush()
+}
+
+
+func (p *KsScmcClientClient) recvLoginV3() (value string, err error) {
+  iprot := p.InputProtocol
+  if iprot == nil {
+    iprot = p.ProtocolFactory.GetProtocol(p.Transport)
+    p.InputProtocol = iprot
+  }
+  method, mTypeId, seqId, err := iprot.ReadMessageBegin()
+  if err != nil {
+    return
+  }
+  if method != "LoginV3" {
+    err = thrift.NewTApplicationException(thrift.WRONG_METHOD_NAME, "LoginV3 failed: wrong method name")
+    return
+  }
+  if p.SeqId != seqId {
+    err = thrift.NewTApplicationException(thrift.BAD_SEQUENCE_ID, "LoginV3 failed: out of sequence response")
+    return
+  }
+  if mTypeId == thrift.EXCEPTION {
     error6 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
     var error7 error
     error7, err = error6.Read(iprot)

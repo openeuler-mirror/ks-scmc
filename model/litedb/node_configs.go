@@ -17,12 +17,13 @@ type NodeConfig struct {
 	UpdatedAt      int64                `gorm:"autoUpdateTime"`
 }
 
-type NodeSecurityConfigs = pb.SecurityConfig
-type NodeProcProtection = security.ProcProtection
-type NodeNetworkRule = security.NetworkRule
+type (
+	NodeSecurityConfigs = pb.SecurityConfig
+	NodeProcProtection  = security.ProcProtection
+	NodeNetworkRule     = security.NetworkRule
+)
 
 func CreateNodeConfig(data *NodeConfig) error {
-
 	log.Debugf("CreateNodeConfig data=%+v ", data)
 	if data == nil {
 		return nil

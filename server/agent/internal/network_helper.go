@@ -171,47 +171,31 @@ func checkNetworkInfo(ifaceName, containerId string, ipAddr *string, masklen int
 
 // 设置磁盘限速
 func setdisklimit(containerId string) {
-	/*
-		disklimitCfg, err := litedb.GetContainerLimitByCID(containerId)
-		if err != nil {
-			return
-		}
-	*/
-
-	outCfg, err := litedb.GetContainerOutConfig(containerId)
+	disklimitCfg, err := litedb.GetContainerLimitByCID(containerId)
 	if err != nil {
 		return
 	}
 
-	rStr := fmt.Sprintf("%d", outCfg.Config.DiskRbw)
+	rStr := fmt.Sprintf("%d", disklimitCfg.DiskRbw)
 	docker.SetContainerDiskLimit("disk_rbw", containerId, rStr)
 
-	wStr := fmt.Sprintf("%d", outCfg.Config.DiskWbw)
+	wStr := fmt.Sprintf("%d", disklimitCfg.DiskWbw)
 	docker.SetContainerDiskLimit("disk_wbw", containerId, wStr)
 }
 
 // 容器启动，启动容器内配置的相关应用
 func runAppEntry(containerId string) {
-	/*
-		cfgs, err := litedb.GetContainerConfig(containerId)
-		if err != nil {
-			return
-		}
-		data, err := litedb.GetContainerMiscConfigByName(cfgs.ContainerName)
-		if err != nil {
-			return
-		}
-
-		if data.MiscConfig == nil || !data.MiscConfig.GetAppRun() {
-			return
-		}
-	*/
-	outCfg, err := litedb.GetContainerOutConfig(containerId)
+	cfgs, err := litedb.GetContainerConfig(containerId)
 	if err != nil {
 		return
 	}
 
-	if !outCfg.Config.AppRun {
+	data, err := litedb.GetContainerMiscConfigByName(cfgs.ContainerName)
+	if err != nil {
+		return
+	}
+
+	if data.MiscConfig == nil || !data.MiscConfig.GetAppRun() {
 		return
 	}
 

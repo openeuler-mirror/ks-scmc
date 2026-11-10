@@ -316,23 +316,23 @@ func (c *ContainerResourceMonitor) calculateDiskIOMonitorUsage(ioRate float64, i
 
 func (c *ContainerResourceMonitor) checkAndAlert(usage float64, resourceType string, container types.Container, node *db.NodeInfo, limit *container.ResourceLimit, alertMsg string) {
 	hasValidLimit := false
-	var limitValue float64
+	// var limitValue float64
 	switch resourceType {
 	case "cpu":
 		hasValidLimit = limit.CpuLimit > 0
-		limitValue = limit.CpuLimit
+		// limitValue = limit.CpuLimit
 	case "memory":
 		hasValidLimit = limit.MemoryLimit > 0
-		limitValue = limit.MemoryLimit
+		// limitValue = limit.MemoryLimit
 	case "disk":
 		hasValidLimit = limit.DiskLimit > 0
-		limitValue = limit.DiskLimit
+		// limitValue = limit.DiskLimit
 	case "diskRead":
 		hasValidLimit = limit.DiskRbw > 0
-		limitValue = float64(limit.DiskRbw)
+		// limitValue = float64(limit.DiskRbw)
 	case "diskWrite":
 		hasValidLimit = limit.DiskWbw > 0
-		limitValue = float64(limit.DiskWbw)
+		// limitValue = float64(limit.DiskWbw)
 	}
 	if !hasValidLimit || usage <= 0 {
 		log.Debugf("Container %s %s: no valid limit or usage, skip alert", container.ID[:12], resourceType)

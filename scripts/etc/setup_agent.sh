@@ -16,8 +16,40 @@ systemctl restart sshd.service
 echo "配置influxdb组件"
 ln -s /usr/lib/influxdb/scripts/influxdb.service /usr/lib/systemd/system/influxdb.service
 systemctl enable --now influxdb.service
-# 配置influxdb数据最多存储7天
-influx -execute 'CREATE DATABASE "cadvisor"; CREATE RETENTION POLICY "cadvisor_retention" ON "cadvisor" DURATION 7d REPLICATION 1 DEFAULT;'
+
+# 创建root用户并设置密码（如果用户不存在）
+influx -execute "CREATE USER root WITH PASSWORD 'root' WITH ALL PRIVILEGES" 2>/dev/null || \
+    influx -username root -password root -execute "SET PASSWORD FOR root = 'root'" 2>/dev/null || true
+
+# 创建数据库和保留策略
+influx -username root -password root -execute 'CREATE DATABASE "cadvisor"; CREATE RETENTION POLICY "cadvisor_retention" ON "cadvisor" DURATION 7d REPLICATION 1 DEFAULT;' 2>/dev/null || \
+    influx -execute 'CREATE DATABASE "cadvisor"; CREATE RETENTION POLICY "cadvisor_retention" ON "cadvisor" DURATION 7d REPLICATION 1 DEFAULT;' 2>/dev/null || true
+
+# 启用influxdb认证
+INFLUX_CONF="/etc/influxdb/influxdb.conf"
+if [ -f "$INFLUX_CONF" ]; then
+    sed -i 's/^[#[:space:]]*auth-enabled.*/auth-enabled = true/' "$INFLUX_CONF"
+    if ! grep -q "^auth-enabled" "$INFLUX_CONF"; then
+        awk '/^\[http\]/ { print; print "auth-enabled = true"; next }1' "$INFLUX_CONF" > "$INFLUX_CONF.tmp" && \mv "$INFLUX_CONF.tmp" "$INFLUX_CONF" || echo "auth-enabled = true" >> "$INFLUX_CONF"
+    fi
+else
+    # 如果配置文件不存在，创建基本配置
+    mkdir -p /etc/influxdb
+    cat > "$INFLUX_CONF" << EOF
+[meta]
+  dir = "/var/lib/influxdb/meta"
+
+[data]
+  dir = "/var/lib/influxdb/data"
+  wal-dir = "/var/lib/influxdb/wal"
+
+[http]
+  auth-enabled = true
+EOF
+fi
+
+# 重启influxdb以应用认证配置
+systemctl restart influxdb.service
 
 
 ### cadvisor组件用于采集监控数据
@@ -32,6 +64,23 @@ cat >> /etc/sysconfig/cadvisor << EOF
 # List of metrics to be disabled
 CADVISOR_DISABLED_METRICS="tcp,udp,sched,process,percpu"
 EOF
+
+# InfluxDB authentication
+# 配置cadvisor InfluxDB认证用户
+CADVISOR_CONFIG="/etc/sysconfig/cadvisor"
+if ! grep -q '^CADVISOR_STORAGE_DRIVER_USER=' CADVISOR_CONFIG 2>/dev/null; then      
+    echo 'CADVISOR_STORAGE_DRIVER_USER="root"' >> CADVISOR_CONFIG
+else
+    sed -i 's/^CADVISOR_STORAGE_DRIVER_USER=.*/CADVISOR_STORAGE_DRIVER_USER="root"/g' CADVISOR_CONFIG
+fi
+
+# 配置cadvisor InfluxDB认证密码
+if ! grep -q '^CADVISOR_STORAGE_DRIVER_PASSWORD=' CADVISOR_CONFIG 2>/dev/null; then
+    echo 'CADVISOR_STORAGE_DRIVER_PASSWORD="root"' >> CADVISOR_CONFIG
+else
+    sed -i 's/^CADVISOR_STORAGE_DRIVER_PASSWORD=.*/CADVISOR_STORAGE_DRIVER_PASSWORD="root"/g' CADVISOR_CONFIG
+fi
+
 
 cat > /usr/lib/systemd/system/cadvisor.service << EOF
 [Unit]

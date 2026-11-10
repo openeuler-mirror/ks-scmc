@@ -1,18 +1,14 @@
 package internal
 
 import (
-	// "context"
 	"fmt"
 	"sync"
-
-	// "time"
 
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 
 	"scmc/common"
-	// "scmc/rpc/pb/container"
 )
 
 var (

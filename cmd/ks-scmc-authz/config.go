@@ -59,7 +59,7 @@ func (c *Config) saveFile() error {
 	}
 
 	// TODO create file if not exists
-	return ioutil.WriteFile(c.filePath, content, 0644)
+	return ioutil.WriteFile(c.filePath, content, 0o644)
 }
 
 func (c *Config) addSensitiveContainers(ids []string) error {

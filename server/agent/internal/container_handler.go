@@ -1403,6 +1403,7 @@ func (s *ContainerServer) inspect(id string, backup bool) (*pb.ContainerConfigs,
 		Name:         strings.TrimPrefix(info.Name, "/"),
 		Image:        info.Image,
 		ResouceLimit: &pb.ResourceLimit{},
+        MiscConfig:   &pb.ContainerMiscConfig{},
 	}
 
 	var pid int
@@ -1466,9 +1467,6 @@ func (s *ContainerServer) inspect(id string, backup bool) (*pb.ContainerConfigs,
 		}
 	}
 
-    configs.MiscConfig = &pb.ContainerMiscConfig {
-        AppRun : false,
-    }
     misc, err := litedb.GetContainerMiscConfig(info.ID)
     if err != nil {
         configs.MiscConfig.AppRun = false

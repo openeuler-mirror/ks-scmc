@@ -9020,26 +9020,32 @@ func (p *KsScmcClientClient) recvGetContainerNetRules() (value *GetContainerNetR
 }
 
 // Parameters:
-//  - NodeName
-//  - Name
-func (p *KsScmcClientClient) UninstallContainer(node_name string, name string) (r string, err error) {
-  if err = p.sendUninstallContainer(node_name, name); err != nil { return }
-  return p.recvUninstallContainer()
+//  - NodeNameorip
+//  - ContainerName
+//  - IPAddr
+//  - Port
+//  - NetProto
+func (p *KsScmcClientClient) AddContainerIpPort(node_nameorip string, container_name string, ip_addr string, port int32, net_proto string) (r int32, err error) {
+  if err = p.sendAddContainerIpPort(node_nameorip, container_name, ip_addr, port, net_proto); err != nil { return }
+  return p.recvAddContainerIpPort()
 }
 
-func (p *KsScmcClientClient) sendUninstallContainer(node_name string, name string)(err error) {
+func (p *KsScmcClientClient) sendAddContainerIpPort(node_nameorip string, container_name string, ip_addr string, port int32, net_proto string)(err error) {
   oprot := p.OutputProtocol
   if oprot == nil {
     oprot = p.ProtocolFactory.GetProtocol(p.Transport)
     p.OutputProtocol = oprot
   }
   p.SeqId++
-  if err = oprot.WriteMessageBegin("UninstallContainer", thrift.CALL, p.SeqId); err != nil {
+  if err = oprot.WriteMessageBegin("addContainerIpPort", thrift.CALL, p.SeqId); err != nil {
       return
   }
-  args := KsScmcClientUninstallContainerArgs{
-  NodeName : node_name,
-  Name : name,
+  args := KsScmcClientAddContainerIpPortArgs{
+  NodeNameorip : node_nameorip,
+  ContainerName : container_name,
+  IPAddr : ip_addr,
+  Port : port,
+  NetProto : net_proto,
   }
   if err = args.Write(oprot); err != nil {
       return

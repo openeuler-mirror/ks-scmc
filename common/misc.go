@@ -57,3 +57,44 @@ func IsMaster() bool {
 
 	return false
 }
+
+func IsMasterNoIface() bool {
+
+    vip := Config.Controller.VirtualIP
+    if vip == "" {
+        return true
+    }
+
+    vip, err := extractIP(vip)
+    if err != nil {
+        log.Warnf("extractIP err=%v", err)
+        return false
+    }
+
+    interfaces, err := net.Interfaces() // 获取所有网卡
+    if err != nil {
+        log.Warnf("get net interfaces erro=%v", err)
+        return false;
+    }
+
+    for _, iface := range interfaces {
+        addrs, err := iface.Addrs()
+        if err != nil {
+            continue;
+        }
+
+        for _, addr := range addrs {
+            ipNet, ok := addr.(*net.IPNet)
+            if !ok {
+                continue
+            }
+            if ipNet.IP.To4() != nil {
+                if vip == ipNet.IP.String() {
+                    return true
+                }
+            }
+        }
+    }
+
+    return false;
+}

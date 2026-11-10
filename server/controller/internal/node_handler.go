@@ -5,15 +5,15 @@ import (
 	"time"
 	"unicode/utf8"
 
-	"scmc/model/db"
-	"scmc/rpc"
-	pb "scmc/rpc/pb/node"
-	"scmc/server/args"
-
 	"github.com/google/uuid"
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+
+	"scmc/model/db"
+	"scmc/rpc"
+	pb "scmc/rpc/pb/node"
+	"scmc/server/args"
 )
 
 type NodeServer struct {
@@ -465,7 +465,6 @@ func GetNodeStatus(n *db.NodeInfo) (*pb.NodeStatus, error) {
 }
 
 func (s *NodeServer) UpdateProcessWhiteList(ctx context.Context, in *pb.UpdateProcessWhiteListRequest) (*pb.UpdateProcessWhiteListReply, error) {
-
 	n, err := db.QueryNodeByID(in.NodeId)
 	if err != nil {
 		if err == db.ErrRecordNotFound {

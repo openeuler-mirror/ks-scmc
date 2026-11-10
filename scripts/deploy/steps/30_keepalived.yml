@@ -56,5 +56,5 @@
     Restart=on-failure
     RestartSec=5s
     EOF
-    systemdctl daemon-reload
+    systemctl daemon-reload
     

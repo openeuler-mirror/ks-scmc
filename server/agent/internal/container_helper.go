@@ -39,13 +39,13 @@ const (
 func containerGraphicSetup(containerName string, config *container.Config, hostConfig *container.HostConfig) error {
 	hostPath := filepath.Join(common.Config.Agent.ContainerExtraDataBasedir, containerName)
 	socketDir := filepath.Join(hostPath, "socket")
-	if err := os.MkdirAll(socketDir, 0755); err != nil {
+	if err := os.MkdirAll(socketDir, 0o755); err != nil {
 		log.Warnf("mkdir %v: %v", socketDir, err)
 		return err
 	}
 
 	authDir := filepath.Join(hostPath, "xauth")
-	if err := os.MkdirAll(authDir, 0755); err != nil {
+	if err := os.MkdirAll(authDir, 0o755); err != nil {
 		log.Warnf("mkdir %v: %v", authDir, err)
 		return err
 	}
@@ -327,7 +327,7 @@ func UnionNetworkRules(arr1, arr2 []*litedb.NetworkRule) ([]*litedb.NetworkRule,
 				continue
 			}
 
-			var newipnet = ipNet.String()
+			newipnet := ipNet.String()
 			if strings.HasSuffix(newipnet, "/32") {
 				newipnet = strings.Split(newipnet, "/")[0]
 			}
@@ -442,6 +442,7 @@ func GetDockerManager(cli *client.Client) *DockerManager {
 	})
 	return instance
 }
+
 func (dm *DockerManager) Start() {
 	dm.startOnce.Do(func() {
 		dm.mu.Lock()
@@ -453,6 +454,7 @@ func (dm *DockerManager) Start() {
 		}
 	})
 }
+
 func (dm *DockerManager) startEventLoop() {
 	ctx, cancel := context.WithCancel(context.Background())
 	dm.cancel = cancel
@@ -473,6 +475,7 @@ func (dm *DockerManager) startEventLoop() {
 		}
 	}
 }
+
 func (dm *DockerManager) Stop() {
 	if dm.cancel != nil {
 		dm.cancel()
@@ -513,7 +516,7 @@ func (dm *DockerManager) handleEvent(msg events.Message) {
 			}
 			dm.tcController.RemoveLimit(pid)
 		}
-		//dm.dbManager.DeleteLimit(event.ID)
+		// dm.dbManager.DeleteLimit(event.ID)
 	}
 }
 
@@ -522,6 +525,7 @@ type TrafficController struct{}
 func NewTrafficController() *TrafficController {
 	return &TrafficController{}
 }
+
 func (tc *TrafficController) ApplyLimit(pid int, upload, download float64) error {
 	if upload == 0 && download == 0 {
 		return tc.RemoveLimit(pid)
@@ -540,6 +544,7 @@ func (tc *TrafficController) ApplyLimit(pid int, upload, download float64) error
 	}
 	return nil
 }
+
 func (tc *TrafficController) RemoveLimit(pid int) error {
 	cmds := []string{
 		fmt.Sprintf("nsenter -t %d -n tc qdisc del dev eth0 root", pid),
@@ -556,6 +561,7 @@ func (tc *TrafficController) RemoveLimit(pid int) error {
 	}
 	return nil
 }
+
 func setupIngress(pid int, rate float64) error {
 	if err := createIFB(pid); err != nil {
 		return err
@@ -576,11 +582,13 @@ func setupIngress(pid int, rate float64) error {
 	}
 	return nil
 }
+
 func setupEgress(pid int, rate float64) error {
 	cmd := fmt.Sprintf("nsenter -t %d -n tc qdisc add dev eth0 root tbf rate %dmbit latency 100ms burst %d",
 		pid, rate*8, calculateBurst(rate))
 	return exec.Command("sh", "-c", cmd).Run()
 }
+
 func createIFB(pid int) error {
 	cmds := []string{
 		"modprobe ifb",
@@ -603,6 +611,7 @@ func calculateBurst(rate float64) float64 {
 	}
 	return rate * 125000 // 1MB/s = 1,000,000 bytes
 }
+
 func getContainerPID(containerID string) (int, error) {
 	// 实现获取容器PID的逻辑（通过docker inspect）
 	// 返回PID和可能的错误

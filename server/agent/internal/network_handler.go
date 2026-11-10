@@ -19,7 +19,6 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	"scmc/common"
 	"scmc/model/docker"
 	"scmc/model/iptables"
 	"scmc/rpc"

@@ -191,8 +191,6 @@ func (s *ImageServer) receiveImageFile(securitySwitch bool, img *db.ImageInfo, s
 }
 
 func (s *ImageServer) List(ctx context.Context, in *pb.ListRequest) (*pb.ListReply, error) {
-	log.Infof("ListRequest: %+v", in)
-
 	if in.NodeId <= 0 {
 		images, err := db.ListImages()
 		if err != nil {

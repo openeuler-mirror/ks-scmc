@@ -31,6 +31,8 @@ var defaultNetProList = []string{
 	"/usr/bin/rsync",
 	"/usr/bin/lsyncd",
 	"/usr/bin/opensnitchd",
+	"/usr/bin/ks-scmc-gui",
+	"/usr/libexec/mysqld",
 }
 
 type AgentConfig struct {

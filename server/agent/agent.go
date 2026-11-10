@@ -11,6 +11,7 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/keepalive"
 
+	"scmc/common"
 	"scmc/model/kysec"
 	"scmc/model/litedb"
 	"scmc/rpc/middleware/debug"
@@ -73,6 +74,32 @@ func resumeNodeConfigs() {
 
 			if err := kysec.UpdateWhiteList("localhost", pp.IsOn, hashes, nil); err != nil {
 				log.Warnf("UpdateWhiteList container=%v err=%v", "localhost", err)
+			}
+		}
+
+		if c.SecurityConfig.NprocProtection != nil {
+			IsOn := c.SecurityConfig.NprocProtection.IsOn
+
+			defaultNetProList := common.GetNetworkProcWhitelist()
+			// 合并用户列表和默认列表（保留顺序：用户列表在前，默认列表在后）
+			mergedPaths := make([]string, 0, len(c.SecurityConfig.NprocProtection.ExeList)+len(defaultNetProList))
+			mergedPaths = append(mergedPaths, c.SecurityConfig.NprocProtection.ExeList...)
+			mergedPaths = append(mergedPaths, defaultNetProList...)
+
+			// 去重逻辑（保留首次出现的元素）
+			seen := make(map[string]struct{})
+			uniquePaths := make([]string, 0, len(mergedPaths))
+			for _, path := range mergedPaths {
+				if _, exists := seen[path]; !exists {
+					seen[path] = struct{}{}
+					uniquePaths = append(uniquePaths, path)
+				}
+			}
+			mergedPaths = uniquePaths
+			ExeList := mergedPaths
+			// 设置网络进程白名单
+			if err := kysec.UpdateNprocProtection("localhost", IsOn, ExeList, []string{}); err != nil {
+				log.Warnf("UpdateNprocProtection %v err: %v", "localhost", err)
 			}
 		}
 	}

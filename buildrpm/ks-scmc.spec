@@ -6,7 +6,7 @@
 
 %global pkg_name ks-scmc
 %global pkg_ver 1.2.1
-%global pkg_rel 11 
+%global pkg_rel 12 
 
 Summary:        KylinSec security container magic cube
 License:        No License
@@ -113,7 +113,10 @@ rm -rf %{_datadir}/ks-scmc
 %{_sysconfdir}/sudoers.d/ks-scmc-sudoers
 
 %changelog
-* Thu Nov 21 2025 yubin <yubin@kylinsec.com.cn> - 1.2.1-11.ky3
+* Mon Dec 1 2025 yubin <yubin@kylinsec.com.cn> - 1.2.1-12.ky3
+- KYOS-F: Upgrade from 1.2.1-11 to 1.2.1-12. (#106480)
+
+* Fri Nov 21 2025 yubin <yubin@kylinsec.com.cn> - 1.2.1-11.ky3
 - KYOS-F: Upgrade from 1.2.1-10 to 1.2.1-11. (#104713) 
 
 * Thu Jul 31 2025 Shenghong Tang <tangshenghong@kylinos.com.cn> - 1.2.1-10.ky3

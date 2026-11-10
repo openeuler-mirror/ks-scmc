@@ -39,7 +39,7 @@ func (r *Rule) Save(filePath string) error {
 		return fmt.Errorf("error while saving rule %v to %s: %s", r, filePath, err)
 	}
 
-	if err = ioutil.WriteFile(filePath, raw, 0644); err != nil {
+	if err = ioutil.WriteFile(filePath, raw, 0o644); err != nil {
 		return fmt.Errorf("error while saving rule %v to %s: %s", r, filePath, err)
 	}
 
@@ -90,7 +90,7 @@ func SaveRule(p *litedb.ProcProtection, containerID, uuid string) error {
 		return fmt.Errorf("opensnitch rule cannot has empty uuid") // 保存空uuid导致所有连接都异常
 	}
 
-	var allowRule = Rule{
+	allowRule := Rule{
 		Name:       containerID + "-allow",
 		Enabled:    p.IsOn,
 		Precedence: true,
@@ -117,7 +117,7 @@ func SaveRule(p *litedb.ProcProtection, containerID, uuid string) error {
 		return err
 	}
 
-	var denyRule = Rule{
+	denyRule := Rule{
 		Name:       containerID + "-deny",
 		Enabled:    p.IsOn,
 		Precedence: false,

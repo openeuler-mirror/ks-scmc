@@ -24,8 +24,9 @@ const (
 	NLMSG_COM_TYPE_REQUEST = 3
 	NLMSG_COM_TYPE_NOTIFY  = 4
 
-	NLMSG_FUNC_TYPE_WL = 1
-	NLMSG_FUNC_TYPE_AC = 2
+	NLMSG_FUNC_TYPE_WL  = 1 // NLMSG_FUNC_TYPE_PROCESS
+	NLMSG_FUNC_TYPE_AC  = 2 // NLMSG_FUNC_TYPE_FILE
+	NLMSG_FUNC_TYPE_NET = 3
 
 	NLMSG_ACTION_TYPE_ADD     = 1
 	NLMSG_ACTION_TYPE_DEL     = 2
@@ -116,21 +117,6 @@ func bCheckSysIsV6() bool {
 	return false
 
 }
-
-/*
-var (
-    clifd int
-    cliErr error
-    cliOnce sync.Once
-)
-
-func initNetlink()(int, error) {
-    cliOnce.Do(func(){
-        clifd, cliErr = _initNetlink()
-    })
-    return clifd, cliErr
-}
-*/
 
 func initNetlink() (int, error) {
 	return _initNetlink(0)
@@ -301,8 +287,9 @@ func GetAuditLog() {
 	}
 }
 
-// ----------------------------------------
-
+/*
+ * 容器进程白名单数据
+ */
 func updateWhiteListToKern(fd int, id, hash, name []byte, add bool) error {
 	if id == nil || hash == nil {
 		log.Warnf("param is nil")
@@ -328,7 +315,7 @@ func updateWhiteListToKern(fd int, id, hash, name []byte, add bool) error {
 		binary.Write(buf, localEndian, realHash) != nil ||
 		binary.Write(buf, localEndian, namelen) != nil ||
 		binary.Write(buf, localEndian, name) != nil {
-		log.Warnf("to []byte err")
+		log.Warnf("updateWhiteListToKern to []byte err")
 		return os.ErrInvalid
 	}
 
@@ -354,7 +341,7 @@ func freeWhiteListToKern(fd int, id []byte, who int) error {
 		binary.Write(buf, localEndian, [WL_HASH_SIZE]byte{}) != nil ||
 		binary.Write(buf, localEndian, int32(0)) != nil ||
 		binary.Write(buf, localEndian, []byte{}) != nil {
-		log.Warnf("to []byte err")
+		log.Warnf("freeWhiteListToKern to []byte err")
 		return os.ErrInvalid
 	}
 
@@ -363,6 +350,9 @@ func freeWhiteListToKern(fd int, id []byte, who int) error {
 	return sendNetlink(fd, buf.Bytes(), buf.Len(), msgtype)
 }
 
+/*
+ * 容器文件保护消息
+ */
 func setFileAccessToKern(fd int, id, filePath []byte, add bool) error {
 	if id == nil || filePath == nil || len(id) > ID_MAX_SIZE {
 		return os.ErrInvalid
@@ -379,7 +369,7 @@ func setFileAccessToKern(fd int, id, filePath []byte, add bool) error {
 		binary.Write(buf, localEndian, int32(0)) != nil ||
 		binary.Write(buf, localEndian, filePath) != nil ||
 		binary.Write(buf, localEndian, buffer) != nil {
-		log.Warnf("to []byte err")
+		log.Warnf("setFileAccessToKern to []byte err")
 		return os.ErrInvalid
 	}
 
@@ -393,6 +383,38 @@ func setFileAccessToKern(fd int, id, filePath []byte, add bool) error {
 	return sendNetlink(fd, buf.Bytes(), buflen, msgtype)
 }
 
+/*
+ * 容器网络进程白名单
+ */
+func setNProcAccess(fd int, id, filePath []byte, add bool) error {
+	if id == nil || filePath == nil || len(id) > ID_MAX_SIZE {
+		return os.ErrInvalid
+	}
+
+	var realID [ID_MAX_SIZE]byte
+	copy(realID[:], id) // 容器ID
+
+	buf := new(bytes.Buffer)
+	if binary.Write(buf, localEndian, realID) != nil ||
+		binary.Write(buf, localEndian, int32(len(filePath))) != nil ||
+		binary.Write(buf, localEndian, filePath) != nil {
+		log.Warnf("setNProcAccess to []byte err")
+		return os.ErrInvalid
+	}
+
+	var msgtype uint16
+	if add {
+		msgtype = setNlmsgType(NLMSG_COM_TYPE_REQUEST, NLMSG_FUNC_TYPE_NET, NLMSG_ACTION_TYPE_ADD)
+	} else {
+		msgtype = setNlmsgType(NLMSG_COM_TYPE_REQUEST, NLMSG_FUNC_TYPE_NET, NLMSG_ACTION_TYPE_DEL)
+	}
+
+	return sendNetlink(fd, buf.Bytes(), buf.Len(), msgtype)
+}
+
+/*
+ *使能处理，也就是开关
+ */
 func setStatusToKern(fd int, id []byte, who int, enabled bool) error {
 	if id == nil || len(id) > ID_MAX_SIZE {
 		return os.ErrInvalid
@@ -412,13 +434,46 @@ func setStatusToKern(fd int, id []byte, who int, enabled bool) error {
 		return os.ErrInvalid
 	}
 
-	log.Debugf("set %v(1:wl, 2:ac) enable: %v", who, isOn)
+	log.Debugf("set %v(1:wl, 2:ac 3:net) enable: %v", who, isOn)
 	msgtype := setNlmsgType(NLMSG_COM_TYPE_REQUEST, who, NLMSG_ACTION_TYPE_ENABLED)
 
 	return sendNetlink(fd, buf.Bytes(), buf.Len(), msgtype)
 }
 
-/* 白名单更新(增删) add和del为程序的hash */
+/*
+ * 网络进程白名单设置
+ */
+func UpdateNprocProtection(containerId string, enable bool, addfilePath []string, delfilePath []string) error {
+	fd, err := initNetlink()
+	if err != nil {
+		return err
+	}
+
+	for _, filePath := range addfilePath {
+		if err := setNProcAccess(fd, []byte(containerId), []byte(filePath), true); err != nil {
+			log.Warnf("add %v NProc file(%v) access err: %v", containerId, filePath, err)
+		}
+	}
+
+	if err := setStatusToKern(fd, []byte(containerId), NLMSG_FUNC_TYPE_NET, enable); err != nil {
+		log.Warnf("set %v white list status([%v]) err: %v", containerId, enable, err)
+	}
+
+	for _, filePath := range delfilePath {
+		if err := setNProcAccess(fd, []byte(containerId), []byte(filePath), false); err != nil {
+			log.Warnf("del %v NProc file(%v) access err: %v", containerId, filePath, err)
+		}
+	}
+
+	deinitNetlink(fd)
+
+	return nil
+}
+
+/*
+ * 白名单更新(增删) add和del为程序的hash
+ * 进程安全
+ */
 func UpdateWhiteList(containerId string, enable bool, add []string, del []string) error {
 	fd, err := initNetlink()
 	if err != nil {
@@ -456,7 +511,10 @@ func UpdateWhiteList(containerId string, enable bool, add []string, del []string
 	return nil
 }
 
-/* 白名单清除 */
+/*
+ * 白名单清除
+ * 进程安全清除
+ */
 func CleanWhiteList(containerId string) error {
 	fd, err := initNetlink()
 	if err != nil {
@@ -468,7 +526,10 @@ func CleanWhiteList(containerId string) error {
 	return nil
 }
 
-/* 文件访问控制 */
+/*
+ * 文件访问控制
+ * 文件保护
+ */
 func UpdateFileAccess(containerId string, enable bool, addfilePath []string, delfilePath []string) error {
 	fd, err := initNetlink()
 	if err != nil {
@@ -495,7 +556,9 @@ func UpdateFileAccess(containerId string, enable bool, addfilePath []string, del
 	return nil
 }
 
-/* 白名单清除 */
+/*
+ * 白名单清除
+ */
 func CleanFileAccess(containerId string) error {
 	fd, err := initNetlink()
 	if err != nil {
@@ -507,6 +570,24 @@ func CleanFileAccess(containerId string) error {
 	return nil
 }
 
+/*
+ * 网络进程白名单清除
+ */
+func CleanNProcRule(containerId string) error {
+	fd, err := initNetlink()
+	if err != nil {
+		log.Warnf("initNetlink() err: %v", err)
+		return err
+	}
+
+	freeWhiteListToKern(fd, []byte(containerId), NLMSG_FUNC_TYPE_NET)
+	deinitNetlink(fd)
+	return nil
+}
+
+/*
+ * 清除设置
+ */
 func CleanAll(containerID string, force bool) error {
 	err := CleanFileAccess(containerID)
 	if err != nil {
@@ -520,5 +601,11 @@ func CleanAll(containerID string, force bool) error {
 	if err != nil {
 		log.Warnf("%v CleanWhiteList: %v", containerID, err)
 	}
+
+	err = CleanNProcRule(containerID)
+	if err != nil {
+		log.Warnf("%v CleanNProcRule: %v", containerID, err)
+	}
+
 	return err
 }

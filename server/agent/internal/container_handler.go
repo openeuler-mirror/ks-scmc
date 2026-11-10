@@ -361,7 +361,8 @@ func (s *ContainerServer) setSecurityConfig(nodeid int64, id, uuid, name string,
 
 	// 网络进程白名单，通过内核实现
 	if sec.NprocProtection != nil {
-		if err := kysec.UpdateNprocProtection(id, sec.NprocProtection.IsOn, sec.NprocProtection.ExeList, []string{}); err != nil {
+		IsOn := sec.NprocProtection.IsOn
+		if err := kysec.UpdateNprocProtection(id, IsOn, sec.NprocProtection.ExeList, []string{}); err != nil {
 			log.Warnf("UpdateNprocProtection %v err: %v", id, err)
 		}
 	}

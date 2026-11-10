@@ -27,7 +27,6 @@ func TestContainerList(t *testing.T) {
 		for _, c := range reply.Containers {
 			t.Logf("container info: %+v", c)
 		}
-
 	})
 }
 
@@ -93,6 +92,7 @@ func TestContainerRestart(t *testing.T) {
 		t.Logf("Restart reply: %v", reply)
 	})
 }
+
 func TestContainerRemove(t *testing.T) {
 	testRunner(func(ctx context.Context, conn *grpc.ClientConn) {
 		cli := pb.NewContainerClient(conn)
@@ -113,6 +113,7 @@ func TestContainerRemove(t *testing.T) {
 		t.Logf("Remove reply: %v", reply)
 	})
 }
+
 func TestContainerInspect(t *testing.T) {
 	testRunner(func(ctx context.Context, conn *grpc.ClientConn) {
 		cli := pb.NewContainerClient(conn)
@@ -131,7 +132,6 @@ func TestContainerInspect(t *testing.T) {
 }
 
 func TestCreateTemplate(t *testing.T) {
-
 	ctx, conn, err := initTestRunner()
 	if err != nil {
 		log.Fatalln(err)
@@ -221,10 +221,8 @@ func TestCreateTemplate(t *testing.T) {
 				t.Errorf("CreateTemplate() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-
 		})
 	}
-
 }
 
 func TestUpdateTemplate(t *testing.T) {
@@ -249,7 +247,6 @@ func TestUpdateTemplate(t *testing.T) {
 }
 
 func TestListemplate(t *testing.T) {
-
 	ctx, conn, err := initTestRunner()
 	if err != nil {
 		log.Fatalln(err)
@@ -350,10 +347,8 @@ func TestListemplate(t *testing.T) {
 			for _, record := range got.Data {
 				fmt.Printf("id: %v, config: %v\n", record.Id, record.Conf)
 			}
-
 		})
 	}
-
 }
 
 func TestRemovetemplate(t *testing.T) {
@@ -364,7 +359,6 @@ func TestRemovetemplate(t *testing.T) {
 			Ids: []int64{},
 		}
 		reply, err := cli.RemoveTemplate(ctx, &request)
-
 		if err != nil {
 			t.Errorf("Update: %v", err)
 		}

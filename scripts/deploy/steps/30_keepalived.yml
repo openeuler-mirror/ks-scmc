@@ -46,3 +46,15 @@
 
 - name: KEEPALIVED 启用虚拟IP(高可用)
   service: name=keepalived state=restarted enabled=true
+
+- name: KEEPALIVED 服务属性配置支持重启
+  shell: |
+    set -e
+    mkdir -p /etc/systemd/system/keepalived.service.d
+    cat > /etc/systemd/system/keepalived.service.d/restart.conf << EOF
+    [Service]
+    Restart=on-failure
+    RestartSec=5s
+    EOF
+    systemdctl daemon-reload
+    

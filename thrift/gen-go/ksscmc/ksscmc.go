@@ -9190,24 +9190,28 @@ func (p *KsScmcClientClient) recvAddContainerReqIpPort() (value int32, err error
 // Parameters:
 //  - NodeNameorip
 //  - ContainerName
-func (p *KsScmcClientClient) GetContainerMetrics(node_nameorip string, container_name string) (r *GetContainerMetricsResponse, err error) {
-  if err = p.sendGetContainerMetrics(node_nameorip, container_name); err != nil { return }
-  return p.recvGetContainerMetrics()
+//  - EnvName
+//  - EnvValue
+func (p *KsScmcClientClient) AddContainerEnv(node_nameorip string, container_name string, env_name string, env_value string) (r string, err error) {
+  if err = p.sendAddContainerEnv(node_nameorip, container_name, env_name, env_value); err != nil { return }
+  return p.recvAddContainerEnv()
 }
 
-func (p *KsScmcClientClient) sendGetContainerMetrics(node_nameorip string, container_name string)(err error) {
+func (p *KsScmcClientClient) sendAddContainerEnv(node_nameorip string, container_name string, env_name string, env_value string)(err error) {
   oprot := p.OutputProtocol
   if oprot == nil {
     oprot = p.ProtocolFactory.GetProtocol(p.Transport)
     p.OutputProtocol = oprot
   }
   p.SeqId++
-  if err = oprot.WriteMessageBegin("getContainerMetrics", thrift.CALL, p.SeqId); err != nil {
+  if err = oprot.WriteMessageBegin("AddContainerEnv", thrift.CALL, p.SeqId); err != nil {
       return
   }
-  args := KsScmcClientGetContainerMetricsArgs{
+  args := KsScmcClientAddContainerEnvArgs{
   NodeNameorip : node_nameorip,
   ContainerName : container_name,
+  EnvName : env_name,
+  EnvValue : env_value,
   }
   if err = args.Write(oprot); err != nil {
       return

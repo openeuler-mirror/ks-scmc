@@ -1185,6 +1185,7 @@ func (s *ContainerServer) UpdateContainerVersion(ctx context.Context, in *pb.Upd
 	// 更新 container_out_configs 表
 	outCfg, err := litedb.GetContainerOutConfigByName(cfgs.ContainerName)
 	if err != nil {
+		log.Warnf("GetContainerOutConfigByName(%v) err=%v", cfgs.ContainerName, err)
 	} else {
 		outCfg.ContainerID = id
 		litedb.UpdateContainerOutConfig(outCfg)
@@ -1193,6 +1194,7 @@ func (s *ContainerServer) UpdateContainerVersion(ctx context.Context, in *pb.Upd
 	// 更新 app_entries 表
 	appEntry, err := litedb.ListAppEntry(containerId)
 	if err != nil {
+		log.Warnf("ListAppEntry(%v) err=%v", containerId, err)
 	} else {
 		for _, entry := range appEntry {
 			entry.ContainerID = id

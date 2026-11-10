@@ -8,12 +8,14 @@ import (
 	"log"
 	"net"
 	"os"
-	"scmc/server/args"
 	"sort"
 	"strconv"
 	"strings"
 	"sync"
 	"time"
+
+	"git.apache.org/thrift.git/lib/go/thrift"
+	"github.com/sirupsen/logrus"
 
 	"scmc/common"
 	"scmc/model/db"
@@ -24,15 +26,12 @@ import (
 	networkPB "scmc/rpc/pb/network"
 	nodePB "scmc/rpc/pb/node"
 	securityPB "scmc/rpc/pb/security"
+	"scmc/server/args"
 	"scmc/server/controller/internal"
 	"scmc/thrift/gen-go/ksscmc"
-
-	"git.apache.org/thrift.git/lib/go/thrift"
-	"github.com/sirupsen/logrus"
 )
 
-type KsScmcHandler struct {
-}
+type KsScmcHandler struct{}
 
 func (h *KsScmcHandler) InstallContainer(nodeName string, image string, ver string, name string, desc string) (r string, err error) {
 	code, err := h.installContainerInternal(nodeName, image, ver, name)
@@ -40,7 +39,7 @@ func (h *KsScmcHandler) InstallContainer(nodeName string, image string, ver stri
 }
 
 func (h *KsScmcHandler) installContainerInternal(nodeNameorip string, imageName string, imageVer string, containerName string) (int32, error) {
-	//通过node_nameorip查找node的ID
+	// 通过node_nameorip查找node的ID
 	nodeInfo, err := GetNodeId(nodeNameorip)
 	if err != nil {
 		logrus.Error(err)
@@ -61,7 +60,7 @@ func (h *KsScmcHandler) installContainerInternal(nodeNameorip string, imageName 
 	}
 	networkInterfaceName := r.VirtualIfs[0].Name
 
-	//组装PB数据
+	// 组装PB数据
 	containerConfig := &containerPB.ContainerConfigs{
 		Name:  containerName,
 		Image: imageName + ":" + imageVer,
@@ -144,7 +143,6 @@ func (h *KsScmcHandler) StartContainer(nodeName string, name string) (string, er
 }
 
 func (h *KsScmcHandler) startContainerInternal(nodeNameorip string, containerName string) (int32, error) {
-
 	nodeInfo, err := GetNodeId(nodeNameorip)
 	if err != nil {
 		logrus.Error(err)
@@ -166,7 +164,7 @@ func (h *KsScmcHandler) startContainerInternal(nodeNameorip string, containerNam
 		return 3, nil
 	}
 
-	//启动容器
+	// 启动容器
 	request := containerPB.StartRequest{
 		Ids: []*containerPB.ContainerIdList{
 			{
@@ -228,7 +226,6 @@ func (h *KsScmcHandler) StopContainerV3(session_id string, cid string) (string, 
 }
 
 func (h *KsScmcHandler) stopContainerInternal(nodeNameorip string, containerName string) (int32, error) {
-
 	nodeInfo, err := GetNodeId(nodeNameorip)
 	if err != nil {
 		logrus.Error(err)
@@ -250,7 +247,7 @@ func (h *KsScmcHandler) stopContainerInternal(nodeNameorip string, containerName
 		return 3, nil
 	}
 
-	//停止容器
+	// 停止容器
 	request := containerPB.StopRequest{
 		Ids: []*containerPB.ContainerIdList{
 			{
@@ -274,7 +271,6 @@ func (h *KsScmcHandler) UninstallContainer(nodeName string, name string) (string
 }
 
 func (h *KsScmcHandler) uninstallContainerInternal(nodeNameorip string, containerName string) (int32, error) {
-
 	nodeInfo, err := GetNodeId(nodeNameorip)
 	if err != nil {
 		logrus.Error(err)
@@ -297,7 +293,7 @@ func (h *KsScmcHandler) uninstallContainerInternal(nodeNameorip string, containe
 		return 3, nil
 	}
 
-	//停止容器
+	// 停止容器
 	stopRequest := &containerPB.StopRequest{
 		Ids: []*containerPB.ContainerIdList{
 			{
@@ -330,7 +326,6 @@ func (h *KsScmcHandler) uninstallContainerInternal(nodeNameorip string, containe
 }
 
 func (h *KsScmcHandler) GetContainerStatus(nodeNameorip string, containerName string) (int32, error) {
-
 	nodeInfo, err := GetNodeId(nodeNameorip)
 	if err != nil {
 		logrus.Error(err)
@@ -373,7 +368,6 @@ func (h *KsScmcHandler) GetContainerStatus(nodeNameorip string, containerName st
 }
 
 func (h *KsScmcHandler) GetContainerMetrics(nodeNameorip string, containerName string) (*ksscmc.GetContainerMetricsResponse, error) {
-
 	containerMetricResponse := &ksscmc.ContainerMetric{}
 	response := &ksscmc.GetContainerMetricsResponse{
 		ContainerMetric: containerMetricResponse,
@@ -521,7 +515,6 @@ func (h *KsScmcHandler) GetImageVer4Container(nodeNameorip string, containerName
 }
 
 func (h *KsScmcHandler) GetContainer(nodeName string, containerName string) (int32, error) {
-
 	nodeInfo, err := GetNodeId(nodeName)
 	if err != nil {
 		logrus.Error(err)
@@ -564,7 +557,6 @@ func (h *KsScmcHandler) UpdateContainer(nodeName string, containerName string, n
 }
 
 func (h *KsScmcHandler) updateContainerInternal(nodeName string, containerName string, newVer string) (int32, error) {
-
 	nodeInfo, err := GetNodeId(nodeName)
 	if err != nil {
 		logrus.Error(err)
@@ -598,18 +590,17 @@ func (h *KsScmcHandler) updateContainerInternal(nodeName string, containerName s
 		return 4, nil
 	}
 
-	//inspect
+	// inspect
 	inspectReply, err := cli.Inspect(ctx_, &containerPB.InspectRequest{
 		NodeId:      nodeInfo.ID,
 		ContainerId: containerInfo.Id,
 	})
-
 	if err != nil {
 		logrus.Error(err)
 		return 5, nil
 	}
 
-	//stop container
+	// stop container
 	stopRequest := &containerPB.StopRequest{
 		Ids: []*containerPB.ContainerIdList{
 			{
@@ -624,7 +615,7 @@ func (h *KsScmcHandler) updateContainerInternal(nodeName string, containerName s
 		return 6, nil
 	}
 
-	//remove container
+	// remove container
 	removeRequest := &containerPB.RemoveRequest{
 		Ids: []*containerPB.ContainerIdList{
 			{
@@ -638,7 +629,7 @@ func (h *KsScmcHandler) updateContainerInternal(nodeName string, containerName s
 		return 7, nil
 	}
 
-	//create container
+	// create container
 	oldImage := inspectReply.Configs.Image
 	imageArr := strings.Split(oldImage, ":")
 	inspectReply.Configs.Image = imageArr[0] + ":" + newVer
@@ -670,7 +661,7 @@ func (h *KsScmcHandler) GetAlarmList(nodeName string) (string, error) {
 		logrus.Error(err)
 		return string(alarmListJson), nil
 	}
-	//容器告警 未读
+	// 容器告警 未读
 	containerAlarm, err := db.GetUnreadWarnLog(50, 0, nodeInfo.ID, 2)
 	if err != nil {
 		return string(alarmListJson), nil
@@ -684,7 +675,7 @@ func (h *KsScmcHandler) GetAlarmList(nodeName string) (string, error) {
 		}
 	}
 	containerAlarm = append(containerAlarm, readContainerAlarm...)
-	//节点告警
+	// 节点告警
 	nodeAlarm, err := db.GetUnreadWarnLog(50, 0, nodeInfo.ID, 1)
 	if err != nil {
 		return string(alarmListJson), nil
@@ -729,7 +720,6 @@ func (h *KsScmcHandler) GetAlarmList(nodeName string) (string, error) {
 }
 
 func (h *KsScmcHandler) GetAllNodeList() (*ksscmc.GetAllNodeListResponse, error) {
-
 	response := &ksscmc.GetAllNodeListResponse{
 		Nodelist: []*ksscmc.NodeStatus{},
 		RetCode:  1, // 成功码
@@ -1035,7 +1025,6 @@ func (h *KsScmcHandler) GetContainerNetwork(nodeNameorip string, containerName s
 }
 
 func (h *KsScmcHandler) getContainerNetworkInternal(nodeNameorip string, containerName string) (*ksscmc.GetContainerNetworkResponse, error) {
-
 	response := &ksscmc.GetContainerNetworkResponse{
 		ContainerNetInfo: &ksscmc.ContainerNetInfo{},
 		RetCode:          1, // 成功码
@@ -1089,7 +1078,6 @@ func (h *KsScmcHandler) getContainerNetworkInternal(nodeNameorip string, contain
 }
 
 func (h *KsScmcHandler) GetContainerNetRules(nodeName string, containerName string) (*ksscmc.GetContainerNetRulesResponse, error) {
-
 	response := &ksscmc.GetContainerNetRulesResponse{
 		ContainerNetRules: []*ksscmc.ContainerNetRule{},
 		RetCode:           1, // 成功码
@@ -1197,7 +1185,6 @@ func (h *KsScmcHandler) AddContainerIpPort(nodeNameorip string, containerName st
 }
 
 func (h *KsScmcHandler) AddContainerReqIpPort(nodeName string, containerName string, ipAddr string, port int32, netProto string) (int32, error) {
-
 	nodeInfo, err := GetNodeId(nodeName)
 	if err != nil {
 		logrus.Error(err)
@@ -1345,7 +1332,6 @@ func (h *KsScmcHandler) addContainerEnvInternal(nodeNameorip string, containerNa
 }
 
 func (h *KsScmcHandler) AddContainerLocalVolume(nodeNameorip string, containerName string, inDir string, outDir string, accessAuth ksscmc.AccessAuth) (int32, error) {
-
 	nodeInfo, err := GetNodeId(nodeNameorip)
 	if err != nil {
 		logrus.Error(err)
@@ -1383,7 +1369,7 @@ func (h *KsScmcHandler) AddContainerLocalVolume(nodeNameorip string, containerNa
 
 	fileInfo, err := os.Stat(outDir)
 	if os.IsNotExist(err) {
-		err := os.MkdirAll(outDir, 0755)
+		err := os.MkdirAll(outDir, 0o755)
 		if err != nil {
 			logrus.Warnf("create dir: %v faied", outDir)
 			return 5, nil
@@ -1438,7 +1424,6 @@ func (h *KsScmcHandler) SetContainerQuota(nodeName string, containerName string,
 }
 
 func (h *KsScmcHandler) setContainerQuotaInternal(nodeName string, containerName string, containerLimit *ksscmc.ContainerLimit) (int32, error) {
-
 	nodeInfo, err := GetNodeId(nodeName)
 	if err != nil {
 		logrus.Error(err)
@@ -1475,7 +1460,7 @@ func (h *KsScmcHandler) setContainerQuotaInternal(nodeName string, containerName
 		return 4, nil
 	}
 
-	//logrus.Error(rep.Configs)
+	// logrus.Error(rep.Configs)
 	if !args.Float64Resource.Check(containerLimit.DiskRbw, containerLimit.DiskWbw) {
 		logrus.Error("disk_rbw or disk_wbw arg error")
 		return 6, nil
@@ -1510,7 +1495,7 @@ func (h *KsScmcHandler) setContainerQuotaInternal(nodeName string, containerName
 	}
 
 	logrus.Error(up)
-	//网络限速
+	// 网络限速
 	limit := &containerPB.ContainerLimit{
 		NetRbw: containerLimit.NetRbw,
 		NetWbw: containerLimit.NetWbw,
@@ -1657,7 +1642,6 @@ func (h *KsScmcHandler) LoadImage(nodeIp string, tarPath string) (int32, error) 
 		}
 	}
 	return 0, nil
-
 }
 
 func (h *KsScmcHandler) PauseContainer(nodeIp string, containerName string) (int32, error) {
@@ -1788,7 +1772,7 @@ func (h *KsScmcHandler) CondGetAlarmListV3(session_id string, cond *ksscmc.GetAl
 		Total:   0, // todo
 		Nums:    0,
 		Pages:   0,
-		Page:    0, //todo
+		Page:    0, // todo
 		HAlarms: []*ksscmc.CondAlarms{},
 		CAlarms: []*ksscmc.CondAlarms{},
 	}
@@ -1954,7 +1938,6 @@ func (h *KsScmcHandler) SetAlarmReadV3(session_id string, node_name string, id i
 }
 
 func ThriftapiMain() {
-
 	logrus.Infof("thriftapi serv:")
 	logrus.Infof("CA: %s", common.Config.ApiTLS.CA)
 	logrus.Infof("serverCert: %s", common.Config.ApiTLS.ServerCert)
@@ -1973,7 +1956,7 @@ func ThriftapiMain() {
 	if err != nil {
 		panic(err)
 	}
-	//fmt.Printf("%T\n", transport);
+	// fmt.Printf("%T\n", transport);
 
 	ksscmchandler := &KsScmcHandler{}
 	processor := ksscmc.NewKsScmcClientProcessor(ksscmchandler)
@@ -1993,14 +1976,14 @@ func ThriftapiMain() {
 		)*/
 
 	transportFactory := thrift.NewTBufferedTransportFactory(8192)
-	//也可以选择Framed传输协议，但是必须确保服务端和客户端的传输协议一致
-	//transportFactory := thrift.NewTBufferedTransportFactory(8192)
-	//framedtransportFactory := thrift.NewTFramedTransportFactory(transportFactory)
+	// 也可以选择Framed传输协议，但是必须确保服务端和客户端的传输协议一致
+	// transportFactory := thrift.NewTBufferedTransportFactory(8192)
+	// framedtransportFactory := thrift.NewTFramedTransportFactory(transportFactory)
 
-	//可以选择任意一种编码协议，但是必须确保服务端和客户端的编码协议一致
-	protocolFactory := thrift.NewTBinaryProtocolFactory(true, true) //布尔参数strictRead, strictWrite，读和写时是否加入版本校验。
-	//protocolFactory := thrift.NewTCompactProtocolFactory()
-	//protocolFactory := thrift.NewTJSONProtocolFactory()
+	// 可以选择任意一种编码协议，但是必须确保服务端和客户端的编码协议一致
+	protocolFactory := thrift.NewTBinaryProtocolFactory(true, true) // 布尔参数strictRead, strictWrite，读和写时是否加入版本校验。
+	// protocolFactory := thrift.NewTCompactProtocolFactory()
+	// protocolFactory := thrift.NewTJSONProtocolFactory()
 
 	server := thrift.NewTSimpleServer4(
 		// multiplexedProcessor,

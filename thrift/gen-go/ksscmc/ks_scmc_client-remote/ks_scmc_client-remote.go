@@ -448,8 +448,8 @@ func main() {
     value0 := argvalue0
     argvalue1 := flag.Arg(2)
     value1 := argvalue1
-    tmp2, err139 := (strconv.Atoi(flag.Arg(3)))
-    if err139 != nil {
+    tmp2, err143 := (strconv.Atoi(flag.Arg(3)))
+    if err143 != nil {
       Usage()
       return
     }
@@ -493,8 +493,8 @@ func main() {
     value1 := argvalue1
     argvalue2 := flag.Arg(3)
     value2 := argvalue2
-    tmp3, err147 := (strconv.Atoi(flag.Arg(4)))
-    if err147 != nil {
+    tmp3, err151 := (strconv.Atoi(flag.Arg(4)))
+    if err151 != nil {
       Usage()
       return
     }
@@ -516,8 +516,8 @@ func main() {
     value1 := argvalue1
     argvalue2 := flag.Arg(3)
     value2 := argvalue2
-    tmp3, err152 := (strconv.Atoi(flag.Arg(4)))
-    if err152 != nil {
+    tmp3, err156 := (strconv.Atoi(flag.Arg(4)))
+    if err156 != nil {
       Usage()
       return
     }
@@ -592,19 +592,19 @@ func main() {
     value0 := argvalue0
     argvalue1 := flag.Arg(2)
     value1 := argvalue1
-    arg168 := flag.Arg(3)
-    mbTrans169 := thrift.NewTMemoryBufferLen(len(arg168))
-    defer mbTrans169.Close()
-    _, err170 := mbTrans169.WriteString(arg168)
-    if err170 != nil {
+    arg172 := flag.Arg(3)
+    mbTrans173 := thrift.NewTMemoryBufferLen(len(arg172))
+    defer mbTrans173.Close()
+    _, err174 := mbTrans173.WriteString(arg172)
+    if err174 != nil {
       Usage()
       return
     }
-    factory171 := thrift.NewTSimpleJSONProtocolFactory()
-    jsProt172 := factory171.GetProtocol(mbTrans169)
+    factory175 := thrift.NewTSimpleJSONProtocolFactory()
+    jsProt176 := factory175.GetProtocol(mbTrans173)
     argvalue2 := ksscmc.NewContainerLimit()
-    err173 := argvalue2.Read(jsProt172)
-    if err173 != nil {
+    err177 := argvalue2.Read(jsProt176)
+    if err177 != nil {
       Usage()
       return
     }
@@ -651,19 +651,19 @@ func main() {
     value0 := argvalue0
     argvalue1 := flag.Arg(2)
     value1 := argvalue1
-    arg183 := flag.Arg(3)
-    mbTrans184 := thrift.NewTMemoryBufferLen(len(arg183))
-    defer mbTrans184.Close()
-    _, err185 := mbTrans184.WriteString(arg183)
-    if err185 != nil { 
+    arg187 := flag.Arg(3)
+    mbTrans188 := thrift.NewTMemoryBufferLen(len(arg187))
+    defer mbTrans188.Close()
+    _, err189 := mbTrans188.WriteString(arg187)
+    if err189 != nil { 
       Usage()
       return
     }
-    factory186 := thrift.NewTSimpleJSONProtocolFactory()
-    jsProt187 := factory186.GetProtocol(mbTrans184)
+    factory190 := thrift.NewTSimpleJSONProtocolFactory()
+    jsProt191 := factory190.GetProtocol(mbTrans188)
     containerStruct2 := ksscmc.NewKsScmcClientSetContainerExtraHostsArgs()
-    err188 := containerStruct2.ReadField3(jsProt187)
-    if err188 != nil {
+    err192 := containerStruct2.ReadField3(jsProt191)
+    if err192 != nil {
       Usage()
       return
     }

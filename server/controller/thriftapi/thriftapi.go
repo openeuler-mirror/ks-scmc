@@ -70,7 +70,7 @@ func (h *KsScmcHandler) installContainerInternal(nodeNameorip string, imageName 
 		RestartPolicy: &containerPB.RestartPolicy{
 			Name: "no",
 		},
-		ResouceLimit: &containerPB.ResourceLimit{
+		ResourceLimit: &containerPB.ResourceLimit{
 			CpuPrio:         0,
 			MemoryLimit:     31528,
 			MemorySoftLimit: 31528,
@@ -1165,7 +1165,7 @@ func (h *KsScmcHandler) AddContainerIpPort(nodeNameorip string, containerName st
 	updateReq := containerPB.UpdateRequest{
 		NodeId:         nodeInfo.ID,
 		ContainerId:    containerId,
-		ResourceLimit:  inspect.Configs.ResouceLimit,
+		ResourceLimit:  inspect.Configs.ResourceLimit,
 		RestartPolicy:  inspect.Configs.RestartPolicy,
 		Networks:       inspect.Configs.Networks,
 		SecurityConfig: inspect.Configs.SecurityConfig,
@@ -1247,7 +1247,7 @@ func (h *KsScmcHandler) AddContainerReqIpPort(nodeName string, containerName str
 	updateReq := containerPB.UpdateRequest{
 		NodeId:         nodeInfo.ID,
 		ContainerId:    containerId,
-		ResourceLimit:  inspect.Configs.ResouceLimit,
+		ResourceLimit:  inspect.Configs.ResourceLimit,
 		RestartPolicy:  inspect.Configs.RestartPolicy,
 		Networks:       inspect.Configs.Networks,
 		SecurityConfig: securityCfg,
@@ -1315,7 +1315,7 @@ func (h *KsScmcHandler) addContainerEnvInternal(nodeNameorip string, containerNa
 	updateReq := containerPB.UpdateRequest{
 		NodeId:         nodeInfo.ID,
 		ContainerId:    containerId,
-		ResourceLimit:  inspect.Configs.ResouceLimit,
+		ResourceLimit:  inspect.Configs.ResourceLimit,
 		RestartPolicy:  inspect.Configs.RestartPolicy,
 		Networks:       inspect.Configs.Networks,
 		SecurityConfig: inspect.Configs.SecurityConfig,
@@ -1382,7 +1382,7 @@ func (h *KsScmcHandler) AddContainerLocalVolume(nodeNameorip string, containerNa
 	updateReq := containerPB.UpdateRequest{
 		NodeId:         nodeInfo.ID,
 		ContainerId:    containerId,
-		ResourceLimit:  inspect.Configs.ResouceLimit,
+		ResourceLimit:  inspect.Configs.ResourceLimit,
 		RestartPolicy:  inspect.Configs.RestartPolicy,
 		Networks:       inspect.Configs.Networks,
 		SecurityConfig: inspect.Configs.SecurityConfig,

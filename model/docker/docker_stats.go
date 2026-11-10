@@ -5,13 +5,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"math"
-
-	//"net/http"
 	"strings"
 
 	"github.com/docker/docker/api/types"
 	log "github.com/sirupsen/logrus"
-	//"github.com/docker/docker/client"
 )
 
 // ResponseJSON 定义响应的 JSON 结构
@@ -51,7 +48,7 @@ func HandleStatsRequest() (string, error) {
 			Containers: []ContainerInfo{},
 		}
 
-		//jsonData, err := json.MarshalIndent(response, "", "  ")
+		// jsonData, err := json.MarshalIndent(response, "", "  ")
 		jsonData, err := json.Marshal(response) // 输出一行，不进行美化处理
 		if err != nil {
 			log.Warnf("getContainerStats() error! marshaling response to JSON: %v", err)
@@ -83,7 +80,7 @@ func HandleStatsRequest() (string, error) {
 	log.Info("containerInfos: ", containerInfos)
 
 	// 将响应 JSON 序列化为字符串
-	//jsonData, err := json.MarshalIndent(response, "", "  ")
+	// jsonData, err := json.MarshalIndent(response, "", "  ")
 	jsonData, err := json.Marshal(response)
 	if err != nil {
 		log.Warnf("getContainerStats() success! marshaling response to JSON: %v", err)
@@ -98,7 +95,7 @@ func HandleStatsRequest() (string, error) {
 // 获取 Docker 容器的统计信息
 func getContainerStats() ([]ContainerInfo, error) {
 	// 创建 Docker 客户端
-	//cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
+	// cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	cli, err := Client()
 	if err != nil {
 		return nil, fmt.Errorf("failed to create Docker client: %v", err)
@@ -221,7 +218,7 @@ func calculateBlockIO(blkioStats *types.BlkioStats) (readBytes uint64, writeByte
 			writeBytes += stat.Value
 		}
 	}
-	return
+	return readBytes, writeBytes
 }
 
 // 解析镜像名称和版本号

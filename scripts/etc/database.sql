@@ -172,3 +172,12 @@ CREATE TABLE IF NOT EXISTS `container_limits` (
      UNIQUE KEY `node_id` (`node_id`),
      UNIQUE KEY `container_id` (`container_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin ;
+
+CREATE TABLE IF NOT EXISTS `session` (
+    `session_id` VARCHAR(255) NOT NULL,
+    `created_at` bigint(20) NOT NULL DEFAULT 0,
+    `updated_at` bigint(20) NOT NULL DEFAULT 0,
+    `last_used` bigint(20) NOT NULL DEFAULT 0,
+    `node_ip` VARCHAR(255) DEFAULT NULL,
+    PRIMARY KEY (session_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin ;

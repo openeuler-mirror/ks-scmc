@@ -9223,7 +9223,7 @@ func (p *KsScmcClientClient) sendAddContainerEnv(node_nameorip string, container
 }
 
 
-func (p *KsScmcClientClient) recvGetContainerMetrics() (value *GetContainerMetricsResponse, err error) {
+func (p *KsScmcClientClient) recvAddContainerEnv() (value string, err error) {
   iprot := p.InputProtocol
   if iprot == nil {
     iprot = p.ProtocolFactory.GetProtocol(p.Transport)

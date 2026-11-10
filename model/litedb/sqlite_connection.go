@@ -66,14 +66,19 @@ func getConn() (*gorm.DB, error) {
 	if !m.HasTable(&IpcConfig{}) {
 		_ = m.CreateTable(&IpcConfig{})
 	}
-	if !m.HasTable(&IpcmapConfig{}) {
-		_ = m.CreateTable(&IpcmapConfig{})
-	}
-	if !m.HasTable(&ContainerLimit{}) {
-		_ = m.CreateTable(&ContainerLimit{})
-	}
-	if !m.HasTable(&ContainerMisc{}) {
-		_ = m.CreateTable(&ContainerMisc{})
+	/*
+		if !m.HasTable(&IpcmapConfig{}) {
+			_ = m.CreateTable(&IpcmapConfig{})
+		}
+		if !m.HasTable(&ContainerLimit{}) {
+			_ = m.CreateTable(&ContainerLimit{})
+		}
+		if !m.HasTable(&ContainerMisc{}) {
+			_ = m.CreateTable(&ContainerMisc{})
+		}
+	*/
+	if !m.HasTable(&ContainerOutConfig{}) {
+		_ = m.CreateTable(&ContainerOutConfig{})
 	}
 
 	conn, err := _db.DB()

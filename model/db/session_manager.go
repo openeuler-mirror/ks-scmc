@@ -1,8 +1,6 @@
 package db
 
 import (
-	// "errors"
-	// "fmt"
 	"time"
 
 	uuid "github.com/google/uuid"

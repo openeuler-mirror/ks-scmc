@@ -44,7 +44,7 @@ func LoadTLSCredentials() (credentials.TransportCredentials, error) {
 }
 
 /*
- * thrift 走证书双向认证的时候需要用到的 
+ * thrift 走证书双向认证的时候需要用到的
  */
 func LoadTLSConfig() (*tls.Config, error) {
 	if Config.TLS.CA == "" || Config.TLS.ServerCert == "" || Config.TLS.ServerKey == "" {
@@ -66,7 +66,7 @@ func LoadTLSConfig() (*tls.Config, error) {
 		return nil, err
 	}
 
-        // 验证 客户端证书， 强制性质的 
+	// 验证 客户端证书， 强制性质的
 	return &tls.Config{
 		Certificates: []tls.Certificate{serverCert},
 		ClientAuth:   tls.RequireAndVerifyClientCert,
@@ -75,7 +75,7 @@ func LoadTLSConfig() (*tls.Config, error) {
 }
 
 /*
- * thrift 走证书双向认证的时候需要用到的 
+ * thrift 走证书双向认证的时候需要用到的
  */
 func LoadApiTLSConfig() (*tls.Config, error) {
 	if Config.ApiTLS.CA == "" || Config.ApiTLS.ServerCert == "" || Config.ApiTLS.ServerKey == "" {
@@ -97,7 +97,7 @@ func LoadApiTLSConfig() (*tls.Config, error) {
 		return nil, err
 	}
 
-        // 验证 客户端证书， 强制性质的 
+	// 验证 客户端证书， 强制性质的
 	return &tls.Config{
 		Certificates: []tls.Certificate{serverCert},
 		ClientAuth:   tls.RequireAndVerifyClientCert,

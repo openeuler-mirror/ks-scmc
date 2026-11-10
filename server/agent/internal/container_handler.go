@@ -724,44 +724,37 @@ func (s *ContainerServer) Create(ctx context.Context, in *pb.CreateRequest) (*pb
 		cfgs.ContainerID = id
 		litedb.UpdateContainerConfig(&cfgs)
 
-		// 容器与IPC 容器映射表
-		ipcMapCfg := litedb.IpcmapConfig{
-			ContainerName: in.Configs.Name,    //容器名称
-			ContainerID:   id,                 // 容器ID
-			IpcName:       in.Configs.Ipcname, // IPC 容器名称，去掉头部的 ipc. 前缀
-			IpcID:         ipcID,              // IPC 容器对应的 容器ID
-		}
-		litedb.CreateIpcmapConfig(&ipcMapCfg)
-
 		// 容器磁盘限制相关数据
 		var w, r int64 = int64(0), int64(0)
 		if in.Configs.ResouceLimit != nil {
 			w = in.Configs.ResouceLimit.DiskWbw
 			r = in.Configs.ResouceLimit.DiskRbw
 		}
-		disklimitCfg := litedb.ContainerLimit{
-			ContainerID:   id,
-			ContainerName: in.Configs.Name,
-			DiskRbw:       r,
-			DiskWbw:       w,
-		}
-		litedb.CreateContainerLimit(&disklimitCfg)
 
-		misc, err := litedb.GetContainerMiscConfigByName(in.Configs.Name)
+		outCfg, err := litedb.GetContainerOutConfig(in.Configs.Name)
 		if err != nil {
 			if err == db.ErrRecordNotFound {
-				// 容器是否开启了 app 高可用
-				miscConfig := litedb.ContainerMisc{
-					UUID:          uuid,
+				outCfg := &litedb.ContainerOutConfig{
 					ContainerID:   id,
 					ContainerName: in.Configs.Name,
-					MiscConfig:    in.Configs.GetMiscConfig(),
+					Config: litedb.KyConfig{
+						DiskRbw: r,
+						DiskWbw: w,
+						IpcName: in.Configs.Ipcname,
+						IpcID:   ipcID,
+						AppRun:  in.Configs.GetMiscConfig().GetAppRun(),
+					},
 				}
-				litedb.CreateContainerMiscConfig(&miscConfig)
+				litedb.CreateContainerOutConfig(outCfg)
 			}
 		} else {
-			misc.ContainerID = id
-			litedb.UpdateContainerMiscConfig(misc)
+			outCfg.ContainerID = id
+			outCfg.Config.DiskWbw = w
+			outCfg.Config.DiskRbw = r
+			outCfg.Config.IpcName = in.Configs.Ipcname
+			outCfg.Config.IpcID = ipcID
+			//outCfg.Config.AppRun = in.Configs.GetMiscConfig().GetAppRun()
+			litedb.UpdateContainerOutConfig(outCfg)
 		}
 
 		if in.Configs.GetMiscConfig() != nil {

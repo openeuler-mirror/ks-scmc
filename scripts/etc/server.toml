@@ -43,3 +43,6 @@ addr = "127.0.0.1:8080"
 
 [influxdb]
 addr = "127.0.0.1:8086"
+username = "root"
+# 通过ks-scmc-encrypt加密的密码
+password = ""

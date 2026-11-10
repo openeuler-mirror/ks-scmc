@@ -115,11 +115,11 @@ func SyncNodeImages() {
 	}
 
 	for _, n := range nodes {
-		go syncNodeImages(images, n.Address)
+		go syncNodeImages(images, n.Address, n.UUID)
 	}
 }
 
-func syncNodeImages(dbImages map[string]*db.ImageInfo, addr string) {
+func syncNodeImages(dbImages map[string]*db.ImageInfo, addr string, uuid string) {
 	conn, err := internal.GetAgentConn(addr)
 	if err != nil {
 		log.Warnf("Failed to connect to agent service, addr=%v", addr)
@@ -163,5 +163,6 @@ func syncNodeImages(dbImages map[string]*db.ImageInfo, addr string) {
 		return // no changes
 	}
 
+	req.Uuid = uuid
 	agentSync(conn, &req)
 }

@@ -47,14 +47,7 @@ func (s *IpcBaseServer) List(ctx context.Context, in *pb.IpcListRequest) (*pb.Ip
 			Id:        c.ContainerID,
 			StartTime: c.CreatedAt,
 		}
-		/*
-			ipcMapcfg, err := litedb.IpcmapConfigByIPCName([]string{c.ContainerName})
-			if err == nil {
-				for _, d := range ipcMapcfg {
-					info.Containers = append(info.Containers, d.ContainerName)
-				}
-			}
-		*/
+
 		outCfg, err := litedb.GetContainerOutConfigByJsonField("ipc_name", c.ContainerName)
 		if err == nil {
 			for _, d := range outCfg {
@@ -63,23 +56,6 @@ func (s *IpcBaseServer) List(ctx context.Context, in *pb.IpcListRequest) (*pb.Ip
 		}
 		rsp.IpcnameIds = append(rsp.IpcnameIds, &pb.IpcContainerData{Name: info.Name, Id: info.Id, StartTime: info.StartTime, Containers: info.Containers})
 	}
-
-	/*
-		for _, c := range ipcAllData {
-			info := pb.IpcContainerData {
-				Name : c.ContainerName,
-				Id : c.ContainerID,
-				StartTime : c.CreatedAt,
-			}
-
-			if c.IPC != nil && len(*c.IPC) > 0 {
-				for key, value := range *c.IPC {
-					info.Containers = append(info.Containers, &pb.IpcContainerPair{Name: key, Id: value})
-				}
-			}
-
-			rsp.IpcnameIds = append(rsp.IpcnameIds, &pb.IpcContainerData{Name:info.Name, Id:info.Id, StartTime: info.StartTime, Containers:info.Containers})
-		} */
 
 	return &rsp, nil
 }
@@ -210,7 +186,6 @@ func (s *IpcBaseServer) Remove(ctx context.Context, in *pb.IpcRemoveRequest) (*p
 			continue
 		}
 
-		//ipcMapcfg, err := litedb.IpcmapConfigByIPCName([]string{cfg.ContainerName})
 		outCfg, err := litedb.GetContainerOutConfigByJsonField("ipc_name", cfg.ContainerName)
 		if err != nil || len(outCfg) == 0 { // err 不为 nil 说明 数据库里面没有记录，可以删除
 			containerID := cfg.ContainerID
@@ -219,7 +194,6 @@ func (s *IpcBaseServer) Remove(ctx context.Context, in *pb.IpcRemoveRequest) (*p
 			//删除数据库里面的记录
 			litedb.IpcConfigRemoveByID(cfg.ID)
 		} else {
-			//log.Warnf("Find Success ContainerName: %v, len: %v", cfg.ContainerName, len(ipcMapcfg))
 			log.Warnf("Find Success ContainerName: %v, len: %v", cfg.ContainerName, len(outCfg))
 		}
 	}

@@ -33,6 +33,11 @@ vrrp_instance VI_1 {
         {{ cluster.virtual_ip }}
     }
 
+    unicast_src_ip {{ inventory_hostname  }} 
+    unicast_peer {
+       {{ other_host }} 
+    }
+
     track_script {
         chk_scmc
     }

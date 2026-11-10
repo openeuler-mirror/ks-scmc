@@ -29,11 +29,28 @@ type BlkioHistory struct {
 	LastTime       time.Time // 上一次统计时间
 }
 
+type NetworkLimit struct {
+	RxLimit float64 // 接收带宽限制 (MB/s)
+	TxLimit float64 // 发送带宽限制 (MB/s)
+}
+
+type NetworkHistory struct {
+	LastRxBytes uint64    // 上一次接收字节总数
+	LastTxBytes uint64    // 上一次发送字节总数
+	LastTime    time.Time // 上一次统计时间
+}
+
+type ContainerNetLimitMap map[string]struct {
+	RxLimit float64
+	TxLimit float64
+}
+
 type ContainerResourceMonitor struct {
 	mu            sync.Map // 节点监控锁
 	cli           *client.Client
 	lastAlertTime sync.Map // 告警时间锁
 	blkioHistory  sync.Map // Blkio历史数据
+	netHistory    sync.Map // 网络历史数据
 }
 
 func (c *ContainerResourceMonitor) Interval() time.Duration {

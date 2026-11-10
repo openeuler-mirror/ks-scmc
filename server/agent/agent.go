@@ -89,6 +89,8 @@ func resumeContainerConfigs() {
 		if c.SecurityConfig == nil {
 			continue
 		}
+
+		kysec.CleanAll(c.ContainerID, true)
 		if c.SecurityConfig.FileProtection != nil {
 			fp := c.SecurityConfig.FileProtection
 			if err := kysec.UpdateFileAccess(c.ContainerID, fp.IsOn, fp.FileList, nil); err != nil {
@@ -99,6 +101,12 @@ func resumeContainerConfigs() {
 			pp := c.SecurityConfig.ProcProtection
 			if err := kysec.UpdateWhiteList(c.ContainerID, pp.IsOn, pp.ExeList, nil); err != nil {
 				log.Warnf("UpdateWhiteList container=%v err=%v", c.ContainerID, err)
+			}
+		}
+		if c.SecurityConfig.NprocProtection != nil {
+			pp := c.SecurityConfig.NprocProtection
+			if err := kysec.UpdateNprocProtection(c.ContainerID, pp.IsOn, pp.ExeList, nil); err != nil {
+				log.Warnf("UpdateNprocProtection container=%v err=%v", c.ContainerID, err)
 			}
 		}
 	}

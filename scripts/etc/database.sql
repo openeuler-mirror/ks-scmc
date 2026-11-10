@@ -31,7 +31,7 @@ CREATE TABLE IF NOT EXISTS `user_roles` (
   UNIQUE KEY `name` (`name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin ;
 
-CREATE TABLE `user_sessions` (
+CREATE TABLE IF NOT EXISTS `user_sessions` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `user_id` bigint(20) unsigned NOT NULL,
   `session_key` varchar(255) COLLATE utf8mb4_bin  NOT NULL DEFAULT '',

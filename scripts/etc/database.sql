@@ -122,7 +122,7 @@ CREATE TABLE IF NOT EXISTS `log_settings` (
   UNIQUE KEY `setting_name` (`setting_name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin ;
 
-CREATE TABLE `container_templates` (
+CREATE TABLE IF NOT EXISTS `container_templates` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `name` varchar(255) COLLATE utf8mb4_bin  NOT NULL DEFAULT '' COMMENT '容器名',
   `node_id` bigint(20) NOT NULL DEFAULT '0' COMMENT '节点ID',

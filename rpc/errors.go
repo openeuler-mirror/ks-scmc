@@ -33,7 +33,7 @@ var (
 	ErrDataLoss           = status.Error(codes.DataLoss, "unknown")
 	ErrUnauthenticated    = status.Error(codes.Unauthenticated, "用户请求未认证")
 	// ErrWrongPassword      = status.Error(codes.Code(pb.Errno_WrongPassword), "密码错误")
-	ErrWrongPassword = status.Error(codes.Code(pb.Errno_WrongPassword), "验证没通过")
+	ErrWrongPassword = status.Error(codes.Code(pb.Errno_WrongPassword), "用户名或密码输入有误")
 	ErrInvalidImage  = status.Error(codes.Internal, "无效的镜像")
 	ErrDatabaseFail  = status.Error(codes.InvalidArgument, "内部错误：数据库访问失败")
 

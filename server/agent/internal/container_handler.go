@@ -739,7 +739,6 @@ func (s *ContainerServer) Create(ctx context.Context, in *pb.CreateRequest) (*pb
 			w = in.Configs.ResouceLimit.DiskWbw
 			r = in.Configs.ResouceLimit.DiskRbw
 		}
-
 		disklimitCfg := litedb.ContainerLimit{
 			ContainerID:   id,
 			ContainerName: in.Configs.Name,

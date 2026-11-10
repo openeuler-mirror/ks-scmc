@@ -15,18 +15,16 @@ import (
 	"scmc/rpc/middleware/debug"
 	"scmc/rpc/pb/container"
 	"scmc/rpc/pb/image"
+	"scmc/rpc/pb/ipc"
 	"scmc/rpc/pb/logging"
 	"scmc/rpc/pb/network"
 	"scmc/rpc/pb/node"
 	"scmc/rpc/pb/system"
 	"scmc/rpc/pb/user"
-	"scmc/rpc/pb/ipc"
 	"scmc/server/controller/internal"
 	"scmc/server/controller/tasks"
 	"scmc/server/controller/thriftapi"
 )
-
-
 
 func Server() (*grpc.Server, error) {
 	tlsCredentials, err := common.LoadTLSCredentials()
@@ -72,7 +70,7 @@ func Server() (*grpc.Server, error) {
 		&tasks.UpdateIptables{},
 		&tasks.CleanLogs{},
 		&tasks.ContainerEventMonitor{},
-        &tasks.AppRun{},
+		&tasks.AppRun{},
 	)
 
 	if os.Getenv("GRPC_REFLECTION") == "1" {

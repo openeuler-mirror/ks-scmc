@@ -37,87 +37,87 @@ func (i *IPCData) Scan(value interface{}) error {
 
 // 新建一条记录
 func CreateIpcConfig(data *IpcConfig) error {
-        if data == nil {
-                return nil
-        }
+	if data == nil {
+		return nil
+	}
 
-        db, err := getConn()
-        if err != nil {
-                return err
-        }
+	db, err := getConn()
+	if err != nil {
+		return err
+	}
 
-        result := db.Create(data)
-        if result.Error != nil {
-                log.Warnf("db create ipc configs %v", result.Error)
-                return result.Error
-        }
-        return nil
+	result := db.Create(data)
+	if result.Error != nil {
+		log.Warnf("db create ipc configs %v", result.Error)
+		return result.Error
+	}
+	return nil
 }
 
 // 通过 IPC 容器ID 返回记录
 func GetIpcConfigByID(containerID string) (*IpcConfig, error) {
-        db, err := getConn()
-        if err != nil {
-                return nil, err
-        }
+	db, err := getConn()
+	if err != nil {
+		return nil, err
+	}
 
-        var data IpcConfig
-        result := db.First(&data, "container_id = ?", containerID)
-        if result.Error != nil {
-                log.Warnf("GetIpcConfigByID containerID=%v, err:%v", containerID, result.Error)
-                return nil, result.Error
-        }
+	var data IpcConfig
+	result := db.First(&data, "container_id = ?", containerID)
+	if result.Error != nil {
+		log.Warnf("GetIpcConfigByID containerID=%v, err:%v", containerID, result.Error)
+		return nil, result.Error
+	}
 
-        return &data, nil
+	return &data, nil
 }
 
 // 通过 IPC 容器名称 返回记录
 func GetIpcConfigByName(name string) (*IpcConfig, error) {
-        db, err := getConn()
-        if err != nil {
-                return nil, err
-        }
+	db, err := getConn()
+	if err != nil {
+		return nil, err
+	}
 
-        var data IpcConfig
-        result := db.First(&data, "container_name = ?", name)
-        if result.Error != nil {
-                log.Warnf("GetIpcConfigByName name =%v, err:%v", name, result.Error)
-                return nil, result.Error
-        }
+	var data IpcConfig
+	result := db.First(&data, "container_name = ?", name)
+	if result.Error != nil {
+		log.Warnf("GetIpcConfigByName name =%v, err:%v", name, result.Error)
+		return nil, result.Error
+	}
 
-        return &data, nil
+	return &data, nil
 }
 
 // 更新一条记录
 func UpdateIpcConfig(data *IpcConfig) error {
-        db, err := getConn()
-        if err != nil {
-                return err
-        }
+	db, err := getConn()
+	if err != nil {
+		return err
+	}
 
-        //result := db.Model(data).Select("IPC").Updates(data)
-        result :=db.Save(data)
-        if result.Error != nil {
-                log.Warnf("UpdateIpcConfig data=%+v err=%v", data, result.Error)
-                return result.Error
-        }
-        return nil
+	//result := db.Model(data).Select("IPC").Updates(data)
+	result := db.Save(data)
+	if result.Error != nil {
+		log.Warnf("UpdateIpcConfig data=%+v err=%v", data, result.Error)
+		return result.Error
+	}
+	return nil
 }
 
 // 返回所有的 IPC 记录信息
 func IpcConfigList() ([]*IpcConfig, error) {
-        db, err := getConn()
-        if err != nil {
-                return nil, err
-        }
+	db, err := getConn()
+	if err != nil {
+		return nil, err
+	}
 
-        var data []*IpcConfig
-        if r := db.Find(&data); r.Error != nil {
-                log.Warnf("db query ipc configs: %v", r.Error)
-                return nil, r.Error
-        }
+	var data []*IpcConfig
+	if r := db.Find(&data); r.Error != nil {
+		log.Warnf("db query ipc configs: %v", r.Error)
+		return nil, r.Error
+	}
 
-        return data, nil
+	return data, nil
 }
 
 // 依据 ID 删除记录

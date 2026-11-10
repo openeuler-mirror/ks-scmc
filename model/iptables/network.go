@@ -22,14 +22,14 @@ import (
 // node: iptables -A OUTPUT -d 172.21.1.5 -j ACCEPT
 // container: iptables -A INPUT -s 192.168.122.10 -p all -j ACCEPT
 type RuleInfo struct {
-	Source       string //源ip -s
-	Destination  string //目标ip -d
-	Protocol     string //协议类型 TCP、UDP、ICMP和ALL -p
-	SrcPort      string //源端口 与protocol的TCP、UDP一起使用 --sport
-	DestPort     string //目标端口 与protocol的TCP、UDP一起使用  --dport
-	InInterface  string //指定数据包从哪个网络接口进入 -i
-	OutInterface string //指定数据包从哪个网络接口输出 -o
-	Policy       string //动作 ACCEPT DROP REJECT ... -j
+	Source       string // 源ip -s
+	Destination  string // 目标ip -d
+	Protocol     string // 协议类型 TCP、UDP、ICMP和ALL -p
+	SrcPort      string // 源端口 与protocol的TCP、UDP一起使用 --sport
+	DestPort     string // 目标端口 与protocol的TCP、UDP一起使用  --dport
+	InInterface  string // 指定数据包从哪个网络接口进入 -i
+	OutInterface string // 指定数据包从哪个网络接口输出 -o
+	Policy       string // 动作 ACCEPT DROP REJECT ... -j
 }
 
 func (r *RuleInfo) srcOrDest() (string, error) {
@@ -79,6 +79,7 @@ func (r *RuleInfo) protoAndPort() string {
 	}
 	return s
 }
+
 func (r *RuleInfo) IPTables() (string, error) {
 	var parts []string
 
@@ -104,14 +105,17 @@ func (r *RuleInfo) IPTables() (string, error) {
 }
 
 type ChainRules struct {
-	Chain string //链 INPUT FORWARD OUTPUT -A
+	Chain string // 链 INPUT FORWARD OUTPUT -A
 	Rules []RuleInfo
 }
 
-const cmdTable = "iptables -t filter"
-const outputRule = "-A OUTPUT -m state --state RELATED,ESTABLISHED -j ACCEPT"
-const inputRule = "-A INPUT -m state --state RELATED,ESTABLISHED -j ACCEPT"
-const maxJsonFileSize = 1048576 //1M
+const (
+	cmdTable        = "iptables -t filter"
+	outputRule      = "-A OUTPUT -m state --state RELATED,ESTABLISHED -j ACCEPT"
+	inputRule       = "-A INPUT -m state --state RELATED,ESTABLISHED -j ACCEPT"
+	maxJsonFileSize = 1048576 // 1M
+)
+
 const (
 	OperateContainer = 1
 	OperateNode      = 2
@@ -776,7 +780,7 @@ func ruleToCmd(filePath, fileName string, isOn bool, blacklist int, rules []*lit
 			curRule = curRule + res
 		}
 
-		//只有ip没有协议情况处理
+		// 只有ip没有协议情况处理
 		if curRule == "" && addrstr != "" && addrstrDst != "" {
 			if blacklist == 0 {
 				curRule = "-A INPUT " + " " + addrstr + " -j ACCEPT" + "\n"

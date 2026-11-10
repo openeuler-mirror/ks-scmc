@@ -24,6 +24,7 @@ import (
 	"gorm.io/gorm"
 
 	"scmc/common"
+	"scmc/model/db"
 	"scmc/model/docker"
 	"scmc/model/kysec"
 	"scmc/model/litedb"
@@ -814,7 +815,14 @@ func (s *NodeServer) Create(ctx context.Context, in *pb.CreateRequest) (*pb.Crea
 		return nil, rpc.ErrInvalidArgument
 	}
 
-	err := litedb.CreateNodeInfo(1, in.Uuid) // 强制设置id=1，表只能有一条记录
+	n, err := db.QueryNodeByAddr(in.Address)
+	if err == db.ErrRecordNotFound || n.Deleted == true {
+		litedb.RemoveNodeInfoByID(1)
+		litedb.RemoveNodeConfigByID(1)
+		opensnitch.RemoveRule("localhost")
+	}
+
+	err = litedb.CreateNodeInfo(1, in.Uuid) // 强制设置id=1，表只能有一条记录
 	if err != nil {
 		log.Warnf("Node.Create uuid=%s err=%v", in.Uuid, err)
 		if strings.HasPrefix(err.Error(), "UNIQUE constraint failed") {

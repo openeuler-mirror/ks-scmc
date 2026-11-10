@@ -1,6 +1,8 @@
 package litedb
 
 import (
+	"fmt"
+
 	log "github.com/sirupsen/logrus"
 )
 
@@ -92,7 +94,7 @@ func DelNetworkLimitByDockNic(containerID, nic string) error {
 
 func ListNetworkLimit(containerID string) ([]*NetworkLimit, error) {
 	if containerID == "" {
-		return nil, nil
+		return nil, fmt.Errorf("invalid argument")
 	}
 
 	db, err := getConn()

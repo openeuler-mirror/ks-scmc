@@ -259,11 +259,23 @@ func (s *ContainerServer) List(ctx context.Context, in *pb.ListRequest) (*pb.Lis
 
 		// 默认使用主机总CPU核心数作为基准
 		cpuBase := float64(numCPU())
+		memoryLimit := int64(0)
+		memoryUsageRatio := 0.0
+		memoryUsage := info.ResourceStat.MemStat.Used // 这里单位为MB
 
 		// 尝试从容器配置中获取CPU限制（若有）
 		containerInfo, err := cli.ContainerInspect(inspectCtx, c.ID)
 		if err == nil && containerInfo.HostConfig != nil && containerInfo.HostConfig.NanoCPUs > 0 {
 			cpuBase = float64(containerInfo.HostConfig.NanoCPUs) / 1e9
+			memoryLimit = containerInfo.HostConfig.Memory // 单位为字节
+		}
+
+		// 计算内存使用
+		if memoryLimit > 0 {
+			memoryUsageRatio = memoryUsage / float64(memoryLimit/megaBytes)
+			if memoryUsageRatio > 1.0 {
+				memoryUsageRatio = 1.0
+			}
 		}
 
 		// 计算CPU核心使用率（相对于基准值）并限制上限为100%
@@ -271,6 +283,9 @@ func (s *ContainerServer) List(ctx context.Context, in *pb.ListRequest) (*pb.Lis
 		if cpuUsage > 1.0 {
 			cpuUsage = 1.0
 		}
+
+		info.ResourceStat.MemStat.Limit = float64(memoryLimit / megaBytes)
+		info.ResourceStat.MemStat.Percentage = memoryUsageRatio
 		info.ResourceStat.CpuStat.CoreUsed = cpuUsage
 		reply.Containers = append(reply.Containers, &pb.NodeContainer{Info: &info})
 	}

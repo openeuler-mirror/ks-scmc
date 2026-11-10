@@ -13,6 +13,7 @@ import (
 	"github.com/docker/docker/api/types"
 	log "github.com/sirupsen/logrus"
 
+	"scmc/model/db"
 	"scmc/model/docker"
 	"scmc/model/registry"
 	"scmc/rpc"
@@ -55,6 +56,49 @@ func (s *ImageServer) List(ctx context.Context, in *pb.ListRequest) (*pb.ListRep
 			}
 		}
 	}
+	return &reply, nil
+}
+
+func (s *ImageServer) ListDB(ctx context.Context, in *pb.ListDBRequest) (*pb.ListDBReply, error) {
+	images, err := db.ListImages()
+	if err != nil {
+		log.Warnf("Failed to get images list: %v", err)
+		return nil, rpc.ErrInternal
+	}
+
+	listReply, err := s.List(ctx, &pb.ListRequest{})
+	if err != nil {
+		log.Warnf("Failed to get images list from database: %v", err)
+	}
+
+	onlineImagesMap := make(map[string]bool)
+	for _, img := range listReply.Images {
+		onlineImagesMap[img.Name] = true
+	}
+
+	var reply pb.ListDBReply
+	for _, dbImage := range images {
+		imageInfo := &pb.ImageDBInfo{
+			Id:             dbImage.ID,
+			Name:           dbImage.Name,
+			Version:        dbImage.Version,
+			Description:    dbImage.Description,
+			VerifyStatus:   dbImage.VerifyStatus,
+			ApprovalStatus: dbImage.ApprovalStatus,
+			Size:           dbImage.FileSize,
+			UpdateAt:       dbImage.UpdatedAt,
+			RejectReason:   dbImage.RejectReason,
+			LoadStatus:     0,
+		}
+
+		imageKey := dbImage.Name + ":" + dbImage.Version
+		if _, exists := onlineImagesMap[imageKey]; exists {
+			imageInfo.LoadStatus = 1
+		}
+
+		reply.Images = append(reply.Images, imageInfo)
+	}
+
 	return &reply, nil
 }
 

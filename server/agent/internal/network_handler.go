@@ -720,6 +720,15 @@ func (s *NetworkServer) createNetwork(name, subnet, gateway, parent string) erro
 		return nil
 	}
 
+	/*
+		firstip, err_ip := firstUsableIP(subnet)
+		if err_ip != nil {
+			log.Warnf("NetworkCreate name=%v err=%v", name, err_ip)
+			return err_ip
+		}
+	*/
+
+	// path := "/etc/sysconfig/network-scripts/ifcfg-" + parent
 	path, _ := getNicFileName(parent)
 	beginFlag := "# ks-scmc config begin, donot modify"
 	endFlag := "# ks-scmc config end, donot modify"
@@ -728,93 +737,66 @@ func (s *NetworkServer) createNetwork(name, subnet, gateway, parent string) erro
 	add := ""
 	hostName := name + "-host"
 
-	// macvlan 和 parent 是同一个网段的时候
-	flag := CheckNicSameSubnet(subnet, parent)
-	if flag { // 同一个网段
-		newlines = append(newlines, beginFlag)
-		// 设置混杂模式
-		add = fmt.Sprintf("ip link set %s promisc on", parent)
-		newlines = append(newlines, add)
+	newlines = append(newlines, beginFlag)
+	add = fmt.Sprintf("ip link set %s promisc on", parent)
+	newlines = append(newlines, add)
 
-		// 清掉 IP 地址
-		add = fmt.Sprintf("ip addr flush dev %s", parent)
-		newlines = append(newlines, add)
+	add = fmt.Sprintf("ip link add link %s %s type macvlan mode bridge", parent, hostName)
+	newlines = append(newlines, add)
 
-		// 创建 macvlan
-		add = fmt.Sprintf("ip link add link %s %s type macvlan mode bridge", parent, hostName)
-		newlines = append(newlines, add)
+	add = fmt.Sprintf("ip link set dev %s up", hostName)
+	newlines = append(newlines, add)
 
-		// up 起来 macvlan
-		add = fmt.Sprintf("ip link set dev %s up", hostName)
-		newlines = append(newlines, add)
+	/*
+	* #74606 修复并且验证创建 macvlan 的时候没有设置子网掩码的问题！
+	* https://ones.kylinsec.com.cn:5080/project/#/team/6B7ew4b7/task/X6NeBChCU3lw1DK8
+	 */
+	// _, masklen, _ := parseSubnet(subnet)
 
-		// 设置 IP 地址
-		add = fmt.Sprintf("ip addr add %s/%d dev %s", macvlan_ip, masklen, hostName)
-		newlines = append(newlines, add)
+	//add = fmt.Sprintf("ip addr add %s/%d dev %s", firstip, masklen, host_name)
+	add = fmt.Sprintf("ip addr add %s/%d dev %s", macvlan_ip, masklen, hostName)
+	newlines = append(newlines, add)
 
-		// 设置 parent 上的 IP 地址到 macvlan 上面
-		add = fmt.Sprintf("ip addr add ${IPADDR}/${PREFIX} dev %s", hostName)
-		newlines = append(newlines, add)
+	// 路由信息在给 网卡配置 IP地址的时候会主动添加
+	//add = fmt.Sprintf("ip route add %s dev %s", subnet, host_name)
+	//newlines = append(newlines, add)
+	newlines = append(newlines, endFlag)
 
-		newlines = append(newlines, endFlag)
-	} else { // 不是同一个网段
-		newlines = append(newlines, beginFlag)
-		add = fmt.Sprintf("ip link set %s promisc on", parent)
-		newlines = append(newlines, add)
-
-		add = fmt.Sprintf("ip link add link %s %s type macvlan mode bridge", parent, hostName)
-		newlines = append(newlines, add)
-
-		add = fmt.Sprintf("ip link set dev %s up", hostName)
-		newlines = append(newlines, add)
-
-		add = fmt.Sprintf("ip addr add %s/%d dev %s", macvlan_ip, masklen, hostName)
-		newlines = append(newlines, add)
-
-		add = fmt.Sprintf("ip route add %s dev %s", subnet, hostName)
-		newlines = append(newlines, add)
-
-		newlines = append(newlines, endFlag)
-	}
-
+	/*
+		// 添加一条 iptables 信息, 不能写入文件，会导致执行很多次
+		// add = fmt.Sprintf("iptables -t nat -A POSTROUTING -s %s -o %s -j MASQUERADE", subnet, parent)
+		// newlines = append(newlines, add)
+	*/
 	err = insertAndDeleteLines(parent, path, beginFlag, endFlag, newlines)
 	if err != nil {
 		log.Warnf("NetworkCreate name=%v err=%v", name, err)
 		return err
 	}
 
-	if flag {
-		/* 添加规则 */
-		iptbInfo := fmt.Sprintf("iptables -t nat -A POSTROUTING -s %s -o %s -j MASQUERADE", subnet, parent)
-		cmd := exec.Command(
-			"iptables",
-			"-t", "nat",
-			"-A", "POSTROUTING",
-			"-s", subnet,
-			"-o", parent,
-			"-j", "MASQUERADE",
-		)
-		err = cmd.Run()
-		if err != nil {
-			log.Warnf("Run Command: %s, err= %v", iptbInfo, err)
-		}
-		/* 添加规则 */
+	/* 添加规则 */
+	iptbInfo := fmt.Sprintf("iptables -t nat -A POSTROUTING -s %s -o %s -j MASQUERADE", subnet, parent)
+	cmd := exec.Command(
+		"iptables",
+		"-t", "nat",
+		"-A", "POSTROUTING",
+		"-s", subnet,
+		"-o", parent,
+		"-j", "MASQUERADE",
+	)
+	err = cmd.Run()
+	if err != nil {
+		log.Warnf("Run Command: %s, err= %v", iptbInfo, err)
 	}
+	/* 添加规则 */
 
 	go func() {
-		cmd := exec.Command("systemctl", "restart", "network")
+		cmd = exec.Command("systemctl", "restart", "network")
 		err = cmd.Run()
 		if err != nil {
 			//return fmt.Errorf("failed to execute command: %v", cmd)
 			log.Warnf("failed to execute command: %v", cmd)
 		}
 		setVirtualNicMac(hostName)
-
-		if flag && strings.TrimSpace(common.Config.Controller.VirtualIP) != "" {
-			ModifyInterface(hostName)
-			cmd := exec.Command("systemctl", "reload", "keepalived.service")
-			cmd.Run()
-		}
 		log.Debugf("NetworkCreate parent=%v name=%v hostName=%v gateway=%v subnet=%v", parent, name, hostName, gateway, subnet)
 	}()
 
@@ -899,6 +881,7 @@ func (s *NetworkServer) removeNetwork(name string) error {
 	}
 
 	if parent_nic != "" {
+		//path := "/etc/sysconfig/network-scripts/ifcfg-" + parent_nic
 		path, _ := getNicFileName(parent_nic)
 		beginFlag := "# ks-scmc config begin, donot modify"
 		endFlag := "# ks-scmc config end, donot modify"
@@ -907,25 +890,15 @@ func (s *NetworkServer) removeNetwork(name string) error {
 		errRes = insertAndDeleteLines(parent_nic, path, beginFlag, endFlag, newlines)
 		if errRes != nil {
 			log.Warnf("NetworkCreate name=%v err=%v", name, errRes)
+			// return err_res
 		}
 
 		cmd := exec.Command("ip", "link", "del", "link", parent_nic, name+"-host")
 		errRes = cmd.Run()
 		if errRes != nil {
+			// return fmt.Errorf("failed to execute command: %v", cmd)
 			log.Warnf("failed to execute command: %v", cmd)
 		}
-
-		go func() {
-			_, err := GetInterfaceIPs(parent_nic) // err != nil 说明 parent_nic 没有 IP 地址
-			if err != nil && strings.TrimSpace(common.Config.Controller.VirtualIP) != "" {
-				cmd := exec.Command("systemctl", "restart", "network")
-				cmd.Run()
-
-				ModifyInterface(parent_nic)
-				cmd = exec.Command("systemctl", "reload", "keepalived.service")
-				cmd.Run()
-			}
-		}()
 	}
 
 	cli, err := docker.Client()

@@ -6,20 +6,20 @@ import (
 	"sync"
 	"time"
 
-	"scmc/model/db"
-	"scmc/model/docker"
-	"scmc/model/warnlog"
-	"scmc/rpc/pb/logging"
-
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/events"
 	"github.com/docker/docker/api/types/filters"
 	"github.com/docker/docker/client"
 	log "github.com/sirupsen/logrus"
+
+	"scmc/model/db"
+	"scmc/model/docker"
+	"scmc/model/warnlog"
+	"scmc/rpc/pb/logging"
 )
 
 type ContainerEventMonitor struct {
-	mu  sync.Map //存储每个节点的监控状态
+	mu  sync.Map // 存储每个节点的监控状态
 	cli *client.Client
 }
 
@@ -34,7 +34,6 @@ func (c *ContainerEventMonitor) RunAtInit() bool {
 }
 
 func (c *ContainerEventMonitor) monitorContainerEvents(cli *client.Client, node *db.NodeInfo) {
-
 	if _, loaded := c.mu.LoadOrStore(node.Address, struct{}{}); loaded {
 		log.Debugf("Node %s (%s) is already being monitored.", node.Name, node.Address)
 		return
@@ -137,7 +136,6 @@ func (c *ContainerEventMonitor) handleContainerStartEvent(event events.Message, 
 	log.Debugf("Container %.12s started on node %s (%s)", event.Actor.ID, node.Name, node.Address)
 
 	containerJSON, err := c.cli.ContainerInspect(context.Background(), event.Actor.ID)
-
 	if err != nil {
 		log.Errorf("Failed to get restart policy for container %s: %v", event.Actor.ID, err)
 		return

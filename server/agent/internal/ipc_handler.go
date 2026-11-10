@@ -227,9 +227,14 @@ func isRunning(ID string) bool {
 	}
 
 	info, _, err := cli.ContainerInspectWithRaw(context.Background(), ID, true)
+    if err != nil {
+        return false
+    }
+
 	if info.State != nil {
 		return info.State.Status == "running"
 	}
+
 	return false;
 }
 

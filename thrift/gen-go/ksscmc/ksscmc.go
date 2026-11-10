@@ -8905,32 +8905,32 @@ func (p *KsScmcClientClient) recvGetContainerNetwork() (value string, err error)
   if err != nil {
     return
   }
-  if method != "StartContainer" {
-    err = thrift.NewTApplicationException(thrift.WRONG_METHOD_NAME, "StartContainer failed: wrong method name")
+  if method != "GetContainerNetwork" {
+    err = thrift.NewTApplicationException(thrift.WRONG_METHOD_NAME, "GetContainerNetwork failed: wrong method name")
     return
   }
   if p.SeqId != seqId {
-    err = thrift.NewTApplicationException(thrift.BAD_SEQUENCE_ID, "StartContainer failed: out of sequence response")
+    err = thrift.NewTApplicationException(thrift.BAD_SEQUENCE_ID, "GetContainerNetwork failed: out of sequence response")
     return
   }
   if mTypeId == thrift.EXCEPTION {
-    error10 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
-    var error11 error
-    error11, err = error10.Read(iprot)
+    error57 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
+    var error58 error
+    error58, err = error57.Read(iprot)
     if err != nil {
       return
     }
     if err = iprot.ReadMessageEnd(); err != nil {
       return
     }
-    err = error11
+    err = error58
     return
   }
   if mTypeId != thrift.REPLY {
-    err = thrift.NewTApplicationException(thrift.INVALID_MESSAGE_TYPE_EXCEPTION, "StartContainer failed: invalid message type")
+    err = thrift.NewTApplicationException(thrift.INVALID_MESSAGE_TYPE_EXCEPTION, "GetContainerNetwork failed: invalid message type")
     return
   }
-  result := KsScmcClientStartContainerResult{}
+  result := KsScmcClientGetContainerNetworkResult{}
   if err = result.Read(iprot); err != nil {
     return
   }

@@ -21,13 +21,13 @@ func cadvisorClient() (*client.Client, error) {
 
 func calculateNetworkTraffic(stats *v1.ContainerStats) (rxBytes, txBytes uint64) {
 
-    // 遍历所有网络接口
-    for _, iface := range stats.Network.Interfaces {
-        rxBytes += iface.RxBytes
-        txBytes += iface.TxBytes
-    }
+	// 遍历所有网络接口
+	for _, iface := range stats.Network.Interfaces {
+		rxBytes += iface.RxBytes
+		txBytes += iface.TxBytes
+	}
 
-    return rxBytes, txBytes
+	return rxBytes, txBytes
 }
 
 func calculateNetworkSpeed(prevStats *v1.ContainerStats, currentStats *v1.ContainerStats) (rxSpeed, txSpeed float64) {
@@ -41,12 +41,11 @@ func calculateNetworkSpeed(prevStats *v1.ContainerStats, currentStats *v1.Contai
 
 	// 计算速率（假设时间间隔为秒）
 	timeDelta := currentStats.Timestamp.Sub(prevStats.Timestamp).Seconds()
-	rxRate := float64(rxBytesDelta) / timeDelta  // 下行速率 (B/s)
-	txRate := float64(txBytesDelta) / timeDelta  // 上行速率 (B/s)
+	rxRate := float64(rxBytesDelta) / timeDelta // 下行速率 (B/s)
+	txRate := float64(txBytesDelta) / timeDelta // 上行速率 (B/s)
 
 	return rxRate, txRate
 }
-
 
 func getContainerStats() (map[string]*pb.ResourceStat, error) {
 	cli, err := cadvisorClient()
@@ -88,15 +87,15 @@ func getContainerStats() (map[string]*pb.ResourceStat, error) {
 				}
 
 				// 获取最新两个统计点（用于计算网络速率）
-		        prevStat := info.Stats[len(info.Stats)-2]
-		        currStat := info.Stats[len(info.Stats)-1]
-		        rxRate, txRate := calculateNetworkSpeed(prevStat, currStat)
-		        p.NetStat = &pb.NetworkStats{
-		        	Rx: rxRate,
-		        	Tx: txRate,
-		        }
+				prevStat := info.Stats[len(info.Stats)-2]
+				currStat := info.Stats[len(info.Stats)-1]
+				rxRate, txRate := calculateNetworkSpeed(prevStat, currStat)
+				p.NetStat = &pb.NetworkStats{
+					Rx: rxRate,
+					Tx: txRate,
+				}
 
-		        // log.Warnf("cadvisor get Rx: %v Tx: %v (B/s)", rxRate, txRate)
+				// log.Warnf("cadvisor get Rx: %v Tx: %v (B/s)", rxRate, txRate)
 
 			}
 			m[info.Id] = p

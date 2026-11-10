@@ -723,6 +723,7 @@ type AgentSyncRequest struct {
 	ToRemove []string    `protobuf:"bytes,1,rep,name=to_remove,json=toRemove,proto3" json:"to_remove,omitempty"` // 需要删除的镜像
 	ToPull   []string    `protobuf:"bytes,2,rep,name=to_pull,json=toPull,proto3" json:"to_pull,omitempty"`       // 需要从镜像服务器同步的镜像
 	ToLoad   []*LoadInfo `protobuf:"bytes,3,rep,name=to_load,json=toLoad,proto3" json:"to_load,omitempty"`
+	Uuid     string      `protobuf:"bytes,4,opt,name=uuid,proto3" json:"uuid,omitempty"`
 }
 
 func (x *AgentSyncRequest) Reset() {

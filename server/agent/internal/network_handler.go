@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"bufio"
 	"context"
 	"fmt"
 	"net"
@@ -9,7 +10,6 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
-	"bufio"
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/network"
@@ -513,40 +513,39 @@ func (s *NetworkServer) RemoveIPtables(ctx context.Context, in *pb.RemoveIPtable
 
 /* 删除 iptables 相关信息 */
 func deleteIptablesInfo(ipaddrInfo, parentNic string) {
-    if len(ipaddrInfo) == 0 {
-        return
-    }
+	if len(ipaddrInfo) == 0 {
+		return
+	}
 
-    var iptbInfo string
-    var cird string
-    parts := strings.Fields(ipaddrInfo)
-    for _, part := range parts {
-         _, ipnet, err := net.ParseCIDR(part)
-        if err == nil {
-	    s := ipnet.String()
-            iptbInfo = "iptables -t nat -D POSTROUTING -s " + s + " -o " + parentNic + " -j MASQUERADE"
-            cird = s
-        }
-    }
+	var iptbInfo string
+	var cird string
+	parts := strings.Fields(ipaddrInfo)
+	for _, part := range parts {
+		_, ipnet, err := net.ParseCIDR(part)
+		if err == nil {
+			s := ipnet.String()
+			iptbInfo = "iptables -t nat -D POSTROUTING -s " + s + " -o " + parentNic + " -j MASQUERADE"
+			cird = s
+		}
+	}
 
-    /* 执行命令 */
-    if len(iptbInfo) > 0 {
-	    cmd := exec.Command(
-            "iptables",
-            "-t", "nat",
-            "-D", "POSTROUTING",
-            "-s", cird,
-            "-o", parentNic,
-            "-j", "MASQUERADE",
-        )
+	/* 执行命令 */
+	if len(iptbInfo) > 0 {
+		cmd := exec.Command(
+			"iptables",
+			"-t", "nat",
+			"-D", "POSTROUTING",
+			"-s", cird,
+			"-o", parentNic,
+			"-j", "MASQUERADE",
+		)
 
-        err := cmd.Run()
-        if err != nil {
-            log.Warnf("Run Command=%s, err=%v", iptbInfo, err)
-        }
-    }
+		err := cmd.Run()
+		if err != nil {
+			log.Warnf("Run Command=%s, err=%v", iptbInfo, err)
+		}
+	}
 }
-
 
 func insertAndDeleteLines(parentNic string, filePath string, startStr, endStr string, newContents []string) error {
 	// 打开文件
@@ -582,7 +581,6 @@ func insertAndDeleteLines(parentNic string, filePath string, startStr, endStr st
 	if len(ipaddrInfo) > 0 {
 		deleteIptablesInfo(ipaddrInfo, parentNic)
 	}
-
 
 	// 检查是否找到了开始和结束的行
 	if startIndex == -1 || endIndex == -1 {
@@ -666,7 +664,7 @@ func incrementIP(ip net.IP) {
 	}
 }
 
-// 设置虚拟网卡的 MAC 地址	
+// 设置虚拟网卡的 MAC 地址
 func setVirtualNicMac(nicName string) {
 	nicMAC := getMacJSON(nicName)
 	if nicMAC == "" {
@@ -723,11 +721,11 @@ func (s *NetworkServer) createNetwork(name, subnet, gateway, parent string) erro
 	}
 
 	/*
-	firstip, err_ip := firstUsableIP(subnet)
-	if err_ip != nil {
-		log.Warnf("NetworkCreate name=%v err=%v", name, err_ip)
-		return err_ip
-	}
+		firstip, err_ip := firstUsableIP(subnet)
+		if err_ip != nil {
+			log.Warnf("NetworkCreate name=%v err=%v", name, err_ip)
+			return err_ip
+		}
 	*/
 
 	// path := "/etc/sysconfig/network-scripts/ifcfg-" + parent
@@ -752,7 +750,7 @@ func (s *NetworkServer) createNetwork(name, subnet, gateway, parent string) erro
 	/*
 	* #74606 修复并且验证创建 macvlan 的时候没有设置子网掩码的问题！
 	* https://ones.kylinsec.com.cn:5080/project/#/team/6B7ew4b7/task/X6NeBChCU3lw1DK8
-	*/
+	 */
 	// _, masklen, _ := parseSubnet(subnet)
 
 	//add = fmt.Sprintf("ip addr add %s/%d dev %s", firstip, masklen, host_name)
@@ -765,9 +763,9 @@ func (s *NetworkServer) createNetwork(name, subnet, gateway, parent string) erro
 	newlines = append(newlines, endFlag)
 
 	/*
-	// 添加一条 iptables 信息, 不能写入文件，会导致执行很多次
-	// add = fmt.Sprintf("iptables -t nat -A POSTROUTING -s %s -o %s -j MASQUERADE", subnet, parent)
-	// newlines = append(newlines, add)
+		// 添加一条 iptables 信息, 不能写入文件，会导致执行很多次
+		// add = fmt.Sprintf("iptables -t nat -A POSTROUTING -s %s -o %s -j MASQUERADE", subnet, parent)
+		// newlines = append(newlines, add)
 	*/
 	err = insertAndDeleteLines(parent, path, beginFlag, endFlag, newlines)
 	if err != nil {
@@ -806,7 +804,7 @@ func (s *NetworkServer) createNetwork(name, subnet, gateway, parent string) erro
 }
 
 /*
- * 获取虚拟网卡对应的物理网卡名称 
+ * 获取虚拟网卡对应的物理网卡名称
  * getPhysicalInterfaceName 因为是通过调用 shell 命令实现,
  * 效率会差些, 作为备选方案
  */
@@ -840,12 +838,12 @@ func getParentInterface(virtualNicName string) (string, error) {
 // 没有绑定物理网卡的   scmc-<virtualNicName>
 func getPhysicalInterfaceName(virtualNicName string) (string, error) {
 	// 执行 ip link show 命令
-	cmd := exec.Command("ip", "link", "show", virtualNicName + "-host")
+	cmd := exec.Command("ip", "link", "show", virtualNicName+"-host")
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		//return "", fmt.Errorf("failed to execute command: %v", cmd)
 		// 测试没有绑定物理网卡的情况
-		cmd = exec.Command("ip", "link", "show", "scmc-" + virtualNicName)
+		cmd = exec.Command("ip", "link", "show", "scmc-"+virtualNicName)
 		output, err = cmd.CombinedOutput()
 		if err == nil {
 			return "", nil
@@ -895,7 +893,7 @@ func (s *NetworkServer) removeNetwork(name string) error {
 			// return err_res
 		}
 
-		cmd := exec.Command("ip", "link", "del", "link", parent_nic, name + "-host")
+		cmd := exec.Command("ip", "link", "del", "link", parent_nic, name+"-host")
 		errRes = cmd.Run()
 		if errRes != nil {
 			// return fmt.Errorf("failed to execute command: %v", cmd)
@@ -919,7 +917,7 @@ func (s *NetworkServer) removeNetwork(name string) error {
 
 	// 没有绑定物理网卡的情况
 	if parent_nic == "" {
-		cmd := exec.Command("ip", "link", "del", "link", "scmc-" + name)
+		cmd := exec.Command("ip", "link", "del", "link", "scmc-"+name)
 		_ = cmd.Run()
 	}
 

@@ -52,7 +52,7 @@ func (s *ContainerServer) GetContainerInterfacesWithMAC(containerID string) ([]s
 		return nil, err
 	}
 
-	pid := strings.TrimSpace(string(pidOut))
+	pid := strings.TrimSpace(fmt.Sprintf("%d", pidOut))
 	if pid == "0" {
 		return nil, fmt.Errorf("container not running")
 	}
@@ -101,18 +101,18 @@ func (s *ContainerServer) GetContainerInterfacesWithMAC(containerID string) ([]s
 func (s *ContainerServer) ContainerTCConfig(containerID string, Nic string) {
 	macToNet, err := s.GetContainerNIC(containerID)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+		log.Warnf("GetContainerNIC(%s), Error: %v\n", containerID, err)
 		return
 	}
 
 	if len(macToNet) == 0 {
-		fmt.Println("No network interfaces found.")
+		log.Warnf("No network interfaces found.")
 		return
 	}
 
 	interfaces, err := s.GetContainerInterfacesWithMAC(containerID)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error getting container interfaces: %v\n", err)
+		log.Warnf("GetContainerInterfacesWithMAC(%s), Error getting container interfaces: %v\n", containerID, err)
 		return
 	}
 
@@ -149,7 +149,7 @@ func (s *ContainerServer) ApplyMultiInterfaceLimit(containerID, iface string, Eg
 	}
 
 	if err := ensureIFBModuleLoaded(); err != nil {
-		fmt.Println("Warning: IFB module may not be loaded")
+		log.Warning("Warning: IFB module may not be loaded")
 	}
 	netns, err := getNetnsPath(containerID)
 	ifbName, err := ifbNameForInterface(iface)

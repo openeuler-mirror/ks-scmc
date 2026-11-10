@@ -146,3 +146,21 @@ func QueryNodeByName(name string) (*NodeInfo, error) {
 
 	return &nodeInfo, nil
 }
+
+func QueryNodeByUUID(uuid string) (*NodeInfo, error) {
+	db, err := getConn()
+	if err != nil {
+		return nil, err
+	}
+	var nodeInfo NodeInfo
+	result := db.Where("uuid = ?", uuid).First(&nodeInfo)
+	if result.Error != nil {
+		log.Warnf("query node uuid=%v: %v", uuid, err)
+		return nil, translateError(result.Error)
+	} else if result.RowsAffected == 0 {
+		log.Infof("query node uuid=%v not found", uuid)
+		return nil, ErrRecordNotFound
+	}
+
+	return &nodeInfo, nil
+}

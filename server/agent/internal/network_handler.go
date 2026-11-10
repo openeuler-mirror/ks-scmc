@@ -712,7 +712,7 @@ func (s *NetworkServer) createNetwork(name, subnet, gateway, parent string) erro
 	_, err = cli.NetworkCreate(context.Background(), name, data)
 	if err != nil {
 		log.Warnf("NetworkCreate name=%v err=%v", name, err)
-		return err
+		return fmt.Errorf("容器创建网卡[%s] 失败", name)
 	}
 
 	if parent == "" {
@@ -780,8 +780,8 @@ func (s *NetworkServer) createNetwork(name, subnet, gateway, parent string) erro
 
 	err = insertAndDeleteLines(parent, path, beginFlag, endFlag, newlines)
 	if err != nil {
-		log.Warnf("NetworkCreate name=%v err=%v", name, err)
-		return err
+		log.Warnf("insertAndDeleteLines name=%v err=%v", name, err)
+		return fmt.Errorf("配置网卡文件失败")
 	}
 
 	if !flag {

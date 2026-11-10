@@ -721,7 +721,6 @@ func (s *NetworkServer) createNetwork(name, subnet, gateway, parent string) erro
 		return nil
 	}
 
-
 	path, _ := getNicFileName(parent)
 	beginFlag := "# ks-scmc config begin, donot modify"
 	endFlag := "# ks-scmc config end, donot modify"
@@ -730,54 +729,54 @@ func (s *NetworkServer) createNetwork(name, subnet, gateway, parent string) erro
 	add := ""
 	hostName := name + "-host"
 
-        // macvlan 和 parent 是同一个网段的时候
-        flag := CheckNicSameSubnet(subnet, parent)
-        if flag { // 同一个网段
-            newlines = append(newlines, beginFlag)
-            // 设置混杂模式
-            add = fmt.Sprintf("ip link set %s promisc on", parent)
-            newlines = append(newlines, add)
+	// macvlan 和 parent 是同一个网段的时候
+	flag := CheckNicSameSubnet(subnet, parent)
+	if flag { // 同一个网段
+		newlines = append(newlines, beginFlag)
+		// 设置混杂模式
+		add = fmt.Sprintf("ip link set %s promisc on", parent)
+		newlines = append(newlines, add)
 
-            // 清掉 IP 地址
-            add = fmt.Sprintf("ip addr flush dev %s", parent)
-            newlines = append(newlines, add)
+		// 清掉 IP 地址
+		add = fmt.Sprintf("ip addr flush dev %s", parent)
+		newlines = append(newlines, add)
 
-            // 创建 macvlan 
-            add = fmt.Sprintf("ip link add link %s %s type macvlan mode bridge", parent, hostName)
-            newlines = append(newlines, add)
+		// 创建 macvlan
+		add = fmt.Sprintf("ip link add link %s %s type macvlan mode bridge", parent, hostName)
+		newlines = append(newlines, add)
 
-            // up 起来 macvlan
-            add = fmt.Sprintf("ip link set dev %s up", hostName)
-            newlines = append(newlines, add)
+		// up 起来 macvlan
+		add = fmt.Sprintf("ip link set dev %s up", hostName)
+		newlines = append(newlines, add)
 
-            // 设置 IP 地址
-            add = fmt.Sprintf("ip addr add %s/%d dev %s", macvlan_ip, masklen, hostName)
-            newlines = append(newlines, add)
+		// 设置 IP 地址
+		add = fmt.Sprintf("ip addr add %s/%d dev %s", macvlan_ip, masklen, hostName)
+		newlines = append(newlines, add)
 
-            // 设置 parent 上的 IP 地址到 macvlan 上面
-            add = fmt.Sprintf("ip addr add ${IPADDR}/${PREFIX} dev %s", hostName)
-            newlines = append(newlines, add)
+		// 设置 parent 上的 IP 地址到 macvlan 上面
+		add = fmt.Sprintf("ip addr add ${IPADDR}/${PREFIX} dev %s", hostName)
+		newlines = append(newlines, add)
 
-            newlines = append(newlines, endFlag)
-        } else { // 不是同一个网段
-            newlines = append(newlines, beginFlag)
-            add = fmt.Sprintf("ip link set %s promisc on", parent)
-            newlines = append(newlines, add)
+		newlines = append(newlines, endFlag)
+	} else { // 不是同一个网段
+		newlines = append(newlines, beginFlag)
+		add = fmt.Sprintf("ip link set %s promisc on", parent)
+		newlines = append(newlines, add)
 
-            add = fmt.Sprintf("ip link add link %s %s type macvlan mode bridge", parent, hostName)
-            newlines = append(newlines, add)
+		add = fmt.Sprintf("ip link add link %s %s type macvlan mode bridge", parent, hostName)
+		newlines = append(newlines, add)
 
-            add = fmt.Sprintf("ip link set dev %s up", hostName)
-            newlines = append(newlines, add)
+		add = fmt.Sprintf("ip link set dev %s up", hostName)
+		newlines = append(newlines, add)
 
-            add = fmt.Sprintf("ip addr add %s/%d dev %s", macvlan_ip, masklen, hostName)
-            newlines = append(newlines, add)
+		add = fmt.Sprintf("ip addr add %s/%d dev %s", macvlan_ip, masklen, hostName)
+		newlines = append(newlines, add)
 
-            add = fmt.Sprintf("ip route add %s dev %s", subnet, hostName)
-            newlines = append(newlines, add)
+		add = fmt.Sprintf("ip route add %s dev %s", subnet, hostName)
+		newlines = append(newlines, add)
 
-            newlines = append(newlines, endFlag)
-        }
+		newlines = append(newlines, endFlag)
+	}
 
 	err = insertAndDeleteLines(parent, path, beginFlag, endFlag, newlines)
 	if err != nil {
@@ -785,26 +784,26 @@ func (s *NetworkServer) createNetwork(name, subnet, gateway, parent string) erro
 		return err
 	}
 
-        if flag {
-            /* 添加规则 */
-            iptbInfo := fmt.Sprintf("iptables -t nat -A POSTROUTING -s %s -o %s -j MASQUERADE", subnet, parent)
-            cmd := exec.Command(
-                "iptables",
-                "-t", "nat",
-                "-A", "POSTROUTING",
-                "-s", subnet,
-                "-o", parent,
-                "-j", "MASQUERADE",
-            )
-            err = cmd.Run()
-            if err != nil {
-                log.Warnf("Run Command: %s, err= %v", iptbInfo, err)
-            }
-            /* 添加规则 */
-        }
+	if flag {
+		/* 添加规则 */
+		iptbInfo := fmt.Sprintf("iptables -t nat -A POSTROUTING -s %s -o %s -j MASQUERADE", subnet, parent)
+		cmd := exec.Command(
+			"iptables",
+			"-t", "nat",
+			"-A", "POSTROUTING",
+			"-s", subnet,
+			"-o", parent,
+			"-j", "MASQUERADE",
+		)
+		err = cmd.Run()
+		if err != nil {
+			log.Warnf("Run Command: %s, err= %v", iptbInfo, err)
+		}
+		/* 添加规则 */
+	}
 
 	go func() {
-                cmd := exec.Command("systemctl", "restart", "network")
+		cmd := exec.Command("systemctl", "restart", "network")
 		err = cmd.Run()
 		if err != nil {
 			//return fmt.Errorf("failed to execute command: %v", cmd)
@@ -812,11 +811,11 @@ func (s *NetworkServer) createNetwork(name, subnet, gateway, parent string) erro
 		}
 		setVirtualNicMac(hostName)
 
-                if flag && strings.TrimSpace(common.Config.Controller.VirtualIP) != "" {
-                        ModifyInterface(hostName)
-                        cmd := exec.Command("systemctl", "reload", "keepalived.service")
-                        cmd.Run()
-                }
+		if flag && strings.TrimSpace(common.Config.Controller.VirtualIP) != "" {
+			ModifyInterface(hostName)
+			cmd := exec.Command("systemctl", "reload", "keepalived.service")
+			cmd.Run()
+		}
 		log.Debugf("NetworkCreate parent=%v name=%v hostName=%v gateway=%v subnet=%v", parent, name, hostName, gateway, subnet)
 	}()
 
@@ -917,17 +916,17 @@ func (s *NetworkServer) removeNetwork(name string) error {
 			log.Warnf("failed to execute command: %v", cmd)
 		}
 
-                go func() {
-                    _, err := GetInterfaceIPs(parent_nic) // err != nil 说明 parent_nic 没有 IP 地址
-                    if err != nil && strings.TrimSpace(common.Config.Controller.VirtualIP) != "" {
-                        cmd := exec.Command("systemctl", "restart", "network")
-                        cmd.Run()
+		go func() {
+			_, err := GetInterfaceIPs(parent_nic) // err != nil 说明 parent_nic 没有 IP 地址
+			if err != nil && strings.TrimSpace(common.Config.Controller.VirtualIP) != "" {
+				cmd := exec.Command("systemctl", "restart", "network")
+				cmd.Run()
 
-                        ModifyInterface(parent_nic)
-                        cmd = exec.Command("systemctl", "reload", "keepalived.service")
-                        cmd.Run()
-                    }
-                }()
+				ModifyInterface(parent_nic)
+				cmd = exec.Command("systemctl", "reload", "keepalived.service")
+				cmd.Run()
+			}
+		}()
 	}
 
 	cli, err := docker.Client()

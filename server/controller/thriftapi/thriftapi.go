@@ -1701,7 +1701,200 @@ func (h *KsScmcHandler) UnpauseContainer(nodeIp string, containerName string) (i
 }
 
 func (h *KsScmcHandler) LoginV3(user string, passwd string, nodeIp string) (r string, err error) {
-	return "", nil
+	respone := ksscmc.CommonRespone{}
+	if nodeIp == "" {
+		respone.Message = "nodeIp is invalid!"
+		respone.Status = 1
+		return Struct2JsonString(respone), nil
+	}
+	sessionID, err := db.SessionManagerCreateSession(nodeIp)
+	if err != nil {
+		logrus.Error("Failed to create session, because: ", err)
+		respone.Message = "Failed to create session"
+		respone.Status = 1
+		return Struct2JsonString(respone), nil
+	}
+	respone.Message = *sessionID
+	respone.Status = 0
+	return Struct2JsonString(respone), nil
+}
+
+func (h *KsScmcHandler) GetVersionsV3(session_id string) (string, error) {
+	resp := ksscmc.GetVersionsV3Response{}
+	nodeIP := db.SessionManagerGetNodeIP(session_id)
+	var targetNode *db.NodeInfo = nil
+	nodes, err := db.ListNodes()
+	if err != nil {
+		logrus.Error("Failed to get node list")
+		return ResponseFailed("Failed to get node list"), nil
+	}
+	for _, nodeInfo := range nodes {
+		if nodeInfo.Address != *nodeIP {
+			continue
+		}
+		targetNode = nodeInfo
+	}
+	if targetNode == nil {
+		return ResponseFailed("Cannot found node by session"), nil
+	}
+	resp.Nodes = append(resp.Nodes, &ksscmc.NodeVersion{
+		Name:     targetNode.Name,
+		UUID:     targetNode.UUID,
+		Versions: &ksscmc.Version{},
+	})
+	return Struct2JsonString(resp), nil
+}
+
+func (h *KsScmcHandler) GetAllContainersV3(session_id string, nid string) (r string, err error) {
+	nodeIP := db.SessionManagerGetNodeIP(session_id)
+	return h.GetAllContainers(*nodeIP)
+}
+
+func (h *KsScmcHandler) CondGetAlarmListV3(session_id string, cond *ksscmc.GetAlarmCond) (r string, err error) {
+	resp := ksscmc.CondGetAlarmListResponse{
+		Status:  0,
+		Message: "success",
+		Total:   0, // todo
+		Nums:    0,
+		Pages:   0,
+		Page:    0, //todo
+		HAlarms: []*ksscmc.CondAlarms{},
+		CAlarms: []*ksscmc.CondAlarms{},
+	}
+	nodeIP := db.SessionManagerGetNodeIP(session_id)
+	nodeID := int64(0)
+	nodeInfo, err := GetNodeId(*nodeIP)
+	readType := ksscmc.ReadType_ALL
+	var entityType []int
+
+	if err != nil {
+		logrus.Error("Failed to get node by ip", err)
+	} else {
+		nodeID = nodeInfo.ID
+	}
+	// thrift 定义中 1：仅获取已读告警；2：仅获取未读告警
+	// 但是内部定义 0:未读 1:已读
+	if ksscmc.ReadType(cond.ReadType) == ksscmc.ReadType_READED {
+		readType = 1
+	}
+	if ksscmc.ReadType(cond.ReadType) == ksscmc.ReadType_UNREAD {
+		readType = 0
+	}
+	if cond.EntityType == 1 || cond.EntityType == 2 {
+		entityType = append(entityType, int(cond.EntityType))
+	} else {
+		entityType = append(entityType, 1, 2)
+	}
+	// 没有对 AlarmType 做处理
+	if cond.AlarmType != -1 {
+		logrus.Warn("Unsupported special alarm type!")
+	}
+	_, warnLogs, _ := db.GetWarnLog(int(readType),
+		entityType,
+		[]int{int(cond.AlarmType)},
+		nodeID,
+		cond.StartTime,
+		cond.EndTime,
+		int64(cond.Nums),
+		int64(cond.Page),
+		cond.Asc)
+
+	for _, warnLog := range warnLogs {
+		status := 0
+		if warnLog.HaveRead {
+			status = 0
+		} else {
+			status = 1
+		}
+		alarm := &ksscmc.CondAlarms{
+			ID:        int32(warnLog.ID),
+			Status:    int32(status),
+			Message:   warnLog.Detail,
+			AlarmType: int32(warnLog.EventType),
+			CTime:     time.Unix(warnLog.CreatedAt, 0).Format("2025-07-25 18:00:00"),
+			UTime:     time.Unix(warnLog.UpdatedAt, 0).Format("2025-07-25 18:00:00"),
+		}
+		if warnLog.EventType == int64(logging.EVENT_MODULE_NODE) {
+			resp.HAlarms = append(resp.HAlarms, alarm)
+		}
+		if warnLog.EventType == int64(logging.EVENT_MODULE_CONTAINER) {
+			resp.CAlarms = append(resp.CAlarms, alarm)
+		}
+	}
+	return Struct2JsonString(resp), nil
+}
+
+func (h *KsScmcHandler) GetAgentNodesV3(session_id string) (r string, err error) {
+	nodeIP := db.SessionManagerGetNodeIP(session_id)
+	resp := &ksscmc.GetAgentNodesResponse{}
+	conn, err := internal.GetAgentConn(*nodeIP)
+	if err != nil {
+		logrus.Error("Failed to get agent connection, because ", err)
+		resp.Status = 1
+		resp.Message = err.Error()
+		return Struct2JsonString(resp), nil
+	}
+	nodeInfos ,err := db.ListNodes()
+	if err != nil {
+		logrus.Error("Failed to get node infos, because ", err)
+		resp.Status = 1
+		resp.Message = err.Error()
+		return Struct2JsonString(resp), nil
+	}
+	var nodeInfo *db.NodeInfo
+	for _, _nodeInfo := range nodeInfos {
+		if nodeInfo.Address != *nodeIP {
+			continue
+		}
+		nodeInfo = _nodeInfo
+	}
+	cli := nodePB.NewNodeClient(conn)
+	ctx_, cancel := context.WithTimeout(context.Background(), time.Second*5)
+	defer cancel()
+	nodeUsage, err := cli.Usage(ctx_, &nodePB.UsageRequest{})
+	if err != nil {
+		resp.Status = 1
+		resp.Message = err.Error()
+		return Struct2JsonString(resp), nil
+	}
+	var nodeState int32 = 1
+	if nodeUsage.Status.State == int64(nodePB.NodeState_Online) {
+		nodeState = 0
+	}
+	resp.Nodes = append(resp.Nodes, &ksscmc.AgentNode{
+		Nets: []*ksscmc.NetworkInterfaceWithAgentNode{},
+		Desc: nodeInfo.Comment,
+		Name: nodeInfo.Name,
+		UUID: nodeInfo.UUID,
+		IP: nodeInfo.Address,
+		Stat: nodeState,
+		CPUUsage: nodeUsage.Status.CpuStat.UsedPercentage,
+		Cpus: nodeUsage.Status.CpuStat.Total,
+		MemUsage: nodeUsage.Status.MemStat.UsedPercentage,
+		MemTotal: float64(nodeUsage.Status.MemStat.Total),
+		DiskUsage: nodeUsage.Status.DiskStat.UsedPercentage  / 1024,
+		DiskTotal: float64(nodeUsage.Status.DiskStat.Total) / 1024,
+		DrbdUsage: 0.0, // todo
+		DrbdTotal: 0.0, // todo
+		NetRbw: 0.0,
+		NetWbw: 0.0,
+		DiskRbw: 0.0,
+		DiskWbw: 0.0,
+		DrbdRbw: 0.0,
+		DrbdWbw: 0.0,
+		ContainerNums: int32(nodeUsage.Status.ContainerStat.Total),
+		OnlineContainerNums: int32(nodeUsage.Status.ContainerStat.Running),
+		MaxContainers: 9999,
+		AlarmNums: 0, // todo,目前所有获取日志的接口都需要分页，获取日志数量总数待实现。
+	})
+	return Struct2JsonString(resp.Nodes), nil
+}
+
+func (h *KsScmcHandler) SetAlarmReadV3(session_id string, node_name string, id int32) (r string, err error) {
+	if err := db.SetWarnLogRead([]int64{int64(id)}); err != nil {
+		return ResponseFailed(err.Error()), nil
+	}
+	return ResponseSucceed(), nil
 }
 
 func ThriftapiMain() {

@@ -24,6 +24,11 @@ enum AccessAuth {
     READ_WRITE = 1
 }
 
+struct CommonRespone {
+    1: i32 status,
+    2: string message
+}
+
 struct ContainerMetric {
     1: string container_name,
     2: string container_id,

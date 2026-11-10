@@ -104,8 +104,6 @@ func fromBlkioWeight(blkioWeight uint16) int64 {
 	return 0
 }
 
-//const defaultCPUShares = 1024
-//const updateContainerFlagFile = "/var/lib/ks-scmc/networks/iptables/updateIptables.flag"
 var (
 	defaultCPUShares int64 = 1024
 	updateContainerFlagFile string = filepath.Join(common.Config.Network.IPtablesPath, "updateIptables.flag")

@@ -61,7 +61,7 @@ CREATE TABLE IF NOT EXISTS `node_infos` (
   UNIQUE KEY `address` (`address`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin ;
 
-CREATE TABLE `image_infos` (
+CREATE TABLE IF NOT EXISTS `image_infos` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `name` varchar(255) COLLATE utf8mb4_bin  NOT NULL DEFAULT '',
   `version` varchar(255) COLLATE utf8mb4_bin  NOT NULL DEFAULT '',

@@ -6,7 +6,7 @@
 
 %global pkg_name ks-scmc
 %global pkg_ver 1.2.1
-%global pkg_rel 11 
+%global pkg_rel 12 
 
 Summary:        KylinSec security container magic cube
 License:        No License

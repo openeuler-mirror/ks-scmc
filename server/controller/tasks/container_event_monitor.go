@@ -6,15 +6,16 @@ import (
 	"sync"
 	"time"
 
+	"scmc/model/db"
+	"scmc/model/docker"
+	"scmc/model/warnlog"
+	"scmc/rpc/pb/logging"
+
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/events"
 	"github.com/docker/docker/api/types/filters"
 	"github.com/docker/docker/client"
 	log "github.com/sirupsen/logrus"
-	"scmc/model/db"
-	"scmc/model/docker"
-	"scmc/model/warnlog"
-	"scmc/rpc/pb/logging"
 )
 
 type ContainerEventMonitor struct {

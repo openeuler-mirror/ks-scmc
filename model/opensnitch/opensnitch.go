@@ -3,12 +3,13 @@ package opensnitch
 import (
 	"encoding/json"
 	"fmt"
-	log "github.com/sirupsen/logrus"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 	"regexp"
 	"strings"
+
+	log "github.com/sirupsen/logrus"
 
 	"scmc/common"
 	"scmc/model/litedb"

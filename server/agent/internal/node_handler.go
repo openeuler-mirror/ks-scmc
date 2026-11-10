@@ -48,7 +48,7 @@ var blockedPorts = map[uint32]bool{
 	19091: true,
 	10051: true, // agent
 	10050: true, // controller
-	873: true, //rsyncd
+	873:   true, //rsyncd
 
 }
 

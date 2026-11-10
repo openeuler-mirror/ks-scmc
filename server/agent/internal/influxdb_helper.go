@@ -13,8 +13,10 @@ import (
 	pb "scmc/rpc/pb/container"
 )
 
-const megaBytes = 1 << 20
-const dockerMegaByets = int(1e6)
+const (
+	megaBytes       = 1 << 20
+	dockerMegaByets = int(1e6)
+)
 
 func cpuQuery(interval uint) string {
 	division := time.Minute * time.Duration(interval)

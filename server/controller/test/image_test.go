@@ -34,7 +34,6 @@ func TestImageList(t *testing.T) {
 		for _, i := range reply.Images {
 			t.Logf("%+v", i)
 		}
-
 	})
 }
 
@@ -129,7 +128,6 @@ func TestImageUpload(t *testing.T) {
 
 		_, err = stream.CloseAndRecv()
 		require.NoError(t, err)
-
 	})
 }
 

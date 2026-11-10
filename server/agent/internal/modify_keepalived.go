@@ -2,7 +2,6 @@ package internal
 
 import (
 	"fmt"
-	log "github.com/sirupsen/logrus"
 	"os"
 	"regexp"
 )
@@ -52,10 +51,16 @@ func modifyInterface(configPath, newInterface string) error {
 	return nil
 }
 
-func ModifyInterface(newInterface string) {
+/*
+func main() {
 	configPath := "/etc/keepalived/keepalived.conf"
+	newInterface := "eth0" // 要修改的新网络接口
+
 	err := modifyInterface(configPath, newInterface)
 	if err != nil {
-		log.Warnf("modify keepalived config err: %v", err)
+		fmt.Printf("修改失败: %v\n", err)
+		return
 	}
+	fmt.Printf("成功将interface修改为: %s\n", newInterface)
 }
+*/

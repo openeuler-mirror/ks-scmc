@@ -750,12 +750,12 @@ func (s *NetworkServer) createNetwork(name, subnet, gateway, parent string) erro
 		add = fmt.Sprintf("ip link set dev %s up", hostName)
 		newlines = append(newlines, add)
 
-		// 设置 IP 地址
-		add = fmt.Sprintf("ip addr add %s/%d dev %s", macvlan_ip, masklen, hostName)
-		newlines = append(newlines, add)
-
 		// 设置 parent 上的 IP 地址到 macvlan 上面
 		add = fmt.Sprintf("ip addr add ${IPADDR}/${PREFIX} dev %s", hostName)
+		newlines = append(newlines, add)
+
+		// 设置 IP 地址
+		add = fmt.Sprintf("ip addr add %s/%d dev %s", macvlan_ip, masklen, hostName)
 		newlines = append(newlines, add)
 
 		newlines = append(newlines, endFlag)

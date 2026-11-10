@@ -1,9 +1,10 @@
 package session
 
 import (
-	"scmc/common"
 	"sync"
 	"time"
+
+	"scmc/common"
 )
 
 type sessionTimer struct {

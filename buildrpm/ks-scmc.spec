@@ -119,8 +119,6 @@ rm -rf %{_datadir}/ks-scmc
 * Thu Jul 31 2025 Shenghong Tang <tangshenghong@kylinos.com.cn> - 1.2.1-10.ky3
 - KYOS-F: Upgrade from 1.1.1 to 1.2.1. (#82292)
 
-- KYOS-F: Upgrade from 1.1.1 to 1.2.1. (#82292)
-
 * Tue Feb 18 2025 Shenghong Tang <tangshenghong@kylinos.com.cn> - 1.1.1-10.ky3
 - KYOS-F: add ks-scmc-dstats code. (#54966)
 

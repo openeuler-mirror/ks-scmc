@@ -419,19 +419,19 @@ func main() {
     }
     argvalue0 := flag.Arg(1)
     value0 := argvalue0
-    arg131 := flag.Arg(2)
-    mbTrans132 := thrift.NewTMemoryBufferLen(len(arg131))
-    defer mbTrans132.Close()
-    _, err133 := mbTrans132.WriteString(arg131)
-    if err133 != nil {
+    arg135 := flag.Arg(2)
+    mbTrans136 := thrift.NewTMemoryBufferLen(len(arg135))
+    defer mbTrans136.Close()
+    _, err137 := mbTrans136.WriteString(arg135)
+    if err137 != nil {
       Usage()
       return
     }
-    factory134 := thrift.NewTSimpleJSONProtocolFactory()
-    jsProt135 := factory134.GetProtocol(mbTrans132)
+    factory138 := thrift.NewTSimpleJSONProtocolFactory()
+    jsProt139 := factory138.GetProtocol(mbTrans136)
     argvalue1 := ksscmc.NewGetAlarmCond()
-    err136 := argvalue1.Read(jsProt135)
-    if err136 != nil {
+    err140 := argvalue1.Read(jsProt139)
+    if err140 != nil {
       Usage()
       return
     }

@@ -28,8 +28,8 @@ import (
 	// "strings"
 	// "sync"
 	// "strings"
-	"time"
 	"scmc/model/litedb"
+	"time"
 )
 
 var dockerRootDir string
@@ -38,7 +38,7 @@ const (
 	NoneBit  = 0
 	EnvBit   = 1
 	MountBit = 2
-	IpcBit = 4
+	IpcBit   = 4
 )
 
 var setters = map[string]string{
@@ -166,7 +166,7 @@ func modifyIPC(dataBuf map[string]interface{}, containerId string, baseIPCID str
 		dataBuf["ShmPath"] = shmPathValue
 	}
 
-	// 修改 IpcMode 
+	// 修改 IpcMode
 	hostconfigPath := filepath.Join(dir, "containers", containerId, "hostconfig.json")
 	if _, err := os.Stat(hostconfigPath); os.IsNotExist(err) {
 		log.Warnf("find file : %s error!, err: %v", hostconfigPath, err)
@@ -194,7 +194,6 @@ func modifyIPC(dataBuf map[string]interface{}, containerId string, baseIPCID str
 
 	return
 }
-
 
 func modifyMounts(dataBuf map[string]interface{}, mounts map[string]*pb.Mount) {
 	data, ok := dataBuf["MountPoints"].(map[string]interface{})
@@ -281,7 +280,7 @@ func ModifyContainerConfig(containerId string, which int, envs []string, mounts 
 
 	// modify ipc
 	if which&IpcBit != 0 {
-		ipcmapCfg , err := litedb.GetIpcmapConfigByCID(containerId)
+		ipcmapCfg, err := litedb.GetIpcmapConfigByCID(containerId)
 		if err != nil {
 			log.Warnf("config GetIpcmapConfigByCID id: %v, err:%v", containerId, err)
 		} else {
@@ -322,7 +321,7 @@ func getDevID() ([]string, error) {
 	for _, path := range paths {
 		devid, err := readSysFile(path)
 		if err != nil {
-			continue;
+			continue
 		}
 		id = append(id, devid)
 	}
@@ -357,49 +356,49 @@ func SetContainerDiskLimit(key, containerID string, value string) error {
 		return fmt.Errorf("invalid value %s for key %s: %v", value, key, err)
 	}
 
-/*
-	device, err := findProcessDevice(containerID)
-	if err != nil {
-		return err
-	}
-*/
+	/*
+		device, err := findProcessDevice(containerID)
+		if err != nil {
+			return err
+		}
+	*/
 
 	path := filepath.Join("/sys/fs/cgroup/blkio/docker", containerID, file)
 	if _, err := os.Stat(path); os.IsNotExist(err) {
 		return fmt.Errorf("cgroup path not found")
 	}
 
-/*
-	data, err := ioutil.ReadFile(path)
-	if err != nil {
-		return fmt.Errorf("load cgroup file %s failed: %v", file, err)
-	}
-	lines := strings.Split(string(data), "\n")
-	newLines := make([]string, 0)
-	found := false
-	entry := fmt.Sprintf("%s %d", device, numValue)
-	for _, line := range lines {
-		if strings.TrimSpace(line) == "" {
-			continue // 跳过空行
+	/*
+		data, err := ioutil.ReadFile(path)
+		if err != nil {
+			return fmt.Errorf("load cgroup file %s failed: %v", file, err)
 		}
-		if strings.HasPrefix(line, device) {
-			found = true
-			if numValue != 0 {
-				// 如果值非0，替换原有行
-				newLines = append(newLines, entry)
+		lines := strings.Split(string(data), "\n")
+		newLines := make([]string, 0)
+		found := false
+		entry := fmt.Sprintf("%s %d", device, numValue)
+		for _, line := range lines {
+			if strings.TrimSpace(line) == "" {
+				continue // 跳过空行
 			}
-			// 如果值为0，跳过（即删除）
-		} else {
-			// 保留其他设备的设置
-			newLines = append(newLines, line)
+			if strings.HasPrefix(line, device) {
+				found = true
+				if numValue != 0 {
+					// 如果值非0，替换原有行
+					newLines = append(newLines, entry)
+				}
+				// 如果值为0，跳过（即删除）
+			} else {
+				// 保留其他设备的设置
+				newLines = append(newLines, line)
+			}
 		}
-	}
-	// 如果未找到且值非0，追加新行
-	if !found && numValue != 0 {
-		newLines = append(newLines, entry)
-	}
-*/
-	
+		// 如果未找到且值非0，追加新行
+		if !found && numValue != 0 {
+			newLines = append(newLines, entry)
+		}
+	*/
+
 	// 对所有设备都限速
 	var newLines []string
 	devIDs, _ := getDevID()
@@ -407,7 +406,7 @@ func SetContainerDiskLimit(key, containerID string, value string) error {
 		entry := fmt.Sprintf("%s %d", devid, numValue)
 		newLines = append(newLines, entry)
 	}
-	
+
 	// 写入文件,只能一条一条的写入
 	for _, line := range newLines {
 		content := []byte(line + "\n")

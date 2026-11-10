@@ -20,7 +20,6 @@ func cadvisorClient() (*client.Client, error) {
 }
 
 func calculateNetworkTraffic(stats *v1.ContainerStats) (rxBytes, txBytes uint64) {
-
 	// 遍历所有网络接口
 	for _, iface := range stats.Network.Interfaces {
 		rxBytes += iface.RxBytes
@@ -31,7 +30,6 @@ func calculateNetworkTraffic(stats *v1.ContainerStats) (rxBytes, txBytes uint64)
 }
 
 func calculateNetworkSpeed(prevStats *v1.ContainerStats, currentStats *v1.ContainerStats) (rxSpeed, txSpeed float64) {
-
 	// 计算两次采样的字节增量
 	prevRx, prevTx := calculateNetworkTraffic(prevStats)
 	currentRx, currentTx := calculateNetworkTraffic(currentStats)

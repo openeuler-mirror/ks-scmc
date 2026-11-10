@@ -486,7 +486,7 @@ func GetExecutableFilesInDir(dirPath string) ([]string, error) {
 		}
 
 		// 检查是否有任意执行权限位被设置
-		if fileInfo.Mode().Perm()&0111 != 0 {
+		if fileInfo.Mode().Perm()&0o111 != 0 {
 			executables = append(executables, fullPath)
 		}
 	}

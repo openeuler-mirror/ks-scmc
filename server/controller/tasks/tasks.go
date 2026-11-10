@@ -1,12 +1,7 @@
 package tasks
 
 import (
-	// "fmt"
-	// "net"
 	"time"
-	// "strings"
-	// log "github.com/sirupsen/logrus"
-	// "scmc/common"
 )
 
 type Task interface {

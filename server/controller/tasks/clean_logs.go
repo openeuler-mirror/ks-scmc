@@ -4,13 +4,12 @@ import (
 	"strconv"
 	"time"
 
-	"scmc/model/db"
-
 	log "github.com/sirupsen/logrus"
+
+	"scmc/model/db"
 )
 
-type CleanLogs struct {
-}
+type CleanLogs struct{}
 
 func (i *CleanLogs) Interval() time.Duration {
 	return time.Minute
@@ -21,7 +20,6 @@ func (i *CleanLogs) RunAtInit() bool {
 }
 
 func (i *CleanLogs) Run() {
-
 	value, err := db.GetLog("saveLogDays")
 	if err != nil {
 		log.Warnf("CleanLogs err=%v", err)

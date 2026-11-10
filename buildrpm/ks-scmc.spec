@@ -5,7 +5,7 @@
 %global debug_package %{nil}
 
 %global pkg_name ks-scmc
-%global pkg_ver 1.1.1
+%global pkg_ver 1.2.1
 %global pkg_rel 10 
 
 Summary:        KylinSec security container magic cube
@@ -105,6 +105,9 @@ rm -rf %{_datadir}/ks-scmc
 %{_sysconfdir}/sudoers.d/ks-scmc-sudoers
 
 %changelog
+* Thu Jul 31 2025 Shenghong Tang <tangshenghong@kylinos.com.cn> - 1.2.1-10.ky3
+- KYOS-F: Upgrade from 1.1.1 to 1.2.1. (#82292)
+
 * Tue Feb 18 2025 Shenghong Tang <tangshenghong@kylinos.com.cn> - 1.1.1-10.ky3
 - KYOS-F: add ks-scmc-dstats code. (#54966)
 

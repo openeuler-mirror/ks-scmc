@@ -17,9 +17,11 @@ type ContainerConfig struct {
 	UpdatedAt      int64                     `gorm:"autoUpdateTime"`
 }
 
-type ContainerSecurityConfigs = pb.SecurityConfig
-type ProcProtection = security.ProcProtection
-type NetworkRule = security.NetworkRule
+type (
+	ContainerSecurityConfigs = pb.SecurityConfig
+	ProcProtection           = security.ProcProtection
+	NetworkRule              = security.NetworkRule
+)
 
 func CreateContainerConfig(data *ContainerConfig) error {
 	if data == nil {

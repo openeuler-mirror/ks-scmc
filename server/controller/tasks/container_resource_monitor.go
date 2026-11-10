@@ -357,8 +357,12 @@ func (c *ContainerResourceMonitor) checkAndAlert(usage float64, resourceType str
 	cntName := strings.TrimPrefix(container.Names[0], "/")
 	limitStr := c.getResourceLimitStr(resourceType, limit)
 	thresholdStr := c.getThresholdStr(resourceType, limitValue)
-	detail := fmt.Sprintf("容器【%s（ID：%s）】%s：使用率%.2f%% > 95%%阈值（限制：%s，95%%阈值：%s）",
-		cntName, container.ID[:12], alertMsg, usage, limitStr, thresholdStr)
+	_ = limitStr
+	_ = thresholdStr
+	// detail := fmt.Sprintf("容器【%s（ID：%s）】%s：使用率%.2f%% > 95%%阈值（限制：%s，95%%阈值：%s）",
+	//		cntName, container.ID[:12], alertMsg, usage, limitStr, thresholdStr)
+
+	detail := fmt.Sprintf("容器%s %s", cntName, alertMsg)
 
 	warnlog.Create([]*db.WarnLog{
 		{

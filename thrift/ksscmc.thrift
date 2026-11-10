@@ -114,7 +114,7 @@ struct NetworkInterfaceWithAgentNode {
     5: required string netmask         // 网卡子网掩码
 }
 
-struct GetAllContainersResponse {
+struct ContainerInfo {
     1: required string name,        // 容器名称
     2: required i32 stat, // 容器状态
     3: required string uuid,        // 容器ID
@@ -133,6 +133,12 @@ struct GetAllContainersResponse {
     16: required string ha,           // ha使能状态
     17: required i32 level,         // 模板等级
     18: required list<NetworkInterface> nets // 容器多网卡信息
+}
+
+struct GetAllContainersResponse {
+    1: required i32 status,        // 容器名称
+    2: required string message, // 容器状态
+    3: required list<ContainerInfo> containers,        // 容器ID
 }
 
 struct GetAllNodeListResponse {

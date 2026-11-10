@@ -15,8 +15,7 @@ import (
 	"scmc/model/litedb"
 )
 
-type AppRun struct {
-}
+type AppRun struct{}
 
 func (s *AppRun) Interval() time.Duration {
 	return time.Second * 3

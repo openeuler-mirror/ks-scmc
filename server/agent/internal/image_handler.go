@@ -127,6 +127,15 @@ func (s *ImageServer) AgentSync(ctx context.Context, in *pb.AgentSyncRequest) (*
 		return nil, rpc.ErrInvalidArgument
 	}
 
+	uuid := strings.TrimSpace(in.Uuid)
+	if uuid != "" {
+		node, err := db.QueryNodeByUUID(uuid)
+		if (err != nil) || (node.Deleted == true) {
+			log.Warnf("No node with uuid : %s found. (or Deleted)", in.Uuid)
+			return &pb.AgentSyncReply{}, nil
+		}
+	}
+
 	cli, err := docker.Client()
 	if err != nil {
 		log.Error("acquire docker client: ", err)

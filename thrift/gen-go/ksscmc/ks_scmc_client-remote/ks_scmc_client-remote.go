@@ -29,6 +29,7 @@ func Usage() {
   fmt.Fprintln(os.Stderr, "  string StartContainerV3(string session_id, string cid)")
   fmt.Fprintln(os.Stderr, "  string StopContainer(string node_name, string name)")
   fmt.Fprintln(os.Stderr, "  string StopContainerV3(string session_id, string cid)")
+  fmt.Fprintln(os.Stderr, "  string RestartContainer(string node_name, string name)")
   fmt.Fprintln(os.Stderr, "  string UninstallContainer(string node_name, string name)")
   fmt.Fprintln(os.Stderr, "  i32 getContainerStatus(string node_nameorip, string container_name)")
   fmt.Fprintln(os.Stderr, "  GetContainerMetricsResponse getContainerMetrics(string node_nameorip, string container_name)")

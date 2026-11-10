@@ -11,26 +11,14 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-
-	// "scmc/model/db"
+	"strconv"
 	"strings"
-	// "path/filepath"
+	"time"
 
-	pb "scmc/rpc/pb/container"
-
-	// "github.com/docker/docker/api/types"
-	// "github.com/docker/docker/api/types/events"
-	// "github.com/docker/docker/api/types/filters"
-	// "github.com/docker/docker/client"
 	log "github.com/sirupsen/logrus"
 
-	// "scmc/server/agent/internal"
-	"strconv"
-	// "strings"
-	// "sync"
-	// "strings"
 	"scmc/model/litedb"
-	"time"
+	pb "scmc/rpc/pb/container"
 )
 
 var dockerRootDir string
@@ -108,7 +96,7 @@ func readConfigFile(fileName string) ([]byte, error) {
 
 func writeConfigFile(fileName string, dataBuf map[string]interface{}) error {
 	data, err := json.Marshal(dataBuf)
-	//data, err := json.MarshalIndent(dataBuf, "", "\t")
+	// data, err := json.MarshalIndent(dataBuf, "", "\t")
 	if err != nil {
 		log.Errorf("json err: %v", err)
 		return err
@@ -411,7 +399,7 @@ func SetContainerDiskLimit(key, containerID string, value string) error {
 	// 写入文件,只能一条一条的写入
 	for _, line := range newLines {
 		content := []byte(line + "\n")
-		err = ioutil.WriteFile(path, content, 0644)
+		err = ioutil.WriteFile(path, content, 0o644)
 		if err != nil {
 			return fmt.Errorf("Failed to write to the file %s: %v", file, err)
 		}
@@ -458,7 +446,7 @@ func findProcessDevice(containerID string) (string, error) {
 }
 
 func setContainerNetWbw(netWbw float64, containerPid string) error {
-	//加载ifb模块
+	// 加载ifb模块
 	if err := exec.Command("modprobe", "ifb").Run(); err != nil {
 		log.Infof("ifb mod loaded failed: %v", err)
 		return err
@@ -467,8 +455,8 @@ func setContainerNetWbw(netWbw float64, containerPid string) error {
 }
 
 func setContainerNetRbw(netRbw float64, containerPid string) error {
-	rateMbit := int(netRbw * 8)                 //大B转小b
-	latency := 100 * time.Millisecond.Seconds() //0.1s
+	rateMbit := int(netRbw * 8)                 // 大B转小b
+	latency := 100 * time.Millisecond.Seconds() // 0.1s
 	burst := int(float64(rateMbit*1e6) * latency)
 	tcArgs := []string{
 		"-t", fmt.Sprintf("%d", containerPid),
@@ -510,7 +498,7 @@ func CompareMounts(src, dst []*pb.Mount) (map[string]*pb.Mount, bool) {
 	}
 
 	// compare key
-	for k, _ := range srcMap {
+	for k := range srcMap {
 		if _, ok := dstMap[k]; !ok {
 			return dstMap, false
 		}

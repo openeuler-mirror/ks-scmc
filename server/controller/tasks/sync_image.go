@@ -13,8 +13,7 @@ import (
 	"scmc/server/controller/internal"
 )
 
-type SyncImages struct {
-}
+type SyncImages struct{}
 
 func (s *SyncImages) Interval() time.Duration {
 	return time.Minute
@@ -33,7 +32,7 @@ func (s *SyncImages) Run() {
 }
 
 func loadImages() {
-	images, err := db.GetImageMap() //获取审批通过的镜像信息
+	images, err := db.GetImageMap() // 获取审批通过的镜像信息
 	if err != nil {
 		log.Infof("get valid images err=%v", err)
 		return

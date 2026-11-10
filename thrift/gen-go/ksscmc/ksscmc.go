@@ -8943,25 +8943,25 @@ func (p *KsScmcClientClient) recvGetContainerNetwork() (value string, err error)
 
 // Parameters:
 //  - NodeName
-//  - Name
-func (p *KsScmcClientClient) StopContainer(node_name string, name string) (r string, err error) {
-  if err = p.sendStopContainer(node_name, name); err != nil { return }
-  return p.recvStopContainer()
+//  - ContainerName
+func (p *KsScmcClientClient) GetContainerNetRules(node_name string, container_name string) (r *GetContainerNetRulesResponse, err error) {
+  if err = p.sendGetContainerNetRules(node_name, container_name); err != nil { return }
+  return p.recvGetContainerNetRules()
 }
 
-func (p *KsScmcClientClient) sendStopContainer(node_name string, name string)(err error) {
+func (p *KsScmcClientClient) sendGetContainerNetRules(node_name string, container_name string)(err error) {
   oprot := p.OutputProtocol
   if oprot == nil {
     oprot = p.ProtocolFactory.GetProtocol(p.Transport)
     p.OutputProtocol = oprot
   }
   p.SeqId++
-  if err = oprot.WriteMessageBegin("StopContainer", thrift.CALL, p.SeqId); err != nil {
+  if err = oprot.WriteMessageBegin("getContainerNetRules", thrift.CALL, p.SeqId); err != nil {
       return
   }
-  args := KsScmcClientStopContainerArgs{
+  args := KsScmcClientGetContainerNetRulesArgs{
   NodeName : node_name,
-  Name : name,
+  ContainerName : container_name,
   }
   if err = args.Write(oprot); err != nil {
       return

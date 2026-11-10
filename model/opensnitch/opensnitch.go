@@ -3,12 +3,12 @@ package opensnitch
 import (
 	"encoding/json"
 	"fmt"
+	log "github.com/sirupsen/logrus"
 	"io/ioutil"
 	"os"
 	"path/filepath"
-	"strings"
 	"regexp"
-	log "github.com/sirupsen/logrus"
+	"strings"
 
 	"scmc/common"
 	"scmc/model/litedb"
@@ -136,52 +136,52 @@ func SaveRule(p *litedb.ProcProtection, containerID, uuid string) error {
 }
 
 func regexpEscapePaths(paths []string) []string {
-    escaped := make([]string, len(paths))
-    for i, p := range paths {
-        // 新增：清理路径首尾空格
-        cleanedPath := strings.TrimSpace(p)
-        escaped[i] = regexp.QuoteMeta(cleanedPath)
-    }
-    return escaped
+	escaped := make([]string, len(paths))
+	for i, p := range paths {
+		// 新增：清理路径首尾空格
+		cleanedPath := strings.TrimSpace(p)
+		escaped[i] = regexp.QuoteMeta(cleanedPath)
+	}
+	return escaped
 }
 
 func SaveNodeRule(p *litedb.ProcProtection, nodeID string, uuid string) error {
-    // 允许规则（仅匹配进程路径）
-    allowRule := Rule{
-        Name:       nodeID + "-allow",
-        Enabled:    p.IsOn,
-        Precedence: true,  // 高优先级
-        Duration:   "always",
-        Action:     "allow",
-        Operator: Operator{
-            Type:    "regexp",
-            Operand: "process.path",
-			Data: fmt.Sprintf("^(%s)", strings.Join(regexpEscapePaths(p.ExeList), "|")),
-        },
-    }
+	// 允许规则（仅匹配进程路径）
+	allowRule := Rule{
+		Name:       nodeID + "-allow",
+		Enabled:    p.IsOn,
+		Precedence: true, // 高优先级
+		Duration:   "always",
+		Action:     "allow",
+		Operator: Operator{
+			Type:    "regexp",
+			Operand: "process.path",
+			Data:    fmt.Sprintf("^(%s)", strings.Join(regexpEscapePaths(p.ExeList), "|")),
+		},
+	}
 
-    // 拒绝规则（拒绝所有其他进程）
-    denyRule := Rule{
-        Name:       nodeID + "-deny",
-        Enabled:    p.IsOn,
-        Precedence: false,  // 低优先级
-        Duration:   "always",
-        Action:     "deny",
-        Operator: Operator{
-            Type:    "regexp",
-            Operand: "process.path",
-            Data:    ".*",  // 匹配所有路径
-        },
-    }
+	// 拒绝规则（拒绝所有其他进程）
+	denyRule := Rule{
+		Name:       nodeID + "-deny",
+		Enabled:    p.IsOn,
+		Precedence: false, // 低优先级
+		Duration:   "always",
+		Action:     "deny",
+		Operator: Operator{
+			Type:    "regexp",
+			Operand: "process.path",
+			Data:    ".*", // 匹配所有路径
+		},
+	}
 
-    // 保存规则
-    if err := allowRule.Save(allowRulePath(nodeID)); err != nil {
-        return err
-    }
-    if err := denyRule.Save(denyRulePath(nodeID)); err != nil {
-        return err
-    }
-    return nil
+	// 保存规则
+	if err := allowRule.Save(allowRulePath(nodeID)); err != nil {
+		return err
+	}
+	if err := denyRule.Save(denyRulePath(nodeID)); err != nil {
+		return err
+	}
+	return nil
 }
 
 // RemoveRule删除容器网络进程白名单规则文件

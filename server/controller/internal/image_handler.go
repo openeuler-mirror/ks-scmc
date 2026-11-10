@@ -56,7 +56,7 @@ type ImageServer struct {
 	pb.UnimplementedImageServer
 }
 
-func (s *ImageServer) noticeAgentSync(removes []string, new *db.ImageInfo) {
+func (s *ImageServer) noticeAgentSync(removes []string, newImg *db.ImageInfo) {
 	nodes, err := db.ListNodes()
 	if err != nil {
 		log.Errorf("db.ListNodes err=%v", err)
@@ -64,11 +64,11 @@ func (s *ImageServer) noticeAgentSync(removes []string, new *db.ImageInfo) {
 	}
 
 	loads := []*pb.LoadInfo{}
-	if new != nil {
+	if newImg != nil {
 		loads = append(loads, &pb.LoadInfo{
-			ImageId: new.ImageId,
-			Path:    new.FilePath,
-			Tag:     new.Name + ":" + new.Version,
+			ImageId: newImg.ImageId,
+			Path:    newImg.FilePath,
+			Tag:     newImg.Name + ":" + newImg.Version,
 		})
 	}
 

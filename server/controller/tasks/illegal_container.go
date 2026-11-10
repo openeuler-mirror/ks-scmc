@@ -8,12 +8,12 @@ import (
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 
+	"scmc/common"
 	"scmc/model/db"
 	"scmc/model/warnlog"
 	pb "scmc/rpc/pb/container"
 	"scmc/rpc/pb/logging"
 	"scmc/server/controller/internal"
-    "scmc/common"
 )
 
 const (

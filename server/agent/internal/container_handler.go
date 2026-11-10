@@ -731,10 +731,10 @@ func (s *ContainerServer) Create(ctx context.Context, in *pb.CreateRequest) (*pb
 			r = in.Configs.ResouceLimit.DiskRbw
 		}
 
-		outCfg, err := litedb.GetContainerOutConfig(in.Configs.Name)
+		outCfg, err := litedb.GetContainerOutConfigByName(in.Configs.Name)
 		if err != nil {
 			if err == db.ErrRecordNotFound {
-				outCfg := &litedb.ContainerOutConfig{
+				outCfg = &litedb.ContainerOutConfig{
 					ContainerID:   id,
 					ContainerName: in.Configs.Name,
 					Config: litedb.KyConfig{
@@ -746,6 +746,7 @@ func (s *ContainerServer) Create(ctx context.Context, in *pb.CreateRequest) (*pb
 					},
 				}
 				litedb.CreateContainerOutConfig(outCfg)
+				go s.appEntrySync(outCfg.Config.AppRun, in.Configs.Name)
 			}
 		} else {
 			outCfg.ContainerID = id
@@ -753,14 +754,7 @@ func (s *ContainerServer) Create(ctx context.Context, in *pb.CreateRequest) (*pb
 			outCfg.Config.DiskRbw = r
 			outCfg.Config.IpcName = in.Configs.Ipcname
 			outCfg.Config.IpcID = ipcID
-			//outCfg.Config.AppRun = in.Configs.GetMiscConfig().GetAppRun()
 			litedb.UpdateContainerOutConfig(outCfg)
-		}
-
-		if in.Configs.GetMiscConfig() != nil {
-			go s.appEntrySync(in.Configs.GetMiscConfig().GetAppRun(), in.Configs.Name)
-		} else {
-			go s.appEntrySync(false, in.Configs.Name)
 		}
 	}
 
@@ -1174,6 +1168,10 @@ func (s *ContainerServer) Update(ctx context.Context, in *pb.UpdateRequest) (*pb
 	}
 
 	if in.GetMiscConfig() != nil {
+		if outCfg.Config.AppRun != in.GetMiscConfig().GetAppRun() {
+			outCfg.Config.AppRun = in.GetMiscConfig().GetAppRun()
+			litedb.UpdateContainerOutConfig(outCfg)
+		}
 		go s.appEntrySync(in.GetMiscConfig().GetAppRun(), cfgs.ContainerName)
 	}
 
@@ -2476,13 +2474,13 @@ func (*ContainerServer) SyncAppConfig(ctx context.Context, in *pb.SyncAppEntryRe
 		return &pb.SyncAppEntryReply{}, nil
 	}
 
-	outCfg, err := litedb.GetContainerOutConfig(in.GetName())
+	outCfg, err := litedb.GetContainerOutConfigByName(in.GetName())
 	if err != nil {
 		if err == db.ErrRecordNotFound {
-			outCfg := &litedb.ContainerOutConfig {
-				ContainerID: in.GetName(), // 这个时候还没有创建容器，用容器名称代替ID
+			outCfg := &litedb.ContainerOutConfig{
+				ContainerID:   in.GetName(), // 这个时候还没有创建容器，用容器名称代替ID
 				ContainerName: in.GetName(),
-				Config: litedb.KyConfig {
+				Config: litedb.KyConfig{
 					AppRun: in.AppRun,
 				},
 			}
@@ -2492,6 +2490,7 @@ func (*ContainerServer) SyncAppConfig(ctx context.Context, in *pb.SyncAppEntryRe
 	}
 
 	if outCfg.Config.AppRun != in.AppRun {
+
 		outCfg.Config.AppRun = in.AppRun
 		litedb.UpdateContainerOutConfig(outCfg)
 	}

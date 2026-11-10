@@ -1406,7 +1406,7 @@ func (s *ContainerServer) inspect(id string, backup bool) (*pb.ContainerConfigs,
 			ReadOnly: !m.RW,
 		})
 	}
-   
+
     var w, r int64 = 0, 0
     disklimitCfg, err := litedb.GetContainerLimitByCID(info.ID) 
     if err != nil {
@@ -1449,7 +1449,7 @@ func (s *ContainerServer) inspect(id string, backup bool) (*pb.ContainerConfigs,
 		}
 	}
 
-    misc, err := litedb.GetContainerMiscConfig(info.ID)
+    misc, err := litedb.GetContainerMiscConfigByName(configs.Name)
     if err != nil {
         configs.MiscConfig.AppRun = false
     } else {

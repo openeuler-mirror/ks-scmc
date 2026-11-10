@@ -4590,30 +4590,196 @@ func (p *NodeVersion) Read(iprot thrift.TProtocol) error {
   return nil
 }
 
-func (p *OperationFailed)  ReadField1(iprot thrift.TProtocol) error {
-  if v, err := iprot.ReadI32(); err != nil {
+func (p *NodeVersion)  ReadField1(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadString(); err != nil {
   return thrift.PrependError("error reading field 1: ", err)
 } else {
-  p.ErrorCode = v
+  p.Name = v
 }
   return nil
 }
 
-func (p *OperationFailed)  ReadField2(iprot thrift.TProtocol) error {
+func (p *NodeVersion)  ReadField2(iprot thrift.TProtocol) error {
   if v, err := iprot.ReadString(); err != nil {
   return thrift.PrependError("error reading field 2: ", err)
 } else {
-  p.Reason = v
+  p.UUID = v
 }
   return nil
 }
 
-func (p *OperationFailed) Write(oprot thrift.TProtocol) error {
-  if err := oprot.WriteStructBegin("OperationFailed"); err != nil {
+func (p *NodeVersion)  ReadField3(iprot thrift.TProtocol) error {
+  p.Versions = &Version{}
+  if err := p.Versions.Read(iprot); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", p.Versions), err)
+  }
+  return nil
+}
+
+func (p *NodeVersion) Write(oprot thrift.TProtocol) error {
+  if err := oprot.WriteStructBegin("NodeVersion"); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err) }
   if p != nil {
     if err := p.writeField1(oprot); err != nil { return err }
     if err := p.writeField2(oprot); err != nil { return err }
+    if err := p.writeField3(oprot); err != nil { return err }
+  }
+  if err := oprot.WriteFieldStop(); err != nil {
+    return thrift.PrependError("write field stop error: ", err) }
+  if err := oprot.WriteStructEnd(); err != nil {
+    return thrift.PrependError("write struct stop error: ", err) }
+  return nil
+}
+
+func (p *NodeVersion) writeField1(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("name", thrift.STRING, 1); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write field begin error 1:name: ", p), err) }
+  if err := oprot.WriteString(string(p.Name)); err != nil {
+  return thrift.PrependError(fmt.Sprintf("%T.name (1) field write error: ", p), err) }
+  if err := oprot.WriteFieldEnd(); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write field end error 1:name: ", p), err) }
+  return err
+}
+
+func (p *NodeVersion) writeField2(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("uuid", thrift.STRING, 2); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write field begin error 2:uuid: ", p), err) }
+  if err := oprot.WriteString(string(p.UUID)); err != nil {
+  return thrift.PrependError(fmt.Sprintf("%T.uuid (2) field write error: ", p), err) }
+  if err := oprot.WriteFieldEnd(); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write field end error 2:uuid: ", p), err) }
+  return err
+}
+
+func (p *NodeVersion) writeField3(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("versions", thrift.STRUCT, 3); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write field begin error 3:versions: ", p), err) }
+  if err := p.Versions.Write(oprot); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T error writing struct: ", p.Versions), err)
+  }
+  if err := oprot.WriteFieldEnd(); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write field end error 3:versions: ", p), err) }
+  return err
+}
+
+func (p *NodeVersion) String() string {
+  if p == nil {
+    return "<nil>"
+  }
+  return fmt.Sprintf("NodeVersion(%+v)", *p)
+}
+
+// Attributes:
+//  - Status
+//  - Message
+//  - Nodes
+type GetVersionsV3Response struct {
+  Status int32 `thrift:"status,1" db:"status" json:"status"`
+  Message string `thrift:"message,2" db:"message" json:"message"`
+  Nodes []*NodeVersion `thrift:"nodes,3" db:"nodes" json:"nodes"`
+}
+
+func NewGetVersionsV3Response() *GetVersionsV3Response {
+  return &GetVersionsV3Response{}
+}
+
+
+func (p *GetVersionsV3Response) GetStatus() int32 {
+  return p.Status
+}
+
+func (p *GetVersionsV3Response) GetMessage() string {
+  return p.Message
+}
+
+func (p *GetVersionsV3Response) GetNodes() []*NodeVersion {
+  return p.Nodes
+}
+func (p *GetVersionsV3Response) Read(iprot thrift.TProtocol) error {
+  if _, err := iprot.ReadStructBegin(); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
+  }
+
+
+  for {
+    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin()
+    if err != nil {
+      return thrift.PrependError(fmt.Sprintf("%T field %d read error: ", p, fieldId), err)
+    }
+    if fieldTypeId == thrift.STOP { break; }
+    switch fieldId {
+    case 1:
+      if err := p.ReadField1(iprot); err != nil {
+        return err
+      }
+    case 2:
+      if err := p.ReadField2(iprot); err != nil {
+        return err
+      }
+    case 3:
+      if err := p.ReadField3(iprot); err != nil {
+        return err
+      }
+    default:
+      if err := iprot.Skip(fieldTypeId); err != nil {
+        return err
+      }
+    }
+    if err := iprot.ReadFieldEnd(); err != nil {
+      return err
+    }
+  }
+  if err := iprot.ReadStructEnd(); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+  }
+  return nil
+}
+
+func (p *GetVersionsV3Response)  ReadField1(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadI32(); err != nil {
+  return thrift.PrependError("error reading field 1: ", err)
+} else {
+  p.Status = v
+}
+  return nil
+}
+
+func (p *GetVersionsV3Response)  ReadField2(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadString(); err != nil {
+  return thrift.PrependError("error reading field 2: ", err)
+} else {
+  p.Message = v
+}
+  return nil
+}
+
+func (p *GetVersionsV3Response)  ReadField3(iprot thrift.TProtocol) error {
+  _, size, err := iprot.ReadListBegin()
+  if err != nil {
+    return thrift.PrependError("error reading list begin: ", err)
+  }
+  tSlice := make([]*NodeVersion, 0, size)
+  p.Nodes =  tSlice
+  for i := 0; i < size; i ++ {
+    _elem6 := &NodeVersion{}
+    if err := _elem6.Read(iprot); err != nil {
+      return thrift.PrependError(fmt.Sprintf("%T error reading struct: ", _elem6), err)
+    }
+    p.Nodes = append(p.Nodes, _elem6)
+  }
+  if err := iprot.ReadListEnd(); err != nil {
+    return thrift.PrependError("error reading list end: ", err)
+  }
+  return nil
+}
+
+func (p *GetVersionsV3Response) Write(oprot thrift.TProtocol) error {
+  if err := oprot.WriteStructBegin("GetVersionsV3Response"); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err) }
+  if p != nil {
+    if err := p.writeField1(oprot); err != nil { return err }
+    if err := p.writeField2(oprot); err != nil { return err }
+    if err := p.writeField3(oprot); err != nil { return err }
   }
   if err := oprot.WriteFieldStop(); err != nil {
     return thrift.PrependError("write field stop error: ", err) }

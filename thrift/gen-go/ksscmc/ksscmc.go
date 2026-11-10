@@ -7058,6 +7058,10 @@ type KsScmcClient interface {
   // Parameters:
   //  - NodeName
   //  - Name
+  RestartContainer(node_name string, name string) (r string, err error)
+  // Parameters:
+  //  - NodeName
+  //  - Name
   UninstallContainer(node_name string, name string) (r string, err error)
   // Parameters:
   //  - NodeNameorip

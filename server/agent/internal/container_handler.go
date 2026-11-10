@@ -212,7 +212,25 @@ func (s *ContainerServer) appEntrySync(app_run bool, name string) {
     }
 }
 
+// 容器中运行的 app 数
+func (s *ContainerServer) runAppCnt(ctx context.Context, containerID string) (int)  {
+    if containerID == "" { 
+        return 0
+    }    
 
+    entries, err := litedb.ListAppEntry(containerID)
+    if err != nil {
+        return 0
+    }    
+
+    var cnt int = 0
+    for _, e := range entries {
+            if appIsRunning(ctx, e.IDResponse) {
+                cnt = cnt + 1
+            }
+    }    
+    return cnt
+}
 
 func (s *ContainerServer) List(ctx context.Context, in *pb.ListRequest) (*pb.ListReply, error) {
 	cli, err := docker.Client()
@@ -247,6 +265,7 @@ func (s *ContainerServer) List(ctx context.Context, in *pb.ListRequest) (*pb.Lis
 			Created:      c.Created,
 			Started:      containerStartedTime(ctx, cli, &c),
 			Name:         containerName(c.Names),
+            ActiveApps:   int64(s.runAppCnt(ctx, c.ID)),
 			ResourceStat: containerResourceStat(stats, &c),
 		}
 

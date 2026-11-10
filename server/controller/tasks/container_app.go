@@ -20,7 +20,7 @@ type AppRun struct {
 }
 
 func (s *AppRun) Interval() time.Duration {
-	return time.Minute
+	return time.Second * 3
 }
 
 func (s *AppRun) RunAtInit() bool {

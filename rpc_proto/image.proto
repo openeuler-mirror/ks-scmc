@@ -109,6 +109,7 @@ message ImageDBInfo {
     int64  size            = 7;  // unit: bytes
     int64  create_at       = 21;
     int64  update_at       = 22;
+    string reject_reason   = 23;
 }
 
 message UploadInfo {

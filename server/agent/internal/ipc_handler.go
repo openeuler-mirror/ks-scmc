@@ -42,10 +42,10 @@ func (s *IpcBaseServer) List(ctx context.Context, in *pb.IpcListRequest) (*pb.Ip
 
 	var rsp pb.IpcListReply
 	for _, c := range ipcAllData {
-		info := pb.IpcContainerData {
-			Name: c.ContainerName,
-			Id : c.ContainerID,
-			StartTime : c.CreatedAt,
+		info := pb.IpcContainerData{
+			Name:      c.ContainerName,
+			Id:        c.ContainerID,
+			StartTime: c.CreatedAt,
 		}
 		ipcMapcfg, err := litedb.IpcmapConfigByIPCName([]string{c.ContainerName})
 		if err == nil {

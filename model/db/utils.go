@@ -7,8 +7,10 @@ import (
 	"gorm.io/gorm"
 )
 
-var ErrDuplicateKey = errors.New("duplicate key conflict")
-var ErrRecordNotFound = gorm.ErrRecordNotFound
+var (
+	ErrDuplicateKey   = errors.New("duplicate key conflict")
+	ErrRecordNotFound = gorm.ErrRecordNotFound
+)
 
 func translateError(err error) error {
 	if isDuplicateKeyError(err) {

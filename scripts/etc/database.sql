@@ -43,7 +43,7 @@ CREATE TABLE IF NOT EXISTS `user_sessions` (
   UNIQUE KEY `user_id` (`user_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin ;
 
-CREATE TABLE `node_infos` (
+CREATE TABLE IF NOT EXISTS `node_infos` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `name` varchar(255) COLLATE utf8mb4_bin  NOT NULL DEFAULT '',
   `address` varchar(255) COLLATE utf8mb4_bin  NOT NULL DEFAULT '',

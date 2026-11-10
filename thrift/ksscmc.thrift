@@ -292,6 +292,7 @@ service KsScmcClient {
     string StopContainer(1: string node_name, 2: string name),
     string StopContainerV3(1:string session_id, 2:string cid),
     // i32 stopContainer(1: string node_nameorip, 2: string container_name),
+    string RestartContainer(1:string node_name, 2:string name),
     string UninstallContainer(1: string node_name, 2: string name),
     // i32 uninstallContainer(1: string node_nameorip, 2: string container_name),
 

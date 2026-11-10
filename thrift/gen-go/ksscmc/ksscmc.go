@@ -234,6 +234,233 @@ func (p * AccessAuth) Value() (driver.Value, error) {
   }
 return int64(*p), nil
 }
+type ReadType int64
+const (
+  ReadType_ALL ReadType = 0
+  ReadType_READED ReadType = 1
+  ReadType_UNREAD ReadType = 2
+)
+
+func (p ReadType) String() string {
+  switch p {
+  case ReadType_ALL: return "ALL"
+  case ReadType_READED: return "READED"
+  case ReadType_UNREAD: return "UNREAD"
+  }
+  return "<UNSET>"
+}
+
+func ReadTypeFromString(s string) (ReadType, error) {
+  switch s {
+  case "ALL": return ReadType_ALL, nil 
+  case "READED": return ReadType_READED, nil 
+  case "UNREAD": return ReadType_UNREAD, nil 
+  }
+  return ReadType(0), fmt.Errorf("not a valid ReadType string")
+}
+
+
+func ReadTypePtr(v ReadType) *ReadType { return &v }
+
+func (p ReadType) MarshalText() ([]byte, error) {
+return []byte(p.String()), nil
+}
+
+func (p *ReadType) UnmarshalText(text []byte) error {
+q, err := ReadTypeFromString(string(text))
+if (err != nil) {
+return err
+}
+*p = q
+return nil
+}
+
+func (p *ReadType) Scan(value interface{}) error {
+v, ok := value.(int64)
+if !ok {
+return errors.New("Scan value is not int64")
+}
+*p = ReadType(v)
+return nil
+}
+
+func (p * ReadType) Value() (driver.Value, error) {
+  if p == nil {
+    return nil, nil
+  }
+return int64(*p), nil
+}
+type EntityType int64
+const (
+  EntityType_ALL EntityType = 0
+  EntityType_NODE_WARNING EntityType = 1
+  EntityType_CONTAINER_WARN EntityType = 2
+)
+
+func (p EntityType) String() string {
+  switch p {
+  case EntityType_ALL: return "ALL"
+  case EntityType_NODE_WARNING: return "NODE_WARNING"
+  case EntityType_CONTAINER_WARN: return "CONTAINER_WARN"
+  }
+  return "<UNSET>"
+}
+
+func EntityTypeFromString(s string) (EntityType, error) {
+  switch s {
+  case "ALL": return EntityType_ALL, nil 
+  case "NODE_WARNING": return EntityType_NODE_WARNING, nil 
+  case "CONTAINER_WARN": return EntityType_CONTAINER_WARN, nil 
+  }
+  return EntityType(0), fmt.Errorf("not a valid EntityType string")
+}
+
+
+func EntityTypePtr(v EntityType) *EntityType { return &v }
+
+func (p EntityType) MarshalText() ([]byte, error) {
+return []byte(p.String()), nil
+}
+
+func (p *EntityType) UnmarshalText(text []byte) error {
+q, err := EntityTypeFromString(string(text))
+if (err != nil) {
+return err
+}
+*p = q
+return nil
+}
+
+func (p *EntityType) Scan(value interface{}) error {
+v, ok := value.(int64)
+if !ok {
+return errors.New("Scan value is not int64")
+}
+*p = EntityType(v)
+return nil
+}
+
+func (p * EntityType) Value() (driver.Value, error) {
+  if p == nil {
+    return nil, nil
+  }
+return int64(*p), nil
+}
+// Attributes:
+//  - Status
+//  - Message
+type CommonRespone struct {
+  Status int32 `thrift:"status,1" db:"status" json:"status"`
+  Message string `thrift:"message,2" db:"message" json:"message"`
+}
+
+func NewCommonRespone() *CommonRespone {
+  return &CommonRespone{}
+}
+
+
+func (p *CommonRespone) GetStatus() int32 {
+  return p.Status
+}
+
+func (p *CommonRespone) GetMessage() string {
+  return p.Message
+}
+func (p *CommonRespone) Read(iprot thrift.TProtocol) error {
+  if _, err := iprot.ReadStructBegin(); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
+  }
+
+
+  for {
+    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin()
+    if err != nil {
+      return thrift.PrependError(fmt.Sprintf("%T field %d read error: ", p, fieldId), err)
+    }
+    if fieldTypeId == thrift.STOP { break; }
+    switch fieldId {
+    case 1:
+      if err := p.ReadField1(iprot); err != nil {
+        return err
+      }
+    case 2:
+      if err := p.ReadField2(iprot); err != nil {
+        return err
+      }
+    default:
+      if err := iprot.Skip(fieldTypeId); err != nil {
+        return err
+      }
+    }
+    if err := iprot.ReadFieldEnd(); err != nil {
+      return err
+    }
+  }
+  if err := iprot.ReadStructEnd(); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+  }
+  return nil
+}
+
+func (p *CommonRespone)  ReadField1(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadI32(); err != nil {
+  return thrift.PrependError("error reading field 1: ", err)
+} else {
+  p.Status = v
+}
+  return nil
+}
+
+func (p *CommonRespone)  ReadField2(iprot thrift.TProtocol) error {
+  if v, err := iprot.ReadString(); err != nil {
+  return thrift.PrependError("error reading field 2: ", err)
+} else {
+  p.Message = v
+}
+  return nil
+}
+
+func (p *CommonRespone) Write(oprot thrift.TProtocol) error {
+  if err := oprot.WriteStructBegin("CommonRespone"); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err) }
+  if p != nil {
+    if err := p.writeField1(oprot); err != nil { return err }
+    if err := p.writeField2(oprot); err != nil { return err }
+  }
+  if err := oprot.WriteFieldStop(); err != nil {
+    return thrift.PrependError("write field stop error: ", err) }
+  if err := oprot.WriteStructEnd(); err != nil {
+    return thrift.PrependError("write struct stop error: ", err) }
+  return nil
+}
+
+func (p *CommonRespone) writeField1(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("status", thrift.I32, 1); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write field begin error 1:status: ", p), err) }
+  if err := oprot.WriteI32(int32(p.Status)); err != nil {
+  return thrift.PrependError(fmt.Sprintf("%T.status (1) field write error: ", p), err) }
+  if err := oprot.WriteFieldEnd(); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write field end error 1:status: ", p), err) }
+  return err
+}
+
+func (p *CommonRespone) writeField2(oprot thrift.TProtocol) (err error) {
+  if err := oprot.WriteFieldBegin("message", thrift.STRING, 2); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write field begin error 2:message: ", p), err) }
+  if err := oprot.WriteString(string(p.Message)); err != nil {
+  return thrift.PrependError(fmt.Sprintf("%T.message (2) field write error: ", p), err) }
+  if err := oprot.WriteFieldEnd(); err != nil {
+    return thrift.PrependError(fmt.Sprintf("%T write field end error 2:message: ", p), err) }
+  return err
+}
+
+func (p *CommonRespone) String() string {
+  if p == nil {
+    return "<nil>"
+  }
+  return fmt.Sprintf("CommonRespone(%+v)", *p)
+}
+
 // Attributes:
 //  - ContainerName
 //  - ContainerID

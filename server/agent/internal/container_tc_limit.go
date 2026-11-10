@@ -9,7 +9,9 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
 	log "github.com/sirupsen/logrus"
+
 	"scmc/model/docker"
 	"scmc/model/litedb"
 )
@@ -138,6 +140,25 @@ func (s *ContainerServer) ContainerTCConfig(containerID string, Nic string) {
 			log.Warnf("tc err: %v, containerID: %s, iface.Name: %v, NetWbw: %v, NetRbw: %v", err2, iface.Name, data.NetWbw, data.NetRbw)
 		}
 	}
+}
+
+// 删除容器里面的 ifb 网卡
+func delContainerNicIfb(containerID string, iface string) {
+	if iface == "" {
+		return
+	}
+
+	netns, err := getNetnsPath(containerID)
+	if err != nil {
+		return
+	}
+
+	ifbName, err := ifbNameForInterface(iface)
+	if err != nil {
+		return
+	}
+
+	runInNetns(netns, "ip", "link", "del", ifbName)
 }
 
 func (s *ContainerServer) ApplyMultiInterfaceLimit(containerID, iface string, EgressMbps, IngressMbps float64) error {

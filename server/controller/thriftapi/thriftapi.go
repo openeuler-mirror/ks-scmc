@@ -948,25 +948,19 @@ func (h *KsScmcHandler) GetAllContainerList(nodeName string) (*ksscmc.GetAllCont
 			ContainerID:     tmpcontainer.Info.Id,
 			NodeName:        idNodeMap[tmpcontainer.NodeId].Name,
 			ContainerStatus: ksscmc.ContainerStatus_OFFLINE,
-			CPUUsage:        0,
-			MemUsage:        0,
-			DiskUsage:       0,
-			NetUpload:       0,
-			NetDownload:     0,
+			CPUUsage:        tmpcontainer.Info.ResourceStat.CpuStat.CoreUsed * 100,
+			MemUsage:        int32(tmpcontainer.Info.ResourceStat.MemStat.Used),
+			DiskUsage:       float64(tmpcontainer.Info.ResourceStat.DiskStat.Used / 1024),
 		}
 		if tmpcontainer.Info.State == "running" {
-			logrus.Infof("tmpcontainer.Info.ResourceStat: %+v", tmpcontainer.Info.ResourceStat)
 			item.ContainerStatus = ksscmc.ContainerStatus_ONLINE
-			item.CPUUsage = tmpcontainer.Info.ResourceStat.CpuStat.CoreUsed * 100
-			item.MemUsage = int32(tmpcontainer.Info.ResourceStat.MemStat.Used)
-			item.DiskUsage = float64(tmpcontainer.Info.ResourceStat.DiskStat.Used / 1024)
-			if tmpcontainer.Info.ResourceStat.NetStat == nil {
-				item.NetUpload = 0
-				item.NetDownload = 0
-			} else {
-				item.NetUpload = float64(tmpcontainer.Info.ResourceStat.NetStat.Tx / 1024 / 1024)
-				item.NetDownload = float64(tmpcontainer.Info.ResourceStat.NetStat.Rx / 1024 / 1024)
-			}
+		}
+		if tmpcontainer.Info.ResourceStat.NetStat == nil {
+			item.NetUpload = 0
+			item.NetDownload = 0
+		} else {
+			item.NetUpload = float64(tmpcontainer.Info.ResourceStat.NetStat.Tx / 1024 / 1024)
+			item.NetDownload = float64(tmpcontainer.Info.ResourceStat.NetStat.Rx / 1024 / 1024)
 		}
 
 		response.Containerlist = append(response.Containerlist, item)
@@ -975,6 +969,19 @@ func (h *KsScmcHandler) GetAllContainerList(nodeName string) (*ksscmc.GetAllCont
 	logrus.Debugf("get container list: %v", response.Containerlist)
 	response.RetCode = 0
 	return response, nil
+}
+
+func (h *KsScmcHandler) GetAllContainersV2(nid string) (r string, err error) {
+	nodeInfo, err := db.QueryNodeByUUID(nid)
+	if err != nil {
+		resp := &ksscmc.GetAgentNodesResponse{
+			Status:  1,
+			Message: "Failed to found container",
+			Nodes:   []*ksscmc.AgentNode{},
+		}
+		return Struct2JsonString(resp), nil
+	}
+	return h.GetAllContainers(nodeInfo.Name)
 }
 
 func (h *KsScmcHandler) GetContainerNetwork(nodeNameorip string, containerName string) (r string, err error) {
@@ -1734,7 +1741,16 @@ func (h *KsScmcHandler) GetVersionsV3(session_id string) (string, error) {
 
 func (h *KsScmcHandler) GetAllContainersV3(session_id string, nid string) (r string, err error) {
 	nodeIP := db.SessionManagerGetNodeIP(session_id)
-	return h.GetAllContainers(*nodeIP)
+	if nodeIP == nil {
+		resp := &ksscmc.GetAgentNodesResponse{
+			Status:  1,
+			Message: "session id is invalid",
+			Nodes:   []*ksscmc.AgentNode{},
+		}
+		return Struct2JsonString(resp), nil
+	}
+	nodeInfo, err := db.QueryNodeByAddr(*nodeIP)
+	return h.GetAllContainers(nodeInfo.Name)
 }
 
 func (h *KsScmcHandler) CondGetAlarmListV3(session_id string, cond *ksscmc.GetAlarmCond) (r string, err error) {
@@ -1748,9 +1764,8 @@ func (h *KsScmcHandler) CondGetAlarmListV3(session_id string, cond *ksscmc.GetAl
 		HAlarms: []*ksscmc.CondAlarms{},
 		CAlarms: []*ksscmc.CondAlarms{},
 	}
-	nodeIP := db.SessionManagerGetNodeIP(session_id)
 	nodeID := int64(0)
-	nodeInfo, err := GetNodeId(*nodeIP)
+	nodeInfo, err := db.QueryNodeByName(cond.NodeName)
 	readType := ksscmc.ReadType_ALL
 	var entityType []int
 
@@ -1776,7 +1791,7 @@ func (h *KsScmcHandler) CondGetAlarmListV3(session_id string, cond *ksscmc.GetAl
 	if cond.AlarmType != -1 {
 		logrus.Warn("Unsupported special alarm type!")
 	}
-	_, warnLogs, _ := db.GetWarnLog(int(readType),
+	pager, warnLogs, _ := db.GetWarnLog(int(readType),
 		entityType,
 		[]int{int(cond.AlarmType)},
 		nodeID,
@@ -1801,13 +1816,16 @@ func (h *KsScmcHandler) CondGetAlarmListV3(session_id string, cond *ksscmc.GetAl
 			CTime:     time.Unix(warnLog.CreatedAt, 0).Format("2025-07-25 18:00:00"),
 			UTime:     time.Unix(warnLog.UpdatedAt, 0).Format("2025-07-25 18:00:00"),
 		}
-		if warnLog.EventType == int64(logging.EVENT_MODULE_NODE) {
+		if warnLog.EventModule == int64(logging.EVENT_MODULE_NODE) {
 			resp.HAlarms = append(resp.HAlarms, alarm)
 		}
-		if warnLog.EventType == int64(logging.EVENT_MODULE_CONTAINER) {
+		if warnLog.EventModule == int64(logging.EVENT_MODULE_CONTAINER) {
 			resp.CAlarms = append(resp.CAlarms, alarm)
 		}
 	}
+	resp.Nums = int32(len(warnLogs))
+	resp.Page = int32(pager.PageSize)
+	resp.Total = int32(pager.TotalRows)
 	return Struct2JsonString(resp), nil
 }
 
@@ -1821,7 +1839,7 @@ func (h *KsScmcHandler) GetAgentNodesV3(session_id string) (r string, err error)
 		resp.Message = err.Error()
 		return Struct2JsonString(resp), nil
 	}
-	nodeInfos ,err := db.ListNodes()
+	nodeInfos, err := db.ListNodes()
 	if err != nil {
 		logrus.Error("Failed to get node infos, because ", err)
 		resp.Status = 1
@@ -1830,51 +1848,74 @@ func (h *KsScmcHandler) GetAgentNodesV3(session_id string) (r string, err error)
 	}
 	var nodeInfo *db.NodeInfo
 	for _, _nodeInfo := range nodeInfos {
-		if nodeInfo.Address != *nodeIP {
+		if _nodeInfo.Address != *nodeIP {
 			continue
 		}
 		nodeInfo = _nodeInfo
 	}
-	cli := nodePB.NewNodeClient(conn)
+	nodeCli := nodePB.NewNodeClient(conn)
+	nodeNetworkCli := networkPB.NewNetworkClient(conn)
 	ctx_, cancel := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancel()
-	nodeUsage, err := cli.Usage(ctx_, &nodePB.UsageRequest{})
+	nodeStatusReply, err := nodeCli.Status(ctx_, &nodePB.StatusRequest{})
 	if err != nil {
+		logrus.Error("Failed to get node status ", err)
 		resp.Status = 1
 		resp.Message = err.Error()
 		return Struct2JsonString(resp), nil
 	}
+	nodeNetworkReply, err := nodeNetworkCli.List(ctx_, &networkPB.ListRequest{})
+	if err != nil {
+		logrus.Error("Failed to get node network interface ", err)
+		resp.Status = 1
+		resp.Message = err.Error()
+		return Struct2JsonString(resp), nil
+	}
+	nodeNetworkInterfaces := append(nodeNetworkReply.RealIfs, nodeNetworkReply.VirtualIfs...)
+	nets := []*ksscmc.NetworkInterfaceWithAgentNode{}
+	for _, networkInterface := range nodeNetworkInterfaces {
+		nets = append(nets, &ksscmc.NetworkInterfaceWithAgentNode{
+			EthName: networkInterface.Name,
+			IP:      networkInterface.IpAddress,
+			Mac:     networkInterface.MacAddress,
+			Gateway: networkInterface.Gateway,
+			Netmask: networkInterface.IpMask,
+		})
+	}
+	nodeStatu := nodeStatusReply.StatusList[0]
 	var nodeState int32 = 1
-	if nodeUsage.Status.State == int64(nodePB.NodeState_Online) {
+	if nodeStatu.State == int64(nodePB.NodeState_Online) {
 		nodeState = 0
 	}
+	resp.Status = 0
+	resp.Message = "success"
 	resp.Nodes = append(resp.Nodes, &ksscmc.AgentNode{
-		Nets: []*ksscmc.NetworkInterfaceWithAgentNode{},
-		Desc: nodeInfo.Comment,
-		Name: nodeInfo.Name,
-		UUID: nodeInfo.UUID,
-		IP: nodeInfo.Address,
-		Stat: nodeState,
-		CPUUsage: nodeUsage.Status.CpuStat.UsedPercentage,
-		Cpus: nodeUsage.Status.CpuStat.Total,
-		MemUsage: nodeUsage.Status.MemStat.UsedPercentage,
-		MemTotal: float64(nodeUsage.Status.MemStat.Total),
-		DiskUsage: nodeUsage.Status.DiskStat.UsedPercentage  / 1024,
-		DiskTotal: float64(nodeUsage.Status.DiskStat.Total) / 1024,
-		DrbdUsage: 0.0, // todo
-		DrbdTotal: 0.0, // todo
-		NetRbw: 0.0,
-		NetWbw: 0.0,
-		DiskRbw: 0.0,
-		DiskWbw: 0.0,
-		DrbdRbw: 0.0,
-		DrbdWbw: 0.0,
-		ContainerNums: int32(nodeUsage.Status.ContainerStat.Total),
-		OnlineContainerNums: int32(nodeUsage.Status.ContainerStat.Running),
-		MaxContainers: 9999,
-		AlarmNums: 0, // todo,目前所有获取日志的接口都需要分页，获取日志数量总数待实现。
+		Nets:                nets,
+		Desc:                nodeInfo.Comment,
+		Name:                nodeInfo.Name,
+		UUID:                nodeInfo.UUID,
+		IP:                  nodeInfo.Address,
+		Stat:                nodeState,
+		CPUUsage:            nodeStatu.CpuStat.UsedPercentage,
+		Cpus:                nodeStatu.CpuStat.Total,
+		MemUsage:            nodeStatu.MemStat.UsedPercentage,
+		MemTotal:            float64(nodeStatu.MemStat.Total),
+		DiskUsage:           nodeStatu.DiskStat.UsedPercentage / 1024,
+		DiskTotal:           float64(nodeStatu.DiskStat.Total) / 1024,
+		DrbdUsage:           0.0, // todo
+		DrbdTotal:           0.0, // todo
+		NetRbw:              0.0,
+		NetWbw:              0.0,
+		DiskRbw:             0.0,
+		DiskWbw:             0.0,
+		DrbdRbw:             0.0,
+		DrbdWbw:             0.0,
+		ContainerNums:       int32(nodeStatu.ContainerStat.Total),
+		OnlineContainerNums: int32(nodeStatu.ContainerStat.Running),
+		MaxContainers:       9999,
+		AlarmNums:           0, // todo,目前所有获取日志的接口都需要分页，获取日志数量总数待实现。
 	})
-	return Struct2JsonString(resp.Nodes), nil
+	return Struct2JsonString(resp), nil
 }
 
 func (h *KsScmcHandler) SetAlarmReadV3(session_id string, node_name string, id int32) (r string, err error) {

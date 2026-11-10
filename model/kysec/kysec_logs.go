@@ -7,10 +7,11 @@ import (
 	"net"
 	"strings"
 
-	log "github.com/sirupsen/logrus"
 	"scmc/model/db"
 	"scmc/model/litedb"
 	"scmc/rpc/pb/logging"
+
+	log "github.com/sirupsen/logrus"
 )
 
 /*

@@ -105,6 +105,27 @@ func (h *KsScmcHandler) installContainerInternal(nodeNameorip string, imageName 
 	return 0, nil
 }
 
+func (h *KsScmcHandler) StartContainerV3(session_id string, cid string) (string, error) {
+	nodeIP := db.SessionManagerGetNodeIP(session_id)
+	var containerName *string = nil
+	containerInfos, err := h.GetAllContainerList(*nodeIP)
+	if err != nil {
+		return ResponseFailed(err.Error()), nil
+	}
+	for _, containerInfo := range containerInfos.Containerlist {
+		if containerInfo.ContainerID != cid {
+			continue
+		}
+		containerName = &containerInfo.ContainerName
+	}
+	if containerName == nil {
+		logrus.Error("Failed to get containerName from containerID")
+		return ResponseFailed("Cannot found Container"), nil
+	}
+	code, _ := h.startContainerInternal(*nodeIP, *containerName)
+	return Response2String(code), nil
+}
+
 func (h *KsScmcHandler) StartContainer(nodeName string, name string) (string, error) {
 	code, _ := h.startContainerInternal(nodeName, name)
 	return Response2String(code), nil

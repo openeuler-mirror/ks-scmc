@@ -113,14 +113,12 @@ func ListRuntimeLog(pageSize, pageNo int64, startTime, endTime, nodeID, eventMod
 }
 
 func DeleteWarnLogsByNodeIDs(nodeIDs int64) error {
-
 	db, err := getConn()
 	if err != nil {
 		return err
 	}
 
 	return db.Transaction(func(tx *gorm.DB) error {
-
 		type UnreadCount struct {
 			NodeID int64
 			Count  int
@@ -132,7 +130,6 @@ func DeleteWarnLogsByNodeIDs(nodeIDs int64) error {
 			Where("node_id IN (?) AND have_read = 0", nodeIDs).
 			Group("node_id").
 			Scan(&unreadCounts).Error
-
 		if err != nil {
 			log.Warnf("db query warn_log unread count error: %v", err)
 			return translateError(err)
@@ -148,7 +145,6 @@ func DeleteWarnLogsByNodeIDs(nodeIDs int64) error {
 			err = tx.Model(&NodeInfo{}).
 				Where("id = ?", uc.NodeID).
 				Update("unread_warn", gorm.Expr("GREATEST(0, unread_warn - ?)", uc.Count)).Error
-
 			if err != nil {
 				log.Warnf("db update node unread_warn error: %v", err)
 				return translateError(err)
@@ -300,7 +296,6 @@ func GetUnreadWarnLog(pageSize, isRead int, nodeID, eventModule int64) ([]*WarnL
 }
 
 func SetLog(settingName, settingValue string) error {
-
 	db, err := getConn()
 	if err != nil {
 		log.Warnf("SetLog failed, err=%v", err)
@@ -416,7 +411,8 @@ func CleanLogs(saveLogDays int64) error {
 
 func GetWarnLog(
 	readType int, entityType, _ []int, nodeID, startTime, endTime,
-	pageSize, pageNo int64, asc bool) (*Pager, []*WarnLog, error) {
+	pageSize, pageNo int64, asc bool,
+) (*Pager, []*WarnLog, error) {
 	qs := queries{
 		Where: &query{},
 		Model: &WarnLog{},

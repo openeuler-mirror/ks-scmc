@@ -38,7 +38,7 @@ func modifyInterface(configPath, newInterface string) error {
 
 	// 关闭文件后重新以可写方式打开
 	file.Close()
-	file, err = os.OpenFile(configPath, os.O_WRONLY|os.O_TRUNC, 0644)
+	file, err = os.OpenFile(configPath, os.O_WRONLY|os.O_TRUNC, 0o644)
 	if err != nil {
 		return fmt.Errorf("打开文件失败: %v", err)
 	}

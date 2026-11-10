@@ -20,7 +20,7 @@ CREATE TABLE IF NOT EXISTS `user_infos` (
   KEY `role_id` (`role_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1000 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin ;
 
-CREATE TABLE `user_roles` (
+CREATE TABLE IF NOT EXISTS `user_roles` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `name` varchar(255) COLLATE utf8mb4_bin  NOT NULL DEFAULT '',
   `is_editable` tinyint(1) NOT NULL DEFAULT '0',

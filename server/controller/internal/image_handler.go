@@ -366,7 +366,7 @@ func (s *ImageServer) Download(in *pb.DownloadRequest, stream pb.Image_DownloadS
 		Info: &pb.UploadInfo{
 			Name:     img.Name,
 			Version:  img.Version,
-			Type:	  ext,
+			Type:     ext,
 			Checksum: img.CheckSum,
 			Size:     img.FileSize,
 		},

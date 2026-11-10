@@ -50,7 +50,8 @@ func ContaierAppStop() {
     }
 
     for _, c := range containers { // 如果开启了应用高可用，就需要检测应用是否已经拉起来了
-        data, err := litedb.GetContainerMiscConfig(c.ID)
+        containerName := strings.TrimPrefix(c.Names[0], "/")
+        data, err := litedb.GetContainerMiscConfigByName(containerName)
         if err != nil {
             continue
         }
@@ -75,7 +76,8 @@ func ContaierAppRun() {
     }
 
     for _, c := range containers { // 如果开启了应用高可用，就需要检测应用是否已经拉起来了
-        data, err := litedb.GetContainerMiscConfig(c.ID)
+        containerName := strings.TrimPrefix(c.Names[0], "/")
+        data, err := litedb.GetContainerMiscConfigByName(containerName)
         if err != nil {
             continue
         }

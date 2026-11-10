@@ -720,6 +720,12 @@ func (s *NetworkServer) createNetwork(name, subnet, gateway, parent string) erro
 		return nil
 	}
 
+        // macvlan 和 parent 是同一个网段的时候
+        if (CheckNicSameSubnet(subnet, parent)) {
+
+                return nil
+        }
+
 	/*
 		firstip, err_ip := firstUsableIP(subnet)
 		if err_ip != nil {

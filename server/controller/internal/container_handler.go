@@ -456,7 +456,7 @@ func (s *ContainerServer) Update(ctx context.Context, in *pb.UpdateRequest) (*pb
 	if in.ResourceLimit != nil {
 		r := in.ResourceLimit
 		if r.DiskPrio == 0 {
-			r.DiskPrio = 5 //当前客户端无这个值的接口，提供默认值做兼容处理
+			r.DiskPrio = 5 // 当前客户端无这个值的接口，提供默认值做兼容处理
 		}
 
 		if !args.Float64Resource.Check(r.CpuLimit, r.DiskLimit, r.MemoryLimit, r.MemorySoftLimit) ||
@@ -1051,6 +1051,7 @@ func (*ContainerServer) KillAppEntry(ctx context.Context, in *pb.KillAppEntryReq
 
 	return pb.NewContainerClient(conn).KillAppEntry(ctx, in)
 }
+
 func (*ContainerServer) Pause(ctx context.Context, in *pb.PauseRequest) (*pb.PauseReply, error) {
 	if in.NodeId == 0 {
 		return nil, rpc.ErrInvalidArgument
@@ -1072,6 +1073,7 @@ func (*ContainerServer) Pause(ctx context.Context, in *pb.PauseRequest) (*pb.Pau
 	}
 	return pb.NewContainerClient(conn).Pause(ctx, in)
 }
+
 func (*ContainerServer) Unpause(ctx context.Context, in *pb.UnpauseRequest) (*pb.UnpauseReply, error) {
 	if in.NodeId == 0 {
 		return nil, rpc.ErrInvalidArgument
@@ -1092,7 +1094,6 @@ func (*ContainerServer) Unpause(ctx context.Context, in *pb.UnpauseRequest) (*pb
 		return nil, rpc.ErrInternal
 	}
 	return pb.NewContainerClient(conn).Unpause(ctx, in)
-
 }
 
 //非grpc方式调用

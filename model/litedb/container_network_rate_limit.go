@@ -30,7 +30,7 @@ func CreateNetworkLimit(data *NetworkLimit) error {
 	}
 	result := db.Create(data)
 	if result.Error != nil {
-		log.Warnf("db create networklimit err: %v", result.Error)
+		log.Warnf("DB create networklimit err: %v", result.Error)
 		return result.Error
 	}
 	return nil
@@ -101,7 +101,7 @@ func ListNetworkLimit(containerID string) ([]*NetworkLimit, error) {
 	}
 	var data []*NetworkLimit
 	if err := db.Where("container_id = ?", containerID).Find(&data).Error; err != nil {
-		log.Errorf("db query network limit entries err: %v", err)
+		log.Errorf("DB query network limit entries err: %v", err)
 		return nil, err
 	}
 	return data, nil

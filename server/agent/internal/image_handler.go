@@ -59,7 +59,7 @@ func (s *ImageServer) List(ctx context.Context, in *pb.ListRequest) (*pb.ListRep
 }
 
 func (s *ImageServer) checkTagsExists(tags string) bool {
-	ctx , cancel := context.WithTimeout(context.Background(), time.Second * 5)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancel()
 	reply, err := s.List(ctx, &pb.ListRequest{})
 	if err != nil {

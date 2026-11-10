@@ -59,6 +59,7 @@ func (r *Int64Argument) Check(in ...int64) bool {
 	}
 	return true
 }
+
 func (r *Int32Argument) Check(in ...int32) bool {
 	for _, i := range in {
 		if r.valid(i) {

@@ -112,7 +112,7 @@ func checkIPConflict(iface types.NetworkResource, containerId string, ipAddr *st
 			return false // ip不在子网段内
 		}
 
-		//判断IP是否已使用
+		// 判断IP是否已使用
 		ip := ipStrToUint(*ipAddr)
 		if _, ok := containerIPs[ip]; ok {
 			log.Warnf("ip=%v is used by other container", *ipAddr)
@@ -263,7 +263,7 @@ func ContainerWhiteConfig() error {
 					if os.Stat(fileName); os.IsNotExist(err) {
 						iptables.ContainerWhitelistInitialization(fileName, info.State.Pid)
 					} else {
-						//fileName = "/var/lib/ks-scmc/networks/iptables/" + fileName
+						// fileName = "/var/lib/ks-scmc/networks/iptables/" + fileName
 						fileName = filepath.Join(common.Config.Network.IPtablesPath, fileName)
 						go func(pid int, fPath string) {
 							log.Infof("Scheduling delayed iptables update for PID %d", pid)
@@ -327,12 +327,12 @@ func getLinkIfs() []string {
 	}
 
 	for _, i := range list {
-		//因网络访问控制权限是影响指定网卡的对应网段，未防止主机不能通外网，因此只处理桥接网络，不处理macvlan网络
+		// 因网络访问控制权限是影响指定网卡的对应网段，未防止主机不能通外网，因此只处理桥接网络，不处理macvlan网络
 		if i.Driver != "bridge" {
 			continue
 		}
 
-		//默认网卡
+		// 默认网卡
 		if isPredefinedNetwork(i.Name) {
 			continue
 		}
@@ -367,7 +367,7 @@ func NodeWhitelistConfig() error {
 	_, err := os.Stat(IPtablesPath)
 	if err != nil {
 		if os.IsNotExist(err) {
-			err := os.MkdirAll(IPtablesPath, 0666)
+			err := os.MkdirAll(IPtablesPath, 0o666)
 			if err != nil {
 				log.Warnf("mkdir %v err: %v", IPtablesPath, err)
 			}
@@ -388,7 +388,7 @@ func NodeNetworkControlConfig() error {
 	_, err := os.Stat(IPtablesPath)
 	if err != nil {
 		if os.IsNotExist(err) {
-			err := os.MkdirAll(IPtablesPath, 0666)
+			err := os.MkdirAll(IPtablesPath, 0o666)
 			if err != nil {
 				log.Warnf("mkdir %v err: %v", IPtablesPath, err)
 			}

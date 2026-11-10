@@ -49,7 +49,6 @@
 
 - name: KEEPALIVED 服务属性配置支持重启
   shell: |
-    set -e
     mkdir -p /etc/systemd/system/keepalived.service.d
     cat > /etc/systemd/system/keepalived.service.d/restart.conf << EOF
     [Service]

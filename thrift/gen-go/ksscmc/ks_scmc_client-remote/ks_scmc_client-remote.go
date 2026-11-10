@@ -217,6 +217,18 @@ func main() {
     fmt.Print(client.StartContainer(value0, value1))
     fmt.Print("\n")
     break
+  case "StartContainerV3":
+    if flag.NArg() - 1 != 2 {
+      fmt.Fprintln(os.Stderr, "StartContainerV3 requires 2 args")
+      flag.Usage()
+    }
+    argvalue0 := flag.Arg(1)
+    value0 := argvalue0
+    argvalue1 := flag.Arg(2)
+    value1 := argvalue1
+    fmt.Print(client.StartContainerV3(value0, value1))
+    fmt.Print("\n")
+    break
   case "StopContainer":
     if flag.NArg() - 1 != 2 {
       fmt.Fprintln(os.Stderr, "StopContainer requires 2 args")

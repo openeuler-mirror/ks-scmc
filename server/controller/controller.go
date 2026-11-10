@@ -72,6 +72,7 @@ func Server() (*grpc.Server, error) {
 		&tasks.ContainerEventMonitor{},
 		&tasks.AppRun{},
 		&tasks.ContainerResourceMonitor{},
+		&tasks.CleanImages{},
 	)
 
 	if os.Getenv("GRPC_REFLECTION") == "1" {

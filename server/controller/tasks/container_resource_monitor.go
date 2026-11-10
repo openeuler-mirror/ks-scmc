@@ -166,14 +166,14 @@ func (c *ContainerResourceMonitor) checkContainerResourceUsage(container types.C
 	readUsage := c.calculateDiskIOMonitorUsage(readRate, resourceLimit.DiskRbw)
 	writeUsage := c.calculateDiskIOMonitorUsage(writeRate, resourceLimit.DiskWbw)
 
-	c.checkAndAlert(cpuUsage, "cpu", "", container, node, resourceLimit, nil, "CPU使用率达到95%阈值")
-	c.checkAndAlert(memoryUsage, "memory", "", container, node, resourceLimit, nil, "内存使用率达到95%阈值")
-	c.checkAndAlert(diskSpaceUsage, "disk", "", container, node, resourceLimit, nil, "磁盘空间使用率达到95%阈值")
+	c.checkAndAlert(cpuUsage, "cpu", "", container, node, resourceLimit, nil, "CPU使用率达到90%阈值")
+	c.checkAndAlert(memoryUsage, "memory", "", container, node, resourceLimit, nil, "内存使用率达到90%阈值")
+	c.checkAndAlert(diskSpaceUsage, "disk", "", container, node, resourceLimit, nil, "磁盘空间使用率达到90%阈值")
 	if readRate > 0 {
-		c.checkAndAlert(readUsage, "diskRead", "", container, node, resourceLimit, nil, "磁盘读速率达到95%阈值")
+		c.checkAndAlert(readUsage, "diskRead", "", container, node, resourceLimit, nil, "磁盘读速率达到90%阈值")
 	}
 	if writeRate > 0 {
-		c.checkAndAlert(writeUsage, "diskWrite", "", container, node, resourceLimit, nil, "磁盘写速率达到95%阈值")
+		c.checkAndAlert(writeUsage, "diskWrite", "", container, node, resourceLimit, nil, "磁盘写速率达到90%阈值")
 	}
 
 	netLimitMap, err := c.getContainerResourceLimitNic(cntID)

@@ -557,9 +557,6 @@ func (s *ContainerServer) create(nodeid int64, configs *pb.ContainerConfigs, net
 	if configs.Cmd != "" {
 		var cmdSlice strslice.StrSlice = strings.Fields(configs.Cmd)
 		config.Cmd = cmdSlice
-	} else {
-		var cmdSlice strslice.StrSlice = strings.Fields("/bin/bash")
-		config.Cmd = cmdSlice
 	}
 
 	/* 设置容器主机名称 */
@@ -567,7 +564,7 @@ func (s *ContainerServer) create(nodeid int64, configs *pb.ContainerConfigs, net
 		config.Hostname = configs.Hostname
 	}
 
-	// 因为容器内需要使用GPU，这里需要设置为 true.
+	// 因为容器内需要使用GPU，这里需要设置为 true. 
 	hostConfig := container.HostConfig{
 		Privileged: true, // force non-privileged
 	}
@@ -598,13 +595,13 @@ func (s *ContainerServer) create(nodeid int64, configs *pb.ContainerConfigs, net
 		hostConfig.RestartPolicy.MaximumRetryCount = int(configs.RestartPolicy.MaxRetry)
 	}
 
-	if configs.ResouceLimit != nil {
-		hostConfig.Resources = dockerResourceConfig(configs.ResouceLimit)
+	if configs.ResourceLimit != nil {
+		hostConfig.Resources = dockerResourceConfig(configs.ResourceLimit)
 
-		if configs.ResouceLimit.DiskLimit > 0.0 {
-			config.Labels["KS_SCMC_DISK_LIMIT"] = fmt.Sprintf("%f", configs.ResouceLimit.DiskLimit)
+		if configs.ResourceLimit.DiskLimit > 0.0 {
+			config.Labels["KS_SCMC_DISK_LIMIT"] = fmt.Sprintf("%f", configs.ResourceLimit.DiskLimit)
 			hostConfig.StorageOpt = map[string]string{
-				"size": fmt.Sprintf("%fM", configs.ResouceLimit.DiskLimit),
+				"size": fmt.Sprintf("%fM", configs.ResourceLimit.DiskLimit),
 			}
 		}
 	}
@@ -747,9 +744,9 @@ func (s *ContainerServer) Create(ctx context.Context, in *pb.CreateRequest) (*pb
 
 		// 容器磁盘限制相关数据
 		var w, r int64 = int64(0), int64(0)
-		if in.Configs.ResouceLimit != nil {
-			w = in.Configs.ResouceLimit.DiskWbw
-			r = in.Configs.ResouceLimit.DiskRbw
+		if in.Configs.ResourceLimit != nil {
+			w = in.Configs.ResourceLimit.DiskWbw
+			r = in.Configs.ResourceLimit.DiskRbw
 		}
 
 		outCfg, err := litedb.GetContainerOutConfigByName(in.Configs.Name)
@@ -1442,7 +1439,7 @@ func (s *ContainerServer) inspect(id string, backup bool) (*pb.ContainerConfigs,
 		ContainerId:  info.ID,
 		Name:         strings.TrimPrefix(info.Name, "/"),
 		Image:        info.Image,
-		ResouceLimit: &pb.ResourceLimit{},
+		ResourceLimit: &pb.ResourceLimit{},
 		MiscConfig:   &pb.ContainerMiscConfig{},
 	}
 
@@ -1483,7 +1480,7 @@ func (s *ContainerServer) inspect(id string, backup bool) (*pb.ContainerConfigs,
 			MaxRetry: int32(info.HostConfig.RestartPolicy.MaximumRetryCount),
 		}
 
-		configs.ResouceLimit = &pb.ResourceLimit{
+		configs.ResourceLimit = &pb.ResourceLimit{
 			CpuLimit:        float64(info.HostConfig.Resources.NanoCPUs) / 1e9,
 			CpuPrio:         fromCPUShares(info.HostConfig.Resources.CPUShares),
 			DiskPrio:        fromBlkioWeight(info.HostConfig.Resources.BlkioWeight),
@@ -1494,7 +1491,7 @@ func (s *ContainerServer) inspect(id string, backup bool) (*pb.ContainerConfigs,
 		}
 
 		if s, ok := info.HostConfig.StorageOpt["size"]; ok {
-			fmt.Sscanf(s, "%fM", &configs.ResouceLimit.DiskLimit)
+			fmt.Sscanf(s, "%fM", &configs.ResourceLimit.DiskLimit)
 		}
 
 		if info.HostConfig.IpcMode.IsContainer() {
@@ -2385,7 +2382,7 @@ func (s *ContainerServer) SetContainerExtraHosts(ctx context.Context, in *pb.Set
 	updateRequest := &pb.UpdateRequest{
 		NodeId:        in.NodeId,
 		ContainerId:   in.ContainerId,
-		ResourceLimit: containerConfigs.ResouceLimit,
+		ResourceLimit: containerConfigs.ResourceLimit,
 		RestartPolicy: containerConfigs.RestartPolicy,
 		Networks:      containerConfigs.Networks,
 		Mounts:        containerConfigs.Mounts,

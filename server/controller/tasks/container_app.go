@@ -46,19 +46,19 @@ func ContaierAppStop() {
     opts := types.ContainerListOptions{All: true, Size: true}
     containers, err := cli.ContainerList(context.Background(), opts)
     if err != nil {
-        return 
+        return
     }
 
     for _, c := range containers { // 如果开启了应用高可用，就需要检测应用是否已经拉起来了
-        data, err := litedb.GetContainerMiscConfig(c.ID)  
+        data, err := litedb.GetContainerMiscConfig(c.ID)
         if err != nil {
             continue
         }
-        if data.MiscConfig.GetAppRun() {
+        if data.MiscConfig != nil && data.MiscConfig.GetAppRun() {
              go stopAppEntry(c.ID)
         }
     }
-} 
+}
 
 // 如果是主模式并且开启了应用高可用，那么就要运行容器里面的 app
 func ContaierAppRun() {
@@ -71,15 +71,15 @@ func ContaierAppRun() {
     opts := types.ContainerListOptions{All: true, Size: true}
     containers, err := cli.ContainerList(context.Background(), opts)
     if err != nil {
-        return 
+        return
     }
 
     for _, c := range containers { // 如果开启了应用高可用，就需要检测应用是否已经拉起来了
-        data, err := litedb.GetContainerMiscConfig(c.ID)  
+        data, err := litedb.GetContainerMiscConfig(c.ID)
         if err != nil {
             continue
         }
-        if data.MiscConfig.GetAppRun() {
+        if data.MiscConfig != nil && data.MiscConfig.GetAppRun() {
              go runAppEntry(c.ID)
         }
     }

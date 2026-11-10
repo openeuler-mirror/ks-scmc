@@ -57,12 +57,12 @@ const (
 	hostsPath          = "/var/lib/docker/containers"
 )
 
-//--cpushares不设置的话，docker默认是1024
-//优先级为1,设置为默认值的1.25倍
-//优先级为2,设置为默认值的1.5倍
-//优先级为3,设置为默认值的2倍
-//优先级为4,设置为默认值的2.5倍
-//优先级为5,设置为默认值的3倍
+// --cpushares不设置的话，docker默认是1024
+// 优先级为1,设置为默认值的1.25倍
+// 优先级为2,设置为默认值的1.5倍
+// 优先级为3,设置为默认值的2倍
+// 优先级为4,设置为默认值的2.5倍
+// 优先级为5,设置为默认值的3倍
 var cpuShareMap = map[int64]int64{
 	1: 1280,
 	2: 1536,
@@ -79,7 +79,7 @@ var blkioWeightMap = map[int64]uint16{
 	5: maxBlkioWeight,
 }
 
-//磁盘优先级=>blkioWeigh
+// 磁盘优先级=>blkioWeigh
 func toBlkioWeight(diskPrio int64) uint16 {
 	if diskPrio <= 0 {
 		return defaultBlkioWeight
@@ -90,7 +90,7 @@ func toBlkioWeight(diskPrio int64) uint16 {
 	return defaultBlkioWeight
 }
 
-//blkioWeight => 磁盘优先级
+// blkioWeight => 磁盘优先级
 func fromBlkioWeight(blkioWeight uint16) int64 {
 
 	if blkioWeight <= defaultBlkioWeight {
@@ -356,6 +356,13 @@ func (s *ContainerServer) setSecurityConfig(nodeid int64, id, uuid, name string,
 		if err := kysec.UpdateWhiteList(id, sec.ProcProtection.IsOn, hashes, []string{}); err != nil {
 			log.Warnf("UpdateWhiteList %v err: %v", id, err)
 			return rpc.ErrContainerProcProtection
+		}
+	}
+
+	// 网络进程白名单，通过内核实现
+	if sec.NprocProtection != nil {
+		if err := kysec.UpdateNprocProtection(id, sec.NprocProtection.IsOn, sec.NprocProtection.ExeList, []string{}); err != nil {
+			log.Warnf("UpdateNprocProtection %v err: %v", id, err)
 		}
 	}
 
@@ -1294,6 +1301,9 @@ func (s *ContainerServer) remove(cli *client.Client, containerID string, force b
 	}
 	if err := kysec.CleanWhiteList(containerID); err != nil {
 		log.Warnf("CleanWhiteList container=%v err=%v", containerID, err)
+	}
+	if err := kysec.CleanNProcRule(containerID); err != nil {
+		log.Warnf("RemoveRule container=%v err=%v", containerID, err)
 	}
 
 	if err := opensnitch.RemoveRule(containerID); err != nil {

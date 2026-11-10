@@ -241,6 +241,29 @@ func runAppEntry(containerId string) {
 	}
 }
 
+// 容器网卡限速
+func setnetworklimit(containerID string) {
+	cli, err := docker.Client()
+	if err != nil {
+		return 
+	}
+	info, _, err := cli.ContainerInspectWithRaw(context.Background(), containerID, true)
+	if err != nil {
+		return
+	}
+	if info.NetworkSettings == nil {
+		return
+	}
+	s := &ContainerServer{}
+	for iface , _ := range info.NetworkSettings.Networks {
+		if isPredefinedNetwork(iface) {
+			continue
+		}
+		s.ContainerTCConfig(containerID, iface)
+	}
+}
+
+
 func ContainerWhiteConfig() error {
 	eventProcessor := func(cli *client.Client, e events.Message) {
 		switch e.Status {
@@ -251,9 +274,10 @@ func ContainerWhiteConfig() error {
 					log.Warnf("%v call ContainerInspect err(%v) or container not start", e.ID, err)
 				} else {
 					if common.IsMaster() { // 主设备，同步启动 app
-						runAppEntry(e.ID)
+						go runAppEntry(e.ID)
 					}
-					setdisklimit(e.ID)
+					go setdisklimit(e.ID)
+					go setnetworklimit(e.ID)
 					var name string
 					if e.Actor.Attributes != nil {
 						name = e.Actor.Attributes["name"]

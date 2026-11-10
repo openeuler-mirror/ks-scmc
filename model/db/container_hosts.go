@@ -35,9 +35,11 @@ func (s *StringSlice) Scan(value interface{}) error {
 	}
 	return json.Unmarshal(b, s)
 }
+
 func (ContainerHosts) TableName() string {
 	return "container_hosts"
 }
+
 func CreateContainerHosts(data *ContainerHosts) error {
 	db, err := getConn()
 	if err != nil {
@@ -53,6 +55,7 @@ func CreateContainerHosts(data *ContainerHosts) error {
 	log.Debugf("db create node id=%v", data.ID)
 	return nil
 }
+
 func UpdateContainerHosts(n *ContainerHosts) error {
 	db, err := getConn()
 	if err != nil {
@@ -66,6 +69,7 @@ func UpdateContainerHosts(n *ContainerHosts) error {
 	}
 	return nil
 }
+
 func QueryContainerHostsByContainerId(containerId string, nodeId int64) (*ContainerHosts, error) {
 	db, err := getConn()
 	if err != nil {

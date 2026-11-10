@@ -115,7 +115,6 @@ type ServiceConfig struct {
 
 // DecryptPassword 解密密码字段
 func (s *ServiceConfig) DecryptPassword() (string, error) {
-	log.Infof("decrypt password = %s", s.Password)
 	passwordDe, err := aes.Decrypt(s.Password)
 	if err != nil {
 		return "", err

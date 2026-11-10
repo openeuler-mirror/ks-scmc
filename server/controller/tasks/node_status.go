@@ -93,7 +93,7 @@ func getAllNodeData(needStatus bool) (r []*pb.NodeInfo) {
 		})
 	}
 
-	return
+	return r
 }
 
 func writeNodeWatchLogs(n *pb.NodeInfo) {

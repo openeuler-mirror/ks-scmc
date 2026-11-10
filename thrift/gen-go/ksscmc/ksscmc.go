@@ -8737,7 +8737,7 @@ func (p *KsScmcClientClient) sendCondGetAlarmListV3(session_id string, cond *Get
 }
 
 
-func (p *KsScmcClientClient) recvLoginV3() (value string, err error) {
+func (p *KsScmcClientClient) recvCondGetAlarmListV3() (value string, err error) {
   iprot := p.InputProtocol
   if iprot == nil {
     iprot = p.ProtocolFactory.GetProtocol(p.Transport)

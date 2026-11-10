@@ -557,6 +557,9 @@ func (s *ContainerServer) create(nodeid int64, configs *pb.ContainerConfigs, net
 	if configs.Cmd != "" {
 		var cmdSlice strslice.StrSlice = strings.Fields(configs.Cmd)
 		config.Cmd = cmdSlice
+	} else {
+		var cmdSlice strslice.StrSlice = strings.Fields("/bin/bash")
+		config.Cmd = cmdSlice
 	}
 
 	/* 设置容器主机名称 */

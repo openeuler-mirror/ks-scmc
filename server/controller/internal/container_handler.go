@@ -3,23 +3,23 @@ package internal
 import (
 	"context"
 	"errors"
+	"fmt"
 	"io"
 	"sort"
 	"strings"
 	"sync"
 	"time"
-    "fmt"
 
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 	"google.golang.org/grpc/metadata"
+	"google.golang.org/grpc/status"
 
 	"scmc/model/db"
 	"scmc/rpc"
+	"scmc/rpc/middleware/auth"
 	pb "scmc/rpc/pb/container"
 	"scmc/server/args"
-    "scmc/rpc/middleware/auth"
 )
 
 type ExportBackupStream struct {
@@ -152,14 +152,14 @@ func (s *ContainerServer) Create(ctx context.Context, in *pb.CreateRequest) (*pb
 		return nil, rpc.ErrInternal
 	}
 
-    // user_id 传递到 agent
-    uid, ok := auth.UserIDFromContext(ctx)
-    if ok {
-        md := metadata.New(map[string]string{
-            "user_id" : fmt.Sprintf("%d", uid),
-        })
-        ctx = metadata.NewOutgoingContext(ctx, md)
-    }
+	// user_id 传递到 agent
+	uid, ok := auth.UserIDFromContext(ctx)
+	if ok {
+		md := metadata.New(map[string]string{
+			"user_id": fmt.Sprintf("%d", uid),
+		})
+		ctx = metadata.NewOutgoingContext(ctx, md)
+	}
 
 	return pb.NewContainerClient(conn).Create(ctx, in)
 }
@@ -478,14 +478,14 @@ func (s *ContainerServer) Update(ctx context.Context, in *pb.UpdateRequest) (*pb
 		return nil, rpc.ErrInternal
 	}
 
-    // user_id 传递到 agent
-    uid, ok := auth.UserIDFromContext(ctx)
-    if ok {
-        md := metadata.New(map[string]string{
-            "user_id" : fmt.Sprintf("%d", uid),
-        })
-        ctx = metadata.NewOutgoingContext(ctx, md)
-    }
+	// user_id 传递到 agent
+	uid, ok := auth.UserIDFromContext(ctx)
+	if ok {
+		md := metadata.New(map[string]string{
+			"user_id": fmt.Sprintf("%d", uid),
+		})
+		ctx = metadata.NewOutgoingContext(ctx, md)
+	}
 
 	return pb.NewContainerClient(conn).Update(ctx, in)
 }
@@ -494,7 +494,7 @@ func (s *ContainerServer) UpdateContainerVersion(ctx context.Context, in *pb.Upd
 	if in.NodeId <= 0 || in.ContainerId == "" || in.ImgName == "" || in.ImgVersion == "" {
 		return nil, rpc.ErrInvalidArgument
 	}
-	
+
 	n, err := db.QueryNodeByID(in.NodeId)
 	if err != nil {
 		if err == db.ErrRecordNotFound {
@@ -1094,6 +1094,7 @@ func (*ContainerServer) Unpause(ctx context.Context, in *pb.UnpauseRequest) (*pb
 	return pb.NewContainerClient(conn).Unpause(ctx, in)
 
 }
+
 //非grpc方式调用
 //func (*ContainerServer) LoadImageHandler(*pb.LoadRequest) error {
 //

@@ -103,7 +103,7 @@ func fromBlkioWeight(blkioWeight uint16) int64 {
 }
 
 var (
-	defaultCPUShares        int64  = 1024
+	defaultCPUShares        int64  = 1280
 	updateContainerFlagFile string = filepath.Join(common.Config.Network.IPtablesPath, "updateIptables.flag")
 )
 
@@ -118,16 +118,17 @@ func toCPUShares(cpuPrio int64) int64 {
 	return defaultCPUShares
 }
 
+// 1,3,5 表示低中高, 默认设置为低
 func fromCPUShares(cpuShares int64) int64 {
 	if cpuShares <= defaultCPUShares {
-		return 0
+		return 1
 	}
 	for k, v := range cpuShareMap {
 		if v == cpuShares {
 			return k
 		}
 	}
-	return 0
+	return 1
 }
 
 func dockerResourceConfig(in *pb.ResourceLimit) container.Resources {
@@ -252,6 +253,25 @@ func (s *ContainerServer) List(ctx context.Context, in *pb.ListRequest) (*pb.Lis
 			ResourceStat: containerResourceStat(stats, &c),
 		}
 
+		// 用户要求 CPU 使用率不能超过 100%, 这里计算一个平均值
+		inspectCtx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+		defer cancel()
+
+		// 默认使用主机总CPU核心数作为基准
+		cpuBase := float64(numCPU())
+
+		// 尝试从容器配置中获取CPU限制（若有）
+		containerInfo, err := cli.ContainerInspect(inspectCtx, c.ID)
+		if err == nil && containerInfo.HostConfig != nil && containerInfo.HostConfig.NanoCPUs > 0 {
+			cpuBase = float64(containerInfo.HostConfig.NanoCPUs) / 1e9
+		}
+
+		// 计算CPU核心使用率（相对于基准值）并限制上限为100%
+		cpuUsage := info.ResourceStat.CpuStat.CoreUsed / cpuBase
+		if cpuUsage > 1.0 {
+			cpuUsage = 1.0
+		}
+		info.ResourceStat.CpuStat.CoreUsed = cpuUsage
 		reply.Containers = append(reply.Containers, &pb.NodeContainer{Info: &info})
 	}
 
@@ -544,8 +564,9 @@ func (s *ContainerServer) create(nodeid int64, configs *pb.ContainerConfigs, net
 		config.Hostname = configs.Hostname
 	}
 
+	// 因为容器内需要使用GPU，这里需要设置为 true. 
 	hostConfig := container.HostConfig{
-		Privileged: false, // force non-privileged
+		Privileged: true, // force non-privileged
 	}
 
 	// 设置 IPC 信息

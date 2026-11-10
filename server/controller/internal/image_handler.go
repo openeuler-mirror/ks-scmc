@@ -225,6 +225,7 @@ func (s *ImageServer) ListDB(ctx context.Context, in *pb.ListDBRequest) (*pb.Lis
 			ApprovalStatus: i.ApprovalStatus,
 			Size:           i.FileSize,
 			UpdateAt:       i.UpdatedAt,
+                        RejectReason:   i.RejectReason,
 		})
 	}
 

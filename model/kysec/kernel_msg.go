@@ -310,13 +310,27 @@ func updateWhiteListToKern(fd int, id, hash, name []byte, add bool) error {
 		namelen = int32(len(name))
 	}
 
+	pad := make([]byte, 4)
+
 	buf := new(bytes.Buffer)
 	if binary.Write(buf, localEndian, realID) != nil ||
 		binary.Write(buf, localEndian, realHash) != nil ||
 		binary.Write(buf, localEndian, namelen) != nil ||
+		binary.Write(buf, localEndian, pad) != nil ||
 		binary.Write(buf, localEndian, name) != nil {
 		log.Warnf("updateWhiteListToKern to []byte err")
 		return os.ErrInvalid
+	}
+
+	/* 这里是为了保证 8 字节对齐 */
+	currentLen := WL_HASH_SIZE + 4 + 4 + len(name)
+	padAfterName := (8 - (currentLen % 8)) % 8
+	if padAfterName > 0 {
+		padName := make([]byte, padAfterName)
+		if binary.Write(buf, localEndian, padName) != nil {
+			log.Warnf("updateWhiteListToKern to []byte err")
+			return os.ErrInvalid
+		}
 	}
 
 	var msgtype uint16
@@ -358,19 +372,26 @@ func setFileAccessToKern(fd int, id, filePath []byte, add bool) error {
 		return os.ErrInvalid
 	}
 
-	buflen := MSG_SIZE + len(filePath) + 1
-	buffer := make([]byte, 13) //MSG_SIZE - ID_MAX_SIZE - 4 - 4  + 1
 	buf := new(bytes.Buffer)
-
 	var realID [ID_MAX_SIZE]byte
 	copy(realID[:], id)
 	if binary.Write(buf, localEndian, realID) != nil ||
 		binary.Write(buf, localEndian, int32(len(filePath))) != nil ||
 		binary.Write(buf, localEndian, int32(0)) != nil ||
-		binary.Write(buf, localEndian, filePath) != nil ||
-		binary.Write(buf, localEndian, buffer) != nil {
+		binary.Write(buf, localEndian, filePath) != nil {
 		log.Warnf("setFileAccessToKern to []byte err")
 		return os.ErrInvalid
+	}
+
+	/* 这里是为了保证 8 字节对齐 */
+	currentLen := 4 + 4 + len(filePath)
+	padAfterName := (8 - (currentLen % 8)) % 8
+	if padAfterName > 0 {
+		padName := make([]byte, padAfterName)
+		if binary.Write(buf, localEndian, padName) != nil {
+			log.Warnf("setFileAccessToKern to []byte err")
+			return os.ErrInvalid
+		}
 	}
 
 	var msgtype uint16
@@ -380,7 +401,8 @@ func setFileAccessToKern(fd int, id, filePath []byte, add bool) error {
 		msgtype = setNlmsgType(NLMSG_COM_TYPE_REQUEST, NLMSG_FUNC_TYPE_AC, NLMSG_ACTION_TYPE_DEL)
 	}
 
-	return sendNetlink(fd, buf.Bytes(), buflen, msgtype)
+	// return sendNetlink(fd, buf.Bytes(), buflen, msgtype)
+	return sendNetlink(fd, buf.Bytes(), buf.Len(), msgtype)
 }
 
 /*
@@ -393,13 +415,25 @@ func setNProcAccess(fd int, id, filePath []byte, add bool) error {
 
 	var realID [ID_MAX_SIZE]byte
 	copy(realID[:], id) // 容器ID
-
+	pad := make([]byte, 4)
 	buf := new(bytes.Buffer)
 	if binary.Write(buf, localEndian, realID) != nil ||
 		binary.Write(buf, localEndian, int32(len(filePath))) != nil ||
+		binary.Write(buf, localEndian, pad) != nil ||
 		binary.Write(buf, localEndian, filePath) != nil {
 		log.Warnf("setNProcAccess to []byte err")
 		return os.ErrInvalid
+	}
+
+	/* 这里是为了保证 8 字节对齐 */
+	currentLen := 4 + 4 + len(filePath)
+	padAfterName := (8 - (currentLen % 8)) % 8
+	if padAfterName > 0 {
+		padName := make([]byte, padAfterName)
+		if binary.Write(buf, localEndian, padName) != nil {
+			log.Warnf("updateWhiteListToKern to []byte err")
+			return os.ErrInvalid
+		}
 	}
 
 	var msgtype uint16
@@ -434,7 +468,7 @@ func setStatusToKern(fd int, id []byte, who int, enabled bool) error {
 		return os.ErrInvalid
 	}
 
-	log.Debugf("set %v(1:wl, 2:ac 3:net) enable: %v", who, isOn)
+	// log.Debugf("set %v(1:wl, 2:ac 3:net) enable: %v", who, isOn)
 	msgtype := setNlmsgType(NLMSG_COM_TYPE_REQUEST, who, NLMSG_ACTION_TYPE_ENABLED)
 
 	return sendNetlink(fd, buf.Bytes(), buf.Len(), msgtype)

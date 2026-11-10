@@ -6,6 +6,7 @@ import (
 	"encoding/hex"
 	"fmt"
 	"os"
+	"strings"
 	"time"
 	"unsafe"
 	// "sync"
@@ -218,7 +219,7 @@ func sendNetlink(fd int, msg []byte, len int, msgType uint16) error {
 func recvNetlink() ([]byte, error) {
 	fd, err := initNetlinkRecv()
 	if err != nil {
-		log.Warnf("recvNetlink initNetlink failed: %v", err)
+		// log.Warnf("recvNetlink initNetlink failed: %v", err)
 		return nil, err
 	}
 
@@ -483,7 +484,8 @@ func UpdateNprocProtection(containerId string, enable bool, addfilePath []string
 		return err
 	}
 
-	for _, filePath := range addfilePath {
+	for _, addfile := range addfilePath {
+		filePath := strings.TrimSpace(addfile)
 		if err := setNProcAccess(fd, []byte(containerId), []byte(filePath), true); err != nil {
 			log.Warnf("add %v NProc file(%v) access err: %v", containerId, filePath, err)
 		}
@@ -493,7 +495,8 @@ func UpdateNprocProtection(containerId string, enable bool, addfilePath []string
 		log.Warnf("set %v white list status([%v]) err: %v", containerId, enable, err)
 	}
 
-	for _, filePath := range delfilePath {
+	for _, delfile := range delfilePath {
+		filePath := strings.TrimSpace(delfile)
 		if err := setNProcAccess(fd, []byte(containerId), []byte(filePath), false); err != nil {
 			log.Warnf("del %v NProc file(%v) access err: %v", containerId, filePath, err)
 		}

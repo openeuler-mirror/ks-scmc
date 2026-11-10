@@ -9,12 +9,12 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
+	"scmc/common"
 	"scmc/model/db"
 	"scmc/model/warnlog"
 	"scmc/rpc/pb/logging"
 	pb "scmc/rpc/pb/node"
 	"scmc/server/controller/internal"
-    "scmc/common"
 )
 
 type NodeStatus struct{}

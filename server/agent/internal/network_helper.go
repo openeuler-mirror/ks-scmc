@@ -185,7 +185,12 @@ func setdisklimit(containerId string) {
 
 // 容器启动，启动容器内配置的相关应用
 func runAppEntry(containerId string) {
-    data, err := litedb.GetContainerMiscConfig(containerId)
+    cfgs, err := litedb.GetContainerConfig(containerId)
+    if err != nil {
+        return
+    }
+
+    data, err := litedb.GetContainerMiscConfigByName(cfgs.ContainerName)
     if err != nil {
         return
     }

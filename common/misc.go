@@ -21,6 +21,14 @@ func extractIP(vip string) (string, error) {
 	return parsedIP.String(), nil
 }
 
+func GetVIPAddr() string {
+	vip, err := extractIP(Config.Controller.VirtualIP)
+	if err != nil {
+		return ""
+	}
+	return vip
+}
+
 func IsMaster() bool {
 	return IsMasterNoIface()
 }

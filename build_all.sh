@@ -6,7 +6,7 @@ SHELL_FOLDER=$(cd "$(dirname "$0")";pwd)
 cd $SHELL_FOLDER
 
 pkgname=ks-scmc
-pkgver=1.2
+pkgver=1.1
 declare -a supported_arch=(x86_64)
 declare -a supported_os=(3.3-6 3.4-4)
 

@@ -50,13 +50,23 @@ func ContaierAppStop() {
 
 	for _, c := range containers { // 如果开启了应用高可用，就需要检测应用是否已经拉起来了
 		containerName := strings.TrimPrefix(c.Names[0], "/")
-		data, err := litedb.GetContainerMiscConfigByName(containerName)
+		data, err := litedb.GetContainerOutConfigByName(containerName)
 		if err != nil {
 			continue
 		}
-		if data.MiscConfig != nil && data.MiscConfig.GetAppRun() {
+		if data.Config.AppRun {
 			go stopAppEntry(c.ID)
 		}
+
+		/*
+			data, err := litedb.GetContainerMiscConfigByName(containerName)
+			if err != nil {
+				continue
+			}
+			if data.MiscConfig != nil && data.MiscConfig.GetAppRun() {
+				go stopAppEntry(c.ID)
+			}
+		*/
 	}
 }
 
@@ -76,13 +86,24 @@ func ContaierAppRun() {
 
 	for _, c := range containers { // 如果开启了应用高可用，就需要检测应用是否已经拉起来了
 		containerName := strings.TrimPrefix(c.Names[0], "/")
-		data, err := litedb.GetContainerMiscConfigByName(containerName)
+		data, err := litedb.GetContainerOutConfigByName(containerName)
 		if err != nil {
 			continue
 		}
-		if data.MiscConfig != nil && data.MiscConfig.GetAppRun() {
+
+		if data.Config.AppRun {
 			go runAppEntry(c.ID)
 		}
+
+		/*
+			data, err := litedb.GetContainerMiscConfigByName(containerName)
+			if err != nil {
+				continue
+			}
+			if data.MiscConfig != nil && data.MiscConfig.GetAppRun() {
+				go runAppEntry(c.ID)
+			}
+		*/
 	}
 }
 

@@ -82,7 +82,7 @@ CREATE TABLE IF NOT EXISTS `image_infos` (
   UNIQUE KEY `index_unique` (`name`,`version`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin ;
 
-CREATE TABLE `runtime_logs` (
+CREATE TABLE IF NOT EXISTS `runtime_logs` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `event_type` int(10) NOT NULL DEFAULT '0' COMMENT '事件类型',
   `event_type_` varchar(255) COLLATE utf8mb4_bin  NOT NULL DEFAULT '' COMMENT 'event_type调试',

@@ -99,7 +99,7 @@ CREATE TABLE IF NOT EXISTS `runtime_logs` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin ;
 
-CREATE TABLE `warn_logs` (
+CREATE TABLE IF NOT EXISTS `warn_logs` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `event_type` int(10) NOT NULL DEFAULT '0' COMMENT '事件类型',
   `event_module` int(10) NOT NULL DEFAULT '0' COMMENT '事件模块',

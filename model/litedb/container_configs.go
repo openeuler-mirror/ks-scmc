@@ -13,8 +13,8 @@ type ContainerConfig struct {
 	ContainerID    string `gorm:"unique"`
 	ContainerName  string
 	SecurityConfig *ContainerSecurityConfigs `gorm:"serializer:json"`
-	CreatedAt      int64            `gorm:"autoCreateTime"`
-	UpdatedAt      int64            `gorm:"autoUpdateTime"`
+	CreatedAt      int64                     `gorm:"autoCreateTime"`
+	UpdatedAt      int64                     `gorm:"autoUpdateTime"`
 }
 
 type ContainerSecurityConfigs = pb.SecurityConfig

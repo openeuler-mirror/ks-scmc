@@ -53,6 +53,14 @@ var blockedPorts = map[uint32]bool{
 
 }
 
+func isIpcContainer(id string) bool {
+	_, err := litedb.GetIpcConfigByID(id)
+	if err != nil {
+		return false
+	}
+	return true
+}
+
 func nodeStatus() (*pb.NodeStatus, error) {
 	cli, err := docker.Client()
 	if err != nil {
@@ -98,14 +106,21 @@ func nodeStatus() (*pb.NodeStatus, error) {
 	containers, err := cli.ContainerList(context.Background(), types.ContainerListOptions{All: true, Size: true})
 	if err == nil {
 		runnings := 0
+		ipcCnt := 0
 		for _, c := range containers {
+			if isIpcContainer(c.ID) { // 过滤掉 IPC 容器
+				ipcCnt = ipcCnt + 1
+				continue
+			}
+
 			if c.State == "running" {
 				runnings = runnings + 1
 			}
 		}
+
 		ret.ContainerStat = &pb.ContainerStat{
 			Running: int64(runnings),
-			Total:   int64(len(containers)),
+			Total:   int64(len(containers) - ipcCnt),
 		}
 	}
 

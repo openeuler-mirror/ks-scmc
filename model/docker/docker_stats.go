@@ -1,40 +1,40 @@
 package docker
 
 import (
-        "context"
-        "encoding/json"
-        "fmt"
-        "math"
-        //"net/http"
-        "strings"
+	"context"
+	"encoding/json"
+	"fmt"
+	"math"
+	//"net/http"
+	"github.com/docker/docker/api/types"
 	log "github.com/sirupsen/logrus"
-        "github.com/docker/docker/api/types"
-        //"github.com/docker/docker/client"
+	"strings"
+	//"github.com/docker/docker/client"
 )
 
 // ResponseJSON 定义响应的 JSON 结构
 type ResponseJSON struct {
-        Status    int            `json:"status"`    // 状态码
-        Message   string         `json:"message"`   // 消息
-        Containers []ContainerInfo `json:"containers"` // 容器信息列表
+	Status     int             `json:"status"`     // 状态码
+	Message    string          `json:"message"`    // 消息
+	Containers []ContainerInfo `json:"containers"` // 容器信息列表
 }
 
 // ContainerInfo 定义容器的统计信息结构
 type ContainerInfo struct {
-        Name      string  `json:"name"`       // 容器名称
-        Stat      int     `json:"stat"`       // 状态（0 表示正常）
-        CPU       float64 `json:"cpu"`        // CPU 使用量
-        CPUUsage  float64 `json:"cpu_usage"`  // CPU 使用率
-        MemUsage  uint64  `json:"mem_usage"`  // 内存使用量 (MB)
-        MemTotal  uint64  `json:"mem_total"`  // 内存总量 (MB)
-        DiskUsage uint64  `json:"disk_usage"` // 磁盘使用量 (MB)
-        DiskTotal uint64  `json:"disk_total"` // 磁盘总量 (MB)
-        DiskRBW   uint64  `json:"disk_rbw"`   // 磁盘读取带宽 (bytes)
-        DiskWBW   uint64  `json:"disk_wbw"`   // 磁盘写入带宽 (bytes)
-        NetRBW    uint64  `json:"net_rbw"`    // 网络接收带宽 (bytes)
-        NetWBW    uint64  `json:"net_wbw"`    // 网络发送带宽 (bytes)
-        Image     string  `json:"image"`      // 镜像名称
-        Version   string  `json:"version"`    // 镜像版本号
+	Name      string  `json:"name"`       // 容器名称
+	Stat      int     `json:"stat"`       // 状态（0 表示正常）
+	CPU       float64 `json:"cpu"`        // CPU 使用量
+	CPUUsage  float64 `json:"cpu_usage"`  // CPU 使用率
+	MemUsage  uint64  `json:"mem_usage"`  // 内存使用量 (MB)
+	MemTotal  uint64  `json:"mem_total"`  // 内存总量 (MB)
+	DiskUsage uint64  `json:"disk_usage"` // 磁盘使用量 (MB)
+	DiskTotal uint64  `json:"disk_total"` // 磁盘总量 (MB)
+	DiskRBW   uint64  `json:"disk_rbw"`   // 磁盘读取带宽 (bytes)
+	DiskWBW   uint64  `json:"disk_wbw"`   // 磁盘写入带宽 (bytes)
+	NetRBW    uint64  `json:"net_rbw"`    // 网络接收带宽 (bytes)
+	NetWBW    uint64  `json:"net_wbw"`    // 网络发送带宽 (bytes)
+	Image     string  `json:"image"`      // 镜像名称
+	Version   string  `json:"version"`    // 镜像版本号
 }
 
 // 处理 /stats 请求

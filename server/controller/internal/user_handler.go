@@ -424,7 +424,6 @@ func (s *UserServer) UpdateUser(ctx context.Context, in *pb.UpdateUserRequest) (
 			},
 		},
 	}, nil
-
 }
 
 // 删除用户
@@ -484,7 +483,6 @@ func (s *UserServer) ListRole(ctx context.Context, in *pb.ListRoleRequest) (*pb.
 	}
 
 	return &reply, nil
-
 }
 
 // 创建新角色

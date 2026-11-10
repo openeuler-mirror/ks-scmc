@@ -10,11 +10,11 @@ import (
 type NodeConfig struct {
 	ID             int64  `gorm:"primaryKey;not null"`
 	UUID           string `gorm:"unique"`
-	NodeID    string `gorm:"unique"`
-	NodeName  string
+	NodeID         string `gorm:"unique"`
+	NodeName       string
 	SecurityConfig *NodeSecurityConfigs `gorm:"serializer:json"`
-	CreatedAt      int64            `gorm:"autoCreateTime"`
-	UpdatedAt      int64            `gorm:"autoUpdateTime"`
+	CreatedAt      int64                `gorm:"autoCreateTime"`
+	UpdatedAt      int64                `gorm:"autoUpdateTime"`
 }
 
 type NodeSecurityConfigs = pb.SecurityConfig
@@ -22,8 +22,8 @@ type NodeProcProtection = security.ProcProtection
 type NodeNetworkRule = security.NetworkRule
 
 func CreateNodeConfig(data *NodeConfig) error {
-	
-	log.Debugf("CreateNodeConfig data=%+v ",data)
+
+	log.Debugf("CreateNodeConfig data=%+v ", data)
 	if data == nil {
 		return nil
 	}
@@ -91,7 +91,7 @@ func GetNodeConfigByUUID(uuid string) (*NodeConfig, error) {
 }
 
 func UpdateNodeConfig(data *NodeConfig) error {
-	log.Debugf("UpdateNodeConfigs data=%+v ",data)
+	log.Debugf("UpdateNodeConfigs data=%+v ", data)
 	db, err := getConn()
 	if err != nil {
 		return err

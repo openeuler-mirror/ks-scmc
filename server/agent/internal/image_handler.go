@@ -8,6 +8,7 @@ import (
 	"regexp"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/docker/docker/api/types"
 	log "github.com/sirupsen/logrus"
@@ -18,7 +19,6 @@ import (
 	pb "scmc/rpc/pb/image"
 )
 
-var loadingImages  sync.Map
 var imageSyncGuard sync.Mutex
 
 type ImageServer struct {
@@ -58,6 +58,23 @@ func (s *ImageServer) List(ctx context.Context, in *pb.ListRequest) (*pb.ListRep
 	return &reply, nil
 }
 
+func (s *ImageServer) checkTagsExists(tags string) bool {
+	ctx , cancel := context.WithTimeout(context.Background(), time.Second * 5)
+	defer cancel()
+	reply, err := s.List(ctx, &pb.ListRequest{})
+	if err != nil {
+		return false
+	}
+
+	for _, i := range reply.Images {
+		existTags := i.Name
+		if existTags == tags {
+			return true
+		}
+	}
+	return false
+}
+
 func (s *ImageServer) AgentSync(ctx context.Context, in *pb.AgentSyncRequest) (*pb.AgentSyncReply, error) {
 	imageSyncGuard.Lock()
 	defer imageSyncGuard.Unlock()
@@ -84,15 +101,9 @@ func (s *ImageServer) AgentSync(ctx context.Context, in *pb.AgentSyncRequest) (*
 	}
 
 	loadImage := func(path, id, tag string) {
-		// 1. 检查该镜像是否正在加载
-		if _, exists := loadingImages.Load(path); exists {
-			log.Infof("image %s is already loading, skip", path)
+		if s.checkTagsExists(tag) {
 			return
 		}
-
-		// 2、标记为正在加载
-		loadingImages.Store(path, struct{}{})
-		defer loadingImages.Delete(path) //加载完成/失败后移除标记
 
 		f, err := os.Open(path)
 		if err != nil {

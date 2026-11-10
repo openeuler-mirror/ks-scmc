@@ -76,12 +76,11 @@ func Response2String(status int32) string {
 	} else {
 		msg = "failed"
 	}
-	respJson := ResponseJson{
+	respJson := ksscmc.CommonRespone{
 		Status:  status,
 		Message: msg,
 	}
-	jsonData, _ := json.Marshal(respJson)
-	return string(jsonData)
+	return Struct2JsonString(respJson)
 }
 
 // 节点告警结构体

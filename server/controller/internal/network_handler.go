@@ -2,8 +2,9 @@ package internal
 
 import (
 	"context"
-	log "github.com/sirupsen/logrus"
 	"net"
+
+	log "github.com/sirupsen/logrus"
 
 	"scmc/model/db"
 	"scmc/rpc"

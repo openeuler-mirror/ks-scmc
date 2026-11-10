@@ -116,6 +116,22 @@ func (c *ContainerResourceMonitor) monitorNodeResources(node *db.NodeInfo) {
 		}
 		return true
 	})
+
+	c.netHistory.Range(func(key, value interface{}) bool {
+		keyStr := key.(string)
+		parts := strings.Split(keyStr, ":")
+		if len(parts) != 2 {
+			c.netHistory.Delete(keyStr)
+			return true
+		}
+
+		cntID := parts[0]
+		if !runningContainerIDs[cntID] {
+			c.netHistory.Delete(cntID)
+			log.Debugf("Clean Network history for stopped container %s, interface %s", cntID[:12], parts[1])
+		}
+		return true
+	})
 }
 
 func (c *ContainerResourceMonitor) checkContainerResourceUsage(container types.Container, node *db.NodeInfo) {
@@ -150,15 +166,176 @@ func (c *ContainerResourceMonitor) checkContainerResourceUsage(container types.C
 	readUsage := c.calculateDiskIOMonitorUsage(readRate, resourceLimit.DiskRbw)
 	writeUsage := c.calculateDiskIOMonitorUsage(writeRate, resourceLimit.DiskWbw)
 
-	c.checkAndAlert(cpuUsage, "cpu", container, node, resourceLimit, "CPU使用率达到95%阈值")
-	c.checkAndAlert(memoryUsage, "memory", container, node, resourceLimit, "内存使用率达到95%阈值")
-	c.checkAndAlert(diskSpaceUsage, "disk", container, node, resourceLimit, "磁盘空间使用率达到95%阈值")
+	c.checkAndAlert(cpuUsage, "cpu", "", container, node, resourceLimit, nil, "CPU使用率达到95%阈值")
+	c.checkAndAlert(memoryUsage, "memory", "", container, node, resourceLimit, nil, "内存使用率达到95%阈值")
+	c.checkAndAlert(diskSpaceUsage, "disk", "", container, node, resourceLimit, nil, "磁盘空间使用率达到95%阈值")
 	if readRate > 0 {
-		c.checkAndAlert(readUsage, "diskRead", container, node, resourceLimit, "磁盘读速率达到95%阈值")
+		c.checkAndAlert(readUsage, "diskRead", "", container, node, resourceLimit, nil, "磁盘读速率达到95%阈值")
 	}
 	if writeRate > 0 {
-		c.checkAndAlert(writeUsage, "diskWrite", container, node, resourceLimit, "磁盘写速率达到95%阈值")
+		c.checkAndAlert(writeUsage, "diskWrite", "", container, node, resourceLimit, nil, "磁盘写速率达到95%阈值")
 	}
+
+	netLimitMap, err := c.getContainerResourceLimitNic(cntID)	
+	if err != nil {
+		log.Warnf("Failed to get resource limit for container %s:%v", cntID[:12], err)
+		return
+	}
+	
+	if len(netLimitMap) == 0 {
+		log.Debugf("Container %s has no network limit config, skip network rate calculation", cntID[:12])
+		return
+	}
+
+	netRates := c.calculateNetworkRates(cntID, &v)
+	for ifaceName, rates := range netRates {
+		netLimit, hasLimit := netLimitMap[ifaceName]
+		if !hasLimit {
+			log.Debugf("Container %s interface %s: no network limit config, skip", cntID[:12], ifaceName)
+			continue
+		}
+		
+		rxUsage := c.calculateNetworkMonitorUsage(rates.RxRate, netLimit.RxLimit)
+		txUsage := c.calculateNetworkMonitorUsage(rates.TxRate, netLimit.TxLimit)
+		if rates.RxRate > 0 && netLimit.RxLimit > 0 {
+			c.checkAndAlert(rxUsage, "netRx", ifaceName, container, node, resourceLimit, &netLimit, fmt.Sprintf("网卡[%s]接收速率达到95%阈值", ifaceName))
+		}
+		if rates.TxRate > 0 && netLimit.TxLimit > 0 {
+			c.checkAndAlert(txUsage, "netTx", ifaceName, container, node, resourceLimit, &netLimit, fmt.Sprintf("网卡[%s]发送速率达到95%阈值", ifaceName))
+
+		}
+	}
+}
+
+func (c *ContainerResourceMonitor) calculateNetworkMonitorUsage(netRate float64, netLimit float64) float64 {
+	if netLimit <= 0 || netRate <= 0 {
+		return 0.0
+	}
+	usage := (netRate / float64(netLimit)) * 100.0
+	log.Debugf("Container Network usage: %.2f%% (rate: %.2f MB/s, limit: %d MB/s)", usage, netRate, netLimit)
+
+	return usage
+}
+
+
+// 计算容器的网卡速率并且返回
+func (c *ContainerResourceMonitor) calculateNetworkRates(containerID string, v *types.StatsJSON) map[string]struct {
+	RxRate float64
+	TxRate float64
+} {
+	netRates := make(map[string]struct {
+		RxRate float64
+		TxRate float64
+	})
+	currentTime := time.Now()
+
+	// 遍历容器所有网卡，逐个计算速率
+	for ifaceName, netStats := range v.Networks {
+		currentRx := netStats.RxBytes
+		currentTx := netStats.TxBytes
+
+		// 构建网卡维度的历史key: 容器ID:网卡名
+		historyKey := fmt.Sprintf("%s:%s", containerID, ifaceName)
+		historyVal, exists := c.netHistory.Load(historyKey)
+		if !exists {
+			c.netHistory.Store(historyKey, &NetworkHistory{
+				LastRxBytes: currentRx,
+				LastTxBytes: currentTx,
+				LastTime:    currentTime,
+			})
+			log.Debugf("Init Network history for container %s interface %s", containerID[:12], ifaceName)
+			netRates[ifaceName] = struct {
+				RxRate float64
+				TxRate float64
+			}{0, 0}
+			continue
+		}
+
+		// 读取历史数据计算速率
+		history := historyVal.(*NetworkHistory)
+		lastRx, lastTx := history.LastRxBytes, history.LastTxBytes
+		lastTime := history.LastTime
+
+		timeDelta := currentTime.Sub(lastTime).Seconds()
+		if timeDelta <= 0.1 { // 时间差过小，跳过计算
+			log.Debugf("Time delta too small(%.2fs) for container %s interface %s, skip network rate", timeDelta, containerID[:12], ifaceName)
+			netRates[ifaceName] = struct {
+				RxRate float64
+				TxRate float64
+			}{0, 0}
+			continue
+		}
+
+		// 处理字节数重置(容器/网卡重启导致的负数差值)
+		rxDelta := currentRx - lastRx
+		if rxDelta < 0 {
+			log.Warnf("Negative Rx delta for container %s interface %s (current: %d, last: %d)", containerID[:12], ifaceName, currentRx, lastRx)
+			rxDelta = 0
+		}
+		txDelta := currentTx - lastTx
+		if txDelta < 0 {
+			log.Warnf("Negative Tx delta for container %s interface %s (current: %d, last: %d)", containerID[:12], ifaceName, currentTx, lastTx)
+			txDelta = 0
+		}
+		// 转换为 MB/s
+		rxRate := (float64(rxDelta) / timeDelta) / (1024 * 1024)
+		txRate := (float64(txDelta) / timeDelta) / (1024 * 1024)
+
+		// 更新当前网卡的历史数据
+		c.netHistory.Store(historyKey, &NetworkHistory{
+			LastRxBytes: currentRx,
+			LastTxBytes: currentTx,
+			LastTime:    currentTime,
+		})
+
+		// 存储当前网卡速率
+		netRates[ifaceName] = struct {
+			RxRate float64
+			TxRate float64
+		}{rxRate, txRate}
+
+		log.Debugf("Container %s interface %s Network rate: rx=%.2f MB/s, tx=%.2f MB/s", containerID[:12], ifaceName, rxRate, txRate)
+	}
+
+	return netRates
+}
+
+// 获取网卡的限速信息
+func (c *ContainerResourceMonitor) getContainerResourceLimitNic(containerID string) (ContainerNetLimitMap, error) {
+	netLimitMap := make(ContainerNetLimitMap)
+
+	netLimitList, err := litedb.ListNetworkLimit(containerID)
+	if err != nil {
+		log.Warnf("Get network limits for container %s err: %v", containerID[:12], err)
+		return netLimitMap, nil
+	}
+
+	if len(netLimitList) == 0 {
+		log.Debugf("Container %s has no network limit config", containerID[:12])
+		return netLimitMap, nil
+	}
+
+	const mbpsToMBs = 0.125
+	for _, netLimit := range netLimitList {
+		if netLimit.ContainerInterfaceName == "" {
+			log.Warnf("Container %s network limit has empty container interface name", containerID[:12])
+			continue
+		}
+
+		netLimitMap[netLimit.ContainerInterfaceName] = struct {
+			RxLimit float64
+			TxLimit float64
+		}{
+			RxLimit: netLimit.NetRbw * mbpsToMBs, // 下行(接收): Mbps -> MB/s
+			TxLimit: netLimit.NetWbw * mbpsToMBs, // 上行(发送): Mbps -> MB/s
+		}
+		log.Debugf("Container %s interface %s limit: rx=%.2f MB/s (%.2f Mbps), tx=%.2f MB/s (%.2f Mbps)",
+			containerID[:12], netLimit.ContainerInterfaceName,
+			netLimitMap[netLimit.ContainerInterfaceName].RxLimit, netLimit.NetRbw,
+			netLimitMap[netLimit.ContainerInterfaceName].TxLimit, netLimit.NetWbw)
+	}
+
+	return netLimitMap, nil
 }
 
 func (c *ContainerResourceMonitor) getContainerResourceLimit(containerID string) (*container.ResourceLimit, error) {
@@ -331,7 +508,7 @@ func (c *ContainerResourceMonitor) calculateDiskIOMonitorUsage(ioRate float64, i
 	return usage
 }
 
-func (c *ContainerResourceMonitor) checkAndAlert(usage float64, resourceType string, container types.Container, node *db.NodeInfo, limit *container.ResourceLimit, alertMsg string) {
+func (c *ContainerResourceMonitor) checkAndAlert(usage float64, resourceType string, ifaceName string, container types.Container, node *db.NodeInfo, limit *container.ResourceLimit, netLimit *struct{RxLimit, TxLimit float64}, alertMsg string) {
 	hasValidLimit := false
 	// var limitValue float64
 	switch resourceType {
@@ -350,7 +527,18 @@ func (c *ContainerResourceMonitor) checkAndAlert(usage float64, resourceType str
 	case "diskWrite":
 		hasValidLimit = limit.DiskWbw > 0
 		// limitValue = float64(limit.DiskWbw)
+	case "netRx":
+		hasValidLimit = (netLimit != nil && netLimit.RxLimit > 0)	
+		// if hasValidLimit {
+		// 	limitValue = netLimit.RxLimit
+		// }
+	case "netTx":
+		hasValidLimit = (netLimit != nil && netLimit.TxLimit > 0)	
+		// if hasValidLimit {
+		// 	limitValue = netLimit.TxLimit
+		// }
 	}
+
 	if !hasValidLimit || usage <= 0 {
 		log.Debugf("Container %s %s: no valid limit or usage, skip alert", container.ID[:12], resourceType)
 		return
@@ -365,7 +553,7 @@ func (c *ContainerResourceMonitor) checkAndAlert(usage float64, resourceType str
 
 	alertKey := fmt.Sprintf("%s-%s-%s", container.ID, node.Address, resourceType)
 	if lastTime, exists := c.lastAlertTime.Load(alertKey); exists {
-		if time.Since(lastTime.(time.Time)) < 1 * time.Minute { // 以前是 10 分钟上报一次，修改为 1 分钟上报一次
+		if time.Since(lastTime.(time.Time)) < 1*time.Minute { // 以前是 10 分钟上报一次，修改为 1 分钟上报一次
 			log.Debugf("Alert suppressed for %s on container %s（within 1 min）", resourceType, container.ID[:12])
 			return
 		}

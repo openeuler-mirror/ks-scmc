@@ -3034,7 +3034,7 @@ func (p *ContainerInfo)  ReadField1(iprot thrift.TProtocol) error {
   return nil
 }
 
-func (p *GetAllContainersResponse)  ReadField2(iprot thrift.TProtocol) error {
+func (p *ContainerInfo)  ReadField2(iprot thrift.TProtocol) error {
   if v, err := iprot.ReadI32(); err != nil {
   return thrift.PrependError("error reading field 2: ", err)
 } else {

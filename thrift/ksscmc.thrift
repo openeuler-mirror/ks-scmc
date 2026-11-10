@@ -310,7 +310,10 @@ service KsScmcClient {
     GetAllNodeListResponse getAllNodeList(),
     string GetAllContainers(1: string node_name), // 存疑，待确认
     string GetAllContainersV2(1:string nid),
+    string GetAllContainersV3(1:string session_id, 2:string nid),
     GetAllContainerListResponse getAllContainerList(1: string node_name),
+    string CondGetAlarmListV3(1:string session_id, 2:GetAlarmCond cond),
+    string SetAlarmReadV3(1:string session_id, 2:string node_name, 3:i32 id),
 
     // 网络配置
     string GetContainerNetwork(1: string node_nameorip, 2: string container_name),

@@ -1039,7 +1039,6 @@ func (s *ContainerServer) Update(ctx context.Context, in *pb.UpdateRequest) (*pb
 				NetRbw:              v.NetRbw,
 			}
 			litedb.CreateNetworkLimit(data)
-			s.ContainerTCConfig(in.ContainerId, v.Interface)
 		} else {
 			if (data.NetWbw != v.NetWbw) || (data.NetRbw != v.NetRbw) {
 				data.NetWbw = v.NetWbw
@@ -1082,7 +1081,7 @@ func (s *ContainerServer) Update(ctx context.Context, in *pb.UpdateRequest) (*pb
 		log.Infof("ContainerUpdate result warnings: %v", body.Warnings)
 	}
 
-	updateNetwork(ctx, cli, in.ContainerId, in.Networks, &netlog)
+	s.updateNetwork(ctx, cli, in.ContainerId, in.Networks, &netlog)
 
 	if err := s.setSecurityConfig(in.NodeId, in.ContainerId, inspectConfigs.Uuid,
 		inspectConfigs.Name, pid, true, in.SecurityConfig, cfgs.SecurityConfig); err != nil {
@@ -1268,7 +1267,7 @@ func (s *ContainerServer) UpdateContainerVersion(ctx context.Context, in *pb.Upd
 	return &pb.UpdateContainerVersionReply{}, nil
 }
 
-func updateNetwork(ctx context.Context, cli *client.Client, containerID string, networks []*pb.NetworkConfig, netlog *db.RuntimeLog) error {
+func (s *ContainerServer) updateNetwork(ctx context.Context, cli *client.Client, containerID string, networks []*pb.NetworkConfig, netlog *db.RuntimeLog) error {
 	if len(networks) == 0 {
 		return nil
 	}
@@ -1297,6 +1296,7 @@ func updateNetwork(ctx context.Context, cli *client.Client, containerID string, 
 	for _, v := range networks {
 		m[v.Interface] = true
 	}
+
 	for k := range info.NetworkSettings.Networks {
 		if _, ok := m[k]; ok {
 			continue
@@ -1306,7 +1306,13 @@ func updateNetwork(ctx context.Context, cli *client.Client, containerID string, 
 		if ipstr != "" {
 			delNetworkLog = append(delNetworkLog, ipstr)
 		}
-		// 删除网卡
+
+		// 删除容器里面的 ifb 网卡信息
+		data, err := litedb.GetNetworkLimitByNic(containerID, k)
+		if err == nil {
+			delContainerNicIfb(containerID, data.ContainerInterfaceName)
+		}
+		// 删除网卡配置信息
 		litedb.DelNetworkLimitByDockNic(containerID, k)
 	}
 
@@ -1317,6 +1323,7 @@ func updateNetwork(ctx context.Context, cli *client.Client, containerID string, 
 			if v.IpAddress != "" {
 				addNetworkLog = append(addNetworkLog, v.IpAddress)
 			}
+			s.ContainerTCConfig(containerID, v.Interface)
 			continue
 		}
 

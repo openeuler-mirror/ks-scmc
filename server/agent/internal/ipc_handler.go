@@ -3,27 +3,20 @@ package internal
 import (
 	"context"
 	"regexp"
-
-	//"errors"
-	//"sort"
-	//"strings"
 	"sync"
 	"time"
-
-	log "github.com/sirupsen/logrus"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
 	"github.com/google/uuid"
+	log "github.com/sirupsen/logrus"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 
 	"scmc/model/docker"
 	"scmc/model/litedb"
 	"scmc/rpc"
-
 	pb "scmc/rpc/pb/ipc"
-	// "scmc/server/args"
 )
 
 type IpcBaseServer struct {
@@ -79,7 +72,7 @@ func (s *IpcBaseServer) create(Name string) (string, error) {
 
 	// 容器配置
 	config := &container.Config{
-		Image: "ipcbase:v1.0", //使用指定的镜像文件
+		Image: "ipcbase:v1.0", // 使用指定的镜像文件
 		Labels: map[string]string{
 			"KS_SCMC_DESC": "ipc base container",
 			"KS_SCMC_UUID": uuid,
@@ -100,11 +93,10 @@ func (s *IpcBaseServer) create(Name string) (string, error) {
 		context.Background(),
 		config,
 		hostConfig,
-		nil,         //网络配置
-		nil,         //平台配置
+		nil,         // 网络配置
+		nil,         // 平台配置
 		"ipc."+Name, // 容器名称
 	)
-
 	if err != nil {
 		log.Warnf("ContainerCreate: %v", err)
 		return "", transDockerError(err)
@@ -125,7 +117,6 @@ func (s *IpcBaseServer) create(Name string) (string, error) {
  */
 func (s *IpcBaseServer) Create(ctx context.Context, in *pb.IpcCreateRequest) (*pb.IpcCreateReply, error) {
 	id, err := s.create(in.Name)
-
 	// 创建容器失败了
 	if err != nil {
 		return nil, err
@@ -153,11 +144,11 @@ func IpcStopAndRemoveContainer(id string) {
 	}
 
 	// 停止容器
-	var timeout = time.Second
+	timeout := time.Second
 	err = cli.ContainerStop(context.Background(), id, &timeout)
 	if err != nil {
 		log.Warnf("ContainerStop id:%v err:%v", id, err)
-		//return
+		// return
 	}
 
 	// 删除容器
@@ -192,7 +183,7 @@ func (s *IpcBaseServer) Remove(ctx context.Context, in *pb.IpcRemoveRequest) (*p
 			containerID := cfg.ContainerID
 			IpcStopAndRemoveContainer(containerID)
 
-			//删除数据库里面的记录
+			// 删除数据库里面的记录
 			litedb.IpcConfigRemoveByID(cfg.ID)
 		} else {
 			log.Warnf("Find Success ContainerName: %v, len: %v", cfg.ContainerName, len(outCfg))

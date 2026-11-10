@@ -3,11 +3,12 @@ package test
 import (
 	"context"
 	"io"
-	pb "scmc/rpc/pb/logging"
 	"testing"
 	"time"
 
 	"google.golang.org/grpc"
+
+	pb "scmc/rpc/pb/logging"
 )
 
 func TestSubscribeWarn(t *testing.T) {

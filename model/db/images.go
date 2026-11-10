@@ -131,7 +131,6 @@ func QueryImageByStatus() ([]*ImageInfo, error) {
 
 	var data []*ImageInfo
 	err = db.Where("approval_status = ?", ApprovalPass).Find(&data).Error
-
 	if err != nil {
 		log.Warnf("query approved image failed: %v", err)
 		return nil, translateError(err)

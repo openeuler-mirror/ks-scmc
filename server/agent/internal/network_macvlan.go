@@ -62,7 +62,7 @@ func isSameSubnet(ip1 net.IP, ipNet1 net.IPNet, ip2 net.IP, ipNet2 net.IPNet) bo
 	return network1.Equal(network2)
 }
 
-//判断给定的 ip/掩码段  与  网卡是否为同一个网段
+// 判断给定的 ip/掩码段  与  网卡是否为同一个网段
 func CheckNicSameSubnet(targetCIDR, ifaceName string) bool {
 	targetIP, targetNet, err := macvlanparseCIDR(targetCIDR)
 	if err != nil {

@@ -2,8 +2,8 @@ package internal
 
 import (
 	"context"
-	"net"
 	log "github.com/sirupsen/logrus"
+	"net"
 
 	"scmc/model/db"
 	"scmc/rpc"
@@ -264,10 +264,10 @@ func (*NetworkServer) UpdateNic(ctx context.Context, in *pb.UpdateNicRequest) (*
 	}
 
 	ip, _, err := net.ParseCIDR(in.Subnet)
-        if err != nil {
+	if err != nil {
 		log.Warnf("UpdateNicRequest: %v", in)
-                return nil, rpc.ErrInvalidArgument
-        }
+		return nil, rpc.ErrInvalidArgument
+	}
 
 	ip4 := ip.To4()
 	if ip4 == nil || ip4[3] == 0 {

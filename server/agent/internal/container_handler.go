@@ -739,16 +739,24 @@ func (s *ContainerServer) Create(ctx context.Context, in *pb.CreateRequest) (*pb
             DiskWbw: w,
         }
         litedb.CreateContainerLimit(&disklimitCfg)
-/*
-        // 容器是否开启了 app 高可用
-        miscConfig := litedb.ContainerMisc {
-            UUID: uuid,
-            ContainerID: id,
-            ContainerName: in.Configs.Name,
-            MiscConfig: in.Configs.GetMiscConfig(),
+
+        misc, err := litedb.GetContainerMiscConfigByName(in.Configs.Name)
+        if err != nil {
+            if err ==  db.ErrRecordNotFound {
+                // 容器是否开启了 app 高可用
+                miscConfig := litedb.ContainerMisc {
+                    UUID: uuid,
+                    ContainerID: id,
+                    ContainerName: in.Configs.Name,
+                    MiscConfig: in.Configs.GetMiscConfig(),
+                }
+                litedb.CreateContainerMiscConfig(&miscConfig)
+            }
+        }  else {
+            misc.ContainerID = id
+            litedb.UpdateContainerMiscConfig(misc)
         }
-        litedb.CreateContainerMiscConfig(&miscConfig)
-*/
+
         if in.Configs.GetMiscConfig() != nil {
             go s.appEntrySync(in.Configs.GetMiscConfig().GetAppRun(), in.Configs.Name)
         } else {

@@ -6915,8 +6915,21 @@ type KsScmcClient interface {
   //  - Nid
   GetAllContainersV2(nid string) (r string, err error)
   // Parameters:
+  //  - SessionID
+  //  - Nid
+  GetAllContainersV3(session_id string, nid string) (r string, err error)
+  // Parameters:
   //  - NodeName
   GetAllContainerList(node_name string) (r *GetAllContainerListResponse, err error)
+  // Parameters:
+  //  - SessionID
+  //  - Cond
+  CondGetAlarmListV3(session_id string, cond *GetAlarmCond) (r string, err error)
+  // Parameters:
+  //  - SessionID
+  //  - NodeName
+  //  - ID
+  SetAlarmReadV3(session_id string, node_name string, id int32) (r string, err error)
   // Parameters:
   //  - NodeNameorip
   //  - ContainerName

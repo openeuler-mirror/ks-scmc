@@ -320,11 +320,11 @@ func redirectIngressToIFB(netns, iface, ifbName string) error {
 
 // limitIngressViaIFB applies ingress (download) limit on IFB
 func limitIngressViaIFB(netns, ifbName, rate string) error {
-	if err := runInNetns(netns, "tc", "qdisc", "add", "dev", ifbName, "root", "handle", "2:", "htb"); err != nil {
+	if err := runInNetns(netns, "tc", "qdisc", "add", "dev", ifbName, "root", "handle", "2:", "htb", "default", "1"); err != nil {
 		return fmt.Errorf("add root qdisc on %s: %w", ifbName, err)
 	}
 	if err := runInNetns(netns,
-		"tc", "class", "add", "dev", ifbName, "parent", "2:", "classid", "2:1", "htb", "rate", rate); err != nil {
+		"tc", "class", "add", "dev", ifbName, "parent", "2:", "classid", "2:1", "htb", "rate", rate, "ceil", rate); err != nil {
 		return fmt.Errorf("set ingress rate on %s: %w", ifbName, err)
 	}
 	return nil

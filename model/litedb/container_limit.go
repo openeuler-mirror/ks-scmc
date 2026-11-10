@@ -1,25 +1,25 @@
-// 存储限制容器磁盘读写速率的相关数据   
+// 存储限制容器磁盘读写速率的相关数据
 package litedb
 
 import (
-    log "github.com/sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 )
 
 type ContainerLimit struct {
-    ID              int64   `gorm:"primaryKey;not null"`
-    ContainerID     string `gorm:"unique"`
-    ContainerName   string `gorm:"unique"`
-    DiskRbw		    int64
-    DiskWbw		    int64
-    CreatedAt       int64   `gorm:"autoCreateTime"`
-    UpdateAt        int64   `gorm:"autoUpdateTime"`
+	ID            int64  `gorm:"primaryKey;not null"`
+	ContainerID   string `gorm:"unique"`
+	ContainerName string `gorm:"unique"`
+	DiskRbw       int64
+	DiskWbw       int64
+	CreatedAt     int64 `gorm:"autoCreateTime"`
+	UpdateAt      int64 `gorm:"autoUpdateTime"`
 }
 
 func CreateContainerLimit(data *ContainerLimit) error {
 	if data == nil {
 		return nil
 	}
-	db, err :=getConn()
+	db, err := getConn()
 	if err != nil {
 		return err
 	}
@@ -51,7 +51,7 @@ func UpdateContainerLimit(data *ContainerLimit) error {
 	if err != nil {
 		return err
 	}
-	result := db.Save(data)	
+	result := db.Save(data)
 	if result.Error != nil {
 		return result.Error
 	}
@@ -59,7 +59,7 @@ func UpdateContainerLimit(data *ContainerLimit) error {
 }
 
 // 通过 id 删除记录
-func ContainerLimitRemoveByID (id int64) error {
+func ContainerLimitRemoveByID(id int64) error {
 	db, err := getConn()
 	if err != nil {
 		return err

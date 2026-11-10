@@ -4,8 +4,9 @@ import (
 	"strconv"
 	"time"
 
-	log "github.com/sirupsen/logrus"
 	"scmc/model/db"
+
+	log "github.com/sirupsen/logrus"
 )
 
 type CleanLogs struct {

@@ -77,14 +77,26 @@ func memMaxQuery() string {
 func influxdbQueryNodeMax(start, end int64) ([3]float64, error) {
 	var data [3]float64
 
+	password, err := common.Config.InfluxDB.DecryptPassword()
+	if err != nil {
+		log.Warnf("decrypt influxdb password error=%v", err)
+		return data, err
+	}
+
 	cli, err := client.NewHTTPClient(client.HTTPConfig{
-		Addr: "http://" + common.Config.InfluxDB.Addr,
+		Addr:     "http://" + common.Config.InfluxDB.Addr,
+		Username: common.Config.InfluxDB.Username,
+		Password: password,
 	})
+	
 	if err != nil {
 		log.Warnf("get influxdb client error=%v", err)
 		return data, err
 	}
+	log.Infof("get influxdb client success")
+
 	defer cli.Close()
+    
 
 	queries := strings.Join([]string{
 		cpuMaxQuery(),
@@ -126,13 +138,24 @@ func influxdbQueryNodeMax(start, end int64) ([3]float64, error) {
 }
 
 func influxdbQuery(start, end int64, interval uint, containerName string) (*pb.MonitorHistoryReply, error) {
+	password, err := common.Config.InfluxDB.DecryptPassword()
+	if err != nil {
+		log.Warnf("decrypt influxdb password error=%v", err)
+		return nil, err
+	}
+
 	cli, err := client.NewHTTPClient(client.HTTPConfig{
-		Addr: "http://" + common.Config.InfluxDB.Addr,
+		Addr:     "http://" + common.Config.InfluxDB.Addr,
+		Username: common.Config.InfluxDB.Username,
+		Password: password,
 	})
+
 	if err != nil {
 		log.Warnf("get influxdb client error=%v", err)
 		return nil, err
 	}
+
+	log.Infof("get influxdb client success")
 	defer cli.Close()
 
 	queries := strings.Join([]string{

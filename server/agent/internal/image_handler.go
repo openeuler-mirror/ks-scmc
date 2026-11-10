@@ -3,11 +3,11 @@ package internal
 import (
 	"archive/tar"
 	"context"
-	"os"
 	"io"
+	"os"
+	"regexp"
 	"strings"
 	"sync"
-	"regexp"
 
 	"github.com/docker/docker/api/types"
 	log "github.com/sirupsen/logrus"

@@ -100,6 +100,10 @@ func (o *SystemServer) Dashboard(ctx context.Context, in *pb.DashboardRequest) (
 		return nil, rpc.ErrInternal
 	}
 
+	if len(nodeList.Nodes) == 0 { // 没有节点的情况下全部设置为0
+		return &pb.DashboardReply{}, nil
+	}
+
 	imageStats, err := db.GetImageStats()
 	if err != nil {
 		log.Infof("db.GetImageStats err=%v", err)

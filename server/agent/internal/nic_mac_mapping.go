@@ -10,8 +10,9 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"scmc/common"
 	"strings"
+
+	"scmc/common"
 )
 
 type EthMac map[string]string

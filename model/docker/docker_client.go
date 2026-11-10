@@ -28,6 +28,7 @@ func Client() (*client.Client, error) {
 	})
 	return cli, cliErr
 }
+
 func ClientWithTimeout(timeout time.Duration) (*client.Client, error) {
 	httpHeaders := map[string]string{
 		"Authz-User": "KS-SCMC-SERVICE", // 通过authz插件检查

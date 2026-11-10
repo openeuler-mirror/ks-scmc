@@ -172,7 +172,7 @@ func Server() (*grpc.Server, error) {
 
 	resumeContainerConfigs()
 	resumeNodeConfigs()
-	go internal.StartAllIpcContainer() //自动启动IPC容器
+	go internal.StartAllIpcContainer() // 自动启动IPC容器
 
 	go updateVirtualNicMacAddr()
 

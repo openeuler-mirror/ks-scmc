@@ -9307,7 +9307,7 @@ func (p *KsScmcClientClient) sendAddContainerLocalVolume(node_nameorip string, c
 }
 
 
-func (p *KsScmcClientClient) recvGetContainerImageVers() (value string, err error) {
+func (p *KsScmcClientClient) recvAddContainerLocalVolume() (value int32, err error) {
   iprot := p.InputProtocol
   if iprot == nil {
     iprot = p.ProtocolFactory.GetProtocol(p.Transport)

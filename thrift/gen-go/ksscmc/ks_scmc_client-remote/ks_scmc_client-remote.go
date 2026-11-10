@@ -638,19 +638,19 @@ func main() {
     value0 := argvalue0
     argvalue1 := flag.Arg(2)
     value1 := argvalue1
-    arg145 := flag.Arg(3)
-    mbTrans146 := thrift.NewTMemoryBufferLen(len(arg145))
-    defer mbTrans146.Close()
-    _, err147 := mbTrans146.WriteString(arg145)
-    if err147 != nil { 
+    arg182 := flag.Arg(3)
+    mbTrans183 := thrift.NewTMemoryBufferLen(len(arg182))
+    defer mbTrans183.Close()
+    _, err184 := mbTrans183.WriteString(arg182)
+    if err184 != nil { 
       Usage()
       return
     }
-    factory148 := thrift.NewTSimpleJSONProtocolFactory()
-    jsProt149 := factory148.GetProtocol(mbTrans146)
+    factory185 := thrift.NewTSimpleJSONProtocolFactory()
+    jsProt186 := factory185.GetProtocol(mbTrans183)
     containerStruct2 := ksscmc.NewKsScmcClientSetContainerExtraHostsArgs()
-    err150 := containerStruct2.ReadField3(jsProt149)
-    if err150 != nil {
+    err187 := containerStruct2.ReadField3(jsProt186)
+    if err187 != nil {
       Usage()
       return
     }

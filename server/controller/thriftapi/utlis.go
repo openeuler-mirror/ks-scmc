@@ -41,9 +41,32 @@ func GetContainerId(cli containerPB.ContainerClient, containerName string, ctx c
 	return containerId, nil
 }
 
-type ResponseJson struct {
-	Status  int32  `json:"status"`
-	Message string `json:"message"`
+func Struct2JsonString(obj interface{}) string {
+	jsonData, err := json.Marshal(obj)
+	if err != nil {
+		logrus.Warn("Failed to serialize, because %s", err)
+	}
+	return string(jsonData)
+}
+
+func ResponseFailed(errMsg string) string {
+	resp := ksscmc.CommonRespone{
+		Status: 1,
+	}
+	if errMsg == "" {
+		resp.Message = "failed"
+	} else {
+		resp.Message = errMsg
+	}
+	return Struct2JsonString(resp)
+}
+
+func ResponseSucceed() string {
+	resp := ksscmc.CommonRespone{
+		Status:  0,
+		Message: "success",
+	}
+	return Struct2JsonString(resp)
 }
 
 func Response2String(status int32) string {

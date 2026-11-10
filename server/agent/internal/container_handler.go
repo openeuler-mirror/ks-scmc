@@ -17,14 +17,13 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/docker/docker/pkg/jsonmessage"
-
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/mount"
 	"github.com/docker/docker/api/types/network"
 	"github.com/docker/docker/api/types/strslice"
 	"github.com/docker/docker/client"
+	"github.com/docker/docker/pkg/jsonmessage"
 	"github.com/google/uuid"
 	"github.com/shirou/gopsutil/mem"
 	log "github.com/sirupsen/logrus"
@@ -42,9 +41,8 @@ import (
 	"scmc/model/opensnitch"
 	"scmc/rpc"
 	pb "scmc/rpc/pb/container"
-	secpb "scmc/rpc/pb/security"
-
 	"scmc/rpc/pb/logging"
+	secpb "scmc/rpc/pb/security"
 	"scmc/server/args"
 )
 
@@ -93,7 +91,6 @@ func toBlkioWeight(diskPrio int64) uint16 {
 
 // blkioWeight => 磁盘优先级
 func fromBlkioWeight(blkioWeight uint16) int64 {
-
 	if blkioWeight <= defaultBlkioWeight {
 		return 0
 	}
@@ -111,8 +108,8 @@ var (
 )
 
 func toCPUShares(cpuPrio int64) int64 {
-	//小于等于0,或大于5都返回defaultCPUShares
-	if cpuPrio <= 0 {
+	// 小于等于0,或大于5都返回defaultCPUShares
+	if cpuPrio <= 0 || cpuPrio > 5 {
 		return defaultCPUShares
 	}
 	if v, ok := cpuShareMap[cpuPrio]; ok {
@@ -122,7 +119,6 @@ func toCPUShares(cpuPrio int64) int64 {
 }
 
 func fromCPUShares(cpuShares int64) int64 {
-
 	if cpuShares <= defaultCPUShares {
 		return 0
 	}
@@ -298,7 +294,7 @@ func (s *ContainerServer) getContainerIps(curContainerId string) ([]string, erro
 	var result []string
 	for _, container := range containers {
 
-		//如果为当前容器，则跳过该容器
+		// 如果为当前容器，则跳过该容器
 		if container.ID == curContainerId {
 			continue
 		}
@@ -499,7 +495,7 @@ func (s *ContainerServer) SetNprocProtection(id, uuid string, cfg *secpb.ProcPro
 		return nil
 	}
 
-	var inRule = &litedb.ProcProtection{
+	inRule := &litedb.ProcProtection{
 		IsOn:    cfg.IsOn,
 		ExeList: cfg.ExeList,
 	}
@@ -693,7 +689,7 @@ func (s *ContainerServer) Create(ctx context.Context, in *pb.CreateRequest) (*pb
 	var netlog db.RuntimeLog
 	initRuntimeLog(&netlog, ctx, in.NodeId, in.Configs.Name, int64(logging.EVENT_TYPE_CREATE_CONTAINER))
 
-	//in.Configs.Ipcname = "testipc"
+	// in.Configs.Ipcname = "testipc"
 	uuid := uuid.New().String()
 	cfgs := litedb.ContainerConfig{
 		UUID:           uuid,
@@ -802,7 +798,7 @@ func (s *ContainerServer) Start(ctx context.Context, in *pb.StartRequest) (*pb.S
 
 	if len(reply.OkIds) > 0 {
 		// 容器启动成功，要通知所有容器更新 iptables 规则
-		file, err := os.OpenFile(updateContainerFlagFile, os.O_RDONLY|os.O_CREATE, 0644)
+		file, err := os.OpenFile(updateContainerFlagFile, os.O_RDONLY|os.O_CREATE, 0o644)
 		if err != nil {
 			log.Warnf("create flag failed when start contain: %v", updateContainerFlagFile)
 		}
@@ -874,7 +870,7 @@ func (s *ContainerServer) Stop(ctx context.Context, in *pb.StopRequest) (*pb.Sto
 
 	if len(okIDs) > 0 {
 		// 容器停止成功，要通知所有容器更新 iptables 规则
-		file, err := os.OpenFile(updateContainerFlagFile, os.O_RDONLY|os.O_CREATE, 0644)
+		file, err := os.OpenFile(updateContainerFlagFile, os.O_RDONLY|os.O_CREATE, 0o644)
 		if err != nil {
 			log.Warnf("create flag failed when stop contain: %v", updateContainerFlagFile)
 		}
@@ -1052,7 +1048,7 @@ func (s *ContainerServer) Update(ctx context.Context, in *pb.UpdateRequest) (*pb
 		change |= docker.EnvBit
 		for k, v := range in.Envs {
 			envs = append(envs, k+"="+v)
-			//磁盘读写速度、磁盘读写频率
+			// 磁盘读写速度、磁盘读写频率
 			if k == "disk_wio" || k == "disk_rio" || k == "disk_rbw" || k == "disk_wbw" {
 				if err := docker.SetContainerDiskLimit(k, in.ContainerId, v); err != nil {
 					return nil, err
@@ -1083,7 +1079,7 @@ func (s *ContainerServer) Update(ctx context.Context, in *pb.UpdateRequest) (*pb
 	}
 
 	{
-		//如果当前传递过来的和以前的不一样
+		// 如果当前传递过来的和以前的不一样
 		if strings.TrimSpace(outCfg.Config.IpcName) != strings.TrimSpace(in.Ipcname) {
 			// 获取 ipcBase 容器的容器ID
 			if strings.TrimSpace(in.Ipcname) != "" {
@@ -1121,7 +1117,7 @@ func (s *ContainerServer) Update(ctx context.Context, in *pb.UpdateRequest) (*pb
 			return nil, rpc.ErrInternal
 		}
 		log.Infof("status:%v", inspectConfigs.Status)
-		var timeout = time.Second
+		timeout := time.Second
 		if inspectConfigs.Status == "running" {
 			if err = cli.ContainerRestart(context.Background(), in.ContainerId, &timeout); err != nil {
 				log.Warnf("restart id=%v %v", in.ContainerId, err)
@@ -1177,7 +1173,7 @@ func (s *ContainerServer) UpdateContainerVersion(ctx context.Context, in *pb.Upd
 	configs.Image = in.ImgName + ":" + in.ImgVersion
 
 	configs.SecurityConfig = cfgs.SecurityConfig
-	id, err := s.create(in.NodeId, configs, nil) //netlog
+	id, err := s.create(in.NodeId, configs, nil) // netlog
 	if err != nil {
 		log.Warnf("create container err=%v", err)
 		return nil, rpc.ErrInternal
@@ -1756,7 +1752,7 @@ func (s *ContainerServer) ResumeBackup(ctx context.Context, in *pb.ResumeBackupR
 	// create new contaienr
 	configs.Image = b.ImageRef
 	configs.SecurityConfig = cfgs.SecurityConfig
-	id, err := s.create(in.NodeId, configs, nil) //netlog
+	id, err := s.create(in.NodeId, configs, nil) // netlog
 	if err != nil {
 		log.Warnf("create container err=%v", err)
 		return nil, rpc.ErrInternal
@@ -2309,7 +2305,7 @@ func (s *ContainerServer) SetContainerExtraHosts(ctx context.Context, in *pb.Set
 	}
 	fullContent := trimmedContent + "\n" + strings.Join(processedLines, "\n") + "\n"
 	newHostsFilePath := path.Join(hostsPath, in.ContainerId, "new_hosts")
-	if err := ioutil.WriteFile(newHostsFilePath, []byte(fullContent), 0644); err != nil {
+	if err := ioutil.WriteFile(newHostsFilePath, []byte(fullContent), 0o644); err != nil {
 		log.Errorf("write to new container hosts failed: %v", err)
 		return nil, rpc.ErrInternal
 	}
@@ -2349,7 +2345,7 @@ func (s *ContainerServer) SetContainerExtraHosts(ctx context.Context, in *pb.Set
 }
 
 func (s *ContainerServer) SetContainerQuota(ctx context.Context, in *pb.SetQuotaRequest) (reply *pb.SetQuotaReply, err error) {
-	//先将配置写入数据库
+	// 先将配置写入数据库
 	data := &db.ContainerLimits{
 		NodeId:      in.NodeId,
 		ContainerId: in.ContainerId,
@@ -2360,7 +2356,7 @@ func (s *ContainerServer) SetContainerQuota(ctx context.Context, in *pb.SetQuota
 		log.Errorf("create  container limits failed: %v", err)
 		return nil, rpc.ErrInternal
 	}
-	//开启协程监听docker事件，监听到start restart事件后，处理容器的限速功能
+	// 开启协程监听docker事件，监听到start restart事件后，处理容器的限速功能
 	cli, err := docker.Client()
 	if err != nil {
 		return nil, rpc.ErrInternal

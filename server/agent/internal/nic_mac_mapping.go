@@ -3,15 +3,15 @@
 package internal
 
 import (
-        "bufio"
-        "encoding/json"
-        "io/ioutil"
-        "net"
-        "os"
-        "os/exec"
+	"bufio"
+	"encoding/json"
+	"io/ioutil"
+	"net"
+	"os"
+	"os/exec"
 	"path/filepath"
-        "strings"
 	"scmc/common"
+	"strings"
 )
 
 type EthMac map[string]string
@@ -114,13 +114,13 @@ func getMacJSON(who string) string {
 }
 
 func getMacAddr(nicName string) string {
-        address := filepath.Join(VirtualNicBase, nicName, "address")
-        content, err := ioutil.ReadFile(address)
-        if err != nil {
-                return ""
-        }
+	address := filepath.Join(VirtualNicBase, nicName, "address")
+	content, err := ioutil.ReadFile(address)
+	if err != nil {
+		return ""
+	}
 	macaddr := string(content)
-        return strings.TrimSpace(macaddr)
+	return strings.TrimSpace(macaddr)
 }
 
 // 遍历 更改 MAC 地址

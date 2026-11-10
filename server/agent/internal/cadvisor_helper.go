@@ -1,7 +1,6 @@
 package internal
 
 import (
-	"strings"
 	"time"
 
 	"github.com/google/cadvisor/client"
@@ -23,7 +22,7 @@ func cadvisorClient() (*client.Client, error) {
 func calculateNetworkTraffic(stats *v1.ContainerStats) (rxBytes, txBytes uint64) {
 	// 遍历所有网络接口
 	for _, iface := range stats.Network.Interfaces {
-		if strings.HasPrefix(iface.Name, "eth") { // 只统计 ethN 的网卡
+		if iface.Name != "lo" {
 			rxBytes += iface.RxBytes
 			txBytes += iface.TxBytes
 		}
@@ -65,7 +64,7 @@ func getContainerStats() (map[string]*pb.ResourceStat, error) {
 		log.Warnf("get all container stats from cadvisor: %v", err)
 		return nil, err
 	}
-	const megaBytes = 1024 * 1024
+	const megaBytes = 1000 * 1000
 	m := make(map[string]*pb.ResourceStat)
 	for _, info := range infos {
 		var p *pb.ResourceStat

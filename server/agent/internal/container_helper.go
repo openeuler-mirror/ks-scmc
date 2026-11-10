@@ -4,8 +4,14 @@ import (
 	"bufio"
 	"context"
 	"fmt"
-	"net"
+	"github.com/docker/docker/api/types"
+	"github.com/docker/docker/api/types/container"
+	"github.com/docker/docker/api/types/events"
 	"github.com/docker/docker/api/types/filters"
+	"github.com/docker/docker/api/types/mount"
+	"github.com/docker/docker/client"
+	log "github.com/sirupsen/logrus"
+	"net"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -14,17 +20,11 @@ import (
 	"strings"
 	"sync"
 	"time"
-	"github.com/docker/docker/api/types/events"
-	"github.com/docker/docker/api/types"
-	"github.com/docker/docker/api/types/container"
-	"github.com/docker/docker/api/types/mount"
-	"github.com/docker/docker/client"
-	log "github.com/sirupsen/logrus"
 
 	"scmc/common"
+	"scmc/model/db"
 	"scmc/model/docker"
 	"scmc/model/litedb"
-	"scmc/model/db"
 	pb "scmc/rpc/pb/container"
 )
 
@@ -191,8 +191,8 @@ func createContainerEnvs(m map[string]string, uuid string) []string {
 	return ret
 }
 
-// 返回 VIP 
-func getVIPAddr()(string, error) {
+// 返回 VIP
+func getVIPAddr() (string, error) {
 	vip := common.Config.Controller.VirtualIP
 	vip = strings.TrimSpace(vip)
 	if vip == "" {

@@ -41,7 +41,6 @@ func getConn() (*gorm.DB, error) {
 			LogLevel:      logger.Warn,
 		}),
 	})
-
 	if err != nil {
 		log.Warnf("Failed to inititlize database=%v err=%v", dbFilePath(), err)
 		return nil, err

@@ -38,7 +38,7 @@ func nodeStatus() {
 				runnings = runnings + 1
 			}
 
-			stats, err := cli.ContainerStats(context.Background(), c.ID, false) 
+			stats, err := cli.ContainerStats(context.Background(), c.ID, false)
 			if (err == nil) {
 				dec := json.NewDecoder(stats.Body)
 				var v types.StatsJSON
@@ -80,68 +80,68 @@ func (e *DockerStatsServer) GetAllContainers(ctx context.Context, node_name stri
 */
 
 func main() {
-    /*
-	if len(os.Args) != 2 {
-		usage()
-	}
+	/*
+		if len(os.Args) != 2 {
+			usage()
+		}
 
-	configFile := os.Args[1];
+		configFile := os.Args[1];
 
-	if err := common.LoadConfig(configFile); err != nil {
-		log.Fatalf("load config file=%s error=%v", configFile, err)
-	}
+		if err := common.LoadConfig(configFile); err != nil {
+			log.Fatalf("load config file=%s error=%v", configFile, err)
+		}
 
-	common.InitLogger("dockerMonitor")
+		common.InitLogger("dockerMonitor")
 
-	logrus.Infof("CA: %s", common.Config.TLS.CA)
-	logrus.Infof("serverCert: %s", common.Config.TLS.ServerCert)
-	logrus.Infof("serverKey: %s", common.Config.TLS.ServerKey)
+		logrus.Infof("CA: %s", common.Config.TLS.CA)
+		logrus.Infof("serverCert: %s", common.Config.TLS.ServerCert)
+		logrus.Infof("serverKey: %s", common.Config.TLS.ServerKey)
 
-	cfg, err:= common.LoadTLSConfig()
-	if (err != nil) {
-		logrus.Errorf("loadTLSConfig failed! %v", err)
-		log.Fatalf("loadTLSConfig failed! %v", err)
+		cfg, err:= common.LoadTLSConfig()
+		if (err != nil) {
+			logrus.Errorf("loadTLSConfig failed! %v", err)
+			log.Fatalf("loadTLSConfig failed! %v", err)
 
-	}
+		}
 
-	addr := common.Config.Controller.Addr()
-	logrus.Infof("addr: %s", addr)
+		addr := common.Config.Controller.Addr()
+		logrus.Infof("addr: %s", addr)
 
-	transport, err := thrift.NewTSSLServerSocket(addr, cfg)
-        if err != nil {
-                panic(err)
-        }
+		transport, err := thrift.NewTSSLServerSocket(addr, cfg)
+	        if err != nil {
+	                panic(err)
+	        }
 
-	//fmt.Printf("%T\n", transport);
+		//fmt.Printf("%T\n", transport);
 
-        handler := &DockerStatsServer{}
-        processor := node.NewDockerStatsDataProcessor(handler)
+	        handler := &DockerStatsServer{}
+	        processor := node.NewDockerStatsDataProcessor(handler)
 
-        transportFactory := thrift.NewTBufferedTransportFactory(8192)
-        //也可以选择Framed传输协议，但是必须确保服务端和客户端的传输协议一致
-        //transportFactory := thrift.NewTBufferedTransportFactory(8192)
-        //framedtransportFactory := thrift.NewTFramedTransportFactory(transportFactory)
+	        transportFactory := thrift.NewTBufferedTransportFactory(8192)
+	        //也可以选择Framed传输协议，但是必须确保服务端和客户端的传输协议一致
+	        //transportFactory := thrift.NewTBufferedTransportFactory(8192)
+	        //framedtransportFactory := thrift.NewTFramedTransportFactory(transportFactory)
 
-        //可以选择任意一种编码协议，但是必须确保服务端和客户端的编码协议一致
-        protocolFactory := thrift.NewTBinaryProtocolFactory(true, true) //布尔参数strictRead, strictWrite，读和写时是否加入版本校验。
-        //protocolFactory := thrift.NewTCompactProtocolFactory()
-        //protocolFactory := thrift.NewTJSONProtocolFactory()
+	        //可以选择任意一种编码协议，但是必须确保服务端和客户端的编码协议一致
+	        protocolFactory := thrift.NewTBinaryProtocolFactory(true, true) //布尔参数strictRead, strictWrite，读和写时是否加入版本校验。
+	        //protocolFactory := thrift.NewTCompactProtocolFactory()
+	        //protocolFactory := thrift.NewTJSONProtocolFactory()
 
-        server := thrift.NewTSimpleServer4(
-                processor,
-                transport,
-                transportFactory,
-                protocolFactory,
-        )
+	        server := thrift.NewTSimpleServer4(
+	                processor,
+	                transport,
+	                transportFactory,
+	                protocolFactory,
+	        )
 
-        if err := server.Serve(); err != nil {
-                panic(err)
-        }
-    */
+	        if err := server.Serve(); err != nil {
+	                panic(err)
+	        }
+	*/
 }
 
 func usage() {
-    /*
-	log.Fatalf("Usage: %s CONFIG_FILE", os.Args[0])
-    */
+	/*
+		log.Fatalf("Usage: %s CONFIG_FILE", os.Args[0])
+	*/
 }

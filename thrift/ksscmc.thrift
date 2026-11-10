@@ -175,15 +175,116 @@ struct GetImagesListResponse {
     2: i32 ret_code
 }
 
+struct Version {
+    // 1: string linxc,
+    // 2: string linxc_ovs,
+    // 3: string linxc_agent,
+    // 4: string integrated
+}
+
+struct NodeVersion {
+    1: string name,
+    2: string uuid,
+    3: Version versions
+}
+
+struct GetVersionsV3Response {
+    1: i32 status,
+    2: string message,
+    3: list<NodeVersion> nodes
+}
+
+enum ReadType {
+    ALL = 0,
+    READED = 1,
+    UNREAD = 2
+}
+
+enum EntityType {
+    ALL = 0,
+    NODE_WARNING = 1,
+    CONTAINER_WARN = 2
+}
+
+struct GetAlarmCond {
+	1: string node_name,		//获取指定节点上的告警信息，默认包括节点告警与该节点所有容器的告警
+	2: i8 read_type,			//0或其他:获取所有告警（已读+未读）；1：仅获取已读告警；2：仅获取未读告警
+	3: i8 entity_type,			//0或其他:获取所有告警；1:仅获取节点告警；2:仅获取容器告警
+	4: i32 alarm_type,			//获取指定类型的告警,如不指定，则传-1
+	5: string container_name,	//获取指定容器的告警信息，如指定了名称，则默认仅获取该容器告警
+	6: i64 start_time,			//获取时间区间内的告警，指定起始时间，传递参数为unix时间戳，精确到秒，如:1602578163
+	7: i64 end_time,			//获取时间区间内的告警，指定截止时间，传递参数为unix时间戳，精确到秒，如:1602578163
+	8: i32 nums,				//单页获取告警的条数，如该参数小于等于0,则默认为10
+	9: i32 page,				//指定获取的页码，如该参数小于等于0，则默认为1，默认返回第一页，如指定数字超过总页码数，则返回最后一页告警
+	10: bool asc				//false:告警信息降序排列（根据创建时间）；true:告警信息升序排列（根据创建时间）
+}
+
+struct CondAlarms {
+    1: i32 id,
+    2: i32 status,
+    3: string message,
+    4: i32 alarm_type,
+    5: string c_time,
+    6: string u_time
+}
+
+struct CondGetAlarmListResponse {
+    1: i32 status,
+    2: string message,
+    3: i32 total,
+    4: i32 nums,
+    5: i32 pages,
+    6: i32 page,
+    7: list<CondAlarms> h_alarms,
+    8: list<CondAlarms> c_alarms
+}
+
+struct AgentNode {
+    1: string name,
+    2: string uuid,
+    3: string ip,
+    4: list<NetworkInterfaceWithAgentNode> nets,
+    5: string desc,
+    6: i32 stat,
+    7: double cpu_usage
+    8: double cpus,
+    9: double mem_usage,
+    10: double mem_total,
+    11: double disk_usage,
+    12: double disk_total,
+    13: double drbd_usage,
+    14: double drbd_total,
+    15: double net_rbw,
+    16: double net_wbw,
+    17: double disk_rbw,
+    18: double disk_wbw,
+    19: double drbd_rbw,
+    20: double drbd_wbw,
+    21: i32 container_nums,
+    22: i32 online_container_nums,
+    23: i32 max_containers,
+    24: i32 alarm_nums
+}
+
+struct GetAgentNodesResponse {
+    1: i32 status,
+    2: string message,
+    3: list<AgentNode> nodes
+}
+
 // ================ 服务接口 ================
 service KsScmcClient {
     string LoginV3(1: string user, 2: string passwd, 3: string node_ip),
+    string GetVersionsV3(1:string session_id),
+    string GetAgentNodesV3(1:string session_id),
     string InstallContainer(1: string node_name, 2: string image, 3: string ver, 4: string name, 5: string desc),
     // 容器生命周期管理
     // i32 installContainer(1: string node_nameorip, 2: string image_name, 3: string image_ver, 4: string container_name),
     string StartContainer(1: string node_name, 2: string name),
+    string StartContainerV3(1:string session_id, 2:string cid),
     // i32 startContainer(1: string node_nameorip, 2: string container_name),
     string StopContainer(1: string node_name, 2: string name),
+    string StopContainerV3(1:string session_id, 2:string cid),
     // i32 stopContainer(1: string node_nameorip, 2: string container_name),
     string UninstallContainer(1: string node_name, 2: string name),
     // i32 uninstallContainer(1: string node_nameorip, 2: string container_name),

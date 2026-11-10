@@ -16,7 +16,7 @@ import (
 type SyncImages struct{}
 
 func (s *SyncImages) Interval() time.Duration {
-	return (10 * time.Minute)
+	return time.Minute
 }
 
 func (s *SyncImages) RunAtInit() bool {

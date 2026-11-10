@@ -30,7 +30,7 @@ func (s *AppRun) Run() {
 	if common.IsMaster() { // 主机模式
 		ContaierAppRun()
 	} else { // 非主机模式
-                ContaierAppStop() // 停止备机 app 的运行
+		ContaierAppStop() // 停止备机 app 的运行
 	}
 }
 

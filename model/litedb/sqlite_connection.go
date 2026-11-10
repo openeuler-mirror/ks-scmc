@@ -75,6 +75,9 @@ func getConn() (*gorm.DB, error) {
 	if !m.HasTable(&ContainerMisc{}) {
 		_ = m.CreateTable(&ContainerMisc{})
 	}
+	if !m.HasTable(&ContainerOutConfig{}) {
+		_ = m.CreateTable(&ContainerOutConfig{})
+	}
 
 	conn, err := _db.DB()
 	if err != nil {

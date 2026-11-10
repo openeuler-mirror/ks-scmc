@@ -44,8 +44,8 @@ func HandleStatsRequest() (string, error) {
 	if err != nil {
 		// 返回错误响应
 		response := ResponseJSON{
-			Status:  -1,
-			Message: fmt.Sprintf("Error: %v", err),
+			Status:     -1,
+			Message:    fmt.Sprintf("Error: %v", err),
 			Containers: []ContainerInfo{},
 		}
 
@@ -62,17 +62,17 @@ func HandleStatsRequest() (string, error) {
 	}
 
 	// 构建成功响应
-	response := ResponseJSON {
-		Status:    0,
-		Message:   "success",
+	response := ResponseJSON{
+		Status:     0,
+		Message:    "success",
 		Containers: containerInfos,
 	}
 
 	/* 没有容器数据的时候 */
 	if len(containerInfos) == 0 {
-		response = ResponseJSON {
-			Status:    0,
-			Message:   "success",
+		response = ResponseJSON{
+			Status:     0,
+			Message:    "success",
 			Containers: []ContainerInfo{},
 		}
 	}
@@ -95,144 +95,144 @@ func HandleStatsRequest() (string, error) {
 
 // 获取 Docker 容器的统计信息
 func getContainerStats() ([]ContainerInfo, error) {
-        // 创建 Docker 客户端
-        //cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
+	// 创建 Docker 客户端
+	//cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	cli, err := Client()
-        if err != nil {
-                return nil, fmt.Errorf("failed to create Docker client: %v", err)
-        }
+	if err != nil {
+		return nil, fmt.Errorf("failed to create Docker client: %v", err)
+	}
 
-        // 获取所有容器
-        containers, err := cli.ContainerList(context.Background(), types.ContainerListOptions{All: true, Size: true})
-        if err != nil {
-                return nil, fmt.Errorf("failed to list containers: %v", err)
-        }
+	// 获取所有容器
+	containers, err := cli.ContainerList(context.Background(), types.ContainerListOptions{All: true, Size: true})
+	if err != nil {
+		return nil, fmt.Errorf("failed to list containers: %v", err)
+	}
 
-        // 用于存储所有容器的统计信息
-        var containerInfos []ContainerInfo
+	// 用于存储所有容器的统计信息
+	var containerInfos []ContainerInfo
 
-        // 遍历容器并获取统计信息
-        for _, container := range containers {
-                // 获取容器名称（去掉开头的 "/"）
-                containerName := strings.TrimPrefix(container.Names[0], "/")
+	// 遍历容器并获取统计信息
+	for _, container := range containers {
+		// 获取容器名称（去掉开头的 "/"）
+		containerName := strings.TrimPrefix(container.Names[0], "/")
 		log.Infof("containerName: %s", containerName)
 
-                // 获取镜像名称和版本号
-                imageName, imageVersion := parseImageName(container.Image)
+		// 获取镜像名称和版本号
+		imageName, imageVersion := parseImageName(container.Image)
 
-                // 获取容器的统计信息流
-                stats, err := cli.ContainerStats(context.Background(), container.ID, false)
-                if err != nil {
-                        log.Warnf("Error getting stats for container %s: %v\n", container.ID, err)
-                        continue
-                }
-                defer stats.Body.Close()
+		// 获取容器的统计信息流
+		stats, err := cli.ContainerStats(context.Background(), container.ID, false)
+		if err != nil {
+			log.Warnf("Error getting stats for container %s: %v\n", container.ID, err)
+			continue
+		}
+		defer stats.Body.Close()
 
-                // 解析统计信息
-                dec := json.NewDecoder(stats.Body)
-                var v types.StatsJSON
-                if err := dec.Decode(&v); err != nil {
-                        log.Warnf("Error decoding stats for container %s: %v\n", container.ID, err)
-                        continue
-                }
+		// 解析统计信息
+		dec := json.NewDecoder(stats.Body)
+		var v types.StatsJSON
+		if err := dec.Decode(&v); err != nil {
+			log.Warnf("Error decoding stats for container %s: %v\n", container.ID, err)
+			continue
+		}
 
-                // 计算 CPU 使用率
-                cpuUsage := calculateCPUPercent(&v)
+		// 计算 CPU 使用率
+		cpuUsage := calculateCPUPercent(&v)
 		if math.IsNaN(cpuUsage) {
 			cpuUsage = 0.00
 		}
-                cpuUsage = roundToTwoDecimalPlaces(cpuUsage) // 保留两位小数
+		cpuUsage = roundToTwoDecimalPlaces(cpuUsage) // 保留两位小数
 
-                // 计算内存使用情况
+		// 计算内存使用情况
 		memoryUsage := v.MemoryStats.Usage
 		if cache, ok := v.MemoryStats.Stats["cache"]; ok {
 			memoryUsage = memoryUsage - cache
 		}
-                memoryUsage = memoryUsage / 1024 / 1024 // 转换为 MB
+		memoryUsage = memoryUsage / 1024 / 1024 // 转换为 MB
 
-                memoryLimit := v.MemoryStats.Limit / 1024 / 1024 // 转换为 MB
-                memoryPercent := calculateMemoryPercent(&v)
-                memoryPercent = roundToTwoDecimalPlaces(memoryPercent) // 保留两位小数
+		memoryLimit := v.MemoryStats.Limit / 1024 / 1024 // 转换为 MB
+		memoryPercent := calculateMemoryPercent(&v)
+		memoryPercent = roundToTwoDecimalPlaces(memoryPercent) // 保留两位小数
 
-                // 计算磁盘 I/O
-                readBytes, writeBytes := calculateBlockIO(&v.BlkioStats)
+		// 计算磁盘 I/O
+		readBytes, writeBytes := calculateBlockIO(&v.BlkioStats)
 
-                // 计算网络 I/O
-                var rxBytes, txBytes uint64
-                for _, netStats := range v.Networks {
-                        rxBytes += netStats.RxBytes
-                        txBytes += netStats.TxBytes
-                }
+		// 计算网络 I/O
+		var rxBytes, txBytes uint64
+		for _, netStats := range v.Networks {
+			rxBytes += netStats.RxBytes
+			txBytes += netStats.TxBytes
+		}
 
-                // 构建容器信息结构
-                containerInfo := ContainerInfo{
-                        Name:      containerName,
-                        Stat:      0, // 假设状态正常
-                        CPU:       float64(v.CPUStats.CPUUsage.TotalUsage) / 1e9, // 转换为 CPU 使用量
-                        CPUUsage:  cpuUsage,
-                        MemUsage:  memoryUsage,
-                        MemTotal:  memoryLimit,
-                        DiskUsage: 0, // 磁盘使用量需要额外获取
-                        DiskTotal: 0, // 磁盘总量需要额外获取
-                        DiskRBW:   readBytes,
-                        DiskWBW:   writeBytes,
-                        NetRBW:    rxBytes,
-                        NetWBW:    txBytes,
-                        Image:     imageName,
-                        Version:   imageVersion,
-                }
+		// 构建容器信息结构
+		containerInfo := ContainerInfo{
+			Name:      containerName,
+			Stat:      0,                                             // 假设状态正常
+			CPU:       float64(v.CPUStats.CPUUsage.TotalUsage) / 1e9, // 转换为 CPU 使用量
+			CPUUsage:  cpuUsage,
+			MemUsage:  memoryUsage,
+			MemTotal:  memoryLimit,
+			DiskUsage: 0, // 磁盘使用量需要额外获取
+			DiskTotal: 0, // 磁盘总量需要额外获取
+			DiskRBW:   readBytes,
+			DiskWBW:   writeBytes,
+			NetRBW:    rxBytes,
+			NetWBW:    txBytes,
+			Image:     imageName,
+			Version:   imageVersion,
+		}
 
-                // 将当前容器的统计信息添加到切片中
-                containerInfos = append(containerInfos, containerInfo)
-        }
+		// 将当前容器的统计信息添加到切片中
+		containerInfos = append(containerInfos, containerInfo)
+	}
 
-        return containerInfos, nil
+	return containerInfos, nil
 }
 
 // 计算 CPU 使用率
 func calculateCPUPercent(v *types.StatsJSON) float64 {
-        cpuDelta := float64(v.CPUStats.CPUUsage.TotalUsage) - float64(v.PreCPUStats.CPUUsage.TotalUsage)
-        systemDelta := float64(v.CPUStats.SystemUsage) - float64(v.PreCPUStats.SystemUsage)
-	if (v.CPUStats.SystemUsage == v.PreCPUStats.SystemUsage) {
+	cpuDelta := float64(v.CPUStats.CPUUsage.TotalUsage) - float64(v.PreCPUStats.CPUUsage.TotalUsage)
+	systemDelta := float64(v.CPUStats.SystemUsage) - float64(v.PreCPUStats.SystemUsage)
+	if v.CPUStats.SystemUsage == v.PreCPUStats.SystemUsage {
 		return float64(0.00)
 	}
-        // cpuPercent1 := (cpuDelta / systemDelta) * float64(len(v.CPUStats.CPUUsage.PercpuUsage)) * 100.0
-	cpuPercent := (float64(cpuDelta)/float64(systemDelta)) * float64(v.CPUStats.OnlineCPUs) * 100.0
-        return cpuPercent
+	// cpuPercent1 := (cpuDelta / systemDelta) * float64(len(v.CPUStats.CPUUsage.PercpuUsage)) * 100.0
+	cpuPercent := (float64(cpuDelta) / float64(systemDelta)) * float64(v.CPUStats.OnlineCPUs) * 100.0
+	return cpuPercent
 }
 
 // 计算内存使用比率
 func calculateMemoryPercent(v *types.StatsJSON) float64 {
-        if v.MemoryStats.Limit == 0 {
-                return 0.0 // 避免除零错误
-        }
-        return float64(v.MemoryStats.Usage) / float64(v.MemoryStats.Limit) * 100.0
+	if v.MemoryStats.Limit == 0 {
+		return 0.0 // 避免除零错误
+	}
+	return float64(v.MemoryStats.Usage) / float64(v.MemoryStats.Limit) * 100.0
 }
 
 // 计算磁盘 I/O
 func calculateBlockIO(blkioStats *types.BlkioStats) (readBytes uint64, writeBytes uint64) {
-        for _, stat := range blkioStats.IoServiceBytesRecursive {
-                switch stat.Op {
-                case "Read":
-                        readBytes += stat.Value
-                case "Write":
-                        writeBytes += stat.Value
-                }
-        }
-        return
+	for _, stat := range blkioStats.IoServiceBytesRecursive {
+		switch stat.Op {
+		case "Read":
+			readBytes += stat.Value
+		case "Write":
+			writeBytes += stat.Value
+		}
+	}
+	return
 }
 
 // 解析镜像名称和版本号
 func parseImageName(imageName string) (string, string) {
-        // 镜像名称通常格式为 "image:tag" 或 "registry/image:tag"
-        parts := strings.Split(imageName, ":")
-        if len(parts) > 1 {
-                return parts[0], parts[1] // 返回镜像名称和版本号
-        }
-        return parts[0], "latest" // 如果没有版本号，默认返回 "latest"
+	// 镜像名称通常格式为 "image:tag" 或 "registry/image:tag"
+	parts := strings.Split(imageName, ":")
+	if len(parts) > 1 {
+		return parts[0], parts[1] // 返回镜像名称和版本号
+	}
+	return parts[0], "latest" // 如果没有版本号，默认返回 "latest"
 }
 
 // 保留两位小数
 func roundToTwoDecimalPlaces(value float64) float64 {
-        return math.Round(value*100) / 100
+	return math.Round(value*100) / 100
 }

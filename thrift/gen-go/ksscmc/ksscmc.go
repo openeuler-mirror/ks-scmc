@@ -8973,7 +8973,7 @@ func (p *KsScmcClientClient) sendGetContainerNetRules(node_name string, containe
 }
 
 
-func (p *KsScmcClientClient) recvStopContainer() (value string, err error) {
+func (p *KsScmcClientClient) recvGetContainerNetRules() (value *GetContainerNetRulesResponse, err error) {
   iprot := p.InputProtocol
   if iprot == nil {
     iprot = p.ProtocolFactory.GetProtocol(p.Transport)

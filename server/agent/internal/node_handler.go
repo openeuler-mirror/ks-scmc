@@ -8,17 +8,13 @@ import (
 	"io"
 	"os"
 	"path/filepath"
-
-	// "scmc/model/authz"
-	"scmc/model/iptables"
-	"scmc/model/opensnitch"
 	"sort"
 	"strings"
 
 	"github.com/docker/docker/api/types"
-
 	"github.com/shirou/gopsutil/disk"
 	"github.com/shirou/gopsutil/mem"
+	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"gorm.io/gorm"
@@ -26,13 +22,13 @@ import (
 	"scmc/common"
 	"scmc/model/db"
 	"scmc/model/docker"
+	"scmc/model/iptables"
 	"scmc/model/kysec"
 	"scmc/model/litedb"
+	"scmc/model/opensnitch"
 	"scmc/rpc"
 	pb "scmc/rpc/pb/node"
 	"scmc/rpc/pb/security"
-
-	log "github.com/sirupsen/logrus"
 )
 
 const gigaBytes = 1 << 30
@@ -49,7 +45,7 @@ var blockedPorts = map[uint32]bool{
 	19091: true,
 	10051: true, // agent
 	10050: true, // controller
-	873:   true, //rsyncd
+	873:   true, // rsyncd
 
 }
 
@@ -67,7 +63,7 @@ func nodeStatus() (*pb.NodeStatus, error) {
 		return &pb.NodeStatus{State: int64(pb.NodeState_Unknown)}, nil
 	}
 
-	var ret = pb.NodeStatus{
+	ret := pb.NodeStatus{
 		State: int64(pb.NodeState_Online),
 	}
 
@@ -169,7 +165,6 @@ func (*NodeServer) Usage(ctx context.Context, in *pb.UsageRequest) (*pb.UsageRep
 }
 
 func (s *NodeServer) UpdateFileProtect(ctx context.Context, in *pb.UpdateFileProtectRequest) (*pb.UpdateFileProtectReply, error) {
-
 	if in.SecurityConfig.FileProtection == nil {
 		return nil, rpc.ErrInvalidArgument
 	}
@@ -246,7 +241,7 @@ func (s *NodeServer) UpdateNetworkRule(ctx context.Context, in *pb.UpdateNetwork
 			})
 		}
 
-		//keepalived
+		// keepalived
 		mergedRules = append(mergedRules, &litedb.NetworkRule{
 			Protocols: []string{"112"},
 			Addr:      "0.0.0.0/0",
@@ -306,13 +301,11 @@ func (s *NodeServer) UpdateNetworkRule(ctx context.Context, in *pb.UpdateNetwork
 }
 
 func ResolveSymlink(path string) (string, error) {
-
 	visited := make(map[string]bool)
 	return resolveSymlinkRecursive(path, visited)
 }
 
 func resolveSymlinkRecursive(path string, visited map[string]bool) (string, error) {
-
 	absPath, err := filepath.Abs(path)
 	if err != nil {
 		return "", fmt.Errorf("获取绝对路径失败: %v", err)
@@ -406,7 +399,6 @@ func mapKeysToSlice(m map[string]struct{}) []string {
 }
 
 func (s *NodeServer) UpdateProcessWhiteList(ctx context.Context, in *pb.UpdateProcessWhiteListRequest) (*pb.UpdateProcessWhiteListReply, error) {
-
 	if in.SecurityConfig.ProcProtection == nil {
 		return nil, rpc.ErrNodeProcProtection
 	}
@@ -520,7 +512,7 @@ func (s *NodeServer) UpdateNetworkProcessWhiteList(ctx context.Context, in *pb.U
 
 	log.Debugf("UpdateNetworkProcessWhiteList mergedPaths = %v ", mergedPaths)
 
-	var inRule = &litedb.ProcProtection{
+	inRule := &litedb.ProcProtection{
 		IsOn:    in.SecurityConfig.NprocProtection.IsOn,
 		ExeList: mergedPaths,
 	}
@@ -568,7 +560,6 @@ func (s *NodeServer) GetNetworkProcessWhiteList(ctx context.Context, in *pb.GetN
 	var reply pb.GetNetworkProcessWhiteListReply
 
 	if cfgs != nil && cfgs.SecurityConfig != nil && cfgs.SecurityConfig.NprocProtection != nil {
-
 		reply.NprocProtection = &security.ProcProtection{
 			IsOn:    cfgs.SecurityConfig.NprocProtection.IsOn,
 			ExeList: cfgs.SecurityConfig.NprocProtection.ExeList,
@@ -622,7 +613,6 @@ func (s *NodeServer) GetNodeProcessWhiteList(ctx context.Context, in *pb.GetProc
 	var reply pb.GetProcessWhiteListReply
 
 	if cfgs != nil && cfgs.SecurityConfig != nil && cfgs.SecurityConfig.ProcProtection != nil {
-
 		reply.ProcProtection = &security.ProcProtection{
 			IsOn:    cfgs.SecurityConfig.ProcProtection.IsOn,
 			ExeList: cfgs.SecurityConfig.ProcProtection.ExeList,
@@ -653,7 +643,6 @@ func (s *NodeServer) GetNodeDefaultProcessWhiteList(ctx context.Context, in *pb.
 	}
 
 	return reply, nil
-
 }
 
 func (s *NodeServer) GetFileProtect(ctx context.Context, in *pb.GetFileProtectRequest) (*pb.GetFileProtectReply, error) {
@@ -675,7 +664,6 @@ func (s *NodeServer) GetFileProtect(ctx context.Context, in *pb.GetFileProtectRe
 	var reply pb.GetFileProtectReply
 
 	if cfgs != nil && cfgs.SecurityConfig != nil && cfgs.SecurityConfig.FileProtection != nil {
-
 		reply.FileProtection = &security.FileProtection{
 			IsOn:     cfgs.SecurityConfig.FileProtection.IsOn,
 			FileList: cfgs.SecurityConfig.FileProtection.FileList,
@@ -749,11 +737,9 @@ func (s *NodeServer) GetNodeSecurityConfig(ctx context.Context, in *pb.GetNodeSe
 	log.Debugf("GetNetworkRule called: node_id=%v reply:%v at agent ", in.NodeId, reply)
 
 	return &reply, nil
-
 }
 
 func (s *NodeServer) GetNodeDefaultPort(ctx context.Context, in *pb.GetNodeDefaultPortRequest) (*pb.GetNodeDefaultPortReply, error) {
-
 	var portStatusList []*pb.PortStatus
 	for port, blocked := range blockedPorts {
 		portStatusList = append(portStatusList, &pb.PortStatus{
@@ -807,10 +793,8 @@ func (s *NodeServer) Update(ctx context.Context, in *pb.UpdateRequest) (*pb.Upda
 }
 
 func (s *NodeServer) nodeConfigDataTableCreate(uuid string, nodeName string) error {
-
 	if uuid == "" {
 		nodeInfo, err := litedb.GetNodeInfo(1)
-
 		if err != nil {
 			return err
 		}

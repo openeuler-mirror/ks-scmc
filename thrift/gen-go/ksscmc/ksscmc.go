@@ -8015,16 +8015,16 @@ func (p *KsScmcClientClient) recvUninstallContainer() (value string, err error) 
     return
   }
   if mTypeId == thrift.EXCEPTION {
-    error28 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
-    var error29 error
-    error29, err = error28.Read(iprot)
+    error30 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
+    var error31 error
+    error31, err = error30.Read(iprot)
     if err != nil {
       return
     }
     if err = iprot.ReadMessageEnd(); err != nil {
       return
     }
-    err = error29
+    err = error31
     return
   }
   if mTypeId != thrift.REPLY {

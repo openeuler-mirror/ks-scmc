@@ -189,6 +189,12 @@ func (h *KsScmcHandler) StopContainer(nodeName string, name string) (string, err
 	return Response2String(code), nil
 }
 
+func (h *KsScmcHandler) RestartContainer(nodeName string, name string) (string, error) {
+	h.stopContainerInternal(nodeName, name)
+	code, _ := h.startContainerInternal(nodeName, name)
+	return Response2String(code), nil
+}
+
 func (h *KsScmcHandler) StopContainerV3(session_id string, cid string) (string, error) {
 	nodeIP := db.SessionManagerGetNodeIP(session_id)
 	var containerName *string = nil

@@ -96,7 +96,7 @@ var (
 		pattern: PatternImageName,
 	}
 	ImageVersion = &StringArgument{
-		length:  lengthChecker(1, 20),
+		length:  lengthChecker(1, 50),
 		pattern: PatternImageVersion,
 	}
 	ImageDesc  = NodeComment

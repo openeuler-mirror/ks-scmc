@@ -5221,12 +5221,14 @@ type NetworkConfig struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Interface   string `protobuf:"bytes,1,opt,name=interface,proto3" json:"interface,omitempty"`                        // required
-	ContainerId string `protobuf:"bytes,2,opt,name=container_id,json=containerId,proto3" json:"container_id,omitempty"` // required
-	IpAddress   string `protobuf:"bytes,3,opt,name=ip_address,json=ipAddress,proto3" json:"ip_address,omitempty"`       // required
-	IpPrefixLen int32  `protobuf:"varint,4,opt,name=ip_prefix_len,json=ipPrefixLen,proto3" json:"ip_prefix_len,omitempty"`
-	MacAddress  string `protobuf:"bytes,5,opt,name=mac_address,json=macAddress,proto3" json:"mac_address,omitempty"`
-	Gateway     string `protobuf:"bytes,6,opt,name=gateway,proto3" json:"gateway,omitempty"`
+	Interface   string  `protobuf:"bytes,1,opt,name=interface,proto3" json:"interface,omitempty"`                        // required
+	ContainerId string  `protobuf:"bytes,2,opt,name=container_id,json=containerId,proto3" json:"container_id,omitempty"` // required
+	IpAddress   string  `protobuf:"bytes,3,opt,name=ip_address,json=ipAddress,proto3" json:"ip_address,omitempty"`       // required
+	IpPrefixLen int32   `protobuf:"varint,4,opt,name=ip_prefix_len,json=ipPrefixLen,proto3" json:"ip_prefix_len,omitempty"`
+	MacAddress  string  `protobuf:"bytes,5,opt,name=mac_address,json=macAddress,proto3" json:"mac_address,omitempty"`
+	Gateway     string  `protobuf:"bytes,6,opt,name=gateway,proto3" json:"gateway,omitempty"`
+	NetRbw      float64 `protobuf:"fixed64,7,opt,name=net_rbw,json=netRbw,proto3" json:"net_rbw,omitempty"`
+	NetWbw      float64 `protobuf:"fixed64,8,opt,name=net_wbw,json=netWbw,proto3" json:"net_wbw,omitempty"`
 }
 
 func (x *NetworkConfig) Reset() {

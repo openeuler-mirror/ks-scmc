@@ -784,7 +784,7 @@ func (s *NetworkServer) createNetwork(name, subnet, gateway, parent string) erro
 		return err
 	}
 
-	if flag {
+	if !flag {
 		/* 添加规则 */
 		iptbInfo := fmt.Sprintf("iptables -t nat -A POSTROUTING -s %s -o %s -j MASQUERADE", subnet, parent)
 		cmd := exec.Command(

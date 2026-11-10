@@ -177,6 +177,27 @@ func (h *KsScmcHandler) StopContainer(nodeName string, name string) (string, err
 	return Response2String(code), nil
 }
 
+func (h *KsScmcHandler) StopContainerV3(session_id string, cid string) (string, error) {
+	nodeIP := db.SessionManagerGetNodeIP(session_id)
+	var containerName *string = nil
+	containerInfos, err := h.GetAllContainerList(*nodeIP)
+	if err != nil {
+		return ResponseFailed(err.Error()), nil
+	}
+	for _, containerInfo := range containerInfos.Containerlist {
+		if containerInfo.ContainerID != cid {
+			continue
+		}
+		containerName = &containerInfo.ContainerName
+	}
+	if containerName == nil {
+		logrus.Error("Failed to get containerName from containerID")
+		return ResponseFailed("Cannot found Container"), nil
+	}
+	code, _ := h.stopContainerInternal(*nodeIP, *containerName)
+	return Response2String(code), nil
+}
+
 func (h *KsScmcHandler) stopContainerInternal(nodeNameorip string, containerName string) (int32, error) {
 
 	nodeInfo, err := GetNodeId(nodeNameorip)

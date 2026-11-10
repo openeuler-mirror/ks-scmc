@@ -177,7 +177,7 @@ func (c *ContainerResourceMonitor) getContainerResourceLimit(containerID string)
 		limit.DiskRbw = cntLimit.Config.DiskRbw
 		limit.DiskWbw = cntLimit.Config.DiskWbw
 		log.Debugf("Container %s Disk IO limit: read=%.0f MB/s, write=%.0f MB/s",
-			containerID[:12], limit.DiskRbw, limit.DiskWbw)
+			containerID[:12], float64(limit.DiskRbw), float64(limit.DiskWbw))
 	}
 
 	return limit, nil

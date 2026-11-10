@@ -9104,26 +9104,32 @@ func (p *KsScmcClientClient) recvAddContainerIpPort() (value int32, err error) {
 }
 
 // Parameters:
-//  - NodeNameorip
+//  - NodeName
 //  - ContainerName
-func (p *KsScmcClientClient) GetContainerStatus(node_nameorip string, container_name string) (r int32, err error) {
-  if err = p.sendGetContainerStatus(node_nameorip, container_name); err != nil { return }
-  return p.recvGetContainerStatus()
+//  - IPAddr
+//  - Port
+//  - NetProto
+func (p *KsScmcClientClient) AddContainerReqIpPort(node_name string, container_name string, ip_addr string, port int32, net_proto string) (r int32, err error) {
+  if err = p.sendAddContainerReqIpPort(node_name, container_name, ip_addr, port, net_proto); err != nil { return }
+  return p.recvAddContainerReqIpPort()
 }
 
-func (p *KsScmcClientClient) sendGetContainerStatus(node_nameorip string, container_name string)(err error) {
+func (p *KsScmcClientClient) sendAddContainerReqIpPort(node_name string, container_name string, ip_addr string, port int32, net_proto string)(err error) {
   oprot := p.OutputProtocol
   if oprot == nil {
     oprot = p.ProtocolFactory.GetProtocol(p.Transport)
     p.OutputProtocol = oprot
   }
   p.SeqId++
-  if err = oprot.WriteMessageBegin("getContainerStatus", thrift.CALL, p.SeqId); err != nil {
+  if err = oprot.WriteMessageBegin("addContainerReqIpPort", thrift.CALL, p.SeqId); err != nil {
       return
   }
-  args := KsScmcClientGetContainerStatusArgs{
-  NodeNameorip : node_nameorip,
+  args := KsScmcClientAddContainerReqIpPortArgs{
+  NodeName : node_name,
   ContainerName : container_name,
+  IPAddr : ip_addr,
+  Port : port,
+  NetProto : net_proto,
   }
   if err = args.Write(oprot); err != nil {
       return

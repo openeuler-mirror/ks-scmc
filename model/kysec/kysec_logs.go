@@ -112,7 +112,7 @@ func FetchKernelLogs() {
 			evType = logging.EVENT_TYPE_WARN_FILE_LIST
 			detail = detail + "文件保护:"
 		} else {
-			log.Warnf("FetchKernelLogs log type invalide: %d", adtLog.Type)
+			// log.Warnf("FetchKernelLogs log type invalide: %d", adtLog.Type)
 			continue
 		}
 

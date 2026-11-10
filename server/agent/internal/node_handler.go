@@ -510,9 +510,18 @@ func (s *NodeServer) UpdateNetworkProcessWhiteList(ctx context.Context, in *pb.U
 		ExeList: mergedPaths,
 	}
 
+	{
+		// 设置网络进程白名单
+		IsOn := in.SecurityConfig.NprocProtection.IsOn
+		ExeList := mergedPaths
+		if err := kysec.UpdateNprocProtection("localhost", IsOn, ExeList, []string{}); err != nil {
+			log.Warnf("UpdateNprocProtection %v err: %v", "localhost", err)
+		}
+	}
+
 	if err := opensnitch.SaveNodeRule(inRule, "localhost", uuid); err != nil {
 		log.Warnf("SaveRule id=%v err=%v", "localhost", err)
-		return nil, rpc.ErrNodeNetworkProcProtection
+		// return nil, rpc.ErrNodeNetworkProcProtection
 	}
 
 	cfgs.SecurityConfig.NprocProtection = in.SecurityConfig.NprocProtection

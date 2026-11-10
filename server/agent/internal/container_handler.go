@@ -567,7 +567,7 @@ func (s *ContainerServer) create(nodeid int64, configs *pb.ContainerConfigs, net
 		config.Hostname = configs.Hostname
 	}
 
-	// 因为容器内需要使用GPU，这里需要设置为 true. 
+	// 因为容器内需要使用GPU，这里需要设置为 true.
 	hostConfig := container.HostConfig{
 		Privileged: true, // force non-privileged
 	}

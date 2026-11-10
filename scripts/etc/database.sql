@@ -160,7 +160,7 @@ CREATE TABLE IF NOT EXISTS `api_tokens` (
 --      UNIQUE KEY `container_id` (`container_id`)
 -- ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-CREATE TABLE container_limits (
+CREATE TABLE IF NOT EXISTS `container_limits` (
     `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '主键ID',
     `node_id` bigint(20) UNSIGNED NOT NULL COMMENT '节点id',
     `container_id` VARCHAR(255) NOT NULL COMMENT '容器ID',

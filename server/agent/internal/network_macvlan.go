@@ -1,12 +1,9 @@
 package internal
 
 import (
-	// log "github.com/sirupsen/logrus"
 	"errors"
-	// "flag"
 	"fmt"
 	"net"
-	// "os"
 )
 
 // 解析CIDR格式的IP地址和子网掩码

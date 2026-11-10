@@ -171,79 +171,79 @@ func checkNetworkInfo(ifaceName, containerId string, ipAddr *string, masklen int
 
 // 设置磁盘限速
 func setdisklimit(containerId string) {
-    disklimitCfg, err := litedb.GetContainerLimitByCID(containerId)
-    if err != nil {
-        return
-    }
+	disklimitCfg, err := litedb.GetContainerLimitByCID(containerId)
+	if err != nil {
+		return
+	}
 
-    rStr := fmt.Sprintf("%d", disklimitCfg.DiskRbw)
-    docker.SetContainerDiskLimit("disk_rbw", containerId, rStr)
+	rStr := fmt.Sprintf("%d", disklimitCfg.DiskRbw)
+	docker.SetContainerDiskLimit("disk_rbw", containerId, rStr)
 
-    wStr := fmt.Sprintf("%d", disklimitCfg.DiskWbw)
-    docker.SetContainerDiskLimit("disk_wbw", containerId, wStr)
+	wStr := fmt.Sprintf("%d", disklimitCfg.DiskWbw)
+	docker.SetContainerDiskLimit("disk_wbw", containerId, wStr)
 }
 
 // 容器启动，启动容器内配置的相关应用
 func runAppEntry(containerId string) {
-    cfgs, err := litedb.GetContainerConfig(containerId)
-    if err != nil {
-        return
-    }
+	cfgs, err := litedb.GetContainerConfig(containerId)
+	if err != nil {
+		return
+	}
 
-    data, err := litedb.GetContainerMiscConfigByName(cfgs.ContainerName)
-    if err != nil {
-        return
-    }
+	data, err := litedb.GetContainerMiscConfigByName(cfgs.ContainerName)
+	if err != nil {
+		return
+	}
 
-    if data.MiscConfig == nil || !data.MiscConfig.GetAppRun() {
-        return
-    }
+	if data.MiscConfig == nil || !data.MiscConfig.GetAppRun() {
+		return
+	}
 
-    allApp, err := litedb.ListAppEntry(containerId)
-    if err != nil || len(allApp) == 0 {
-        return
-    }
+	allApp, err := litedb.ListAppEntry(containerId)
+	if err != nil || len(allApp) == 0 {
+		return
+	}
 
-    cli, err := docker.Client()
-    if err != nil {
-        return
-    }
+	cli, err := docker.Client()
+	if err != nil {
+		return
+	}
 
-    if !containerIsRunning(context.Background(), cli, containerId) {
-        return
-    }
+	if !containerIsRunning(context.Background(), cli, containerId) {
+		return
+	}
 
-    for _, app := range allApp {
-        if app.IsGUI {
-            continue
-        }
+	for _, app := range allApp {
+		if app.IsGUI {
+			continue
+		}
 
-        if appIsRunningWithCli(context.Background(), cli, app.IDResponse) {
-            continue
-        }
+		if appIsRunningWithCli(context.Background(), cli, app.IDResponse) {
+			continue
+		}
 
-        idRes, err := cli.ContainerExecCreate(context.Background(), containerId, types.ExecConfig{
-            Cmd : strings.Split(app.ExePath, " "),
-        })
+		idRes, err := cli.ContainerExecCreate(context.Background(), containerId, types.ExecConfig{
+			Cmd: strings.Split(app.ExePath, " "),
+		})
 
-        if err != nil || idRes.ID == "" {
-            continue
-        }
+		if err != nil || idRes.ID == "" {
+			continue
+		}
 
-        if err := cli.ContainerExecStart(context.Background(), idRes.ID, types.ExecStartCheck{
-            Detach: true,
-            Tty: false,
-        }); err != nil {
-            log.Warnf("err = %v", err)
-            continue
-        }
-        
-        app.IDResponse = idRes.ID
-        if err := litedb.UpdateAppEntry(app); err != nil {
-            log.Warnf("err = %v", err)
-            continue
-        }
-    }
+		if err := cli.ContainerExecStart(context.Background(), idRes.ID, types.ExecStartCheck{
+			Detach: true,
+			Tty:    false,
+		}); err != nil {
+			log.Warnf("err = %v", err)
+			continue
+		}
+
+		app.IDResponse = idRes.ID
+		if err := litedb.UpdateAppEntry(app); err != nil {
+			log.Warnf("err = %v", err)
+			continue
+		}
+	}
 }
 
 func ContainerWhiteConfig() error {
@@ -255,10 +255,10 @@ func ContainerWhiteConfig() error {
 				if err != nil || info.State.Pid == 0 {
 					log.Warnf("%v call ContainerInspect err(%v) or container not start", e.ID, err)
 				} else {
-                    if common.IsMaster() { // 主设备，同步启动 app
-                        runAppEntry(e.ID)
-                    }
-                    setdisklimit(e.ID)
+					if common.IsMaster() { // 主设备，同步启动 app
+						runAppEntry(e.ID)
+					}
+					setdisklimit(e.ID)
 					var name string
 					if e.Actor.Attributes != nil {
 						name = e.Actor.Attributes["name"]
@@ -442,11 +442,11 @@ func getNicFileName(nicName string) (string, error) {
 	}
 
 	// 网卡名称与配置文件名称不匹配
-	links,  err := getAllifcfgFile()
+	links, err := getAllifcfgFile()
 	if err != nil {
 		return ifcfgPath, err
 	}
-	
+
 	for _, filePath := range links {
 		config, err := ParseIfcfg(filePath)
 		if err != nil {
@@ -465,9 +465,9 @@ func getNicFileName(nicName string) (string, error) {
 func nicFileExists(path string) bool {
 	_, err := os.Stat(path)
 	if err == nil {
-		return true;
+		return true
 	}
-	return false;
+	return false
 }
 
 // 遍历目录返回文件路径
@@ -485,7 +485,7 @@ func ParseIfcfg(fileName string) (map[string]string, error) {
 	config := make(map[string]string)
 	file, err := os.Open(fileName)
 	if err != nil {
-		return nil, err 
+		return nil, err
 	}
 	defer file.Close()
 
@@ -516,9 +516,9 @@ func ParseIfcfg(fileName string) (map[string]string, error) {
 
 		if len(value) >= 2 {
 			first := value[0]
-			last := value[len(value) - 1]
+			last := value[len(value)-1]
 			if (first == '"' && last == '"') || (first == '\'' && last == '\'') {
-				value = value[1 : len(value) - 1]
+				value = value[1 : len(value)-1]
 			}
 		}
 
@@ -531,21 +531,22 @@ func ParseIfcfg(fileName string) (map[string]string, error) {
 
 	return config, nil
 }
+
 // 匹配网卡是否在 map 配置里面
-func checkNicInMap(kv map[string]string,  nicName string) (bool) {
+func checkNicInMap(kv map[string]string, nicName string) bool {
 	if kv == nil || len(kv) == 0 {
 		return false
 	}
 
 	if value, ok := kv["DEVICE"]; ok {
 		if strings.TrimSpace(value) == strings.TrimSpace(nicName) {
-			return true;
+			return true
 		}
 	}
 
 	if value, ok := kv["NAME"]; ok {
 		if strings.TrimSpace(value) == strings.TrimSpace(nicName) {
-			return true;
+			return true
 		}
 	}
 
@@ -553,4 +554,3 @@ func checkNicInMap(kv map[string]string,  nicName string) (bool) {
 }
 
 // 通过网卡名称，返回网卡对应的配置文件路径
-

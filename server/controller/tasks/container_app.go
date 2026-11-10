@@ -57,16 +57,6 @@ func ContaierAppStop() {
 		if data.Config.AppRun {
 			go stopAppEntry(c.ID)
 		}
-
-		/*
-			data, err := litedb.GetContainerMiscConfigByName(containerName)
-			if err != nil {
-				continue
-			}
-			if data.MiscConfig != nil && data.MiscConfig.GetAppRun() {
-				go stopAppEntry(c.ID)
-			}
-		*/
 	}
 }
 
@@ -95,15 +85,6 @@ func ContaierAppRun() {
 			go runAppEntry(c.ID)
 		}
 
-		/*
-			data, err := litedb.GetContainerMiscConfigByName(containerName)
-			if err != nil {
-				continue
-			}
-			if data.MiscConfig != nil && data.MiscConfig.GetAppRun() {
-				go runAppEntry(c.ID)
-			}
-		*/
 	}
 }
 

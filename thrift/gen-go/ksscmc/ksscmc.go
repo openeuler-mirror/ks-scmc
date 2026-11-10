@@ -9270,26 +9270,32 @@ func (p *KsScmcClientClient) recvAddContainerEnv() (value string, err error) {
 }
 
 // Parameters:
-//  - NodeName
-//  - Name
-func (p *KsScmcClientClient) GetContainerImageVers(node_name string, name string) (r string, err error) {
-  if err = p.sendGetContainerImageVers(node_name, name); err != nil { return }
-  return p.recvGetContainerImageVers()
+//  - NodeNameorip
+//  - ContainerName
+//  - InDir
+//  - OutDir
+//  - AccessAuth
+func (p *KsScmcClientClient) AddContainerLocalVolume(node_nameorip string, container_name string, in_dir string, out_dir string, access_auth AccessAuth) (r int32, err error) {
+  if err = p.sendAddContainerLocalVolume(node_nameorip, container_name, in_dir, out_dir, access_auth); err != nil { return }
+  return p.recvAddContainerLocalVolume()
 }
 
-func (p *KsScmcClientClient) sendGetContainerImageVers(node_name string, name string)(err error) {
+func (p *KsScmcClientClient) sendAddContainerLocalVolume(node_nameorip string, container_name string, in_dir string, out_dir string, access_auth AccessAuth)(err error) {
   oprot := p.OutputProtocol
   if oprot == nil {
     oprot = p.ProtocolFactory.GetProtocol(p.Transport)
     p.OutputProtocol = oprot
   }
   p.SeqId++
-  if err = oprot.WriteMessageBegin("GetContainerImageVers", thrift.CALL, p.SeqId); err != nil {
+  if err = oprot.WriteMessageBegin("addContainerLocalVolume", thrift.CALL, p.SeqId); err != nil {
       return
   }
-  args := KsScmcClientGetContainerImageVersArgs{
-  NodeName : node_name,
-  Name : name,
+  args := KsScmcClientAddContainerLocalVolumeArgs{
+  NodeNameorip : node_nameorip,
+  ContainerName : container_name,
+  InDir : in_dir,
+  OutDir : out_dir,
+  AccessAuth : access_auth,
   }
   if err = args.Write(oprot); err != nil {
       return

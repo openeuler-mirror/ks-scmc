@@ -5,10 +5,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"math"
+
 	//"net/http"
+	"strings"
+
 	"github.com/docker/docker/api/types"
 	log "github.com/sirupsen/logrus"
-	"strings"
 	//"github.com/docker/docker/client"
 )
 

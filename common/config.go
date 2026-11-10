@@ -142,24 +142,24 @@ type NodeProWhiteComListConfig struct {
 }
 
 type NetworkProcessWhitelistConfig struct {
-    Paths  []string `mapstructure:"paths"`
+	Paths []string `mapstructure:"paths"`
 }
 
 var Config struct {
-	Log                 LogConfig                 `mapstructure:"log"`
-	ApiTLS              TLSConfig                 `mapstructure:"apitls"`
-	ApiController       ControllerConfig          `mapstructure:"apicontroller"`
-	TLS                 TLSConfig                 `mapstructure:"tls"`
-	Agent               AgentConfig               `mapstructure:"agent"`
-	Controller          ControllerConfig          `mapstructure:"controller"`
-	MySQL               MySQLConfig               `mapstructure:"mysql"`
-	SQLite              SQLiteConfig              `mapstructure:"sqlite"`
-	CAdvisor            ServiceConfig             `mapstructure:"cadvisor"`
-	InfluxDB            ServiceConfig             `mapstructure:"influxdb"`
-	Network             NetworkConfig             `mapstructure:"network"`
-	Registry            RegistryConfig            `mapstructure:"registry"`
-	Netlink             NetlinkConfig             `mapstructure:"netlink"`
-	NodeProWhiteComList NodeProWhiteComListConfig `mapstructure:"nodeprowhitecomlist"`
+	Log                  LogConfig                     `mapstructure:"log"`
+	ApiTLS               TLSConfig                     `mapstructure:"apitls"`
+	ApiController        ControllerConfig              `mapstructure:"apicontroller"`
+	TLS                  TLSConfig                     `mapstructure:"tls"`
+	Agent                AgentConfig                   `mapstructure:"agent"`
+	Controller           ControllerConfig              `mapstructure:"controller"`
+	MySQL                MySQLConfig                   `mapstructure:"mysql"`
+	SQLite               SQLiteConfig                  `mapstructure:"sqlite"`
+	CAdvisor             ServiceConfig                 `mapstructure:"cadvisor"`
+	InfluxDB             ServiceConfig                 `mapstructure:"influxdb"`
+	Network              NetworkConfig                 `mapstructure:"network"`
+	Registry             RegistryConfig                `mapstructure:"registry"`
+	Netlink              NetlinkConfig                 `mapstructure:"netlink"`
+	NodeProWhiteComList  NodeProWhiteComListConfig     `mapstructure:"nodeprowhitecomlist"`
 	NetworkProcWhitelist NetworkProcessWhitelistConfig `mapstructure:"network_proc_whitelist"`
 }
 
@@ -171,11 +171,10 @@ type ProcessInfo struct {
 	User      string
 }
 
-
 var (
-	bootTime time.Time // 缓存启动时间
-	bootTimeErr error	// 缓存错误信息
-	bootTimeOnce	sync.Once	// 控制初始化逻辑仅执行一次
+	bootTime     time.Time // 缓存启动时间
+	bootTimeErr  error     // 缓存错误信息
+	bootTimeOnce sync.Once // 控制初始化逻辑仅执行一次
 )
 
 // btime 开机后不会变，执行一次即可
@@ -431,7 +430,7 @@ func setDefault() {
 	viper.SetDefault("registry.password", "")
 
 	viper.SetDefault("netlink.protocol", 30)
-	viper.SetDefault("network_proc_whitelist.paths",defaultNetProList)
+	viper.SetDefault("network_proc_whitelist.paths", defaultNetProList)
 }
 
 func LoadConfig(path string) error {

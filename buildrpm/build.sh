@@ -129,8 +129,17 @@ clean() {
 init() {
 	os=$1
 	if [[ -z "$os" ]]; then
-		os=`cat /etc/.kyinfo | grep milestone | awk -F= '{print $2}' | tr -d ' ' | cut -c1-6`
-		[[ ${os: -1} =~ [0-9] ]] || os=${os:0:-1}
+            os=`cat /etc/.kyinfo | grep milestone | awk -F= '{print $2}' | tr -d ' ' | cut -c1-6`
+            if [[ "\${os:0:2}" == "3-" ]];then
+                TMP_VERSION="\$(cat /etc/.kyinfo | sed 's/ //g' | grep dist_id | tr '-' '\n' | tail -n 2 | head -n 1)"
+                if [[ "\$TMP_VERSION" == "44"* ]];then
+                    os="3.4-4"
+                elif [[ "\$TMP_VERSION" == "36"* ]];then
+                    os="3.3-6"
+                fi
+            else
+                [[ ${os: -1} =~ [0-9] ]] || os=${os:0:-1}
+            fi
 	fi
 
 	if [[ ! ${allow_os[@]} =~ ${os} ]];then

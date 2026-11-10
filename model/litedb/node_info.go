@@ -41,6 +41,22 @@ func RemoveNodeInfo(id int64, uuid string) error {
 	return nil
 }
 
+func RemoveNodeInfoByID(id int64) error {
+	db, err := getConn()
+	if err != nil {
+		return err
+	}
+
+	result := db.Delete(&NodeInfo{}, "id = ?", id)
+	if result.Error != nil {
+		log.Errorf("db remove node info: %v", err)
+		return result.Error
+	} else if result.RowsAffected == 0 {
+		return gorm.ErrRecordNotFound
+	}
+	return nil
+}
+
 func GetNodeInfo(ID int64) (*NodeInfo, error) {
 	db, err := getConn()
 	if err != nil {

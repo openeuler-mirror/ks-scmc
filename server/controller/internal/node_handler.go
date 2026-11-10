@@ -63,7 +63,7 @@ func (s *NodeServer) Create(ctx context.Context, in *pb.CreateRequest) (*pb.Crea
 
 	// agent 服务检查是否自身是否已被添加
 	uuid := uuid.New().String()
-	_, err = pb.NewNodeClient(conn).Create(ctx, &pb.CreateRequest{Uuid: uuid})
+	_, err = pb.NewNodeClient(conn).Create(ctx, &pb.CreateRequest{Address: in.Address, Uuid: uuid})
 	if err != nil {
 		if st, ok := status.FromError(err); ok {
 			if st.Code() == codes.Unavailable {
@@ -128,15 +128,20 @@ func (s *NodeServer) Remove(ctx context.Context, in *pb.RemoveRequest) (*pb.Remo
 			return nil, rpc.ErrInternal
 		}
 
-		_, err = pb.NewNodeClient(conn).Remove(ctx, &pb.RemoveRequest{Uuid: n.UUID})
-		if err != nil {
-			if st, ok := status.FromError(err); ok {
-				if st.Code() == codes.Unavailable {
-					return nil, status.Errorf(codes.Internal, "节点连接失败")
-				}
-			}
-			return nil, err
+		_, err = pb.NewNodeClient(conn).Remove(ctx, &pb.RemoveRequest{Ids: in.Ids, Uuid: n.UUID})
+		if err != nil { // 离线（换了IP）或者关机的时候会因为这里失败, 导致不能Remove
+			/*
+			   if st, ok := status.FromError(err); ok {
+			       if st.Code() == codes.Unavailable {
+			           return nil, status.Errorf(codes.Internal, "节点连接失败")
+			       }
+			   }
+			   return nil, err
+			*/
+			// 打印日志，记录一下，不做具体逻辑处理，不返回失败
+			log.Warnf("Remove: ip: %v, err=%v", n.Address, err)
 		}
+
 		db.DeleteWarnLogsByNodeIDs(n.ID)
 		n.Deleted = true
 		n.Name = uuid.New().String() // issue #67161

@@ -787,7 +787,7 @@ func (h *KsScmcHandler) GetAllContainers(nodeName string) (r string, err error) 
 	defer cancel()
 	nodeInfo, err := db.QueryNodeByName(nodeName)
 	if err != nil {
-		logrus.Error("Failed to get node by name: %s, because %s", nodeName, err.Error())
+		logrus.Errorf("Failed to get node by name: %s, because %s", nodeName, err.Error())
 		resp.Status = 1
 		resp.Message = "Failed to get node by name"
 		return Struct2JsonString(resp), nil
@@ -812,7 +812,7 @@ func (h *KsScmcHandler) GetAllContainers(nodeName string) (r string, err error) 
 	}
 	var containersStatsResponse docker.ResponseJSON
 	if err := json.Unmarshal([]byte(containerStatsReply.StatsData), &containersStatsResponse); err != nil {
-		logrus.Warnf("Failed to get container stats, because: ", err.Error())
+		logrus.Warnf("Failed to get container stats, because: %v", err.Error())
 	}
 	containersStats := containersStatsResponse.Containers
 	for _, containerInfo := range containerListReply.Containers {
@@ -857,7 +857,7 @@ func (h *KsScmcHandler) GetAllContainers(nodeName string) (r string, err error) 
 
 		for _, containerNetwork := range containerInspectReply.Configs.Networks {
 			if err != nil {
-				logrus.Warn("Failed to get container: %s network interface", containerInfo.Info.Name)
+				logrus.Warnf("Failed to get container: %s network interface", containerInfo.Info.Name)
 			}
 			mask := net.CIDRMask(int(containerNetwork.IpPrefixLen), 32)
 			if mask == nil {

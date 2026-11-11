@@ -125,7 +125,7 @@ func (s *ImageServer) uploadCheckMetadata(md *pb.UploadInfo) error {
 	imageDirPath := imageDir()
 	availableSpace, err := getAvailableDiskSpace(imageDirPath)
 	if err != nil {
-		log.Warnf("获取磁盘空间信息失败: %v", err)
+		log.Warnf("Get disk space failed: %v", err)
 	} else if uint64(md.Size) > availableSpace {
 		return rpc.ErrInsufficientDiskSpace(float64(md.Size), float64(availableSpace))
 	}

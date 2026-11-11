@@ -56,4 +56,55 @@
     RestartSec=5s
     EOF
     systemctl daemon-reload
-    
+
+- name: 创建 keepalived 服务管理脚本
+  copy:
+    dest: /etc/sysconfig/network-scripts/ifup-keepalived.sh
+    owner: root
+    group: root
+    mode: '0755'
+    content: |
+      #!/bin/bash
+      if ! systemctl is-active keepalived.service > /dev/null 2>&1; then
+        systemctl start keepalived.service > /dev/null 2>&1
+      fi
+
+- name: 修改网卡配置文件
+  shell: |
+    set -e
+    NIC_NAME="{{ cluster.virtual_ip_nic }}"
+    NICFG="/etc/sysconfig/network-scripts/ifcfg-${NIC_NAME}"
+    KEEPALIVED_SCRIPT="/etc/sysconfig/network-scripts/ifup-keepalived.sh"
+    KEEPALIVED_CMD_PATTERN="$KEEPALIVED_SCRIPT"
+
+    # 配置文件不存在，则遍历所有 ifcfg 文件查找匹配的配置
+    if [ ! -f "$NICFG" ]; then
+      for ifcfg_file in /etc/sysconfig/network-scripts/ifcfg-*; do
+        [ ! -f "$ifcfg_file" ] && continue
+
+        # 提取 DEVICE 和 NAME 字段值（去除注释、引号和空格）
+        DEVICE_VALUE=$(grep -E "^[[:space:]]*DEVICE[[:space:]]*=" "$ifcfg_file" | sed 's/#.*$//; s/^[[:space:]]*DEVICE[[:space:]]*=[[:space:]]*//; s/[[:space:]]*$//; s/^["'\'']//; s/["'\'']$//' | head -1)
+        NAME_VALUE=$(grep -E "^[[:space:]]*NAME[[:space:]]*=" "$ifcfg_file" | sed 's/#.*$//; s/^[[:space:]]*NAME[[:space:]]*=[[:space:]]*//; s/[[:space:]]*$//; s/^["'\'']//; s/["'\'']$//' | head -1)
+
+        # 检查 NAME 或 DEVICE 是否匹配网卡名称
+        if [ "$DEVICE_VALUE" = "$NIC_NAME" ] || [ "$NAME_VALUE" = "$NIC_NAME" ]; then
+          NICFG="$ifcfg_file"
+          break
+        fi
+      done
+
+      # 如果仍未找到，输出错误信息并退出
+      if [ ! -f "$NICFG" ]; then
+        echo "error: Network config file for $NIC_NAME not found"
+        exit 1
+      fi
+    fi
+
+    # 修改网卡配置文件，添加 keepalived 脚本引用
+    if ! grep -q "$KEEPALIVED_CMD_PATTERN" "$NICFG"; then
+      echo "" >> "$NICFG"
+      echo "# Keepalived service management script" >> "$NICFG"
+      echo "$KEEPALIVED_SCRIPT" >> "$NICFG"
+    fi
+  args:
+    executable: /bin/bash

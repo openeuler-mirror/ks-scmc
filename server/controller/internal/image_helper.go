@@ -192,6 +192,10 @@ func (i *ImageFile) parseDockerID() error {
 		}
 	}
 
+	if zeroTar {
+		return errors.New("镜像异常")
+	}
+
 	return nil
 }
 

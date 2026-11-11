@@ -21,11 +21,6 @@ import (
 	"scmc/server/args"
 )
 
-const (
-	// 审计管理员
-	SecAdmUserID = 1001
-)
-
 type ImageUploadStream struct {
 	ss pb.Image_UploadServer
 }

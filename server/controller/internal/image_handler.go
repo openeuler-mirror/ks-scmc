@@ -16,14 +16,8 @@ import (
 
 	"scmc/model/db"
 	"scmc/rpc"
-	"scmc/rpc/middleware/auth"
 	pb "scmc/rpc/pb/image"
 	"scmc/server/args"
-)
-
-const (
-	// 审计管理员
-	SecAdmUserID = 1001
 )
 
 type ImageUploadStream struct {
@@ -167,11 +161,7 @@ func (s *ImageServer) receiveImageFile(securitySwitch bool, img *db.ImageInfo, s
 	if err := f.ReadStream(stream); err != nil {
 		f.Destroy()
 		log.Errorf("Write stream data to image file err=%v", err)
-		errStr := "镜像异常"
-		if strings.HasSuffix(err.Error(), "no space left on device") {
-			errStr = "磁盘空间不足"
-		}
-		return nil, status.Errorf(codes.InvalidArgument, "读写镜像数据失败：%s", errStr)
+		return nil, status.Errorf(codes.InvalidArgument, "读写镜像数据失败：%s", err.Error())
 	}
 
 	// verify sha256 checksum
@@ -290,12 +280,6 @@ func (s *ImageServer) ListDBEx(Address string) (*pb.ListDBReply, error) {
 }
 
 func (s *ImageServer) ListDB(ctx context.Context, in *pb.ListDBRequest) (*pb.ListDBReply, error) {
-	uid, ok := auth.UserIDFromContext(ctx)
-	if ok && uid == SecAdmUserID {
-		// 审计管理员
-		return s.ListDBSec(ctx, in)
-	}
-
 	nodes, err := db.ListNodes()
 	if err != nil {
 		log.Warnf("Failed to list node images: %v", err)
@@ -351,7 +335,8 @@ func (s *ImageServer) ListDB(ctx context.Context, in *pb.ListDBRequest) (*pb.Lis
 	return &finalReply, nil
 }
 
-func (s *ImageServer) ListDBSec(ctx context.Context, in *pb.ListDBRequest) (*pb.ListDBReply, error) {
+/*
+func (s *ImageServer) ListDB(ctx context.Context, in *pb.ListDBRequest) (*pb.ListDBReply, error) {
 	images, err := db.ListImages()
 	if err != nil {
 		log.Warnf("Failed to get images list: %v", err)
@@ -375,6 +360,7 @@ func (s *ImageServer) ListDBSec(ctx context.Context, in *pb.ListDBRequest) (*pb.
 
 	return &reply, nil
 }
+*/
 
 func (s *ImageServer) Upload(stream pb.Image_UploadServer) error {
 	// 镜像大小 版本 描述 签名(如果有)等信息在第一个数据包

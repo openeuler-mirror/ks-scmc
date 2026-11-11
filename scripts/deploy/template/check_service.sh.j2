@@ -5,15 +5,15 @@ HOST="{{ inventory_hostname }}"
 
 # 检查网卡是否存在
 if ! ip link show "$NIC" >/dev/null 2>&1; then
-        echo "$(date) - NIC $NIC does not exist! stop keepalived" >> /var/log/keepalived_mysql.log
-        systemctl stop keepalived.service
-        exit 1
+	echo "$(date) - NIC $NIC does not exist!" >> /var/log/keepalived_mysql.log
+	systemctl restart keepalived.service
+	exit 1
 fi
 
 # 检查网卡上是否存在 HOST IP地址
 if ! ip addr show "$NIC" | grep -q "$HOST"; then
-	echo "$(date) - IP $HOST not found on NIC $NIC! stop keepalived" >> /var/log/keepalived_mysql.log
-	systemctl stop keepalived.service
+	echo "$(date) - IP $HOST not found on NIC $NIC!" >> /var/log/keepalived_mysql.log
+	systemctl restart keepalived.service
 	exit 1
 fi
 

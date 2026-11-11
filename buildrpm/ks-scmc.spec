@@ -113,6 +113,9 @@ rm -rf %{_datadir}/ks-scmc
 %{_sysconfdir}/sudoers.d/ks-scmc-sudoers
 
 %changelog
+* Sun Dec 14 2025 tangshenghong<tangshenghong@kylinsec.com.cn> - 1.2.1-14.ky3
+- KYOS-F: Upgrade from 1.2.1-13 to 1.2.1-14. (#108855)
+
 * Fri Dec 12 2025 yubin <yubin@kylinsec.com.cn> - 1.2.1-13.ky3
 - KYOS-F: Upgrade from 1.2.1-12 to 1.2.1-13. (#108371)
 

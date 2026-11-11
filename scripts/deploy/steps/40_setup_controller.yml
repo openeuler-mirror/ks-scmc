@@ -17,11 +17,16 @@
     backup: true
 - name: CONTROLLER 启动后台服务
   service: name=ks-scmc-controller state=restarted enabled=true
+- name: CONTROLLER 设置服务器地址
+  set_fact:
+    server_addr: "{{ (cluster.virtual_ip + ':10050') if (cluster.enabled == true) else '127.0.0.1:10050' }}"
+  run_once: true
 - name: CONTROLLER 创建管理员用户
   run_once: true
   shell: |
     set -e
-    SERVER_ADDR="127.0.0.1:10050"
+    SERVER_ADDR="{{ server_addr }}"
+    echo "SERVER_ADDR: ${SERVER_ADDR}"
     BIN="ks-scmc-user"
 
     cd {{ script_dir }}

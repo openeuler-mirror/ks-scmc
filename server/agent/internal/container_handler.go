@@ -263,7 +263,7 @@ func (s *ContainerServer) List(ctx context.Context, in *pb.ListRequest) (*pb.Lis
 		}
 
 		// 用户要求 CPU 使用率不能超过 100%, 这里计算一个平均值
-		inspectCtx, cancel := context.WithTimeout(context.Background(), time.Second)
+		inspectCtx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 		defer cancel()
 
 		// 默认使用主机总CPU核心数作为基准

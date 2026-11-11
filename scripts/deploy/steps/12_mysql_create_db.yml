@@ -14,6 +14,7 @@
   ignore_errors: false
 
 - name: MYSQL 创建数据库与用户
+  run_once: true
   shell: |
     set -e
     mysql -S /var/lib/mysql/mysql.sock -uroot -p'{{ mysql.root_password }}' < {{ script_dir }}/database.sql

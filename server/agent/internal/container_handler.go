@@ -263,7 +263,7 @@ func (s *ContainerServer) List(ctx context.Context, in *pb.ListRequest) (*pb.Lis
 		}
 
 		// 用户要求 CPU 使用率不能超过 100%, 这里计算一个平均值
-		inspectCtx, cancel := context.WithTimeout(context.Background(), time.Second)
+		inspectCtx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 		defer cancel()
 
 		// 默认使用主机总CPU核心数作为基准
@@ -840,31 +840,15 @@ func (s *ContainerServer) Start(ctx context.Context, in *pb.StartRequest) (*pb.S
 	for _, id := range in.Ids[0].ContainerIds {
 		if err := cli.ContainerStart(context.Background(), id, opts); err != nil {
 			log.Warnf("ContainerStart: id=%v %v", id, err)
-			var failReason string
-
-			/*
-				if strings.HasSuffix(err.Error(), "Address already in use") {
-					faileReason = "IP已被占用"
-				} else if s, _ := status.FromError(err); s != nil {
-					faileReason = s.Message()
-				}
-			*/
-
+			var faileReason string
 			if strings.HasSuffix(err.Error(), "Address already in use") {
-				failReason = "IP已被占用"
+				faileReason = "IP已被占用"
+			} else if s, _ := status.FromError(err); s != nil {
+				faileReason = s.Message()
 			}
-
-			if failReason == "" && strings.Contains(err.Error(), "network") && strings.HasSuffix(err.Error(), "not found") {
-				failReason = "网卡不存在"
-			}
-
-			if failReason == "" {
-				failReason = "启动命令错误"
-			}
-
 			reply.FailInfos = append(reply.FailInfos, &pb.ContainerFailInfo{
 				ContainerId: id,
-				FailReason:  failReason,
+				FailReason:  faileReason,
 			})
 			continue
 		}

@@ -6,7 +6,7 @@
 
 %global pkg_name ks-scmc
 %global pkg_ver 1.2.1
-%global pkg_rel 13
+%global pkg_rel 12 
 
 Summary:        KylinSec security container magic cube
 License:        No License
@@ -22,7 +22,7 @@ Summary:       KylinSec security container magic cube server package
 BuildRequires: pkgconfig(systemd) git golang make coreutils protobuf-compiler systemd
 
 Requires: coreutils bash socat systemd lsyncd rsync xinetd keepalived
-Requires: docker-ce cadvisor influxdb opensnitch
+Requires: docker-ce cadvisor influxdb
 Requires: ks-license-client ks-license-gui-client
 %if "%{kylin_version}" == "3.3"
 Requires: mysql-community-server
@@ -113,9 +113,6 @@ rm -rf %{_datadir}/ks-scmc
 %{_sysconfdir}/sudoers.d/ks-scmc-sudoers
 
 %changelog
-* Fri Dec 12 2025 yubin <yubin@kylinsec.com.cn> - 1.2.1-13.ky3
-- KYOS-F: Upgrade from 1.2.1-12 to 1.2.1-13. (#108371)
-
 * Mon Dec 1 2025 yubin <yubin@kylinsec.com.cn> - 1.2.1-12.ky3
 - KYOS-F: Upgrade from 1.2.1-11 to 1.2.1-12. (#106480)
 

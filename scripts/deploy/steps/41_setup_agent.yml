@@ -83,6 +83,52 @@
     else
       sed -i "s/^CADVISOR_STORAGE_DRIVER_PASSWORD=.*/CADVISOR_STORAGE_DRIVER_PASSWORD=\"$INFLUXDB_PASS\"/g" "$CADVISOR_CONFIG"
     fi
+# 配置cAdvisor监听地址为127.0.0.1
+- name: AGENT 配置cAdvisor监听地址
+  shell: |
+    CADVISOR_CONFIG="/etc/sysconfig/cadvisor"
+    if [ -f "$CADVISOR_CONFIG" ]; then
+      # 如果已存在 CADVISOR_LISTEN_IP 配置，则更新它
+      if grep -q "^[[:space:]]*CADVISOR_LISTEN_IP" "$CADVISOR_CONFIG"; then
+        sed -i 's/^[[:space:]]*CADVISOR_LISTEN_IP=.*/CADVISOR_LISTEN_IP="127.0.0.1"/' "$CADVISOR_CONFIG"
+      else
+        # 如果不存在，则添加配置
+        echo 'CADVISOR_LISTEN_IP="127.0.0.1"' >> "$CADVISOR_CONFIG"
+      fi
+    fi
+  args:
+    executable: /bin/bash
+- name: AGENT 配置cAdvisor systemd服务文件
+  shell: |
+    cat > /usr/lib/systemd/system/cadvisor.service << 'EOF'
+    [Unit]
+    Description=cAdvisor
+
+    [Service]
+    EnvironmentFile=/etc/sysconfig/cadvisor
+    ExecStart=/usr/bin/cadvisor \
+            --docker=${CADVISOR_DOCKER_ENDPOINT} \
+            --listen_ip=${CADVISOR_LISTEN_IP} \
+            --port=${CADVISOR_PORT} \
+            --storage_driver=${CADVISOR_STORAGE_DRIVER} \
+            --storage_driver_host=${CADVISOR_STORAGE_DRIVER_HOST} \
+            --storage_driver_password=${CADVISOR_STORAGE_DRIVER_PASSWORD} \
+            --storage_driver_secure=${CADVISOR_STORAGE_DRIVER_SECURE} \
+            --storage_driver_user=${CADVISOR_STORAGE_DRIVER_USER} \
+            --logtostderr=${CADVISOR_LOG_TO_STDERR} \
+            --disable_metrics=${CADVISOR_DISABLE_METRICS} \
+            --event_storage_age_limit=${CADVISOR_EVENT_STORAGE_AGE_LIMIT} \
+            --global_housekeeping_interval=${CADVISOR_GLOBAL_HOUSEKEEPING_INTERVAL}
+
+    [Install]
+    WantedBy=multi-user.target
+    EOF
+  args:
+    executable: /bin/bash
+- name: AGENT 重新加载systemd配置
+  shell: systemctl daemon-reload
+- name: AGENT 重启cAdvisor服务
+  shell: systemctl restart cadvisor.service
 # 更新docker服务配置
 - name: AGENT 配置容器运行时
   shell: |

@@ -46,7 +46,7 @@ func GetContainerId(cli containerPB.ContainerClient, containerName string, ctx c
 func Struct2JsonString(obj interface{}) string {
 	jsonData, err := json.Marshal(obj)
 	if err != nil {
-		logrus.Warnf("Failed to serialize, because %s", err)
+		logrus.Warn("Failed to serialize, because %s", err)
 	}
 	return string(jsonData)
 }

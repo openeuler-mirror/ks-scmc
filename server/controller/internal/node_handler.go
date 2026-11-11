@@ -127,7 +127,7 @@ func (s *NodeServer) Remove(ctx context.Context, in *pb.RemoveRequest) (*pb.Remo
 			log.Warnf("get agent connection addr=%v err=%v", n.Address, err)
 			return nil, rpc.ErrInternal
 		}
-		timeoutCtx, timeoutCancel := context.WithTimeout(context.Background(), 2*time.Second)
+		timeoutCtx, timeoutCancel := context.WithTimeout(context.Background(), time.Second)
 		defer timeoutCancel()
 		_, err = pb.NewNodeClient(conn).Remove(timeoutCtx, &pb.RemoveRequest{Ids: in.Ids, Uuid: n.UUID})
 		if err != nil { // 离线（换了IP）或者关机的时候会因为这里失败, 导致不能Remove

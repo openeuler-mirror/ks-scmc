@@ -571,7 +571,7 @@ func setupIngress(pid int, rate float64) error {
 	cmds := []string{
 		fmt.Sprintf("nsenter -t %d -n tc qdisc add dev eth0 handle ffff: ingress", pid),
 		fmt.Sprintf("nsenter -t %d -n tc filter add dev eth0 parent ffff: protocol ip u32 match u32 0 0 action mirred egress redirect dev ifb0", pid),
-		fmt.Sprintf("nsenter -t %d -n tc qdisc add dev ifb0 root tbf rate %dmbit latency 100ms burst %d",
+		fmt.Sprintf("nsenter -t %d -n tc qdisc add dev ifb0 root tbf rate %.1fmbit latency 100ms burst %.1f",
 			pid, rate*8, calculateBurst(rate)),
 	}
 
@@ -585,7 +585,7 @@ func setupIngress(pid int, rate float64) error {
 }
 
 func setupEgress(pid int, rate float64) error {
-	cmd := fmt.Sprintf("nsenter -t %d -n tc qdisc add dev eth0 root tbf rate %dmbit latency 100ms burst %d",
+	cmd := fmt.Sprintf("nsenter -t %d -n tc qdisc add dev eth0 root tbf rate %.1fmbit latency 100ms burst %.1f",
 		pid, rate*8, calculateBurst(rate))
 	return exec.Command("sh", "-c", cmd).Run()
 }

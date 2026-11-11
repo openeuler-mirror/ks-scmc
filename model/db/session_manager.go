@@ -59,7 +59,7 @@ func (s *_SessionManager) _SessionCheck() {
 		case <-s._sessionChecker.C:
 			db, err := getConn()
 			if err != nil {
-				log.Error("Failed to get database connection, because %s", err)
+				log.Errorf("Failed to get database connection, because %v", err)
 				return
 			}
 			db.Transaction(func(tx *gorm.DB) error {
@@ -77,12 +77,12 @@ func (s *_SessionManager) _SessionCheck() {
 func SessionManagerGetNodeIP(sessionID string) *string {
 	db, err := getConn()
 	if err != nil {
-		log.Error("Failed to get database connection, because %s", err)
+		log.Errorf("Failed to get database connection, because %v", err)
 		return nil
 	}
 	sessions := []_Session{}
 	if err := db.Where("session_id = ?", sessionID).Find(&sessions).Error; err != nil {
-		log.Error("Failed to get sessions! because: ", err)
+		log.Errorf("Failed to get sessions! because: %v", err)
 		return nil
 	}
 	if len(sessions) == 0 {

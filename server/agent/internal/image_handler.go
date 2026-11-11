@@ -173,7 +173,7 @@ func (s *ImageServer) AgentSync(ctx context.Context, in *pb.AgentSyncRequest) (*
 				if err.Error() == "EOF" {
 					break
 				}
-				log.Errorf("无法读取归档文件：", err)
+				log.Errorf("无法读取归档文件：%v", err)
 				return
 			}
 			// log.Debugln(header.Name)

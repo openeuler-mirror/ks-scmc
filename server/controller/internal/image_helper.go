@@ -18,6 +18,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/crypto/openpgp"
 
+	"golang.org/x/sys/unix"
 	"scmc/common"
 )
 
@@ -33,6 +34,18 @@ func imageSigner() string {
 
 func imageMaxSize() int64 {
 	return int64(common.Config.Controller.ImageMaxSize)
+}
+
+// 获取指定路径所在分区的剩余空间（字节）
+func getAvailableDiskSpace(path string) (uint64, error) {
+	var stat unix.Statfs_t
+	err := unix.Statfs(path, &stat)
+	if err != nil {
+		return 0, fmt.Errorf("获取磁盘空间信息失败: %v", err)
+	}
+	// Bavail 是普通用户可用的空闲块数，Bsize 是块大小
+	available := stat.Bavail * uint64(stat.Bsize)
+	return available, nil
 }
 
 type ImageFileStream interface {

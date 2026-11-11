@@ -59,6 +59,10 @@ func ErrImageSize(size float64) error {
 	return status.Errorf(codes.InvalidArgument, "镜像大小超过上限（%s）", units.BytesSize(size))
 }
 
+func ErrInsufficientDiskSpace(required, available float64) error {
+	return status.Errorf(codes.ResourceExhausted, "磁盘空间不足：需要 %s，可用 %s", units.HumanSize(required), units.HumanSize(available))
+}
+
 func ErrInvalidArgumentWrapper(err error) error {
 	errSlice := strings.Split(err.Error(), ":")
 	if len(errSlice) >= 1 {

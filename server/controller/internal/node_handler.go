@@ -463,7 +463,7 @@ func GetNodeStatus(n *db.NodeInfo) (*pb.NodeStatus, error) {
 	}
 
 	cli := pb.NewNodeClient(conn)
-	ctx_, cancel := context.WithTimeout(context.Background(), time.Second*2)
+	ctx_, cancel := context.WithTimeout(context.Background(), time.Second*1)
 	defer cancel()
 	r, err := cli.Status(ctx_, &pb.StatusRequest{})
 	if err != nil {

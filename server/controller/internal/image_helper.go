@@ -157,13 +157,15 @@ func (i *ImageFile) parseDockerID() error {
 		return err
 	}
 
+	zeroTar := true
+
 	r := tar.NewReader(i.f)
 	for h, err := r.Next(); err != io.EOF; h, err = r.Next() {
 		if err != nil {
 			log.Warnf("Read tar file=%+v err=%v", i.f, err) // image tar file header
 			return err
 		}
-
+		zeroTar = false
 		fname := h.FileInfo().Name()
 		if fname == ManifestFileName && strings.Count(h.Name, "/") < 2 {
 			var manifest []map[string]interface{}
@@ -188,6 +190,10 @@ func (i *ImageFile) parseDockerID() error {
 				i.dockerID = manifestConfig[0:index]
 			}
 		}
+	}
+
+	if zeroTar {
+		return errors.New("镜像异常")
 	}
 
 	return nil

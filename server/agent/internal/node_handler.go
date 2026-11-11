@@ -46,7 +46,8 @@ var blockedPorts = map[uint32]bool{
 	10051: true, // agent
 	10050: true, // controller
 	873:   true, // rsyncd
-
+	33060: true, //mysql
+	8088:  true, // influxdb
 }
 
 func isIpcContainer(id string) bool {

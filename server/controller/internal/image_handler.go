@@ -3,7 +3,6 @@ package internal
 import (
 	"bufio"
 	"context"
-	"fmt"
 	"io"
 	"os"
 	"path/filepath"
@@ -13,12 +12,10 @@ import (
 
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
 
 	"scmc/model/db"
 	"scmc/rpc"
-	"scmc/rpc/middleware/auth"
 	pb "scmc/rpc/pb/image"
 	"scmc/server/args"
 )
@@ -238,15 +235,6 @@ func (s *ImageServer) List(ctx context.Context, in *pb.ListRequest) (*pb.ListRep
 	if err != nil {
 		log.Warnf("Failed to get agent connection: nodeId=%d, address=%s, err=%v", in.NodeId, n.Address, err)
 		return nil, rpc.ErrInternal
-	}
-
-	// user_id 传递到 agent
-	uid, ok := auth.UserIDFromContext(ctx)
-	if ok {
-		md := metadata.New(map[string]string{
-			"user_id": fmt.Sprintf("%d", uid),
-		})
-		ctx = metadata.NewOutgoingContext(ctx, md)
 	}
 
 	// 调用 Agent 的 List 方法，获取该节点上的实际镜像列表

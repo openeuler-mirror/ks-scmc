@@ -2404,7 +2404,7 @@ func (*ContainerServer) LoadImage(in *pb.LoadRequest, stream pb.Container_LoadIm
 				if err := stream.Send(&pb.LoadProgress{
 					Update: &pb.LoadProgress_Percent{Percent: currentPercent},
 				}); err != nil {
-					log.Error("image load progress update failed: %v", err)
+					log.Errorf("image load progress update failed: %v", err)
 					return rpc.ErrInternal
 				}
 			}
@@ -2413,7 +2413,7 @@ func (*ContainerServer) LoadImage(in *pb.LoadRequest, stream pb.Container_LoadIm
 			if err := stream.Send(&pb.LoadProgress{
 				Update: &pb.LoadProgress_Message{Message: msg.Stream},
 			}); err != nil {
-				log.Error("image load message update failed: %v", err)
+				log.Errorf("image load message update failed: %v", err)
 				return rpc.ErrInternal
 			}
 		}

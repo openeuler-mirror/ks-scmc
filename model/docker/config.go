@@ -459,13 +459,13 @@ func setContainerNetRbw(netRbw float64, containerPid string) error {
 	latency := 100 * time.Millisecond.Seconds() // 0.1s
 	burst := int(float64(rateMbit*1e6) * latency)
 	tcArgs := []string{
-		"-t", fmt.Sprintf("%d", containerPid),
+		"-t", fmt.Sprintf("%s", containerPid),
 		"-n",
 		"tc", "qdisc", "replace", // 使用 replace 避免重复 add/del
 		"dev", "eth0", "root",
 		"tbf",
 		"rate", fmt.Sprintf("%dmbit", rateMbit),
-		"latency", fmt.Sprintf("%dms", latency),
+		"latency", fmt.Sprintf("%.1fms", latency),
 		"burst", fmt.Sprintf("%d", burst),
 	}
 	cmd := exec.Command("nsenter", tcArgs...)

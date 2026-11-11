@@ -56,4 +56,24 @@
     RestartSec=5s
     EOF
     systemctl daemon-reload
+
+- name: 修改网卡配置文件,启动网卡需要拉起keepalived服务
+  shell: |
+    set -e
+    NICFG="/etc/sysconfig/network-scripts/ifcfg-{{ cluster.virtual_ip_nic }}"
+    KEEPALIVED_RESTART_CMD="systemctl restart keepalived.service > /dev/null 2>&1"
     
+    # 检查配置文件是否存在
+    if [ ! -f "$NICFG" ]; then
+      echo "Warning: Network config file $NICFG does not exist"
+      exit 0
+    fi
+    
+    # 检查是否存在 keepalived 重启脚本
+    if ! grep -q "$KEEPALIVED_RESTART_CMD" "$NICFG"; then
+      # 如果不存在，添加脚本配置
+      echo "" >> "$NICFG"
+      echo "$KEEPALIVED_RESTART_CMD" >> "$NICFG"
+    fi
+  args:
+    executable: /bin/bash

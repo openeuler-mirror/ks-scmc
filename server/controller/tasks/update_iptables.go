@@ -308,7 +308,7 @@ func updateContainersIptables() {
 	if succeed {
 		err = os.Remove(updateContainerFlagFile)
 		if err != nil {
-			log.Warnf("updateContainersIptables rm flag file:%v failed:%v", updateContainersIptables, err)
+			log.Warnf("updateContainersIptables rm flag file:%v failed:%v", updateContainerFlagFile, err)
 		}
 	}
 }

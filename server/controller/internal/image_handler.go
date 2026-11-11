@@ -286,9 +286,19 @@ func (s *ImageServer) ListDBEx(Address string) (*pb.ListDBReply, error) {
 
 func (s *ImageServer) ListDB(ctx context.Context, in *pb.ListDBRequest) (*pb.ListDBReply, error) {
 	uid, ok := auth.UserIDFromContext(ctx)
-	if ok && uid == SecAdmUserID {
-		// 审计管理员
-		return s.ListDBSec(ctx, in)
+	if ok {
+		u, err := db.QueryUserByID(uid)
+		if err != nil {
+			log.Warnf("query user_id=%v err=%v", uid, err)
+			return nil, rpc.ErrDatabaseFail
+		} else if u == nil {
+			log.Warnf("query user_id=%v not exist", uid)
+			return nil, rpc.ErrInternal
+		}
+
+		if strings.TrimSpace(u.Username) == "secadm" {
+			return s.ListDBSec(ctx, in)
+		}
 	}
 
 	nodes, err := db.ListNodes()

@@ -158,7 +158,7 @@ func (s *ContainerServer) ContainerTCConfig(containerID string, Nic string) {
 		// 以前客户端配置为Mbps 后面修改为 MB, 后端做转换处理, 所以 * 8。
 		err2 := s.ApplyMultiInterfaceLimit(containerID, iface.Name, data.NetWbw*8, data.NetRbw*8)
 		if err2 != nil {
-			log.Warnf("TC err: %v, containerID: %s, iface.Name: %v, NetWbw: %v, NetRbw: %v", err2, containerID, iface.Name, data.NetWbw, data.NetRbw)
+			log.Warnf("TC err: %v, containerID: %s, iface.Name: %v, NetWbw: %v, NetRbw: %v", err2, iface.Name, data.NetWbw, data.NetRbw)
 		}
 	}
 }

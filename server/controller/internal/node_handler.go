@@ -43,6 +43,27 @@ func (s *NodeServer) List(ctx context.Context, in *pb.ListRequest) (*pb.ListRepl
 			Status: s,
 		})
 	}
+
+	// 校验节点是否已被删除
+	currentNodes, err := db.ListNodes()
+	if err != nil {
+		log.Warnf("ListNodes failed: %v", err)
+		reply.Nodes = []*pb.NodeInfo{}
+		return &reply, nil
+	}
+
+	validNodeMap := make(map[int64]bool)
+	for _, n := range currentNodes {
+		validNodeMap[n.ID] = true
+	}
+
+	var filteredNodes []*pb.NodeInfo
+	for _, node := range reply.Nodes {
+		if validNodeMap[node.Id] {
+			filteredNodes = append(filteredNodes, node)
+		}
+	}
+	reply.Nodes = filteredNodes
 	return &reply, nil
 }
 
@@ -127,7 +148,7 @@ func (s *NodeServer) Remove(ctx context.Context, in *pb.RemoveRequest) (*pb.Remo
 			log.Warnf("get agent connection addr=%v err=%v", n.Address, err)
 			return nil, rpc.ErrInternal
 		}
-		timeoutCtx, timeoutCancel := context.WithTimeout(context.Background(), time.Second)
+		timeoutCtx, timeoutCancel := context.WithTimeout(context.Background(), 2*time.Second)
 		defer timeoutCancel()
 		_, err = pb.NewNodeClient(conn).Remove(timeoutCtx, &pb.RemoveRequest{Ids: in.Ids, Uuid: n.UUID})
 		if err != nil { // 离线（换了IP）或者关机的时候会因为这里失败, 导致不能Remove
@@ -442,7 +463,7 @@ func GetNodeStatus(n *db.NodeInfo) (*pb.NodeStatus, error) {
 	}
 
 	cli := pb.NewNodeClient(conn)
-	ctx_, cancel := context.WithTimeout(context.Background(), time.Second*5)
+	ctx_, cancel := context.WithTimeout(context.Background(), time.Second*2)
 	defer cancel()
 	r, err := cli.Status(ctx_, &pb.StatusRequest{})
 	if err != nil {

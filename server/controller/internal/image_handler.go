@@ -16,8 +16,14 @@ import (
 
 	"scmc/model/db"
 	"scmc/rpc"
+	"scmc/rpc/middleware/auth"
 	pb "scmc/rpc/pb/image"
 	"scmc/server/args"
+)
+
+const (
+	// 审计管理员
+	SecAdmUserID = 1001
 )
 
 type ImageUploadStream struct {
@@ -280,6 +286,12 @@ func (s *ImageServer) ListDBEx(Address string) (*pb.ListDBReply, error) {
 }
 
 func (s *ImageServer) ListDB(ctx context.Context, in *pb.ListDBRequest) (*pb.ListDBReply, error) {
+	uid, ok := auth.UserIDFromContext(ctx)
+	if ok && uid == SecAdmUserID {
+		// 审计管理员
+		return s.ListDBSec(ctx, in)
+	}
+
 	nodes, err := db.ListNodes()
 	if err != nil {
 		log.Warnf("Failed to list node images: %v", err)
@@ -335,8 +347,7 @@ func (s *ImageServer) ListDB(ctx context.Context, in *pb.ListDBRequest) (*pb.Lis
 	return &finalReply, nil
 }
 
-/*
-func (s *ImageServer) ListDB(ctx context.Context, in *pb.ListDBRequest) (*pb.ListDBReply, error) {
+func (s *ImageServer) ListDBSec(ctx context.Context, in *pb.ListDBRequest) (*pb.ListDBReply, error) {
 	images, err := db.ListImages()
 	if err != nil {
 		log.Warnf("Failed to get images list: %v", err)
@@ -360,7 +371,6 @@ func (s *ImageServer) ListDB(ctx context.Context, in *pb.ListDBRequest) (*pb.Lis
 
 	return &reply, nil
 }
-*/
 
 func (s *ImageServer) Upload(stream pb.Image_UploadServer) error {
 	// 镜像大小 版本 描述 签名(如果有)等信息在第一个数据包

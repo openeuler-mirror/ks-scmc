@@ -16,6 +16,26 @@ import (
 	"scmc/model/litedb"
 )
 
+// 计算合理的 burst 值，（按速率的 5%, 最小 20Mbit）
+func calculateBurstStr(rateStr string) string {
+	rateNumStr := strings.TrimSuffix(rateStr, "mbit")
+	rateNum, err := strconv.ParseFloat(rateNumStr, 64)
+	if err != nil {
+		return "20mbit" // 默认 20Mbit
+	}
+
+	burst := rateNum * 0.05
+	if burst < 20 {
+		burst = 20
+	}
+
+	s := fmt.Sprintf("%.1f", burst)
+	s = strings.TrimRight(s, "0")
+	s = strings.TrimRight(s, ".")
+
+	return s + "mbit"
+}
+
 // 通过容器ID获取容器里面 docker 网卡
 func (s *ContainerServer) GetContainerNIC(containerID string) (map[string]string, error) {
 	cli, err := docker.Client()
@@ -169,6 +189,7 @@ func (s *ContainerServer) ApplyMultiInterfaceLimit(containerID, iface string, Eg
 	if EgressMbps < 0 {
 		EgressMbps = 0
 	}
+
 	if IngressMbps < 0 {
 		IngressMbps = 0
 	}
@@ -176,12 +197,13 @@ func (s *ContainerServer) ApplyMultiInterfaceLimit(containerID, iface string, Eg
 	if err := ensureIFBModuleLoaded(); err != nil {
 		log.Warning("Warning: IFB module may not be loaded")
 	}
+
 	netns, err := getNetnsPath(containerID)
 	ifbName, err := ifbNameForInterface(iface)
 	if err != nil {
 		return err
 	}
-	cleanupBandwidthRules(netns, iface)
+	cleanupBandwidthRules(netns, iface, ifbName)
 
 	if EgressMbps > 0 {
 		egressStr := mbpsToTcRate(EgressMbps)
@@ -225,10 +247,12 @@ func ifbNameForInterface(iface string) (string, error) {
 	if !strings.HasPrefix(iface, "eth") {
 		return "", fmt.Errorf("unsupported interface prefix: %s", iface)
 	}
+
 	numStr := strings.TrimPrefix(iface, "eth")
 	if _, err := strconv.Atoi(numStr); err != nil {
 		return "", fmt.Errorf("invalid interface number in %s", iface)
 	}
+
 	return "ifb" + numStr, nil
 }
 
@@ -271,26 +295,44 @@ func ensureIFBModuleLoaded() error {
 }
 
 // cleanupBandwidthRules removes existing tc rules and IFB device for an interface
-func cleanupBandwidthRules(netns, iface string) error {
-	ifbName, err := ifbNameForInterface(iface)
-	if err != nil {
-		return err
-	}
-
+func cleanupBandwidthRules(netns, iface, ifbName string) error {
 	runInNetns(netns, "tc", "qdisc", "del", "dev", iface, "root")
 	runInNetns(netns, "tc", "qdisc", "del", "dev", iface, "ingress")
+	runInNetns(netns, "tc", "qdisc", "del", "dev", ifbName, "root")
 	runInNetns(netns, "ip", "link", "del", ifbName)
 	return nil
 }
 
 // limitEgress applies egress (upload) bandwidth limit
 func limitEgress(netns, iface, rate string) error {
-	if err := runInNetns(netns, "tc", "qdisc", "add", "dev", iface, "root", "handle", "1:", "htb", "default", "1"); err != nil {
+	// 1、添加 root qdisc (补充r2q=1, direct_qlen=1000)
+	if err := runInNetns(netns, "tc", "qdisc", "add", "dev", iface, "root", "handle", "1:", "htb", "r2q", "1", "default", "12", "direct_qlen", "1000"); err != nil {
 		return fmt.Errorf("add root qdisc on %s: %w", iface, err)
 	}
-	if err := runInNetns(netns, "tc", "class", "add", "dev", iface, "parent", "1:", "classid", "1:1", "htb", "rate", rate, "ceil", rate); err != nil {
+
+	// 2、计算 burst/cburst 值
+	burst := calculateBurstStr(rate)
+	cburst := burst
+
+	// 3、添加父类(补充 burst/cburst)
+	if err := runInNetns(netns, "tc", "class", "add", "dev", iface, "parent", "1:", "classid", "1:1", "htb", "rate", rate, "ceil", rate, "burst", burst, "cburst", cburst); err != nil {
 		return fmt.Errorf("set egress rate on %s: %w", iface, err)
 	}
+
+	// 4、添加子类(用于 sfq 调度)
+	if err := runInNetns(netns,
+		"tc", "class", "add", "dev", iface, "parent", "1:1", "classid", "1:12",
+		"htb", "rate", rate, "ceil", rate, "burst", burst, "cburst", cburst); err != nil {
+		return fmt.Errorf("set egress child class on %s:%w", iface, err)
+	}
+
+	// 5、添加 SFQ 调度(公平分配带宽, perturb 5秒)
+	if err := runInNetns(netns,
+		"tc", "qdisc", "add", "dev", iface, "parent", "1:12", "handle", "12:",
+		"sfq", "perturb", "5"); err != nil {
+		return fmt.Errorf("add sfq qdisc on %s:%w", iface, err)
+	}
+
 	return nil
 }
 
@@ -321,12 +363,31 @@ func redirectIngressToIFB(netns, iface, ifbName string) error {
 
 // limitIngressViaIFB applies ingress (download) limit on IFB
 func limitIngressViaIFB(netns, ifbName, rate string) error {
-	if err := runInNetns(netns, "tc", "qdisc", "add", "dev", ifbName, "root", "handle", "2:", "htb", "default", "1"); err != nil {
+	// 1、添加 root qdisc (补充 r2q=1, direct_qlen=1000)
+	if err := runInNetns(netns, "tc", "qdisc", "add", "dev", ifbName, "root", "handle", "2:", "htb", "r2q", "1", "default", "12", "direct_qlen", "1000"); err != nil {
 		return fmt.Errorf("add root qdisc on %s: %w", ifbName, err)
 	}
+
+	// 2、计算 burst/cburst 值
+	burst := calculateBurstStr(rate)
+	cburst := burst
+
+	// 3、添加父类（补充burst/cburst）
 	if err := runInNetns(netns,
-		"tc", "class", "add", "dev", ifbName, "parent", "2:", "classid", "2:1", "htb", "rate", rate, "ceil", rate); err != nil {
+		"tc", "class", "add", "dev", ifbName, "parent", "2:", "classid", "2:1", "htb", "rate", rate, "ceil", rate, "burst", burst, "cburst", cburst); err != nil {
 		return fmt.Errorf("set ingress rate on %s: %w", ifbName, err)
 	}
+	// 4、添加子类(用于sfq 调度)
+	if err := runInNetns(netns,
+		"tc", "class", "add", "dev", ifbName, "parent", "2:1", "classid", "2:12", "htb", "rate", rate, "ceil", rate, "burst", burst, "cburst", cburst); err != nil {
+		return fmt.Errorf("set ingress child class on %s:%w", ifbName, err)
+	}
+
+	// 5、添加 SFQ 调度
+	if err := runInNetns(netns,
+		"tc", "qdisc", "add", "dev", ifbName, "parent", "2:12", "handle", "22:", "sfq", "perturb", "5"); err != nil {
+		return fmt.Errorf("add sfq qdisc on %s:%w", ifbName, err)
+	}
+
 	return nil
 }

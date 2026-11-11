@@ -16,8 +16,14 @@ import (
 
 	"scmc/model/db"
 	"scmc/rpc"
+	"scmc/rpc/middleware/auth"
 	pb "scmc/rpc/pb/image"
 	"scmc/server/args"
+)
+
+const (
+	// 审计管理员
+	SecAdmUserID = 1001
 )
 
 type ImageUploadStream struct {

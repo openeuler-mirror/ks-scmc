@@ -43,6 +43,26 @@ func (s *NodeServer) List(ctx context.Context, in *pb.ListRequest) (*pb.ListRepl
 			Status: s,
 		})
 	}
+
+	// 校验节点是否已被删除
+	currentNodes, err := db.ListNodes()
+	if err != nil {
+		log.Warnf("ListNodes failed: %v", err)
+		return nil, rpc.ErrDatabaseFail
+	}
+
+	validNodeMap := make(map[int64]bool)
+	for _, n := range currentNodes {
+		validNodeMap[n.ID] = true
+	}
+
+	var filteredNodes []*pb.NodeInfo
+	for _, node := range reply.Nodes {
+		if validNodeMap[node.Id] {
+			filteredNodes = append(filteredNodes, node)
+		}
+	}
+	reply.Nodes = filteredNodes
 	return &reply, nil
 }
 
@@ -442,7 +462,7 @@ func GetNodeStatus(n *db.NodeInfo) (*pb.NodeStatus, error) {
 	}
 
 	cli := pb.NewNodeClient(conn)
-	ctx_, cancel := context.WithTimeout(context.Background(), time.Second*5)
+	ctx_, cancel := context.WithTimeout(context.Background(), time.Second*1)
 	defer cancel()
 	r, err := cli.Status(ctx_, &pb.StatusRequest{})
 	if err != nil {

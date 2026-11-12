@@ -61,3 +61,9 @@ heap_dump_dir = "/tmp/ks-scmc-pprof"
 
 ```bash
 systemctl restart ks-scmc-server
+systemctl status ks-scmc-server --no-pager
+```
+
+### 步骤 2：确认 perf 已启用
+
+```bash

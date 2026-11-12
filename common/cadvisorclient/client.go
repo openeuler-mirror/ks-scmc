@@ -48,3 +48,9 @@ func decodeContainerInfoMap(body []byte) (map[string]*v1.ContainerInfo, error) {
 	if err := json.Unmarshal(body, &list); err == nil && len(list) > 0 {
 		result := make(map[string]*v1.ContainerInfo, len(list))
 		for i, info := range list {
+			if info == nil {
+				continue
+			}
+			key := strings.TrimSpace(info.Name)
+			if key == "" {
+				key = "/" + strconv.Itoa(i)

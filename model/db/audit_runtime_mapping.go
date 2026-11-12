@@ -113,3 +113,9 @@ func findRuntimeAuditContainerRow(gdb *gorm.DB, nodeID int64, cid string) (*Runt
 	if len(n) >= minDockerContainerIDPrefixLen {
 		if err := gdb.Where("node_id = ? AND LOWER(container_id) LIKE ?", nodeID, n+"%").First(&row).Error; err == nil {
 			return &row, true
+		}
+	}
+	// SQLite：LIKE 优先级低于 ||，必须加括号，否则语义错误。
+	if len(n) > minDockerContainerIDPrefixLen {
+		if err := gdb.Where("node_id = ? AND LENGTH(container_id) >= ? AND LOWER(?) LIKE (LOWER(container_id) || ?)",
+			nodeID, minDockerContainerIDPrefixLen, n, "%").First(&row).Error; err == nil {

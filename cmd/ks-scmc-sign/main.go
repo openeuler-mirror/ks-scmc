@@ -21,3 +21,9 @@ func main() {
 		os.Exit(1)
 	}
 
+	// 解析全局 -config，未传入则使用默认路径
+	configFile := defaultConfigPath
+	fs := flag.NewFlagSet("ks-scmc-sign", flag.ContinueOnError)
+	fs.SetOutput(os.Stderr)
+	configFlag := fs.String("config", "", "配置文件路径（可选）")
+	_ = fs.Parse(os.Args[1:])

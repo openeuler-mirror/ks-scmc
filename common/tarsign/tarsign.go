@@ -547,3 +547,8 @@ func Sign(path string, privKey PrivateKey, hashAlgo HashAlgo, sigAlgo SigAlgo) e
 	digest1, err := computeDigestStream(f, size, string(hashAlgo))
 	if err != nil {
 		return err
+	}
+	sig, metaBytes, newFoot := buildSignatureV1(privKey, digest1, hashAlgo, sigAlgo)
+	return appendSignature(f, sig, metaBytes, newFoot)
+}
+

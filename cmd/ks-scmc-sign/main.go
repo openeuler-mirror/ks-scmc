@@ -9,3 +9,9 @@ import (
 
 	"github.com/sirupsen/logrus"
 
+	"scmc/common"
+	"scmc/common/tarsign"
+)
+
+const defaultConfigPath = "/etc/ks-scmc/server.toml"
+

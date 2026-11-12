@@ -54,3 +54,31 @@ if ! getent group %{name} >/dev/null; then
     groupadd -r %{name}
 fi
 
+# 仅在用户不存在时执行创建用户及相关操作
+if ! getent passwd %{name} >/dev/null; then
+    mkdir -p /home/%{name}
+    useradd -r -d /home/%{name} -g %{name} -c "container terminal connect user" %{name}
+    chown %{name}:%{name} /home/%{name}
+    echo "kylin.2023" | passwd --stdin %{name}
+fi
+
+# getent group %{name} >/dev/null || groupadd -r %{name}
+# mkdir -p /home/%{name}
+# getent passwd %{name} >/dev/null || useradd -r -d /home/%{name} -g %{name} -c "container terminal connect user" %{name}
+# chown %{name}:%{name} /home/%{name}
+# echo "kylin.2023" | passwd --stdin %{name}
+
+# write version info
+mkdir -p %{_datadir}/ks-scmc
+echo %{version}-%{release} > %{_datadir}/ks-scmc/ks-scmc.version
+chmod 0744 %{_datadir}/ks-scmc/ks-scmc.version > /dev/null || :
+
+%preun
+%systemd_preun %{name}-agent.service
+%systemd_preun %{name}-controller.service
+%systemd_preun %{name}-authz.service
+
+rm -rf %{_datadir}/ks-scmc
+
+%files
+%defattr(-,root,root)

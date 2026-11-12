@@ -153,3 +153,9 @@ func startHeapDumpSignalHandler(serviceMode string) {
 }
 
 func startMemStatsLogger(serviceMode string) {
+	sec := Config.Perf.MemStatsLogIntervalSec
+	if sec == 0 {
+		return
+	}
+
+	ticker := time.NewTicker(time.Duration(sec) * time.Second)

@@ -50,3 +50,9 @@ heap_dump_dir = "/tmp/ks-scmc-pprof"
 说明：
 
 - `enable = true` 才会启动 perf 功能
+- `heap_dump_dir` 不能为空，否则 `/debug/leak/*` 与 `SIGUSR1` 会报错
+- `memstats_log_interval_sec = 0` 表示关闭定时内存日志
+
+---
+
+## 3. 快速验证（建议先跑这一段）

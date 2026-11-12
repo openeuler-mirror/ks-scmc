@@ -373,3 +373,9 @@ func ComputeBinaryHashes(tarPath string, hashAlgo HashAlgo, protectedPaths []str
 		digestHex := hex.EncodeToString(h.Sum(nil))
 		// 按约定，这里仅返回 md5 的十六进制串，不带 "md5:" 前缀
 		result[orig] = digestHex
+		found[orig] = true
+
+		// 全部找到可以提前退出
+		if len(found) == len(targets) {
+			break
+		}

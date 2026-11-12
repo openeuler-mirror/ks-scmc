@@ -27,3 +27,9 @@
 
 - 测试机可启动 `ks-scmc-server`（systemd 方式）
 - 可访问配置文件 `/etc/ks-scmc/server.toml`
+- 有权限查看服务日志：`journalctl -u ks-scmc-server`
+- 有权限发送进程信号：`kill -USR1 <pid>`
+
+### 2.2 必要配置
+
+编辑测试机上的 `/etc/ks-scmc/server.toml`，确认存在并启用 `[perf]`：

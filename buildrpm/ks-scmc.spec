@@ -26,3 +26,31 @@ Requires: docker-ce cadvisor influxdb
 Requires: ks-license-client ks-license-gui-client
 %if "%{kylin_version}" == "3.3"
 Requires: mysql-community-server
+%else
+Requires: mysql5-server
+%endif
+
+%description
+KylinSec security container magic cube provides simply, effecient and secure container management.
+
+%prep
+%setup -q -n %{name}-%{version}
+
+%build
+make && cd -
+
+%install
+go env -w GO111MODULE=on
+go env -w GOPROXY=https://goproxy.cn
+make DESTDIR=$RPM_BUILD_ROOT install && cd -
+
+%post
+%systemd_post %{name}-agent.service
+%systemd_post %{name}-controller.service
+%systemd_post %{name}-authz.service
+
+# 仅在组不存在时创建组
+if ! getent group %{name} >/dev/null; then
+    groupadd -r %{name}
+fi
+

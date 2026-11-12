@@ -90,3 +90,9 @@ func UpsertRuntimeAuditContainerName(nodeID int64, containerID, containerName st
 		return translateError(err)
 	}
 	return nil
+}
+
+// Docker 列表/操作接口常用 12 位短 ID，Create 落库多为完整 ID；低于此长度不做前缀匹配以免误命中。
+const minDockerContainerIDPrefixLen = 12
+
+func normalizeDockerContainerID(id string) string {

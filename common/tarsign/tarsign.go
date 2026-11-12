@@ -720,3 +720,9 @@ func appendSignature(f *os.File, sig, metaBytes []byte, foot Footer) error {
 	}
 	if _, err := f.Write(sig); err != nil {
 		return err
+	}
+	if _, err := f.Write(metaBytes); err != nil {
+		return err
+	}
+	if err := binary.Write(f, binary.LittleEndian, foot.Magic); err != nil {
+		return err

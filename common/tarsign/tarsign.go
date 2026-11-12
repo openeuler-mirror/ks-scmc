@@ -177,3 +177,9 @@ func computeDigestStream(f *os.File, size int64, algo string) ([]byte, error) {
 		return nil, err
 	}
 	if _, err := io.Copy(h, io.LimitReader(f, size)); err != nil {
+		return nil, err
+	}
+	return h.Sum(nil), nil
+}
+
+// ReadSignatureAndMeta 读取签名和元数据，同时返回原始 metadata 字节（供 v2 验签使用）

@@ -599,3 +599,8 @@ func SignV2(path string, privKey PrivateKey, hashAlgo HashAlgo, sigAlgo SigAlgo,
 
 	// 幂等：如果原文件已签名，先截断到纯 tar 数据
 	if signed {
+		if err := f.Truncate(size); err != nil {
+			return err
+		}
+	}
+	return appendSignature(f, sig, metaBytes, newFoot)

@@ -691,3 +691,9 @@ func buildSignatureV2(privKey PrivateKey, tarDigest []byte, hashAlgo HashAlgo, s
 		return nil, nil, Footer{}, err
 	}
 
+	h2, err := selectHash(string(hashAlgo))
+	if err != nil {
+		return nil, nil, Footer{}, err
+	}
+	_, _ = h2.Write(tarDigest)
+	_, _ = h2.Write(metaBytes)

@@ -101,3 +101,9 @@ func usage() {
   ks-scmc-sign -config /other/server.toml sign image.tar
 `)
 }
+
+// stringSliceFlag 支持通过重复传入 flag 收集多个值，例如：
+// --sign-file /bin/bash --sign-file /bin/ls
+type stringSliceFlag []string
+
+func (s *stringSliceFlag) String() string {

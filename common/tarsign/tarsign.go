@@ -304,3 +304,9 @@ func ComputeBinaryHashes(tarPath string, hashAlgo HashAlgo, protectedPaths []str
 
 	// 预处理待保护路径：构建 tar 内候选路径 -> 原始路径 映射
 	targets := make(map[string]string)
+	for _, p := range protectedPaths {
+		p = strings.TrimSpace(p)
+		if p == "" {
+			continue
+		}
+		orig := p

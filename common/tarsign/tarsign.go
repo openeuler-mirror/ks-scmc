@@ -495,3 +495,8 @@ func LoadPrivateKey(path string) (PrivateKey, error) {
 			return rsaPriv, nil
 		}
 	}
+	// 再尝试 SM2
+	sm2Priv, err := gmsmx509.ParsePKCS8UnecryptedPrivateKey(block.Bytes)
+	if err == nil {
+		return sm2Priv, nil
+	}

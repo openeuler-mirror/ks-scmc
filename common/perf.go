@@ -67,3 +67,9 @@ func startPprofHTTP(serviceMode string) {
 	log.Infof("perf enabled: mode=%s pprof_listen=%s", serviceMode, addr)
 	if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 		log.Errorf("pprof http server failed: %v", err)
+	}
+}
+
+type dumpReply struct {
+	Profile string `json:"profile"`
+	Path    string `json:"path,omitempty"`

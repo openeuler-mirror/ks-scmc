@@ -841,3 +841,9 @@ func parsePublicKey(pemData []byte) (interface{}, error) {
 			}
 		}
 		// 再尝试 gmsm x509（SM2 证书）
+		gcert, err := gmsmx509.ParseCertificate(block.Bytes)
+		if err == nil {
+			if ecdsaPub, ok := gcert.PublicKey.(*ecdsa.PublicKey); ok && ecdsaPub.Curve == sm2.P256Sm2() {
+				return &sm2.PublicKey{Curve: ecdsaPub.Curve, X: ecdsaPub.X, Y: ecdsaPub.Y}, nil
+			}
+			if rsaPub, ok := gcert.PublicKey.(*rsa.PublicKey); ok {

@@ -183,3 +183,9 @@ func computeDigestStream(f *os.File, size int64, algo string) ([]byte, error) {
 }
 
 // ReadSignatureAndMeta 读取签名和元数据，同时返回原始 metadata 字节（供 v2 验签使用）
+func ReadSignatureAndMeta(f *os.File, foot *Footer) (sig []byte, meta *Metadata, metaRaw []byte, err error) {
+	stat, _ := f.Stat()
+	start := stat.Size() - FooterSize - int64(foot.MetaLen) - int64(foot.SigLen)
+
+	_, err = f.Seek(start, io.SeekStart)
+	if err != nil {

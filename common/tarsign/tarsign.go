@@ -402,3 +402,9 @@ func Verify(path string, pubKey []byte) error {
 	}
 	defer f.Close()
 
+	foot, err := ParseFooter(f)
+	if err != nil {
+		return err
+	}
+
+	sig, meta, metaRaw, err := ReadSignatureAndMeta(f, foot)

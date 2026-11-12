@@ -668,3 +668,9 @@ func buildSignatureV1(privKey PrivateKey, digest []byte, hashAlgo HashAlgo, sigA
 	return sig, metaBytes, foot
 }
 
+// buildSignatureV2 生成 v2 签名、元数据、Footer：
+// - tarDigest 为第一阶段摘要 H(tar_data)
+// - 实际签名对象为 H( tarDigest || metadataJSON )
+func buildSignatureV2(privKey PrivateKey, tarDigest []byte, hashAlgo HashAlgo, sigAlgo SigAlgo, binaryHashes map[string]string) ([]byte, []byte, Footer, error) {
+	keyID := computeKeyID(privKey)
+	meta := Metadata{

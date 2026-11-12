@@ -368,3 +368,8 @@ func ComputeBinaryHashes(tarPath string, hashAlgo HashAlgo, protectedPaths []str
 		// 对该文件内容计算 hash（固定为 md5）
 		h.Reset()
 		if _, err := io.Copy(h, tr); err != nil {
+			return nil, err
+		}
+		digestHex := hex.EncodeToString(h.Sum(nil))
+		// 按约定，这里仅返回 md5 的十六进制串，不带 "md5:" 前缀
+		result[orig] = digestHex

@@ -72,3 +72,9 @@ func failErr(simpleMsg string, err error) {
 	fmt.Fprintln(os.Stderr, simpleMsg)
 	os.Exit(1)
 }
+
+func usage() {
+	fmt.Fprint(os.Stderr, `ks-scmc-sign - tar 文件签名工具
+
+用法:
+  ks-scmc-sign [-config <配置文件>] sign   [-key <私钥>] [-hash sha256|sha512|sm3] [-sig pkcs1v15|pss|sm2] <file.tar>

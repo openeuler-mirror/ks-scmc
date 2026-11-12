@@ -165,3 +165,9 @@ journalctl -u ks-scmc-server -n 100 --no-pager
 - 重启服务后重新验证
 
 ### 6.2 `/debug/leak/heap` 返回错误
+
+常见原因：`heap_dump_dir` 未配置或不可写。
+
+处理：
+
+```bash

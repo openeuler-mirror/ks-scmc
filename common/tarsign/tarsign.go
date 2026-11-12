@@ -33,3 +33,8 @@ import (
 	"github.com/tjfoc/gmsm/sm3"
 	gmsmx509 "github.com/tjfoc/gmsm/x509"
 )
+
+const (
+	FooterSize = 32
+	Magic      = "SCMCSIGN"
+

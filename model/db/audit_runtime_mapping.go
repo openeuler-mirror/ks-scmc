@@ -217,3 +217,9 @@ func UpsertRuntimeAuditImageTarget(imageID int64, display string) error {
 			IsDeleted: false,
 			DeletedAt: 0,
 		}
+		if err := db.Create(&row).Error; err != nil {
+			log.Warnf("UpsertRuntimeAuditImageTarget create id=%d err=%v", imageID, err)
+			return translateError(err)
+		}
+		return nil
+	}

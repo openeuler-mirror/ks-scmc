@@ -44,3 +44,9 @@ func startPprofHTTP(serviceMode string) {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/debug/pprof/", pprof.Index)
 	mux.HandleFunc("/debug/pprof/cmdline", pprof.Cmdline)
+	mux.HandleFunc("/debug/pprof/profile", pprof.Profile)
+	mux.HandleFunc("/debug/pprof/symbol", pprof.Symbol)
+	mux.HandleFunc("/debug/pprof/trace", pprof.Trace)
+
+	// 内存泄漏排查辅助：落盘 heap/goroutine profile，便于离线对比
+	mux.HandleFunc("/debug/leak/heap", func(w http.ResponseWriter, r *http.Request) {

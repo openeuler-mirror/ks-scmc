@@ -21,3 +21,9 @@ var perfOnce sync.Once
 
 func StartPerfTools(serviceMode string) {
 	perfOnce.Do(func() {
+		if !Config.Perf.Enable {
+			return
+		}
+
+		if Config.Perf.BlockProfileRate > 0 {
+			runtime.SetBlockProfileRate(Config.Perf.BlockProfileRate)

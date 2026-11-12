@@ -256,3 +256,11 @@ parse_args() {
 		exit 1
 	fi
 }
+
+if [[ $1 == "--help" || $1 == "-h" ]]; then
+	usage
+elif [[ $1 == "--clean" ]]; then
+	clean
+else
+	parse_args "$@"
+	# Remaining args after build-type: pkgversion, ky_version

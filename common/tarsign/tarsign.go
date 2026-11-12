@@ -622,3 +622,8 @@ func validateSignAlgo(privKey PrivateKey, hashAlgo HashAlgo, sigAlgo SigAlgo) er
 	case *sm2.PrivateKey:
 		if sigAlgo != SigSM2 {
 			return fmt.Errorf("SM2 密钥仅支持 sm2 签名算法")
+		}
+		_ = priv
+	default:
+		return fmt.Errorf("不支持的私钥类型")
+	}

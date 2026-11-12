@@ -795,3 +795,9 @@ func verifySignature(digest, sig, pubKeyPEM []byte, sigAlgo string) error {
 			return rsa.VerifyPKCS1v15(rsaPub, crypto.SHA256, digest, sig)
 		case 64:
 			return rsa.VerifyPKCS1v15(rsaPub, crypto.SHA512, digest, sig)
+		default:
+			return fmt.Errorf("不支持的摘要长度: %d", len(digest))
+		}
+	case "pss":
+		rsaPub, ok := pub.(*rsa.PublicKey)
+		if !ok {

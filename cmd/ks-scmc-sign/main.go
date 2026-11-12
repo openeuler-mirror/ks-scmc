@@ -78,3 +78,9 @@ func usage() {
 
 用法:
   ks-scmc-sign [-config <配置文件>] sign   [-key <私钥>] [-hash sha256|sha512|sm3] [-sig pkcs1v15|pss|sm2] <file.tar>
+  ks-scmc-sign [-config <配置文件>] verify [-pub <公钥>] <file.tar>
+  ks-scmc-sign [-config <配置文件>] info   <file.tar>
+  ks-scmc-sign [-config <配置文件>] remove <file.tar>
+  ks-scmc-sign [-config <配置文件>] genkey [-key <私钥路径>] [-cert <证书路径>] [-algo rsa|sm2] [-days 365]
+
+配置文件默认: /etc/ks-scmc/server.toml

@@ -84,3 +84,9 @@ func usage() {
   ks-scmc-sign [-config <配置文件>] genkey [-key <私钥路径>] [-cert <证书路径>] [-algo rsa|sm2] [-days 365]
 
 配置文件默认: /etc/ks-scmc/server.toml
+
+命令说明:
+  sign   对 tar 文件签名（幂等；可选 --sign-file 记录指定文件的 hash）
+  verify 使用公钥或证书验签
+  info   查看签名信息与元数据
+  remove 移除签名，恢复为纯 tar

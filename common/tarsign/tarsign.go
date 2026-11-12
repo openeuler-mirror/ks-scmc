@@ -310,3 +310,9 @@ func ComputeBinaryHashes(tarPath string, hashAlgo HashAlgo, protectedPaths []str
 			continue
 		}
 		orig := p
+		// 统一归一化：去掉前导 "/"、"./"，并使用 path.Clean 规整路径，
+		// 确保与 tar 归档中的 "./bin/bash"、"bin/bash" 等形式都能匹配。
+		p = strings.TrimPrefix(p, "/")
+		p = strings.TrimPrefix(p, "./")
+		p = path.Clean(p)
+		if p == "" || p == "." {

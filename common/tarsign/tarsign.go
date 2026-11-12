@@ -62,3 +62,8 @@ type Metadata struct {
 	KeyID     string `json:"key_id"`
 	Timestamp int64  `json:"timestamp"`
 	Tool      string `json:"tool"`
+	Version   int    `json:"version"`
+	// BinaryHashes v2 新增：关键二进制路径 -> hash（algo:hex）
+	BinaryHashes map[string]string `json:"binary_hashes,omitempty"`
+}
+

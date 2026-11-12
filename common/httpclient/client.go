@@ -19,3 +19,8 @@ type HTTPClient struct {
 
 func NewHTTPClient() *HTTPClient {
 	return &HTTPClient{
+		inner: &http.Client{Timeout: hTPClientTimeout},
+	}
+}
+
+// NewHTTPClientForLongRunningPull uses a longer timeout; callers must not pass a shorter context deadline.

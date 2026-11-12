@@ -10,3 +10,8 @@
 - 新增两个排查端点：
   - `/debug/leak/heap`：落盘 heap profile（`.pprof`）
   - `/debug/leak/goroutine`：落盘 goroutine 栈（`.txt`）
+- 支持发送 `SIGUSR1` 触发 heap dump 落盘
+- 支持定时输出内存统计日志（可配置）
+
+代码入口：
+

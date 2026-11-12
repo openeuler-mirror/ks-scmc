@@ -27,3 +27,8 @@ RPM_URLS=(
 	"http://10.20.20.17/kojifiles/packages/ibus/1.5.17/12.ky3_3/x86_64/ibus-libs-1.5.17-12.ky3_3.x86_64.rpm"
 	"http://10.20.20.17/kojifiles/packages/influxdb/1.8.10/1/x86_64/influxdb-1.8.10-1.x86_64.rpm"
 	"http://10.20.20.17/kojifiles/packages/keepalived/2.0.20/18.ky3.kb3/x86_64/keepalived-2.0.20-18.ky3.kb3.x86_64.rpm"
+	"http://10.20.20.17/kojifiles/packages/keepalived/2.0.20/18.ky3.kb3/x86_64/keepalived-help-2.0.20-18.ky3.kb3.x86_64.rpm"
+	"http://10.20.20.17/kojifiles/packages/kernel/4.19.90/2408.1.0.0288.kb35.ky3_3/x86_64/kernel-4.19.90-2408.1.0.0288.kb35.ky3_3.x86_64.rpm"
+	"http://10.20.20.17/kojifiles/packages/kernel/4.19.90/2408.1.0.0288.kb35.ky3_3/x86_64/kernel-devel-4.19.90-2408.1.0.0288.kb35.ky3_3.x86_64.rpm"
+	"http://10.20.20.17/kojifiles/packages/kernel/4.19.90/2408.1.0.0288.kb35.ky3_3/x86_64/kernel-tools-4.19.90-2408.1.0.0288.kb35.ky3_3.x86_64.rpm"
+	"http://10.20.20.17/kojifiles/packages/kernel/4.19.90/2408.1.0.0288.kb35.ky3_3/x86_64/kernel-tools-devel-4.19.90-2408.1.0.0288.kb35.ky3_3.x86_64.rpm"

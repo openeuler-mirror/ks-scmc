@@ -656,3 +656,9 @@ func buildSignatureV1(privKey PrivateKey, digest []byte, hashAlgo HashAlgo, sigA
 		KeyID:     "sha256:" + keyID,
 		Timestamp: time.Now().Unix(),
 		Tool:      ToolName,
+		Version:   VersionV1,
+	}
+	metaBytes, _ := json.Marshal(meta)
+	foot := Footer{
+		SigLen:  uint64(len(sig)),
+		MetaLen: uint64(len(metaBytes)),

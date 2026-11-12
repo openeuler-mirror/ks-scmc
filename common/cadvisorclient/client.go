@@ -32,3 +32,8 @@ func (c *CAdvisorMetricsClient) FetchContainerStatsOnce(ctx context.Context) (ma
 	}
 	if c.httpClient == nil {
 		c.httpClient = httpclient.NewHTTPClientForLongRunningPull()
+	}
+
+	requestURL := strings.TrimSpace(c.cadvisorBaseURL) + ContainersStatsRequestStatsCountOnePath
+	body, err := c.httpClient.Get(ctx, requestURL)
+	if err != nil {

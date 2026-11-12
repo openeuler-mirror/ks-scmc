@@ -56,3 +56,8 @@ heap_dump_dir = "/tmp/ks-scmc-pprof"
 ---
 
 ## 3. 快速验证（建议先跑这一段）
+
+### 步骤 1：重启服务
+
+```bash
+systemctl restart ks-scmc-server

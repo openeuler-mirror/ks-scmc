@@ -44,3 +44,9 @@ const (
 	VersionV2 = 2
 
 	ToolName = "ks-scmc-sign"
+)
+
+// Footer 32 字节固定结构
+type Footer struct {
+	Magic   [8]byte
+	SigLen  uint64

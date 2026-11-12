@@ -8,3 +8,9 @@ sca:
 # SonarQube配置
 sonarqube:
   enabled: true # 是否启用
+  ignore_file:
+  - "rpc/pb"
+  - "thrift/gen-go-14"
+  - "thrift/gen-go"
+  - "vendor"
+  - "server/agent/test"

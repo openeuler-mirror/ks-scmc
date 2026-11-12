@@ -408,3 +408,9 @@ func Verify(path string, pubKey []byte) error {
 	}
 
 	sig, meta, metaRaw, err := ReadSignatureAndMeta(f, foot)
+	if err != nil {
+		return err
+	}
+
+	size, err := tarSize(f, foot)
+	if err != nil {

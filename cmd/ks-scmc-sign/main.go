@@ -170,3 +170,9 @@ func runVerify(args []string) {
 	if path == "" {
 		failErr("必须指定 -pub 参数或配置 controller.image-signer", fmt.Errorf("image-signer not configured"))
 	}
+	if fs.NArg() == 0 {
+		failErr("必须指定要验签的 tar 文件", fmt.Errorf("missing tar file argument"))
+	}
+	filePath := fs.Arg(0)
+
+	err := tarsign.VerifyFromFile(filePath, path)

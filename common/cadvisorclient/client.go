@@ -71,3 +71,9 @@ func decodeContainerInfoMap(body []byte) (map[string]*v1.ContainerInfo, error) {
 			}
 			return map[string]*v1.ContainerInfo{key: &single}, nil
 		}
+	}
+
+	var raw map[string]json.RawMessage
+	if err := json.Unmarshal(body, &raw); err != nil {
+		return nil, err
+	}

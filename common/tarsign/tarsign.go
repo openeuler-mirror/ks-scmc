@@ -27,3 +27,9 @@ import (
 	"os"
 	"path"
 	"strings"
+	"time"
+
+	"github.com/tjfoc/gmsm/sm2"
+	"github.com/tjfoc/gmsm/sm3"
+	gmsmx509 "github.com/tjfoc/gmsm/x509"
+)

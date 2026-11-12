@@ -737,3 +737,9 @@ func appendSignature(f *os.File, sig, metaBytes []byte, foot Footer) error {
 }
 
 func signDigest(privKey PrivateKey, digest []byte, sigAlgo SigAlgo, hashAlgo HashAlgo) ([]byte, error) {
+	switch priv := privKey.(type) {
+	case *rsa.PrivateKey:
+		var h crypto.Hash
+		switch hashAlgo {
+		case HashSHA256:
+			h = crypto.SHA256

@@ -772,3 +772,9 @@ func selectHash(algo string) (hash.Hash, error) {
 	case "sha512":
 		return sha512.New(), nil
 	case "sm3":
+		return sm3.New(), nil
+	default:
+		return nil, fmt.Errorf("不支持的摘要算法: %s", algo)
+	}
+}
+

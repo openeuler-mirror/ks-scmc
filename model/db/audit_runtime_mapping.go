@@ -125,3 +125,9 @@ func findRuntimeAuditContainerRow(gdb *gorm.DB, nodeID int64, cid string) (*Runt
 	return nil, false
 }
 
+func resolveRuntimeAuditContainerName(gdb *gorm.DB, nodeID int64, cid string) (string, bool) {
+	row, ok := findRuntimeAuditContainerRow(gdb, nodeID, cid)
+	if !ok || row == nil || row.ContainerName == "" {
+		return "", false
+	}
+	return row.ContainerName, true

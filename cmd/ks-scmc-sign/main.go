@@ -153,3 +153,8 @@ func runSign(args []string) {
 
 	err = tarsign.SignV2(filePath, priv, tarsign.HashAlgo(*hashAlgo), tarsign.SigAlgo(*sigAlgo), binaryHashes)
 	if err != nil {
+		failErr("签名失败", err)
+	}
+	fmt.Println("签名成功")
+}
+

@@ -44,3 +44,9 @@ block_profile_rate = 0
 mutex_profile_fraction = 0
 memstats_log_interval_sec = 10
 
+heap_dump_dir = "/tmp/ks-scmc-pprof"
+```
+
+说明：
+
+- `enable = true` 才会启动 perf 功能

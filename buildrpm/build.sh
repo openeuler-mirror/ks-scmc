@@ -101,3 +101,12 @@ container_build() {
 		exit 1
 	fi
 
+	mkdir -p "$builddir" "$resultdir"
+	project_root="$(cd ${SHELL_FOLDER}/.. && pwd)"
+	resultdir_abs="$(cd "$resultdir" && pwd)"
+
+	docker run --rm \
+		-v "${project_root}:/workspace:rw" \
+		-v "${resultdir_abs}:/result:rw" \
+		-e "pkgname=$pkgname" \
+		-e "version=$version" \

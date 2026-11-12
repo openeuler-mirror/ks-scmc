@@ -183,3 +183,8 @@ heap_dump_dir = "/tmp/ks-scmc-pprof"
 
 ### 6.3 没有 memstats 日志
 
+`memstats_log_interval_sec = 0` 时不会输出，改为大于 0（例如 `10`）后重启服务。
+
+---
+
+## 7. 可选：自动化一键测试

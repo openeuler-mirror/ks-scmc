@@ -887,3 +887,9 @@ func GenKey(keyPath, certPath, algo string, days int) error {
 		return fmt.Errorf("不支持的算法: %s，请使用 rsa 或 sm2", algo)
 	}
 }
+
+func genKeyRSA(keyPath, certPath string, days int) error {
+	priv, err := rsa.GenerateKey(rand.Reader, 2048)
+	if err != nil {
+		return err
+	}

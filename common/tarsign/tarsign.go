@@ -864,3 +864,9 @@ func parsePublicKey(pemData []byte) (interface{}, error) {
 		}
 	}
 	if rsaPub, ok := pub.(*rsa.PublicKey); ok {
+		return rsaPub, nil
+	}
+	if ecdsaPub, ok := pub.(*ecdsa.PublicKey); ok && ecdsaPub.Curve == sm2.P256Sm2() {
+		return &sm2.PublicKey{Curve: ecdsaPub.Curve, X: ecdsaPub.X, Y: ecdsaPub.Y}, nil
+	}
+	return nil, errors.New("公钥类型不支持")

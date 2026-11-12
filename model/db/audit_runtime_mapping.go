@@ -234,3 +234,9 @@ func UpsertRuntimeAuditImageTarget(imageID int64, display string) error {
 	return nil
 }
 
+func MarkRuntimeAuditImageDeleted(imageID int64) error {
+	if imageID <= 0 {
+		return nil
+	}
+	db, err := getAuditMappingConn()
+	if err != nil {

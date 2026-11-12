@@ -200,3 +200,9 @@ func UpsertRuntimeAuditImageTarget(imageID int64, display string) error {
 		return nil
 	}
 	db, err := getAuditMappingConn()
+	if err != nil {
+		log.Warnf("UpsertRuntimeAuditImageTarget: audit sqlite unavailable: %v", err)
+		return err
+	}
+	var existing RuntimeAuditImageTarget
+	q := db.Where("image_id = ?", imageID).First(&existing)

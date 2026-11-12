@@ -535,3 +535,9 @@ func Sign(path string, privKey PrivateKey, hashAlgo HashAlgo, sigAlgo SigAlgo) e
 		sig, metaBytes, newFoot := buildSignatureV1(privKey, digest1, hashAlgo, sigAlgo)
 		if err = f.Truncate(size); err != nil {
 			return err
+		}
+		return appendSignature(f, sig, metaBytes, newFoot)
+	}
+
+	stat, err := f.Stat()
+	if err != nil {

@@ -905,3 +905,8 @@ func genKeyRSA(keyPath, certPath string, days int) error {
 	serial, _ := rand.Int(rand.Reader, new(big.Int).Lsh(big.NewInt(1), 128))
 	template := x509.Certificate{
 		SerialNumber: serial,
+		Subject:      pkix.Name{CommonName: "ks-scmc-image-signer"},
+		NotBefore:    time.Now(),
+		NotAfter:     time.Now().AddDate(0, 0, days),
+		KeyUsage:     x509.KeyUsageDigitalSignature,
+	}

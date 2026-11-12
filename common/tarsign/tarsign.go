@@ -893,3 +893,9 @@ func genKeyRSA(keyPath, certPath string, days int) error {
 	if err != nil {
 		return err
 	}
+	keyDER, err := x509.MarshalPKCS8PrivateKey(priv)
+	if err != nil {
+		return err
+	}
+	keyPEM := pem.EncodeToMemory(&pem.Block{Type: "PRIVATE KEY", Bytes: keyDER})
+	if err := ioutil.WriteFile(keyPath, keyPEM, 0o600); err != nil {

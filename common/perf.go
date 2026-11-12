@@ -32,3 +32,9 @@ func StartPerfTools(serviceMode string) {
 			runtime.SetMutexProfileFraction(Config.Perf.MutexProfileFraction)
 		}
 
+		go startPprofHTTP(serviceMode)
+		go startMemStatsLogger(serviceMode)
+		go startHeapDumpSignalHandler(serviceMode)
+	})
+}
+

@@ -56,3 +56,8 @@ RPM_URLS=(
 )
 
 # ===================== 工具函数 =====================
+# 检查wget是否安装
+check_wget() {
+    if ! command -v wget &> /dev/null; then
+        echo "[ERROR] wget未安装，请先安装wget后再执行脚本！"
+        exit 1

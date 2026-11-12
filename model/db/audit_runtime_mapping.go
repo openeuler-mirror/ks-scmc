@@ -96,3 +96,9 @@ func UpsertRuntimeAuditContainerName(nodeID int64, containerID, containerName st
 const minDockerContainerIDPrefixLen = 12
 
 func normalizeDockerContainerID(id string) string {
+	id = strings.TrimSpace(id)
+	id = strings.TrimPrefix(strings.ToLower(id), "sha256:")
+	return id
+}
+
+func findRuntimeAuditContainerRow(gdb *gorm.DB, nodeID int64, cid string) (*RuntimeAuditContainerName, bool) {

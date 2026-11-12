@@ -213,3 +213,11 @@ init() {
 	popd
 }
 
+usage() {
+	echo "Usage:"
+	echo "    $0 [--clean|--help|-h|--build-image|--build-type=TYPE|\$pkgversion] [\$ky_version]"
+	echo ""
+	echo "Options:"
+	echo "    --build-type=TYPE   Build type: local, mock, container (default: mock)"
+	echo "    --local             Same as --build-type=local"
+	echo "    --mock              Same as --build-type=mock"

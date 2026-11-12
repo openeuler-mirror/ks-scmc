@@ -448,3 +448,9 @@ func Verify(path string, pubKey []byte) error {
 	if err := verifySignature(signedDigest, sig, pubKey, meta.SigAlgo); err != nil {
 		return ErrVerifyFailed
 	}
+	return nil
+}
+
+// Remove 移除签名，恢复为纯 tar
+func Remove(path string) error {
+	f, err := os.OpenFile(path, os.O_RDWR, 0)

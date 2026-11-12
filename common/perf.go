@@ -141,3 +141,9 @@ func startHeapDumpSignalHandler(serviceMode string) {
 	// SIGUSR1：落盘 heap profile（用于线上无侵入抓取）
 	// 注意：需要配置 perf.heap_dump_dir
 	c := make(chan os.Signal, 2)
+	signal.Notify(c, syscall.SIGUSR1)
+	for range c {
+		path, err := dumpProfileToFile("heap", ".pprof")
+		if err != nil {
+			log.Errorf("heap dump (SIGUSR1) failed: mode=%s err=%v", serviceMode, err)
+			continue

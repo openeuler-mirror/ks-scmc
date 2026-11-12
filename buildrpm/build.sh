@@ -75,3 +75,12 @@ local_build() {
 	spec_dir=$build_base_dir/SPECS
 	mkdir -p $source_dir $spec_dir
 
+	cd ${SHELL_FOLDER}/..
+        if [[ $use_git_code == "1" ]];then
+		# --prefix make all files in ${pkgname}-${version} dir
+		git archive --prefix=${pkgname}-${version}/ -o "${source_dir}/${pkgname}-${version}.tar.gz" HEAD
+	else
+		tar --transform "s,^.,${pkgname}-${version}," -zcf "${source_dir}/${pkgname}-${version}.tar.gz" .
+	fi
+	cp --preserve=time ${SHELL_FOLDER}/${pkgname}.spec ${spec_dir}
+

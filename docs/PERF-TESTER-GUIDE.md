@@ -200,3 +200,9 @@ cp test-config.example.yaml test-config.yaml
 
 脚本会自动完成部署、端点验证、信号验证并生成测试报告。
 
+---
+
+## 8. 测试记录模板（可直接复制）
+
+```md
+### perf 功能测试记录

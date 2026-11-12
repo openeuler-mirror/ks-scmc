@@ -131,3 +131,8 @@ main() {
     echo "成功数量: $(( ${#RPM_URLS[@]} - fail_count ))"
     echo "失败数量: $fail_count"
 
+    if [ $fail_count -gt 0 ]; then
+        echo -e "\n失败的URL列表:"
+        for fail_url in "${fail_list[@]}"; do
+            echo "  $fail_url"
+        done

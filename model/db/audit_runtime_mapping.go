@@ -183,3 +183,8 @@ func ResolveContainerNamesForNode(nodeID int64, containerIDs []string) map[strin
 	}
 	for _, cid := range containerIDs {
 		if cid == "" {
+			continue
+		}
+		if _, ok := out[cid]; ok {
+			continue
+		}

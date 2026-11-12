@@ -685,3 +685,9 @@ func buildSignatureV2(privKey PrivateKey, tarDigest []byte, hashAlgo HashAlgo, s
 	if len(binaryHashes) > 0 {
 		meta.BinaryHashes = binaryHashes
 	}
+
+	metaBytes, err := json.Marshal(meta)
+	if err != nil {
+		return nil, nil, Footer{}, err
+	}
+

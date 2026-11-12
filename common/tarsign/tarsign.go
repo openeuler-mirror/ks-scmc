@@ -96,3 +96,9 @@ var (
 // ParseFooter 从文件末尾读取并解析 Footer
 func ParseFooter(f *os.File) (*Footer, error) {
 	stat, err := f.Stat()
+	if err != nil {
+		return nil, err
+	}
+	if stat.Size() < FooterSize {
+		return nil, ErrNoFooter
+	}

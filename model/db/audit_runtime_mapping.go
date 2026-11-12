@@ -252,3 +252,9 @@ func MarkRuntimeAuditImageDeleted(imageID int64) error {
 		return translateError(res.Error)
 	}
 	return nil
+}
+
+// ResolveImageAuditTarget 按 image_id 顺序解析展示串；含已软删映射行（Remove 审计 defer 仍可读 display）；否则回退 image_infos。
+func ResolveImageAuditTarget(ids []int64) string {
+	if len(ids) == 0 {
+		return ""

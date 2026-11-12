@@ -148,3 +148,9 @@ func IsSigned(f *os.File) (bool, error) {
 }
 
 // tarSize 计算 tar 部分长度（不含签名区）
+func tarSize(f *os.File, foot *Footer) (int64, error) {
+	stat, err := f.Stat()
+	if err != nil {
+		return 0, err
+	}
+	size := stat.Size() - int64(foot.SigLen) - int64(foot.MetaLen) - FooterSize

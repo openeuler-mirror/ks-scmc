@@ -77,3 +77,8 @@ func decodeContainerInfoMap(body []byte) (map[string]*v1.ContainerInfo, error) {
 	if err := json.Unmarshal(body, &raw); err != nil {
 		return nil, err
 	}
+
+	result := make(map[string]*v1.ContainerInfo, len(raw))
+	for key, value := range raw {
+		if len(value) == 0 {
+			continue

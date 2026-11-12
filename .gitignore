@@ -11,3 +11,8 @@
 /buildrun/*.readme
 /buildrun/*.md5.txt
 /buildrun/*.zip
+/buildrun/ks-run/ks-scmc/1.1/*.sh
+/buildrun/ks-run/ks-scmc/1.1/**/*.rpm
+
+/.vscode/***
+/sftp-config.json

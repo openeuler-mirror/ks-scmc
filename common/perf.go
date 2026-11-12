@@ -61,3 +61,9 @@ func startPprofHTTP(serviceMode string) {
 	srv := &http.Server{
 		Addr:              addr,
 		Handler:           mux,
+		ReadHeaderTimeout: 5 * time.Second,
+	}
+
+	log.Infof("perf enabled: mode=%s pprof_listen=%s", serviceMode, addr)
+	if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+		log.Errorf("pprof http server failed: %v", err)

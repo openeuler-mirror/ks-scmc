@@ -159,3 +159,8 @@ func startMemStatsLogger(serviceMode string) {
 	}
 
 	ticker := time.NewTicker(time.Duration(sec) * time.Second)
+	defer ticker.Stop()
+
+	for range ticker.C {
+		var ms runtime.MemStats
+		runtime.ReadMemStats(&ms)

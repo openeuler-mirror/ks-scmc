@@ -241,3 +241,8 @@ func GetTarDigest(path string) (string, error) {
 	defer f.Close()
 
 	foot, err := ParseFooter(f)
+	if err != nil {
+		if errors.Is(err, ErrNoFooter) || errors.Is(err, ErrMagicMismatch) {
+			// 未签名，计算整个文件
+			_, _ = f.Seek(0, io.SeekStart)
+			h := sha256.New()

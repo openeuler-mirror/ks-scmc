@@ -90,3 +90,9 @@ download_rpm() {
         [ -f "$filename" ] && rm -f "$filename"
         return 1
     fi
+}
+
+# 本地/离线：不下载，仅检查当前目录下依赖 RPM 是否与 RPM_URLS 列表一致且非空
+check_deps_local() {
+    local missing=()
+    for url in "${RPM_URLS[@]}"; do

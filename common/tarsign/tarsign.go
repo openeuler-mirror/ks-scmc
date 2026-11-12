@@ -639,3 +639,9 @@ func computeKeyID(privKey PrivateKey) string {
 	case *sm2.PrivateKey:
 		pubBytes := elliptic.Marshal(k.Curve, k.X, k.Y)
 		h := sha256.Sum256(pubBytes)
+		return hex.EncodeToString(h[:])
+	default:
+		return ""
+	}
+}
+

@@ -25,3 +25,12 @@ var (
 )
 
 type gormLogger struct{}
+
+func (*gormLogger) Printf(format string, v ...interface{}) {
+	log.Infof(format, v...)
+}
+
+// resetPool 应用层断连：关闭底层 sql.DB 并清空全局引用，后续 GetConn 会重建连接池。
+func resetPool(reason error) {
+	lock.Lock()
+	old := db

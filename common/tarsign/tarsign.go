@@ -575,3 +575,9 @@ func SignV2(path string, privKey PrivateKey, hashAlgo HashAlgo, sigAlgo SigAlgo,
 		}
 		size, err = tarSize(f, foot)
 		if err != nil {
+			return err
+		}
+	} else {
+		stat, err := f.Stat()
+		if err != nil {
+			return err

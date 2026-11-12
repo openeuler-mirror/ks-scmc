@@ -108,3 +108,8 @@ ls -la /tmp/ks-scmc-pprof/
 
 ---
 
+## 4. 信号触发验证（SIGUSR1）
+
+```bash
+PID=$(pgrep -f ks-scmc-server | head -1)
+echo "$PID"

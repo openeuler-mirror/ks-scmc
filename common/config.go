@@ -204,3 +204,55 @@ type ProcessInfo struct {
 	PID       int
 	ExePath   string
 	StartTime time.Time
+	ParentPID int
+	User      string
+}
+
+var (
+	bootTime     time.Time // 缓存启动时间
+	bootTimeErr  error     // 缓存错误信息
+	bootTimeOnce sync.Once // 控制初始化逻辑仅执行一次
+)
+
+// btime 开机后不会变，执行一次即可
+func getSystemBootTime() (time.Time, error) {
+	// 使用 sync.Once 确保初始化逻辑只执行一次
+	bootTimeOnce.Do(func() {
+		data, err := ioutil.ReadFile("/proc/stat")
+		if err != nil {
+			bootTimeErr = err
+			return
+		}
+
+		scanner := bufio.NewScanner(bytes.NewReader(data))
+		found := false
+		for scanner.Scan() {
+			if strings.HasPrefix(scanner.Text(), "btime") {
+				fields := strings.Fields(scanner.Text())
+				if len(fields) < 2 {
+					bootTimeErr = fmt.Errorf("invalid btime format")
+					return
+				}
+				sec, err := strconv.ParseInt(fields[1], 10, 64)
+				if err != nil {
+					bootTimeErr = err
+					return
+				}
+				bootTime = time.Unix(sec, 0)
+				found = true
+				break
+			}
+		}
+		if !found {
+			bootTimeErr = fmt.Errorf("btime not found")
+		}
+	})
+
+	return bootTime, bootTimeErr
+}
+
+func getClockTicks() int64 {
+	return 100 // 固定时钟频率
+}
+
+func getProcessStartTime(pid int) (time.Time, error) {

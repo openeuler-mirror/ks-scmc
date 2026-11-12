@@ -136,3 +136,8 @@ func hostnameShort() string {
 	}
 	return h
 }
+
+func startHeapDumpSignalHandler(serviceMode string) {
+	// SIGUSR1：落盘 heap profile（用于线上无侵入抓取）
+	// 注意：需要配置 perf.heap_dump_dir
+	c := make(chan os.Signal, 2)

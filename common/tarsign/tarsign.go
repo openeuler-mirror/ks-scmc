@@ -137,3 +137,8 @@ func ParseFooter(f *os.File) (*Footer, error) {
 // IsSigned 检查文件是否已签名
 func IsSigned(f *os.File) (bool, error) {
 	foot, err := ParseFooter(f)
+	if err != nil {
+		if errors.Is(err, ErrNoFooter) || errors.Is(err, ErrMagicMismatch) {
+			return false, nil
+		}
+		return false, err

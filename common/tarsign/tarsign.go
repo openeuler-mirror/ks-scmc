@@ -483,3 +483,9 @@ func LoadPrivateKey(path string) (PrivateKey, error) {
 	keyPEM, err := ioutil.ReadFile(path)
 	if err != nil {
 		return nil, err
+	}
+	block, _ := pem.Decode(keyPEM)
+	if block == nil {
+		return nil, errors.New("failed to decode PEM block")
+	}
+	// 先尝试标准 RSA

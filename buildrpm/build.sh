@@ -24,3 +24,11 @@ resultdir="${SHELL_FOLDER}/_buildres"
 arch=$(uname -m 2>/dev/null || uname -i)
 # normalize arch: x86_64, aarch64
 [[ "$arch" == "x86_64" || "$arch" == "amd64" ]] && arch="x86_64"
+[[ "$arch" == "aarch64" || "$arch" == "arm64" ]] && arch="aarch64"
+allow_os=("3.3-6" "3.4-4")
+
+mock_build() {
+	mock_cfg=mock-${ky_version}-${arch}.cfg
+	if [[ ! -e $builddir/$mock_cfg ]];then
+		echo "unsupport platform, only x86_64 and aarch64: $arch"
+		return

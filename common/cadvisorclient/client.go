@@ -26,3 +26,9 @@ func NewCAdvisorMetricsClient() *CAdvisorMetricsClient {
 	}
 }
 
+func (c *CAdvisorMetricsClient) FetchContainerStatsOnce(ctx context.Context) (map[string]*v1.ContainerInfo, error) {
+	if c == nil {
+		c = NewCAdvisorMetricsClient()
+	}
+	if c.httpClient == nil {
+		c.httpClient = httpclient.NewHTTPClientForLongRunningPull()

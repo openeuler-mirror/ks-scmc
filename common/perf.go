@@ -73,3 +73,8 @@ func startPprofHTTP(serviceMode string) {
 type dumpReply struct {
 	Profile string `json:"profile"`
 	Path    string `json:"path,omitempty"`
+	Error   string `json:"error,omitempty"`
+}
+
+func writeJSON(w http.ResponseWriter, v interface{}) {
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")

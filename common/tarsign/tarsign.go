@@ -512,3 +512,9 @@ func Sign(path string, privKey PrivateKey, hashAlgo HashAlgo, sigAlgo SigAlgo) e
 	}
 
 	f, err := os.OpenFile(path, os.O_RDWR, 0)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	var size int64

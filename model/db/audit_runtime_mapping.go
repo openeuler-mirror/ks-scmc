@@ -246,3 +246,9 @@ func MarkRuntimeAuditImageDeleted(imageID int64) error {
 	res := db.Model(&RuntimeAuditImageTarget{}).Where("image_id = ?", imageID).Updates(map[string]interface{}{
 		"is_deleted": true,
 		"deleted_at": now,
+	})
+	if res.Error != nil {
+		log.Warnf("MarkRuntimeAuditImageDeleted id=%d err=%v", imageID, res.Error)
+		return translateError(res.Error)
+	}
+	return nil

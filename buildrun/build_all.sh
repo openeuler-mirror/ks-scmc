@@ -79,6 +79,7 @@ if [[ \$WITHOUT_KERNEL == "1" ]];then
 else
 	if [[ "\${OS_VERSION}" == "3.3-6"* ]]; then
 		rpm -qa | grep kernel-headers && rpm -e kernel-headers --nodeps
+		rpm -Uvh ngbe-1.2.6-1dkms.ky3_3.noarch.rpm --nodeps --force
 	fi
 fi
 

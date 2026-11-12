@@ -101,3 +101,9 @@ func dumpProfileToFile(profileName, suffix string) (string, error) {
 	path := filepath.Join(dir, fmt.Sprintf("%s-%s-%s%s", profileName, ts, hostnameShort(), suffix))
 
 	f, err := os.Create(path)
+	if err != nil {
+		return "", err
+	}
+	defer f.Close()
+
+	switch profileName {

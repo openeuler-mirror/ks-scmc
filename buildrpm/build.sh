@@ -170,3 +170,11 @@ clean() {
 	echo "rm -rf $builddir"
 	rm -rf $builddir
 	
+	echo "rm -rf $resultdir"
+	rm -rf $resultdir
+}
+
+init() {
+	os=$1
+	if [[ -z "$os" ]]; then
+		if [[ -f /etc/.kyinfo ]]; then

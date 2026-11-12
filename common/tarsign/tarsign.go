@@ -362,3 +362,9 @@ func ComputeBinaryHashes(tarPath string, hashAlgo HashAlgo, protectedPaths []str
 			if _, err := io.Copy(ioutil.Discard, tr); err != nil {
 				return nil, err
 			}
+			continue
+		}
+
+		// 对该文件内容计算 hash（固定为 md5）
+		h.Reset()
+		if _, err := io.Copy(h, tr); err != nil {

@@ -32,3 +32,12 @@ mock_build() {
 	if [[ ! -e $builddir/$mock_cfg ]];then
 		echo "unsupport platform, only x86_64 and aarch64: $arch"
 		return
+	fi
+
+	cd $SHELL_FOLDER
+	mkdir -p $builddir
+	mkdir -p $resultdir
+
+	cd ${SHELL_FOLDER}/..
+        if [[ $use_git_code == '1' ]];then
+		git archive -o "${builddir}/${pkgname}-${version}.tar.gz" --prefix=${pkgname}-${version}/ HEAD

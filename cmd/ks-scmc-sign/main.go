@@ -198,3 +198,9 @@ func runInfo(args []string) {
 			return
 		}
 		failErr("读取签名信息失败", err)
+	}
+
+	b, _ := json.MarshalIndent(meta, "", "  ")
+	fmt.Println(string(b))
+}
+

@@ -275,3 +275,9 @@ func ComputeBinaryHashes(tarPath string, hashAlgo HashAlgo, protectedPaths []str
 		return result, nil
 	}
 
+	f, err := os.Open(tarPath)
+	if err != nil {
+		return nil, err
+	}
+	defer f.Close()
+

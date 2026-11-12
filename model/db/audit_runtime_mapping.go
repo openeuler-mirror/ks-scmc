@@ -315,3 +315,9 @@ func ResolveImageAuditTargetOne(imageID int64) string {
 	if imageID <= 0 {
 		return ""
 	}
+	return ResolveImageAuditTarget([]int64{imageID})
+}
+
+// CleanAuditRuntimeMappings 物理清理软删超过保留期的映射行（与 CleanLogs 保留天数语义一致）。
+func CleanAuditRuntimeMappings(retentionDays int64) error {
+	if retentionDays < 1 {

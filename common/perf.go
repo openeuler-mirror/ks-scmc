@@ -55,3 +55,9 @@ func startPprofHTTP(serviceMode string) {
 	})
 	mux.HandleFunc("/debug/leak/goroutine", func(w http.ResponseWriter, r *http.Request) {
 		path, err := dumpProfileToFile("goroutine", ".txt")
+		writeJSON(w, dumpReply{Profile: "goroutine", Path: path, Error: errString(err)})
+	})
+
+	srv := &http.Server{
+		Addr:              addr,
+		Handler:           mux,

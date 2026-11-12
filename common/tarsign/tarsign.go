@@ -67,3 +67,9 @@ type Metadata struct {
 	BinaryHashes map[string]string `json:"binary_hashes,omitempty"`
 }
 
+// HashAlgo 摘要算法
+type HashAlgo string
+
+const (
+	HashSHA256 HashAlgo = "sha256"
+	HashSHA512 HashAlgo = "sha512"

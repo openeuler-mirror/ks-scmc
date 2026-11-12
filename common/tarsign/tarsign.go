@@ -714,3 +714,9 @@ func buildSignatureV2(privKey PrivateKey, tarDigest []byte, hashAlgo HashAlgo, s
 }
 
 // appendSignature 将签名区追加到文件末尾
+func appendSignature(f *os.File, sig, metaBytes []byte, foot Footer) error {
+	if _, err := f.Seek(0, io.SeekEnd); err != nil {
+		return err
+	}
+	if _, err := f.Write(sig); err != nil {
+		return err

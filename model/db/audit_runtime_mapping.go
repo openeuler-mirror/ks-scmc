@@ -321,3 +321,9 @@ func ResolveImageAuditTargetOne(imageID int64) string {
 // CleanAuditRuntimeMappings 物理清理软删超过保留期的映射行（与 CleanLogs 保留天数语义一致）。
 func CleanAuditRuntimeMappings(retentionDays int64) error {
 	if retentionDays < 1 {
+		return nil
+	}
+	now := time.Now()
+	retentionDate := time.Date(now.Year(), now.Month(), now.Day()-int(retentionDays)+1, 0, 0, 0, 0, now.Location())
+	threshold := retentionDate.Unix()
+

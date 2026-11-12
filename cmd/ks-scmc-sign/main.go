@@ -113,3 +113,8 @@ func (s *stringSliceFlag) String() string {
 func (s *stringSliceFlag) Set(v string) error {
 	*s = append(*s, v)
 	return nil
+}
+
+func runSign(args []string) {
+	fs := flag.NewFlagSet("sign", flag.ExitOnError)
+	keyPath := fs.String("key", "", "私钥文件路径（PKCS#8 格式），未指定时从配置文件读取")

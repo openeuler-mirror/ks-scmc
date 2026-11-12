@@ -107,3 +107,9 @@ func dumpProfileToFile(profileName, suffix string) (string, error) {
 	defer f.Close()
 
 	switch profileName {
+	case "heap":
+		// 为了更稳定的对比，尽量做一次 GC
+		runtime.GC()
+		if err := rpprof.WriteHeapProfile(f); err != nil {
+			return "", err
+		}

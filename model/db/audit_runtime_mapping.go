@@ -131,3 +131,8 @@ func resolveRuntimeAuditContainerName(gdb *gorm.DB, nodeID int64, cid string) (s
 		return "", false
 	}
 	return row.ContainerName, true
+}
+
+func MarkRuntimeAuditContainersDeleted(nodeID int64, containerIDs []string) error {
+	if nodeID <= 0 || len(containerIDs) == 0 {
+		return nil

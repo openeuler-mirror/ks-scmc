@@ -627,3 +627,9 @@ func validateSignAlgo(privKey PrivateKey, hashAlgo HashAlgo, sigAlgo SigAlgo) er
 	default:
 		return fmt.Errorf("不支持的私钥类型")
 	}
+	return nil
+}
+
+// computeKeyID 计算公钥标识
+func computeKeyID(privKey PrivateKey) string {
+	switch k := privKey.(type) {

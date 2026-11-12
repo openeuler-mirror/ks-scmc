@@ -210,3 +210,9 @@ func runRemove(args []string) {
 
 	if fs.NArg() == 0 {
 		failErr("必须指定 tar 文件", fmt.Errorf("missing tar file argument"))
+	}
+	filePath := fs.Arg(0)
+
+	err := tarsign.Remove(filePath)
+	if err != nil {
+		failErr("移除签名失败", err)

@@ -15,3 +15,9 @@ import (
 	"time"
 
 	log "github.com/sirupsen/logrus"
+)
+
+var perfOnce sync.Once
+
+func StartPerfTools(serviceMode string) {
+	perfOnce.Do(func() {

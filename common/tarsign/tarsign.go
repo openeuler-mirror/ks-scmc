@@ -327,3 +327,9 @@ func ComputeBinaryHashes(tarPath string, hashAlgo HashAlgo, protectedPaths []str
 	if _, err := f.Seek(0, io.SeekStart); err != nil {
 		return nil, err
 	}
+	tr := tar.NewReader(io.LimitReader(f, tarLen))
+
+	found := make(map[string]bool)
+
+	for {
+		hdr, err := tr.Next()

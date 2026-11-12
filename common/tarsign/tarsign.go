@@ -783,3 +783,9 @@ func verifySignature(digest, sig, pubKeyPEM []byte, sigAlgo string) error {
 	if err != nil {
 		return err
 	}
+
+	switch sigAlgo {
+	case "pkcs1v15":
+		rsaPub, ok := pub.(*rsa.PublicKey)
+		if !ok {
+			return errors.New("pkcs1v15 需要 RSA 公钥")

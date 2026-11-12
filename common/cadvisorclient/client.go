@@ -82,3 +82,9 @@ func decodeContainerInfoMap(body []byte) (map[string]*v1.ContainerInfo, error) {
 	for key, value := range raw {
 		if len(value) == 0 {
 			continue
+		}
+		trimmed := strings.TrimSpace(string(value))
+		if trimmed == "" || trimmed[0] != '{' {
+			continue
+		}
+

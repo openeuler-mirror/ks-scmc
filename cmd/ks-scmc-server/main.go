@@ -34,6 +34,7 @@ func main() {
 
 	// TODO check log dir, create when it not exists.
 	common.InitLogger(mode)
+	common.StartPerfTools(mode)
 
 	var (
 		addr   string

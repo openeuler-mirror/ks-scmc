@@ -7,3 +7,7 @@
 /buildrpm/_buildres
 /buildrpm/_buildtmp
 
+/buildrun/*.run
+/buildrun/*.readme
+/buildrun/*.md5.txt
+/buildrun/*.zip

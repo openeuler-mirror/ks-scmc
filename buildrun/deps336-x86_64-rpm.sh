@@ -67,3 +67,9 @@ check_wget() {
         echo "[ERROR] wget未安装，请先安装wget后再执行脚本！"
         exit 1
     fi
+}
+
+# 下载单个RPM包（存在则跳过）
+download_rpm() {
+    local url="$1"
+    local filename=$(basename "$url")

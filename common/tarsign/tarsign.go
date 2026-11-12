@@ -610,3 +610,9 @@ func SignV2(path string, privKey PrivateKey, hashAlgo HashAlgo, sigAlgo SigAlgo,
 func validateSignAlgo(privKey PrivateKey, hashAlgo HashAlgo, sigAlgo SigAlgo) error {
 	switch priv := privKey.(type) {
 	case *rsa.PrivateKey:
+		if hashAlgo == HashSM3 {
+			return fmt.Errorf("RSA 不支持 sm3 摘要，请使用 sha256 或 sha512")
+		}
+		if sigAlgo == SigSM2 {
+			return fmt.Errorf("RSA 不支持签名算法: sm2")
+		}

@@ -506,3 +506,9 @@ func LoadPrivateKey(path string) (PrivateKey, error) {
 // Sign 对 tar 文件签名（幂等）。若已签名则先移除再签
 // 使用流式计算摘要，避免大文件 OOM
 // 支持 RSA(pkcs1v15/pss+sha256/sha512) 与 SM2(sm2+sha256/sha512/sm3)
+func Sign(path string, privKey PrivateKey, hashAlgo HashAlgo, sigAlgo SigAlgo) error {
+	if err := validateSignAlgo(privKey, hashAlgo, sigAlgo); err != nil {
+		return err
+	}
+
+	f, err := os.OpenFile(path, os.O_RDWR, 0)

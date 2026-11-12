@@ -431,3 +431,9 @@ func Verify(path string, pubKey []byte) error {
 	// 第二阶段：根据版本选择签名输入：
 	// - v1：只对 digest1 做签名
 	// - v2：对 H(digest1 || metaRaw) 做签名（metaRaw 为落盘 JSON 字节，保证与签名时一致）
+	var signedDigest []byte
+	if foot.Version <= VersionV1 || meta.Version <= VersionV1 {
+		// 兼容老版本：签名对象仅为 tar 摘要
+		signedDigest = digest1
+	} else {
+		h2, err := selectHash(meta.HashAlgo)

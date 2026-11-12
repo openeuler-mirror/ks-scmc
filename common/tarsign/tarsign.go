@@ -200,3 +200,9 @@ func ReadSignatureAndMeta(f *os.File, foot *Footer) (sig []byte, meta *Metadata,
 	metaBytes := make([]byte, foot.MetaLen)
 	if _, err = io.ReadFull(f, metaBytes); err != nil {
 		return nil, nil, nil, err
+	}
+
+	meta = &Metadata{}
+	if err = json.Unmarshal(metaBytes, meta); err != nil {
+		return nil, nil, nil, fmt.Errorf("解析元数据失败: %w", err)
+	}

@@ -50,3 +50,54 @@ type AgentConfig struct {
 func (m *AgentConfig) Addr() string {
 	return fmt.Sprintf("%s:%d", m.Host, m.Port)
 }
+
+func (m *AgentConfig) BackupTimeoutDuration() time.Duration {
+	return time.Second * time.Duration(m.ContainerBackupTimeout)
+}
+
+type ControllerConfig struct {
+	Host           string `mapstructure:"host"`
+	Port           uint   `mapstructure:"port"`
+	VirtualIf      string `mapstructure:"virtual-if"`
+	VirtualIP      string `mapstructure:"virtual-ip"`
+	ImageDir       string `mapstructure:"image-dir"`
+	ImageSigner    string `mapstructure:"image-signer"`   // 验签公钥
+	ImageSignKey   string `mapstructure:"image-sign-key"` // 签名私钥
+	ImageMaxSize   uint64 `mapstructure:"image-max-size"`
+	SessionTimeout uint   `mapstructure:"session-timeout"`
+	SuperUser      bool   `mapstructure:"super-user"`
+	// cert
+}
+
+func (m *ControllerConfig) Addr() string {
+	return fmt.Sprintf("%s:%d", m.Host, m.Port)
+}
+
+func (m *ControllerConfig) SessionLiveDuration() time.Duration {
+	return time.Second * time.Duration(m.SessionTimeout)
+}
+
+type MySQLConfig struct {
+	Addr     string `mapstructure:"addr"`
+	User     string `mapstructure:"user"`
+	Password string `mapstructure:"password"`
+	DB       string `mapstructure:"db"`
+	Debug    bool   `mapstructure:"debug"`
+}
+
+func (m *MySQLConfig) DSN() (string, error) {
+	passwordDe, err := aes.Decrypt(m.Password)
+	if err != nil {
+		return "", err
+	}
+
+	q := url.Values{
+		"charset": []string{"utf8mb4"},
+		"timeout": []string{"10s"},
+	}
+	// return fmt.Sprintf("%s:%s@tcp(%s)/%s?charset=utf8mb4&timeout=10s", m.User, m.Password, m.Addr, m.DB)
+	return fmt.Sprintf("%s:%s@tcp(%s)/%s?%s", m.User, passwordDe, m.Addr, m.DB, q.Encode()), nil
+}
+
+type SQLiteConfig struct {
+	Path string `mapstructure:"path"`

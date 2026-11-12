@@ -244,3 +244,9 @@ func runGenkey(args []string) {
 	}
 
 	err := tarsign.GenKey(keyOut, certOut, *algo, *days)
+	if err != nil {
+		failErr("生成证书失败", err)
+	}
+	fmt.Printf("已生成私钥: %s\n", keyOut)
+	fmt.Printf("已生成证书: %s\n", certOut)
+}

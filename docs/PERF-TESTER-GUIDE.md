@@ -15,3 +15,9 @@
 
 代码入口：
 
+- `cmd/ks-scmc-server/main.go`：服务启动时调用 `common.StartPerfTools(mode)`
+- `common/perf.go`：核心实现
+- `scripts/etc/server.toml`：新增 `[perf]` 配置段
+
+---
+

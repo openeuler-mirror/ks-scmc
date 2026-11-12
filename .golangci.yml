@@ -20,3 +20,14 @@ run:
     - thrift$
 
   # 默认忽略以下路径:
+  #   vendor$, third_party$, testdata$, examples$, Godeps$, builtin$
+  skip-dirs-use-default: true
+
+  # 设置忽略的文件
+  # skip-files:
+  #   - ".*\\.my\\.go$"
+  #   - lib/bad.go
+
+    #modules-download-mode: readonly
+  modules-download-mode: vendor
+

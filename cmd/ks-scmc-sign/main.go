@@ -61,3 +61,9 @@ func main() {
 		usage()
 	default:
 		fmt.Fprintf(os.Stderr, "未知命令: %s\n", cmd)
+		usage()
+		os.Exit(1)
+	}
+}
+
+// failErr 将详细错误写入日志，stderr 仅输出简要描述

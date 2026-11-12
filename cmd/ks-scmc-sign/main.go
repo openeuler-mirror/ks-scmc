@@ -221,3 +221,9 @@ func runRemove(args []string) {
 }
 
 func runGenkey(args []string) {
+	fs := flag.NewFlagSet("genkey", flag.ExitOnError)
+	keyPath := fs.String("key", "", "私钥输出路径（未指定时使用配置 controller.image-sign-key）")
+	certPath := fs.String("cert", "", "证书输出路径（未指定时使用配置 controller.image-signer）")
+	algo := fs.String("algo", "rsa", "密钥算法: rsa, sm2")
+	days := fs.Int("days", 36500, "证书有效天数")
+	fs.Parse(args)

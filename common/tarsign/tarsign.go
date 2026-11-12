@@ -552,3 +552,9 @@ func Sign(path string, privKey PrivateKey, hashAlgo HashAlgo, sigAlgo SigAlgo) e
 	return appendSignature(f, sig, metaBytes, newFoot)
 }
 
+// SignV2 对 tar 文件签名（幂等，v2 版本）。
+// 在 v1 的基础上，将 metadata 一并纳入签名范围，并可携带关键二进制 hash（binary_hashes）。
+// binaryHashes 的 key 为容器内/归档内路径，value 为 "algo:hex" 形式。
+func SignV2(path string, privKey PrivateKey, hashAlgo HashAlgo, sigAlgo SigAlgo, binaryHashes map[string]string) error {
+	if err := validateSignAlgo(privKey, hashAlgo, sigAlgo); err != nil {
+		return err

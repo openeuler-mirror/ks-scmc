@@ -223,3 +223,9 @@ func UpsertRuntimeAuditImageTarget(imageID int64, display string) error {
 		}
 		return nil
 	}
+	if err := db.Model(&existing).Updates(map[string]interface{}{
+		"display":    display,
+		"is_deleted": false,
+		"deleted_at": 0,
+	}).Error; err != nil {
+		log.Warnf("UpsertRuntimeAuditImageTarget update id=%d err=%v", imageID, err)

@@ -51,3 +51,12 @@ func resetPool(reason error) {
 		log.Warnf("Database pool reset and closed: %v", reason)
 	}
 }
+
+// 检查数据库连接池健康状态，不健康重置，触发重连
+func healthCheckLoop() {
+	ticker := time.NewTicker(pingInterval)
+	defer ticker.Stop()
+	for range ticker.C {
+		lock.Lock()
+		g := db
+		lock.Unlock()

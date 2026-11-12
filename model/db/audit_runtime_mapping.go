@@ -338,3 +338,9 @@ func CleanAuditRuntimeMappings(retentionDays int64) error {
 		return translateError(err)
 	}
 	if err := db.Where("is_deleted = ? AND deleted_at > 0 AND deleted_at < ?", true, threshold).
+		Delete(&RuntimeAuditImageTarget{}).Error; err != nil {
+		log.Warnf("clean runtime_audit_image_targets: %v", err)
+		return translateError(err)
+	}
+	return nil
+}

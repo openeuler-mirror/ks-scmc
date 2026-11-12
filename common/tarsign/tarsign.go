@@ -165,3 +165,9 @@ func computeDigestStream(f *os.File, size int64, algo string) ([]byte, error) {
 	var h hash.Hash
 	switch algo {
 	case "sha256":
+		h = sha256.New()
+	case "sha512":
+		h = sha512.New()
+	case "sm3":
+		h = sm3.New()
+	default:

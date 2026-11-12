@@ -616,3 +616,9 @@ func validateSignAlgo(privKey PrivateKey, hashAlgo HashAlgo, sigAlgo SigAlgo) er
 		if sigAlgo == SigSM2 {
 			return fmt.Errorf("RSA 不支持签名算法: sm2")
 		}
+		if sigAlgo != SigPKCS1v15 && sigAlgo != SigPSS {
+			return fmt.Errorf("不支持的签名算法: %s，请使用 pkcs1v15 或 pss", sigAlgo)
+		}
+	case *sm2.PrivateKey:
+		if sigAlgo != SigSM2 {
+			return fmt.Errorf("SM2 密钥仅支持 sm2 签名算法")

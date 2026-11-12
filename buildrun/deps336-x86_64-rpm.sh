@@ -96,3 +96,8 @@ download_rpm() {
 check_deps_local() {
     local missing=()
     for url in "${RPM_URLS[@]}"; do
+        local fn
+        fn=$(basename "$url")
+        if [[ ! -f "$fn" || ! -s "$fn" ]]; then
+            missing+=("$fn")
+        fi

@@ -178,3 +178,12 @@ init() {
 	os=$1
 	if [[ -z "$os" ]]; then
 		if [[ -f /etc/.kyinfo ]]; then
+			os=$(cat /etc/.kyinfo | grep milestone | awk -F= '{print $2}' | tr -d ' ' | cut -c1-6)
+			if [[ "${os:0:2}" == "3-" ]]; then
+				TMP_VERSION=$(cat /etc/.kyinfo | sed 's/ //g' | grep dist_id | tr '-' '\n' | tail -n 2 | head -n 1)
+				if [[ "$TMP_VERSION" == "44"* ]]; then
+					os="3.4-4"
+				elif [[ "$TMP_VERSION" == "36"* ]]; then
+					os="3.3-6"
+				fi
+			else

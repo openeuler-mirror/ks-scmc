@@ -55,3 +55,9 @@ func main() {
 		runInfo(args)
 	case "remove":
 		runRemove(args)
+	case "genkey":
+		runGenkey(args)
+	case "help", "-h", "--help":
+		usage()
+	default:
+		fmt.Fprintf(os.Stderr, "未知命令: %s\n", cmd)

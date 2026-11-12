@@ -870,3 +870,9 @@ func parsePublicKey(pemData []byte) (interface{}, error) {
 		return &sm2.PublicKey{Curve: ecdsaPub.Curve, X: ecdsaPub.X, Y: ecdsaPub.Y}, nil
 	}
 	return nil, errors.New("公钥类型不支持")
+}
+
+// GenKey 生成签名所需的私钥和自签名证书
+// algo: "rsa" 或 "sm2"
+func GenKey(keyPath, certPath, algo string, days int) error {
+	if days <= 0 {

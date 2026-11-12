@@ -130,3 +130,9 @@ func dumpProfileToFile(profileName, suffix string) (string, error) {
 }
 
 func hostnameShort() string {
+	h, err := os.Hostname()
+	if err != nil || h == "" {
+		return "unknown-host"
+	}
+	return h
+}

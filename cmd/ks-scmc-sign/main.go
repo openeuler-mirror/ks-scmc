@@ -227,3 +227,9 @@ func runGenkey(args []string) {
 	algo := fs.String("algo", "rsa", "密钥算法: rsa, sm2")
 	days := fs.Int("days", 36500, "证书有效天数")
 	fs.Parse(args)
+
+	keyOut := *keyPath
+	if keyOut == "" {
+		keyOut = common.Config.Controller.ImageSignKey
+	}
+	certOut := *certPath

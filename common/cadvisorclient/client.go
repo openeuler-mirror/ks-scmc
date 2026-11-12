@@ -43,3 +43,8 @@ func (c *CAdvisorMetricsClient) FetchContainerStatsOnce(ctx context.Context) (ma
 	return decodeContainerInfoMap(body)
 }
 
+func decodeContainerInfoMap(body []byte) (map[string]*v1.ContainerInfo, error) {
+	var list []*v1.ContainerInfo
+	if err := json.Unmarshal(body, &list); err == nil && len(list) > 0 {
+		result := make(map[string]*v1.ContainerInfo, len(list))
+		for i, info := range list {

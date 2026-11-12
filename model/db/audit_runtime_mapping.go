@@ -304,3 +304,8 @@ func ResolveImageAuditTarget(ids []int64) string {
 
 func joinInt64s(ids []int64) string {
 	var parts []string
+	for _, id := range ids {
+		parts = append(parts, fmt.Sprintf("%d", id))
+	}
+	return strings.Join(parts, ";")
+}

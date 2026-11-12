@@ -30,3 +30,8 @@ func NewHTTPClientForLongRunningPull() *HTTPClient {
 	}
 }
 
+func (c *HTTPClient) Get(ctx context.Context, requestURL string) ([]byte, error) {
+	if c == nil || c.inner == nil {
+		return nil, fmt.Errorf("reusable http client is not initialized")
+	}
+

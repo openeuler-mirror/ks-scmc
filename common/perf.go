@@ -124,3 +124,9 @@ func dumpProfileToFile(profileName, suffix string) (string, error) {
 		}
 	default:
 		return "", fmt.Errorf("unsupported profile: %s", profileName)
+	}
+
+	return path, nil
+}
+
+func hostnameShort() string {

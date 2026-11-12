@@ -217,3 +217,9 @@ func Info(path string) (*Metadata, error) {
 	}
 	defer f.Close()
 
+	foot, err := ParseFooter(f)
+	if err != nil {
+		if errors.Is(err, ErrNoFooter) || errors.Is(err, ErrMagicMismatch) {
+			return nil, ErrNoFooter
+		}
+		return nil, err

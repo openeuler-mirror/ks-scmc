@@ -321,3 +321,9 @@ func ComputeBinaryHashes(tarPath string, hashAlgo HashAlgo, protectedPaths []str
 		targets[p] = orig
 	}
 	if len(targets) == 0 {
+		return result, nil
+	}
+
+	if _, err := f.Seek(0, io.SeekStart); err != nil {
+		return nil, err
+	}

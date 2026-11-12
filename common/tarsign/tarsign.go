@@ -85,3 +85,8 @@ const (
 	SigSM2      SigAlgo = "sm2"
 )
 
+var (
+	ErrNoFooter       = errors.New("未找到签名 Footer，视为未签名")
+	ErrMagicMismatch  = errors.New("magic 不匹配，非本方案签名")
+	ErrBadStructure   = errors.New("签名区结构损坏")
+	ErrDigestMismatch = errors.New("tar 摘要不匹配，内容可能被篡改")

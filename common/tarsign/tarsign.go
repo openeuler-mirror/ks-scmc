@@ -489,3 +489,9 @@ func LoadPrivateKey(path string) (PrivateKey, error) {
 		return nil, errors.New("failed to decode PEM block")
 	}
 	// 先尝试标准 RSA
+	priv, err := x509.ParsePKCS8PrivateKey(block.Bytes)
+	if err == nil {
+		if rsaPriv, ok := priv.(*rsa.PrivateKey); ok {
+			return rsaPriv, nil
+		}
+	}

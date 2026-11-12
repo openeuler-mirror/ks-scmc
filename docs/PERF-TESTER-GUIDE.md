@@ -125,3 +125,9 @@ ls -la /tmp/ks-scmc-pprof/
 
 - 日志出现 `heap dump saved`
 - 目录中新增一份新的 `heap-*.pprof`
+
+---
+
+## 5. 验收标准（通过/失败判定）
+
+通过标准（全部满足）：

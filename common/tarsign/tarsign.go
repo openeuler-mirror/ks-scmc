@@ -766,3 +766,9 @@ func signDigest(privKey PrivateKey, digest []byte, sigAlgo SigAlgo, hashAlgo Has
 
 // selectHash 根据字符串选择 hash 实现，供 v2 复合摘要使用
 func selectHash(algo string) (hash.Hash, error) {
+	switch algo {
+	case "sha256":
+		return sha256.New(), nil
+	case "sha512":
+		return sha512.New(), nil
+	case "sm3":

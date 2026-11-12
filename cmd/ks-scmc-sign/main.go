@@ -95,3 +95,9 @@ func usage() {
 算法约束: RSA 支持 sha256/sha512 + pkcs1v15/pss；SM2 支持 sha256/sha512/sm3 + sm2
 
 示例:
+  ks-scmc-sign genkey
+  ks-scmc-sign sign image.tar
+  ks-scmc-sign verify image.tar
+  ks-scmc-sign -config /other/server.toml sign image.tar
+`)
+}

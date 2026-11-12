@@ -212,3 +212,8 @@ func ReadSignatureAndMeta(f *os.File, foot *Footer) (sig []byte, meta *Metadata,
 // Info 返回签名信息
 func Info(path string) (*Metadata, error) {
 	f, err := os.Open(path)
+	if err != nil {
+		return nil, err
+	}
+	defer f.Close()
+

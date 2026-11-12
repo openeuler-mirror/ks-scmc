@@ -50,3 +50,9 @@ RPM_URLS=(
     "http://10.20.20.71/kojifiles/packages/re2/20200801/1.kb1.ky3/x86_64/re2-20200801-1.kb1.ky3.x86_64.rpm"
     "http://10.20.20.71/kojifiles/packages/slirp4netns/0.4.2/3.git21fdece.kb2.ky3/x86_64/slirp4netns-0.4.2-3.git21fdece.kb2.ky3.x86_64.rpm"
     "http://10.20.20.71/kojifiles/packages/socat/1.7.3.2/8.kb1.ky3/x86_64/socat-1.7.3.2-8.kb1.ky3.x86_64.rpm"
+    "http://10.20.20.71/kojifiles/packages/xinetd/2.3.15/31.kb1.ky3/x86_64/xinetd-2.3.15-31.kb1.ky3.x86_64.rpm"
+    "http://10.20.20.71/kojifiles/repos/KY3.4-4-PG-ks-scmc-1.1-build/latest/x86_64/toplink/packages/ks-license/2.7.9/35.ky3_4/x86_64/ks-license-client-2.7.9-35.ky3_4.x86_64.rpm"
+    "http://10.20.20.71/kojifiles/packages/ks-license-gui/2.7.8/8.ky3_4/x86_64/ks-license-gui-client-2.7.8-8.ky3_4.x86_64.rpm"
+)
+
+# ===================== 工具函数 =====================

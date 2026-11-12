@@ -443,3 +443,8 @@ func Verify(path string, pubKey []byte) error {
 		_, _ = h2.Write(digest1)
 		_, _ = h2.Write(metaRaw)
 		signedDigest = h2.Sum(nil)
+	}
+
+	if err := verifySignature(signedDigest, sig, pubKey, meta.SigAlgo); err != nil {
+		return ErrVerifyFailed
+	}

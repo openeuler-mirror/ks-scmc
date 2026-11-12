@@ -167,3 +167,31 @@ rm -rf %{_datadir}/ks-scmc
 * Thu Jul 31 2025 Shenghong Tang <tangshenghong@kylinos.com.cn> - 1.2.1-10.ky3
 - KYOS-F: Upgrade from 1.1.1 to 1.2.1. (#82292)
 
+* Tue Feb 18 2025 Shenghong Tang <tangshenghong@kylinos.com.cn> - 1.1.1-10.ky3
+- KYOS-F: add ks-scmc-dstats code. (#54966)
+
+* Fri Nov 17 2023 Haotian Chen <chenhaotian@kylinos.com.cn> - 1.1.1-2.ky3
+- KYOS-F: allow update container envs/mounts. (#21151)
+- KYOS-F: fix loong64 arch building issue.
+
+* Wed Nov 8 2023 Gongping Zheng <zhenggongping@kylinos.com.cn> - 1.1.1-1.ky3
+- KYOS-F: Rebuild for KY3.3-6-PG-ks-scmc-1.1.
+
+* Sat Aug 20 2022 Haotian Chen <chenhaotian@kylinos.com.cn> - 1.0.4-2.ky3
+- KYOS-F: Fix container backup occasionally failure. (#57408)
+
+* Thu Jul 7 2022 Haotian Chen <chenhaotian@kylinos.com.cn> - 1.0.4-1.ky3
+- KYOS-F: Store backup job in filesystem (#57408)
+- KYOS-F: rpc ListRuntime support fuzzing matching (#57412)
+- KYOS-F: rpc ContainerList fix nil pointer reference (#58474)
+- KYOS-F: Check image file before downloading (#59395)
+- KYOS-F: User default timeout set to 30min.
+
+* Thu Jul 7 2022 Haotian Chen <chenhaotian@kylinos.com.cn> - 1.0.3-1.ky3
+- KYOS-F: Move content of backend/ to top dir (#57217)
+- KYOS-F: Fix createNode error handling, optimize cpu count getter (#56642 #57410)
+- KYOS-F: Fix prevent docker-registry connection leak (#57436)
+- KYOS-F: Fix ImageUpload and ImageRemove error (#57359 #56808)
+- KYOS-F: Fix container list cpu/memory usage (#57413)
+
+* Mon Jun 27 2022 Haotian Chen <chenhaotian@kylinos.com.cn> - 1.0.2-3.ky3

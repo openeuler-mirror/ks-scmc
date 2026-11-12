@@ -90,3 +90,8 @@ func usage() {
   verify 使用公钥或证书验签
   info   查看签名信息与元数据
   remove 移除签名，恢复为纯 tar
+  genkey 生成签名所需的私钥和自签名证书
+
+算法约束: RSA 支持 sha256/sha512 + pkcs1v15/pss；SM2 支持 sha256/sha512/sm3 + sm2
+
+示例:

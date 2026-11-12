@@ -239,3 +239,11 @@ parse_args() {
 				;;
 			--mock)
 				build_type="mock"
+				shift
+				;;
+			--container)
+				build_type="container"
+				shift
+				;;
+			*)
+				break

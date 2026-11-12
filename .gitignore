@@ -2,3 +2,8 @@
 /ks-scmc-authz
 /ks-scmc-user
 /ks-scmc-encrypt
+/ks-scmc-sign
+
+/buildrpm/_buildres
+/buildrpm/_buildtmp
+

@@ -82,3 +82,31 @@ rm -rf %{_datadir}/ks-scmc
 
 %files
 %defattr(-,root,root)
+%{_bindir}/%{name}-server
+%{_bindir}/%{name}-authz
+%{_bindir}/%{name}-user
+%{_bindir}/%{name}-encrypt
+%{_bindir}/%{name}-sign
+%{_unitdir}/%{name}-agent.service
+%{_unitdir}/%{name}-controller.service
+%{_unitdir}/%{name}-authz.service
+%dir %attr(755, root, root) %{_var}/lib/%{name}
+%dir %attr(755, root, root) %{_var}/log/%{name}
+%dir %attr(755, root, root) %{_sysconfdir}/%{name}/
+%config(noreplace) %{_sysconfdir}/%{name}/server.toml
+%{_sysconfdir}/%{name}/access-container-gui
+%{_sysconfdir}/%{name}/graphic_rc
+%{_sysconfdir}/%{name}/setup_db.sh
+%{_sysconfdir}/%{name}/setup_agent.sh
+%{_sysconfdir}/%{name}/database.sql
+%{_sysconfdir}/%{name}/create_network.sh
+%{_sysconfdir}/%{name}/sync_image.sh
+%{_sysconfdir}/%{name}/keepalived.sh
+%{_sysconfdir}/%{name}/mysql_double_master.sh
+%{_sysconfdir}/%{name}/create_audadm.json
+%{_sysconfdir}/%{name}/create_secadm.json
+%{_sysconfdir}/%{name}/create_sysadm.json
+%{_sysconfdir}/%{name}/create_audadm_r.json
+%{_sysconfdir}/%{name}/create_secadm_r.json
+%{_sysconfdir}/%{name}/create_sysadm_r.json
+%{_sysconfdir}/%{name}/create_stdadm_r.json

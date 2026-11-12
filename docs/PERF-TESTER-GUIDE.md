@@ -79,3 +79,9 @@ curl -s http://127.0.0.1:6060/debug/pprof/ | head -20
 curl -s http://127.0.0.1:6060/debug/pprof/cmdline
 ```
 
+期望：有正常响应，不是连接失败/404。
+
+### 步骤 4：验证 heap 落盘端点
+
+```bash
+mkdir -p /tmp/ks-scmc-pprof

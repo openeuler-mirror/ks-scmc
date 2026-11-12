@@ -194,3 +194,9 @@ func ReadSignatureAndMeta(f *os.File, foot *Footer) (sig []byte, meta *Metadata,
 
 	sig = make([]byte, foot.SigLen)
 	if _, err = io.ReadFull(f, sig); err != nil {
+		return nil, nil, nil, err
+	}
+
+	metaBytes := make([]byte, foot.MetaLen)
+	if _, err = io.ReadFull(f, metaBytes); err != nil {
+		return nil, nil, nil, err

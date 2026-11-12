@@ -61,3 +61,9 @@ func UpsertRuntimeAuditContainerName(nodeID int64, containerID, containerName st
 		log.Warnf("UpsertRuntimeAuditContainerName: audit sqlite unavailable: %v", err)
 		return err
 	}
+	var existing RuntimeAuditContainerName
+	q := db.Where("node_id = ? AND container_id = ?", nodeID, containerID).First(&existing)
+	if q.Error != nil {
+		if !errors.Is(q.Error, ErrRecordNotFound) {
+			log.Warnf("UpsertRuntimeAuditContainerName query node=%d cid=%s err=%v", nodeID, containerID, q.Error)
+			return translateError(q.Error)

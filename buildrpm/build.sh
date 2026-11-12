@@ -153,3 +153,11 @@ do_build() {
 	if [[ -n $rel ]];then
 		release=$rel
 		sed "s/^%global pkg_rel.*$/%global pkg_rel $rel/g" ${SHELL_FOLDER}/${pkgname}.spec -i
+	fi
+
+	case "$build_type" in
+		local) local_build $rel ;;
+		mock)   mock_build $rel ;;
+		container)  container_build $rel ;;
+		*)
+			echo "Unknown build_type: $build_type, must be local|mock|container"

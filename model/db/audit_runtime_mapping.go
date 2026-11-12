@@ -298,3 +298,9 @@ func ResolveImageAuditTarget(ids []int64) string {
 		} else {
 			parts = append(parts, fmt.Sprintf("%d", id))
 		}
+	}
+	return strings.Join(parts, ";")
+}
+
+func joinInt64s(ids []int64) string {
+	var parts []string

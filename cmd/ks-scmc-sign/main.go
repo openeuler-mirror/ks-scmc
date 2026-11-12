@@ -67,3 +67,8 @@ func main() {
 }
 
 // failErr 将详细错误写入日志，stderr 仅输出简要描述
+func failErr(simpleMsg string, err error) {
+	logrus.Errorf("%s: %v", simpleMsg, err)
+	fmt.Fprintln(os.Stderr, simpleMsg)
+	os.Exit(1)
+}

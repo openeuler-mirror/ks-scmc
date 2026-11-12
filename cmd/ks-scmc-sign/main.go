@@ -32,3 +32,9 @@ func main() {
 	}
 
 	rest := fs.Args()
+	if len(rest) < 1 {
+		usage()
+		os.Exit(1)
+	}
+	cmd := rest[0]
+	args := rest[1:]

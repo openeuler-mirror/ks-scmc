@@ -15,3 +15,8 @@ import (
 const ContainersStatsRequestStatsCountOnePath = "/api/v1.3/subcontainers/?request=stats&count=1"
 
 type CAdvisorMetricsClient struct {
+	cadvisorBaseURL string
+	httpClient      *httpclient.HTTPClient
+}
+
+func NewCAdvisorMetricsClient() *CAdvisorMetricsClient {

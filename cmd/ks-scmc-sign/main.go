@@ -50,3 +50,8 @@ func main() {
 	case "sign":
 		runSign(args)
 	case "verify":
+		runVerify(args)
+	case "info":
+		runInfo(args)
+	case "remove":
+		runRemove(args)

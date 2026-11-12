@@ -135,3 +135,9 @@ func runSign(args []string) {
 	if path == "" {
 		failErr("必须指定 -key 参数或配置 controller.image-sign-key", fmt.Errorf("image-sign-key not configured"))
 	}
+	if fs.NArg() == 0 {
+		failErr("必须指定要签名的 tar 文件", fmt.Errorf("missing tar file argument"))
+	}
+	filePath := fs.Arg(0)
+
+	priv, err := tarsign.LoadPrivateKey(path)

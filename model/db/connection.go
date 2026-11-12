@@ -60,3 +60,12 @@ func healthCheckLoop() {
 		lock.Lock()
 		g := db
 		lock.Unlock()
+		if g == nil {
+			continue
+		}
+		sqlDB, err := g.DB()
+		if err != nil {
+			resetPool(err)
+			continue
+		}
+		ctx, cancel := context.WithTimeout(context.Background(), pingTimeout)

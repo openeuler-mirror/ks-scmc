@@ -139,3 +139,31 @@ rm -rf %{_datadir}/ks-scmc
 - add validation for alert resource usage threshold values (b:116431)
 
 * Thu Jan 22 2026 yubin<yubin@kylinsec.com.cn> - 1.2.1-18.ky3
+- fix slow network interface restart. (b:113242)
+- report the alarm logs of the standby node to MySQL. (b:115563)
+- support automatic recreation of macvlan network interface after deletion. (b:115402)
+
+* Thu Jan 15 2026 tangjie<tangjie@kylinsec.com.cn> - 1.2.1-17.ky3
+- KYOS-F: Upgrade from 1.2.1-16 to 1.2.1-17. (#114725)
+
+* Thu Jan 8 2026 yubin<yubin@kylinsec.com.cn> - 1.2.1-16.ky3
+- KYOS-F: Upgrade from 1.2.1-15 to 1.2.1-16. (#113242)
+
+* Thu Dec 18 2025 tangshenghong<tangshenghong@kylinsec.com.cn> - 1.2.1-15.ky3
+- KYOS-F: Upgrade from 1.2.1-14 to 1.2.1-15. (#109513,#109511)
+
+* Sun Dec 14 2025 tangshenghong<tangshenghong@kylinsec.com.cn> - 1.2.1-14.ky3
+- KYOS-F: Upgrade from 1.2.1-13 to 1.2.1-14. (#108855)
+
+* Fri Dec 12 2025 yubin <yubin@kylinsec.com.cn> - 1.2.1-13.ky3
+- KYOS-F: Upgrade from 1.2.1-12 to 1.2.1-13. (#108371)
+
+* Mon Dec 1 2025 yubin <yubin@kylinsec.com.cn> - 1.2.1-12.ky3
+- KYOS-F: Upgrade from 1.2.1-11 to 1.2.1-12. (#106480)
+
+* Fri Nov 21 2025 yubin <yubin@kylinsec.com.cn> - 1.2.1-11.ky3
+- KYOS-F: Upgrade from 1.2.1-10 to 1.2.1-11. (#104713) 
+
+* Thu Jul 31 2025 Shenghong Tang <tangshenghong@kylinos.com.cn> - 1.2.1-10.ky3
+- KYOS-F: Upgrade from 1.1.1 to 1.2.1. (#82292)
+

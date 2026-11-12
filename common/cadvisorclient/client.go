@@ -20,3 +20,9 @@ type CAdvisorMetricsClient struct {
 }
 
 func NewCAdvisorMetricsClient() *CAdvisorMetricsClient {
+	return &CAdvisorMetricsClient{
+		cadvisorBaseURL: "http://" + strings.TrimSpace(common.Config.CAdvisor.Addr),
+		httpClient:      httpclient.NewHTTPClientForLongRunningPull(),
+	}
+}
+

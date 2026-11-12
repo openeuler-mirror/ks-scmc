@@ -858,3 +858,9 @@ func parsePublicKey(pemData []byte) (interface{}, error) {
 		pub, err = gmsmx509.ParsePKIXPublicKey(block.Bytes)
 		if err != nil {
 			if rsaPub, err2 := x509.ParsePKCS1PublicKey(block.Bytes); err2 == nil {
+				return rsaPub, nil
+			}
+			return nil, errors.New("无法解析公钥")
+		}
+	}
+	if rsaPub, ok := pub.(*rsa.PublicKey); ok {

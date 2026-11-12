@@ -148,3 +148,9 @@ func MarkRuntimeAuditContainersDeleted(nodeID int64, containerIDs []string) erro
 			continue
 		}
 		row, ok := findRuntimeAuditContainerRow(db, nodeID, cid)
+		if !ok || row == nil {
+			continue
+		}
+		if _, dup := seen[row.ContainerId]; dup {
+			continue
+		}

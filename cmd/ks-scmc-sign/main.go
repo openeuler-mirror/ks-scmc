@@ -233,3 +233,9 @@ func runGenkey(args []string) {
 		keyOut = common.Config.Controller.ImageSignKey
 	}
 	certOut := *certPath
+	if certOut == "" {
+		certOut = common.Config.Controller.ImageSigner
+	}
+	if keyOut == "" {
+		failErr("必须指定 -key 参数或配置 controller.image-sign-key", fmt.Errorf("missing -key argument and image-sign-key not configured"))
+	}

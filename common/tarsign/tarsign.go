@@ -142,3 +142,9 @@ func IsSigned(f *os.File) (bool, error) {
 			return false, nil
 		}
 		return false, err
+	}
+	_ = foot
+	return true, nil
+}
+
+// tarSize 计算 tar 部分长度（不含签名区）

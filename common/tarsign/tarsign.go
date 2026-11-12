@@ -131,3 +131,9 @@ func ParseFooter(f *os.File) (*Footer, error) {
 		return nil, ErrBadStructure
 	}
 
+	return &foot, nil
+}
+
+// IsSigned 检查文件是否已签名
+func IsSigned(f *os.File) (bool, error) {
+	foot, err := ParseFooter(f)

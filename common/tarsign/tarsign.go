@@ -939,3 +939,9 @@ func genKeySM2(keyPath, certPath string, days int) error {
 		NotAfter:     time.Now().AddDate(0, 0, days),
 		KeyUsage:     gmsmx509.KeyUsageDigitalSignature,
 	}
+	certPEM, err := gmsmx509.CreateCertificateToPem(template, template, &priv.PublicKey, priv)
+	if err != nil {
+		return err
+	}
+	return ioutil.WriteFile(certPath, certPEM, 0o644)
+}

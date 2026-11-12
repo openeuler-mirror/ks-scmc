@@ -118,3 +118,12 @@ container_build() {
 		/bin/bash -c '
 			set -x
 			build_base_dir=/root/rpmbuild
+			source_dir=$build_base_dir/SOURCES
+			spec_dir=$build_base_dir/SPECS
+			mkdir -p $source_dir $spec_dir
+			cd /workspace
+			if [[ "$use_git_code" == "1" ]]; then
+				git archive --prefix=${pkgname}-${version}/ -o "${source_dir}/${pkgname}-${version}.tar.gz" HEAD
+			else
+				tar --transform "s,^.,${pkgname}-${version}," -zcf "${source_dir}/${pkgname}-${version}.tar.gz" .
+			fi

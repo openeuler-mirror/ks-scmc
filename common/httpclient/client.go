@@ -35,3 +35,8 @@ func (c *HTTPClient) Get(ctx context.Context, requestURL string) ([]byte, error)
 		return nil, fmt.Errorf("reusable http client is not initialized")
 	}
 
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, requestURL, nil)
+	if err != nil {
+		return nil, err
+	}
+

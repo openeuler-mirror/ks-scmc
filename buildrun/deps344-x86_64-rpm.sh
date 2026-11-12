@@ -119,3 +119,9 @@ main() {
     local fail_list=()
     for url in "${RPM_URLS[@]}"; do
         if ! download_rpm "$url"; then
+            fail_count=$((fail_count + 1))
+            fail_list+=("$url")
+        fi
+        echo "----------------------------------------"
+    done
+

@@ -194,3 +194,9 @@ heap_dump_dir = "/tmp/ks-scmc-pprof"
 ```bash
 cd test
 cp test-config.example.yaml test-config.yaml
+# 修改 test-config.yaml 后执行
+./deploy-and-test.sh
+```
+
+脚本会自动完成部署、端点验证、信号验证并生成测试报告。
+

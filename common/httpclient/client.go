@@ -45,3 +45,9 @@ func (c *HTTPClient) Get(ctx context.Context, requestURL string) ([]byte, error)
 		return nil, err
 	}
 	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("http get %s failed with status code %d", requestURL, resp.StatusCode)
+	}
+
+	body, err := ioutil.ReadAll(resp.Body)

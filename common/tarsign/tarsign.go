@@ -269,3 +269,9 @@ func GetTarDigest(path string) (string, error) {
 // - paths 形如 "/bin/bash"、"/bin/ls" 等，函数会自动去掉前导 "/" 或 "./" 与 tar 内路径匹配。
 // - 二进制文件哈希固定使用 md5，返回值中不包含 "md5:" 前缀，与整体签名的 hashAlgo 解耦。
 // - 若某个路径在 tar 中不存在，则不会出现在返回 map 中（同时记录日志由调用方自行处理）。
+func ComputeBinaryHashes(tarPath string, hashAlgo HashAlgo, protectedPaths []string) (map[string]string, error) {
+	result := make(map[string]string)
+	if len(protectedPaths) == 0 {
+		return result, nil
+	}
+

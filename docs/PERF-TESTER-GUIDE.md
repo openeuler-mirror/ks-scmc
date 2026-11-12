@@ -206,3 +206,8 @@ cp test-config.example.yaml test-config.yaml
 
 ```md
 ### perf 功能测试记录
+- 测试时间：
+- 测试环境：
+- 服务模式（agent/controller）：
+- 配置文件路径：
+

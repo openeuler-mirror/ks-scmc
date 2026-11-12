@@ -33,3 +33,8 @@ RPM_URLS=(
     "http://10.20.20.71/kojifiles/packages/mariadb-connector-c/3.0.6/9.kb1.ky3_4/x86_64/mariadb-connector-c-3.0.6-9.kb1.ky3_4.x86_64.rpm"
     "http://10.20.20.71/kojifiles/packages/mecab/0.996/2.kb1.ky3/x86_64/mecab-0.996-2.kb1.ky3.x86_64.rpm"
     "http://10.20.20.71/kojifiles/packages/mysql/8.0.43/1.kb1.ky3_4/x86_64/mysql-8.0.43-1.kb1.ky3_4.x86_64.rpm"
+    "http://10.20.20.71/kojifiles/packages/mysql/8.0.43/1.kb1.ky3_4/x86_64/mysql-common-8.0.43-1.kb1.ky3_4.x86_64.rpm"
+    "http://10.20.20.71/kojifiles/packages/mysql/8.0.43/1.kb1.ky3_4/x86_64/mysql-config-8.0.43-1.kb1.ky3_4.x86_64.rpm"
+    "http://10.20.20.71/kojifiles/packages/mysql/8.0.43/1.kb1.ky3_4/x86_64/mysql-errmsg-8.0.43-1.kb1.ky3_4.x86_64.rpm"
+    "http://10.20.20.71/kojifiles/packages/mysql/8.0.43/1.kb1.ky3_4/x86_64/mysql-libs-8.0.43-1.kb1.ky3_4.x86_64.rpm"
+    "http://10.20.20.71/kojifiles/packages/mysql/8.0.43/1.kb1.ky3_4/x86_64/mysql-server-8.0.43-1.kb1.ky3_4.x86_64.rpm"

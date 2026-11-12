@@ -188,3 +188,9 @@ func ResolveContainerNamesForNode(nodeID int64, containerIDs []string) map[strin
 		if _, ok := out[cid]; ok {
 			continue
 		}
+		if name, ok := resolveRuntimeAuditContainerName(db, nodeID, cid); ok {
+			out[cid] = name
+		}
+	}
+	return out
+}

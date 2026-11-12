@@ -754,3 +754,9 @@ func signDigest(privKey PrivateKey, digest []byte, sigAlgo SigAlgo, hashAlgo Has
 		case SigPSS:
 			return rsa.SignPSS(rand.Reader, priv, h, digest, &rsa.PSSOptions{SaltLength: rsa.PSSSaltLengthEqualsHash})
 		default:
+			return nil, fmt.Errorf("不支持的签名算法: %s", sigAlgo)
+		}
+	case *sm2.PrivateKey:
+		// SM2 对摘要签名：将 digest 作为 msg 传入，内部会计算 hash(ZA||digest)
+		return priv.Sign(rand.Reader, digest, nil)
+	default:

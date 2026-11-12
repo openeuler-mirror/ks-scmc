@@ -193,3 +193,8 @@ func runInfo(args []string) {
 
 	meta, err := tarsign.Info(filePath)
 	if err != nil {
+		if err == tarsign.ErrNoFooter {
+			fmt.Println("未签名")
+			return
+		}
+		failErr("读取签名信息失败", err)

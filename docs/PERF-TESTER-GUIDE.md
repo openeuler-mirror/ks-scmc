@@ -136,3 +136,9 @@ ls -la /tmp/ks-scmc-pprof/
 - `/debug/pprof/` 可访问
 - `/debug/leak/heap` 返回 JSON 且产出 `.pprof` 文件
 - `/debug/leak/goroutine` 返回 JSON 且产出 `.txt` 文件
+- `SIGUSR1` 触发后日志与文件都符合预期
+
+失败标准（任一命中）：
+
+- 端口不通、404、连接被拒绝
+- JSON 返回带错误信息（例如 `perf.heap_dump_dir is empty`）

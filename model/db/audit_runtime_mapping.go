@@ -67,3 +67,9 @@ func UpsertRuntimeAuditContainerName(nodeID int64, containerID, containerName st
 		if !errors.Is(q.Error, ErrRecordNotFound) {
 			log.Warnf("UpsertRuntimeAuditContainerName query node=%d cid=%s err=%v", nodeID, containerID, q.Error)
 			return translateError(q.Error)
+		}
+		row := RuntimeAuditContainerName{
+			NodeId:        nodeID,
+			ContainerId:   containerID,
+			ContainerName: containerName,
+			IsDeleted:     false,

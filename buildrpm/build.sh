@@ -50,3 +50,11 @@ mock_build() {
 	cd $builddir
 	mock -r mock-${ky_version}-${arch} --buildsrpm --spec ./${pkgname}.spec --sources ./${pkgname}-${version}.tar.gz --resultdir "$resultdir"
 	if [[ $? -ne 0 ]];then
+		echo "mock build srpm failed"
+		exit 1
+	fi
+
+	srpmpath=$(ls $resultdir/${pkgname}-${version}-${release}*.src.rpm)
+	mock -r mock-${ky_version}-${arch} --rebuild "$srpmpath" --resultdir "$resultdir"
+	if [[ $? -ne 0 ]];then
+		echo "mock build rpm failed"

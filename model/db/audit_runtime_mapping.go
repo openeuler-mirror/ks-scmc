@@ -206,3 +206,8 @@ func UpsertRuntimeAuditImageTarget(imageID int64, display string) error {
 	}
 	var existing RuntimeAuditImageTarget
 	q := db.Where("image_id = ?", imageID).First(&existing)
+	if q.Error != nil {
+		if !errors.Is(q.Error, ErrRecordNotFound) {
+			log.Warnf("UpsertRuntimeAuditImageTarget query id=%d err=%v", imageID, q.Error)
+			return translateError(q.Error)
+		}

@@ -125,3 +125,9 @@ func ParseFooter(f *os.File) (*Footer, error) {
 	if string(foot.Magic[:]) != Magic {
 		return nil, ErrMagicMismatch
 	}
+
+	totalExtra := int64(foot.SigLen) + int64(foot.MetaLen) + FooterSize
+	if stat.Size() < totalExtra {
+		return nil, ErrBadStructure
+	}
+

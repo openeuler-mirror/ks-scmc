@@ -51,3 +51,8 @@ func (c *HTTPClient) Get(ctx context.Context, requestURL string) ([]byte, error)
 	}
 
 	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	return body, nil
+}

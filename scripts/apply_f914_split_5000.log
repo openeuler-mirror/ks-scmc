@@ -4,3 +4,4 @@
 [09:32:28] allocated_parts_sum=5000 target=5000
 [09:33:00] [50/5000] last=1d8e0d48a108 path=buildrpm/build.sh part=32/32
 [09:33:40] [100/5000] last=76964acb4eff path=buildrun/deps344-x86_64-rpm.sh part=13/26
+[09:34:21] [150/5000] last=2ed6b6642c16 path=cmd/ks-scmc-sign/main.go part=26/44

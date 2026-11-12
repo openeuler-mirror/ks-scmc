@@ -147,3 +147,9 @@ func runSign(args []string) {
 
 	// 计算指定文件 hash
 	binaryHashes, err := tarsign.ComputeBinaryHashes(filePath, tarsign.HashAlgo(*hashAlgo), []string(signFiles))
+	if err != nil {
+		failErr("计算关键二进制 hash 失败", err)
+	}
+
+	err = tarsign.SignV2(filePath, priv, tarsign.HashAlgo(*hashAlgo), tarsign.SigAlgo(*sigAlgo), binaryHashes)
+	if err != nil {

@@ -73,3 +73,9 @@ func UpsertRuntimeAuditContainerName(nodeID int64, containerID, containerName st
 			ContainerId:   containerID,
 			ContainerName: containerName,
 			IsDeleted:     false,
+			DeletedAt:     0,
+		}
+		if err := db.Create(&row).Error; err != nil {
+			log.Warnf("UpsertRuntimeAuditContainerName create node=%d cid=%s err=%v", nodeID, containerID, err)
+			return translateError(err)
+		}

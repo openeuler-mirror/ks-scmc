@@ -102,3 +102,9 @@ check_deps_local() {
         echo "请将以下 RPM 放入该目录（共需 ${#RPM_URLS[@]} 个，缺 ${#missing[@]} 个）:"
         for m in "${missing[@]}"; do
             echo "  - $m"
+        done
+        exit 1
+    fi
+    echo "[OK] 依赖包齐全（${#RPM_URLS[@]} 个）"
+}
+

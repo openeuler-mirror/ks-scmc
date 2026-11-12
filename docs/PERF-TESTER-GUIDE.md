@@ -38,3 +38,9 @@
 [perf]
 enable = true
 host = "127.0.0.1"
+port = 6060
+
+block_profile_rate = 0
+mutex_profile_fraction = 0
+memstats_log_interval_sec = 10
+

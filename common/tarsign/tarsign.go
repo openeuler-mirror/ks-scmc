@@ -928,3 +928,8 @@ func genKeySM2(keyPath, certPath string, days int) error {
 		return err
 	}
 	keyPEM := pem.EncodeToMemory(&pem.Block{Type: "PRIVATE KEY", Bytes: keyDER})
+	if err := ioutil.WriteFile(keyPath, keyPEM, 0o600); err != nil {
+		return err
+	}
+
+	template := &gmsmx509.Certificate{

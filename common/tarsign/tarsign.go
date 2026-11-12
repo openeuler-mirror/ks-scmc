@@ -702,3 +702,9 @@ func buildSignatureV2(privKey PrivateKey, tarDigest []byte, hashAlgo HashAlgo, s
 	sig, err := signDigest(privKey, signedDigest, sigAlgo, hashAlgo)
 	if err != nil {
 		return nil, nil, Footer{}, err
+	}
+
+	foot := Footer{
+		SigLen:  uint64(len(sig)),
+		MetaLen: uint64(len(metaBytes)),
+		Version: VersionV2,

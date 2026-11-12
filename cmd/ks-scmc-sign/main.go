@@ -44,3 +44,9 @@ func main() {
 		fmt.Fprintln(os.Stderr, "加载配置失败")
 		os.Exit(1)
 	}
+	common.InitLogger("ks-scmc-sign")
+
+	switch cmd {
+	case "sign":
+		runSign(args)
+	case "verify":

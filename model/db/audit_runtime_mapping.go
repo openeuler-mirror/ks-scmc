@@ -263,3 +263,9 @@ func ResolveImageAuditTarget(ids []int64) string {
 	if err != nil {
 		log.Warnf("ResolveImageAuditTarget: audit sqlite unavailable: %v", err)
 		return joinInt64s(ids)
+	}
+	var rows []RuntimeAuditImageTarget
+	if err := db.Where("image_id IN ?", ids).Find(&rows).Error; err != nil {
+		log.Warnf("ResolveImageAuditTarget query mapping err=%v", err)
+	}
+	fromMap := make(map[int64]string, len(rows))

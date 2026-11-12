@@ -44,3 +44,9 @@ func ImageAuditDisplay(name, version string) string {
 	name = strings.TrimSpace(name)
 	version = strings.TrimSpace(version)
 	if name == "" {
+		return ""
+	}
+	if version != "" {
+		return name + ":" + version
+	}
+	return name

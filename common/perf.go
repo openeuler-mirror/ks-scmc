@@ -164,3 +164,9 @@ func startMemStatsLogger(serviceMode string) {
 	for range ticker.C {
 		var ms runtime.MemStats
 		runtime.ReadMemStats(&ms)
+		log.Infof("memstats: mode=%s heap_alloc=%d heap_inuse=%d heap_objects=%d stack_inuse=%d sys=%d num_gc=%d goroutines=%d",
+			serviceMode,
+			ms.HeapAlloc, ms.HeapInuse, ms.HeapObjects, ms.StackInuse, ms.Sys, ms.NumGC, runtime.NumGoroutine(),
+		)
+	}
+}

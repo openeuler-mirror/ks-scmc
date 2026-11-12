@@ -33,3 +33,8 @@
 ### 2.2 必要配置
 
 编辑测试机上的 `/etc/ks-scmc/server.toml`，确认存在并启用 `[perf]`：
+
+```toml
+[perf]
+enable = true
+host = "127.0.0.1"

@@ -96,3 +96,9 @@ ls -la /tmp/ks-scmc-pprof/
 
 ### 步骤 5：验证 goroutine 落盘端点
 
+```bash
+curl -s http://127.0.0.1:6060/debug/leak/goroutine
+ls -la /tmp/ks-scmc-pprof/
+```
+
+期望：

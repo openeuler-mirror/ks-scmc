@@ -19,3 +19,8 @@ func AddTask(ts ...Task) {
 
 			ticker := time.NewTicker(t.Interval())
 			for range ticker.C {
+				t.Run()
+			}
+		}(t)
+	}
+}

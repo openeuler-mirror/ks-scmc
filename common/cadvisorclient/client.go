@@ -54,3 +54,9 @@ func decodeContainerInfoMap(body []byte) (map[string]*v1.ContainerInfo, error) {
 			key := strings.TrimSpace(info.Name)
 			if key == "" {
 				key = "/" + strconv.Itoa(i)
+			}
+			result[key] = info
+		}
+		if len(result) > 0 {
+			return result, nil
+		}

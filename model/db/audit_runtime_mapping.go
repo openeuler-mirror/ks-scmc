@@ -286,3 +286,9 @@ func ResolveImageAuditTarget(ids []int64) string {
 			log.Warnf("ResolveImageAuditTarget fallback image_infos err=%v", err)
 		}
 		for _, img := range imgs {
+			if img != nil {
+				fromMap[img.ID] = ImageAuditDisplay(img.Name, img.Version)
+			}
+		}
+	}
+	var parts []string

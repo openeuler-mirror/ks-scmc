@@ -604,3 +604,9 @@ func SignV2(path string, privKey PrivateKey, hashAlgo HashAlgo, sigAlgo SigAlgo,
 		}
 	}
 	return appendSignature(f, sig, metaBytes, newFoot)
+}
+
+// validateSignAlgo 校验密钥类型与算法组合
+func validateSignAlgo(privKey PrivateKey, hashAlgo HashAlgo, sigAlgo SigAlgo) error {
+	switch priv := privKey.(type) {
+	case *rsa.PrivateKey:

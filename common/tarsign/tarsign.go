@@ -743,3 +743,9 @@ func signDigest(privKey PrivateKey, digest []byte, sigAlgo SigAlgo, hashAlgo Has
 		switch hashAlgo {
 		case HashSHA256:
 			h = crypto.SHA256
+		case HashSHA512:
+			h = crypto.SHA512
+		default:
+			return nil, fmt.Errorf("RSA 不支持的摘要: %s", hashAlgo)
+		}
+		switch sigAlgo {

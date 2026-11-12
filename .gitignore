@@ -25,3 +25,7 @@ MEMORY.md
 /memory/
 
 # comment off when coding, comment on when you need to merge code
+# go.mod
+# go.sum
+# vendor/
+# rpc/pb/***

@@ -38,3 +38,9 @@ func main() {
 	}
 	cmd := rest[0]
 	args := rest[1:]
+
+	if err := common.LoadConfig(configFile); err != nil {
+		logrus.Errorf("load config file=%s error=%v", configFile, err)
+		fmt.Fprintln(os.Stderr, "加载配置失败")
+		os.Exit(1)
+	}

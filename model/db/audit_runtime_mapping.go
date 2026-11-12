@@ -102,3 +102,9 @@ func normalizeDockerContainerID(id string) string {
 }
 
 func findRuntimeAuditContainerRow(gdb *gorm.DB, nodeID int64, cid string) (*RuntimeAuditContainerName, bool) {
+	n := normalizeDockerContainerID(cid)
+	if n == "" {
+		return nil, false
+	}
+	var row RuntimeAuditContainerName
+	if err := gdb.Where("node_id = ? AND LOWER(container_id) = ?", nodeID, n).First(&row).Error; err == nil {

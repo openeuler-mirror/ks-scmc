@@ -130,3 +130,9 @@ main() {
         echo "----------------------------------------"
     done
 
+    # 输出汇总信息
+    echo -e "\n===== 下载完成汇总 ====="
+    echo "总数量: ${#RPM_URLS[@]}"
+    echo "成功数量: $(( ${#RPM_URLS[@]} - fail_count ))"
+    echo "失败数量: $fail_count"
+

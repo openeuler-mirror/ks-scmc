@@ -204,3 +204,12 @@ init() {
 	container_build_image=${container_build_image}${ky_version}-v1
 	echo "container_build_image: $container_build_image"
 
+	echo "mkdir -p $builddir $resultdir"
+	mkdir -p $builddir $resultdir
+
+	pushd $SHELL_FOLDER
+	\cp mock-temp-${ky_version}.cfg $builddir/mock-${ky_version}-${arch}.cfg
+	sed "s/{arch}/$arch/g" $builddir/mock-${ky_version}-${arch}.cfg -i
+	popd
+}
+

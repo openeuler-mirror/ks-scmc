@@ -339,3 +339,8 @@ func ComputeBinaryHashes(tarPath string, hashAlgo HashAlgo, protectedPaths []str
 		if err != nil {
 			return nil, err
 		}
+
+		if !hdr.FileInfo().Mode().IsRegular() {
+			continue
+		}
+

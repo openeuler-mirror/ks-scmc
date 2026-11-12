@@ -292,3 +292,9 @@ func ComputeBinaryHashes(tarPath string, hashAlgo HashAlgo, protectedPaths []str
 		tarLen, err = tarSize(f, foot)
 		if err != nil {
 			return nil, err
+		}
+	} else if errors.Is(err, ErrNoFooter) || errors.Is(err, ErrMagicMismatch) {
+		tarLen = stat.Size()
+	} else {
+		return nil, err
+	}

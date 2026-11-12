@@ -107,3 +107,9 @@ func usage() {
 type stringSliceFlag []string
 
 func (s *stringSliceFlag) String() string {
+	return fmt.Sprintf("%v", []string(*s))
+}
+
+func (s *stringSliceFlag) Set(v string) error {
+	*s = append(*s, v)
+	return nil

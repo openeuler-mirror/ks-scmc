@@ -159,3 +159,9 @@ func MarkRuntimeAuditContainersDeleted(nodeID int64, containerIDs []string) erro
 			Where("node_id = ? AND container_id = ?", nodeID, row.ContainerId).
 			Updates(map[string]interface{}{
 				"is_deleted": true,
+				"deleted_at": now,
+			})
+		if res.Error != nil {
+			log.Warnf("MarkRuntimeAuditContainersDeleted node=%d cid=%s err=%v", nodeID, row.ContainerId, res.Error)
+			return translateError(res.Error)
+		}

@@ -147,3 +147,9 @@ func startHeapDumpSignalHandler(serviceMode string) {
 		if err != nil {
 			log.Errorf("heap dump (SIGUSR1) failed: mode=%s err=%v", serviceMode, err)
 			continue
+		}
+		log.Warnf("heap dump saved: mode=%s path=%s", serviceMode, path)
+	}
+}
+
+func startMemStatsLogger(serviceMode string) {

@@ -558,3 +558,9 @@ func Sign(path string, privKey PrivateKey, hashAlgo HashAlgo, sigAlgo SigAlgo) e
 func SignV2(path string, privKey PrivateKey, hashAlgo HashAlgo, sigAlgo SigAlgo, binaryHashes map[string]string) error {
 	if err := validateSignAlgo(privKey, hashAlgo, sigAlgo); err != nil {
 		return err
+	}
+
+	f, err := os.OpenFile(path, os.O_RDWR, 0)
+	if err != nil {
+		return err
+	}

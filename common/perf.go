@@ -113,3 +113,8 @@ func dumpProfileToFile(profileName, suffix string) (string, error) {
 		if err := rpprof.WriteHeapProfile(f); err != nil {
 			return "", err
 		}
+	case "goroutine":
+		p := rpprof.Lookup("goroutine")
+		if p == nil {
+			return "", fmt.Errorf("profile not found: %s", profileName)
+		}

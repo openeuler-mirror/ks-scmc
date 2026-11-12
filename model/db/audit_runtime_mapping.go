@@ -154,3 +154,8 @@ func MarkRuntimeAuditContainersDeleted(nodeID int64, containerIDs []string) erro
 		if _, dup := seen[row.ContainerId]; dup {
 			continue
 		}
+		seen[row.ContainerId] = struct{}{}
+		res := db.Model(&RuntimeAuditContainerName{}).
+			Where("node_id = ? AND container_id = ?", nodeID, row.ContainerId).
+			Updates(map[string]interface{}{
+				"is_deleted": true,

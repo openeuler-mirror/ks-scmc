@@ -34,3 +34,11 @@ func (*gormLogger) Printf(format string, v ...interface{}) {
 func resetPool(reason error) {
 	lock.Lock()
 	old := db
+	db = nil
+	lock.Unlock()
+
+	if old == nil {
+		return
+	}
+	sqlDB, err := old.DB()
+	if err != nil {

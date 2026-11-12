@@ -518,3 +518,8 @@ func Sign(path string, privKey PrivateKey, hashAlgo HashAlgo, sigAlgo SigAlgo) e
 	defer f.Close()
 
 	var size int64
+	signed, _ := IsSigned(f)
+	if signed {
+		foot, err := ParseFooter(f)
+		if err != nil {
+			return err

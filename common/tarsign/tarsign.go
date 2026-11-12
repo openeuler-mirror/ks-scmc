@@ -830,3 +830,8 @@ func verifySignature(digest, sig, pubKeyPEM []byte, sigAlgo string) error {
 func parsePublicKey(pemData []byte) (interface{}, error) {
 	block, _ := pem.Decode(pemData)
 	if block == nil {
+		return nil, errors.New("无法解析 PEM")
+	}
+	if block.Type == "CERTIFICATE" {
+		// 先尝试标准 x509（RSA 证书）
+		cert, err := x509.ParseCertificate(block.Bytes)

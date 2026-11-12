@@ -333,3 +333,9 @@ func ComputeBinaryHashes(tarPath string, hashAlgo HashAlgo, protectedPaths []str
 
 	for {
 		hdr, err := tr.Next()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			return nil, err
+		}

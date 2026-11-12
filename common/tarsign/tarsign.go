@@ -50,3 +50,9 @@ const (
 type Footer struct {
 	Magic   [8]byte
 	SigLen  uint64
+	MetaLen uint64
+	Version uint64
+}
+
+// Metadata 签名元数据
+type Metadata struct {

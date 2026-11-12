@@ -50,3 +50,8 @@ func startPprofHTTP(serviceMode string) {
 
 	// 内存泄漏排查辅助：落盘 heap/goroutine profile，便于离线对比
 	mux.HandleFunc("/debug/leak/heap", func(w http.ResponseWriter, r *http.Request) {
+		path, err := dumpProfileToFile("heap", ".pprof")
+		writeJSON(w, dumpReply{Profile: "heap", Path: path, Error: errString(err)})
+	})
+	mux.HandleFunc("/debug/leak/goroutine", func(w http.ResponseWriter, r *http.Request) {
+		path, err := dumpProfileToFile("goroutine", ".txt")

@@ -570,3 +570,8 @@ func SignV2(path string, privKey PrivateKey, hashAlgo HashAlgo, sigAlgo SigAlgo,
 	signed, _ := IsSigned(f)
 	if signed {
 		foot, err := ParseFooter(f)
+		if err != nil {
+			return err
+		}
+		size, err = tarSize(f, foot)
+		if err != nil {

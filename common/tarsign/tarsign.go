@@ -316,3 +316,8 @@ func ComputeBinaryHashes(tarPath string, hashAlgo HashAlgo, protectedPaths []str
 		p = strings.TrimPrefix(p, "./")
 		p = path.Clean(p)
 		if p == "" || p == "." {
+			continue
+		}
+		targets[p] = orig
+	}
+	if len(targets) == 0 {

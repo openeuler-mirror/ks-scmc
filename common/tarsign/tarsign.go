@@ -235,3 +235,9 @@ func Info(path string) (*Metadata, error) {
 // GetTarDigest 获取 tar 部分的摘要（hex）。若文件已签名则从 metadata 取，否则计算整个文件
 func GetTarDigest(path string) (string, error) {
 	f, err := os.Open(path)
+	if err != nil {
+		return "", err
+	}
+	defer f.Close()
+
+	foot, err := ParseFooter(f)

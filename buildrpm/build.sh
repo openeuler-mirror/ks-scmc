@@ -136,3 +136,11 @@ container_build() {
 }
 
 do_build() {
+	rel=$1
+
+	expr $rel "+" 10 &> /dev/null
+	if [[ $? -ne 0 ]];then
+		echo "please make sure that release number is valid ${rel}"
+		exit 1
+	fi
+

@@ -181,3 +181,9 @@ func runVerify(args []string) {
 	}
 	fmt.Println("验签成功")
 }
+
+func runInfo(args []string) {
+	fs := flag.NewFlagSet("info", flag.ExitOnError)
+	fs.Parse(args)
+
+	if fs.NArg() == 0 {

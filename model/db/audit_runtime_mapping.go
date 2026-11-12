@@ -56,3 +56,8 @@ func UpsertRuntimeAuditContainerName(nodeID int64, containerID, containerName st
 	if nodeID <= 0 || containerID == "" {
 		return nil
 	}
+	db, err := getAuditMappingConn()
+	if err != nil {
+		log.Warnf("UpsertRuntimeAuditContainerName: audit sqlite unavailable: %v", err)
+		return err
+	}

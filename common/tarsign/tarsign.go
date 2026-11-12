@@ -437,3 +437,9 @@ func Verify(path string, pubKey []byte) error {
 		signedDigest = digest1
 	} else {
 		h2, err := selectHash(meta.HashAlgo)
+		if err != nil {
+			return err
+		}
+		_, _ = h2.Write(digest1)
+		_, _ = h2.Write(metaRaw)
+		signedDigest = h2.Sum(nil)

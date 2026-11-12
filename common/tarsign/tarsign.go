@@ -812,3 +812,9 @@ func verifySignature(digest, sig, pubKeyPEM []byte, sigAlgo string) error {
 		default:
 			return fmt.Errorf("不支持的摘要长度: %d", len(digest))
 		}
+		return rsa.VerifyPSS(rsaPub, hash, digest, sig, &rsa.PSSOptions{SaltLength: rsa.PSSSaltLengthEqualsHash})
+	case "sm2":
+		sm2Pub, ok := pub.(*sm2.PublicKey)
+		if !ok {
+			return errors.New("sm2 需要 SM2 公钥")
+		}

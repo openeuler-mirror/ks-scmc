@@ -221,3 +221,12 @@ usage() {
 	echo "    --build-type=TYPE   Build type: local, mock, container (default: mock)"
 	echo "    --local             Same as --build-type=local"
 	echo "    --mock              Same as --build-type=mock"
+	echo "    --container            Same as --build-type=container"
+	echo "    \$pkgversion         Release number for package (e.g. 17)"
+	echo "    \$ky_version         Kylin OS version: 3.3-6 or 3.4-4 (required when build_type=container on non-Kylin host)"
+}
+
+parse_args() {
+	while [[ $# -gt 0 ]]; do
+		case "$1" in
+			--build-type=*)

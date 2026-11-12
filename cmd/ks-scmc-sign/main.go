@@ -27,3 +27,8 @@ func main() {
 	fs.SetOutput(os.Stderr)
 	configFlag := fs.String("config", "", "配置文件路径（可选）")
 	_ = fs.Parse(os.Args[1:])
+	if *configFlag != "" {
+		configFile = *configFlag
+	}
+
+	rest := fs.Args()

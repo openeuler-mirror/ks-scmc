@@ -247,3 +247,12 @@ parse_args() {
 				;;
 			*)
 				break
+				;;
+		esac
+	done
+	# Validate build_type
+	if [[ "$build_type" != "local" && "$build_type" != "mock" && "$build_type" != "container" ]]; then
+		echo "Invalid build_type: $build_type, must be local|mock|container"
+		exit 1
+	fi
+}

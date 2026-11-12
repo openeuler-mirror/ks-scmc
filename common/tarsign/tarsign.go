@@ -90,3 +90,9 @@ var (
 	ErrMagicMismatch  = errors.New("magic 不匹配，非本方案签名")
 	ErrBadStructure   = errors.New("签名区结构损坏")
 	ErrDigestMismatch = errors.New("tar 摘要不匹配，内容可能被篡改")
+	ErrVerifyFailed   = errors.New("验签失败")
+)
+
+// ParseFooter 从文件末尾读取并解析 Footer
+func ParseFooter(f *os.File) (*Footer, error) {
+	stat, err := f.Stat()

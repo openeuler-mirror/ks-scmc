@@ -79,3 +79,9 @@ const (
 // SigAlgo 签名算法
 type SigAlgo string
 
+const (
+	SigPKCS1v15 SigAlgo = "pkcs1v15"
+	SigPSS      SigAlgo = "pss"
+	SigSM2      SigAlgo = "sm2"
+)
+

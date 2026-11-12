@@ -124,3 +124,9 @@ func runSign(args []string) {
 	fs.Var(
 		&signFiles,
 		"sign-file",
+		"需要记录 hash 的文件路径，可重复指定，如: --sign-file /bin/bash --sign-file /do.sh。\n\n示例：ks-scmc-sign sign --sign-file /bin/bash --sign-file /do.sh image.tar",
+	)
+	fs.Parse(args)
+
+	path := *keyPath
+	if path == "" {

@@ -79,3 +79,9 @@ download_rpm() {
     echo "[DOWNLOAD] 开始下载: $filename"
     if wget --timeout="$WGET_TIMEOUT" --tries="$WGET_RETRY" --no-clobber "$url" -O "$filename"; then
         echo "[SUCCESS] $filename 下载完成"
+    else
+        echo "[FAILED] $filename 下载失败！URL: $url"
+        # 可选：删除下载失败的空文件
+        [ -f "$filename" ] && rm -f "$filename"
+        return 1
+    fi

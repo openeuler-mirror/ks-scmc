@@ -38,3 +38,9 @@ func StartPerfTools(serviceMode string) {
 	})
 }
 
+func startPprofHTTP(serviceMode string) {
+	addr := Config.Perf.Addr()
+
+	mux := http.NewServeMux()
+	mux.HandleFunc("/debug/pprof/", pprof.Index)
+	mux.HandleFunc("/debug/pprof/cmdline", pprof.Cmdline)

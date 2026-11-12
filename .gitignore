@@ -16,3 +16,7 @@
 
 /.vscode/***
 /sftp-config.json
+
+/ks-scmc-gui
+
+.claude

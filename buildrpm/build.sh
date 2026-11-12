@@ -67,3 +67,11 @@ local_build() {
 
 	build_base_dir=/root/rpmbuild
 	cat /etc/.kyinfo | grep milestone | grep '3.0-' > /dev/null
+	if [[ $? -eq 0 ]];then
+		build_base_dir=/usr/src/kylin
+	fi
+
+	source_dir=$build_base_dir/SOURCES
+	spec_dir=$build_base_dir/SPECS
+	mkdir -p $source_dir $spec_dir
+

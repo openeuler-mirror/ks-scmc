@@ -916,3 +916,9 @@ func genKeyRSA(keyPath, certPath string, days int) error {
 	}
 	certPEM := pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: certDER})
 	return ioutil.WriteFile(certPath, certPEM, 0o644)
+}
+
+func genKeySM2(keyPath, certPath string, days int) error {
+	priv, err := sm2.GenerateKey(rand.Reader)
+	if err != nil {
+		return err

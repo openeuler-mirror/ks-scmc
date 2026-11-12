@@ -708,3 +708,9 @@ func buildSignatureV2(privKey PrivateKey, tarDigest []byte, hashAlgo HashAlgo, s
 		SigLen:  uint64(len(sig)),
 		MetaLen: uint64(len(metaBytes)),
 		Version: VersionV2,
+	}
+	copy(foot.Magic[:], Magic)
+	return sig, metaBytes, foot, nil
+}
+
+// appendSignature 将签名区追加到文件末尾

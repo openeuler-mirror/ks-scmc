@@ -177,3 +177,9 @@ chmod 755 /tmp/ks-scmc-pprof
 
 并确认配置为：
 
+```toml
+heap_dump_dir = "/tmp/ks-scmc-pprof"
+```
+
+### 6.3 没有 memstats 日志
+

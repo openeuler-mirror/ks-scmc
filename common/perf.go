@@ -78,3 +78,9 @@ type dumpReply struct {
 
 func writeJSON(w http.ResponseWriter, v interface{}) {
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	_ = json.NewEncoder(w).Encode(v)
+}
+
+func errString(err error) string {
+	if err == nil {
+		return ""

@@ -119,3 +119,9 @@ func findRuntimeAuditContainerRow(gdb *gorm.DB, nodeID int64, cid string) (*Runt
 	if len(n) > minDockerContainerIDPrefixLen {
 		if err := gdb.Where("node_id = ? AND LENGTH(container_id) >= ? AND LOWER(?) LIKE (LOWER(container_id) || ?)",
 			nodeID, minDockerContainerIDPrefixLen, n, "%").First(&row).Error; err == nil {
+			return &row, true
+		}
+	}
+	return nil, false
+}
+

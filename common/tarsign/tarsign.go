@@ -835,3 +835,9 @@ func parsePublicKey(pemData []byte) (interface{}, error) {
 	if block.Type == "CERTIFICATE" {
 		// 先尝试标准 x509（RSA 证书）
 		cert, err := x509.ParseCertificate(block.Bytes)
+		if err == nil {
+			if rsaPub, ok := cert.PublicKey.(*rsa.PublicKey); ok {
+				return rsaPub, nil
+			}
+		}
+		// 再尝试 gmsm x509（SM2 证书）

@@ -462,3 +462,55 @@ func setDefault() {
 	viper.SetDefault("influxdb.username", "root")
 	viper.SetDefault("influxdb.password", "root")
 
+	viper.SetDefault("network.iptables_json_file", "/var/lib/ks-scmc/networks/iptables/enable.json")
+	viper.SetDefault("network.iptables_path", "/var/lib/ks-scmc/networks/iptables")
+
+	viper.SetDefault("registry.secure", false)
+	viper.SetDefault("registry.addr", "127.0.0.1:5000")
+	viper.SetDefault("registry.username", "")
+	viper.SetDefault("registry.password", "")
+
+	viper.SetDefault("ksimc.device", "/dev/ksimc")
+	viper.SetDefault("network_proc_whitelist.paths", defaultNetProList)
+	viper.SetDefault("alert.resource_usage_threshold", 80.0)
+
+	viper.SetDefault("perf.enable", false)
+	viper.SetDefault("perf.host", "127.0.0.1")
+	viper.SetDefault("perf.port", 6060)
+	// 0 表示关闭；打开会带来额外开销，建议只在排障时开启
+	viper.SetDefault("perf.block_profile_rate", 0)
+	viper.SetDefault("perf.mutex_profile_fraction", 0)
+	// 0 表示不周期打印内存统计
+	viper.SetDefault("perf.memstats_log_interval_sec", 0)
+	// 空表示不落盘 heap profile（仍可通过 /debug/pprof/heap 获取）
+	viper.SetDefault("perf.heap_dump_dir", "")
+}
+
+func LoadConfig(path string) error {
+	viper.SetConfigType("toml")
+	setDefault()
+
+	f, err := os.Open(path)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	if err := viper.ReadConfig(f); err != nil {
+		return err
+	}
+
+	if err := viper.Unmarshal(&Config); err != nil {
+		return err
+	}
+
+	// if len(Config.NodeProWhiteComList.Path) == 0 {
+	//     return fmt.Errorf("nodeprowhitecomlist.path cannot be empty")
+	// }
+
+	return nil
+}
+
+func SuperUser() bool {
+	return Config.Controller.SuperUser
+}

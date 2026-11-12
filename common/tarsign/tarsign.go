@@ -731,3 +731,9 @@ func appendSignature(f *os.File, sig, metaBytes []byte, foot Footer) error {
 		return err
 	}
 	if err := binary.Write(f, binary.LittleEndian, foot.MetaLen); err != nil {
+		return err
+	}
+	return binary.Write(f, binary.LittleEndian, foot.Version)
+}
+
+func signDigest(privKey PrivateKey, digest []byte, sigAlgo SigAlgo, hashAlgo HashAlgo) ([]byte, error) {

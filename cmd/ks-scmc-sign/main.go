@@ -118,3 +118,9 @@ func (s *stringSliceFlag) Set(v string) error {
 func runSign(args []string) {
 	fs := flag.NewFlagSet("sign", flag.ExitOnError)
 	keyPath := fs.String("key", "", "私钥文件路径（PKCS#8 格式），未指定时从配置文件读取")
+	hashAlgo := fs.String("hash", "sha256", "摘要算法: sha256, sha512, sm3")
+	sigAlgo := fs.String("sig", "pkcs1v15", "签名算法: pkcs1v15, pss, sm2")
+	var signFiles stringSliceFlag
+	fs.Var(
+		&signFiles,
+		"sign-file",

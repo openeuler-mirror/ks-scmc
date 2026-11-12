@@ -252,3 +252,9 @@ func GetTarDigest(path string) (string, error) {
 			return hex.EncodeToString(h.Sum(nil)), nil
 		}
 		return "", err
+	}
+
+	_, meta, _, err := ReadSignatureAndMeta(f, foot)
+	if err != nil {
+		return "", err
+	}

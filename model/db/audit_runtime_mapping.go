@@ -229,3 +229,8 @@ func UpsertRuntimeAuditImageTarget(imageID int64, display string) error {
 		"deleted_at": 0,
 	}).Error; err != nil {
 		log.Warnf("UpsertRuntimeAuditImageTarget update id=%d err=%v", imageID, err)
+		return translateError(err)
+	}
+	return nil
+}
+

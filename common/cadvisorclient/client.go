@@ -88,3 +88,8 @@ func decodeContainerInfoMap(body []byte) (map[string]*v1.ContainerInfo, error) {
 			continue
 		}
 
+		var info v1.ContainerInfo
+		if err := json.Unmarshal(value, &info); err != nil {
+			continue
+		}
+		if len(info.Stats) == 0 && strings.TrimSpace(info.Name) == "" {

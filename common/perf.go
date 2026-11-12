@@ -90,3 +90,8 @@ func errString(err error) string {
 
 func dumpProfileToFile(profileName, suffix string) (string, error) {
 	dir := Config.Perf.HeapDumpDir
+	if dir == "" {
+		return "", fmt.Errorf("perf.heap_dump_dir is empty")
+	}
+	if err := os.MkdirAll(dir, 0o755); err != nil {
+		return "", err

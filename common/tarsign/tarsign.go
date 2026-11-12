@@ -154,3 +154,9 @@ func tarSize(f *os.File, foot *Footer) (int64, error) {
 		return 0, err
 	}
 	size := stat.Size() - int64(foot.SigLen) - int64(foot.MetaLen) - FooterSize
+	if size <= 0 {
+		return 0, ErrBadStructure
+	}
+	return size, nil
+}
+

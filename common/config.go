@@ -359,3 +359,55 @@ func getBootProcesses() ([]ProcessInfo, error) {
 		isSystemdChild := ppid == 1
 		isGUI := isGUIProcess(exePath)
 		isUserProcess := false
+		if uidInt, err := strconv.Atoi(uid); err == nil {
+			isUserProcess = uidInt >= 1000 || exePath != "" // 包含root进程但排除内核线程
+		}
+
+		if isSystemdChild || isGUI || isUserProcess {
+			processes = append(processes, ProcessInfo{
+				PID:       pid,
+				ExePath:   exePath,
+				StartTime: startTime,
+				ParentPID: ppid,
+				User:      uid,
+			})
+		}
+	}
+
+	return processes, nil
+}
+
+func getParentPID(pid int) (int, error) {
+	data, err := ioutil.ReadFile(fmt.Sprintf("/proc/%d/stat", pid))
+	if err != nil {
+		return 0, err
+	}
+
+	pidStr := string(data)
+	end := strings.LastIndex(pidStr, ")")
+	if end == -1 {
+		return 0, fmt.Errorf("invalid stat format")
+	}
+
+	fields := strings.Fields(pidStr[end+1:])
+	if len(fields) < 4 {
+		return 0, fmt.Errorf("invalid stat format")
+	}
+
+	return strconv.Atoi(fields[3])
+}
+
+func deduplicate(paths []string) []string {
+	seen := make(map[string]bool)
+	list := []string{}
+	for _, path := range paths {
+		// 处理错误路径的特殊情况
+		if strings.HasPrefix(path, "[error:") {
+			if _, exists := seen[path]; !exists {
+				seen[path] = true
+				list = append(list, path)
+			}
+			continue
+		}
+
+		if realPath, err := filepath.EvalSymlinks(path); err == nil {

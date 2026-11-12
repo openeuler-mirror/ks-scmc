@@ -240,3 +240,9 @@ func MarkRuntimeAuditImageDeleted(imageID int64) error {
 	}
 	db, err := getAuditMappingConn()
 	if err != nil {
+		return err
+	}
+	now := time.Now().Unix()
+	res := db.Model(&RuntimeAuditImageTarget{}).Where("image_id = ?", imageID).Updates(map[string]interface{}{
+		"is_deleted": true,
+		"deleted_at": now,

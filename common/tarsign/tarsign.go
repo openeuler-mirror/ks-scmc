@@ -645,3 +645,9 @@ func computeKeyID(privKey PrivateKey) string {
 	}
 }
 
+// buildSignatureV1 根据摘要生成 v1 签名、元数据、Footer（仅对 tar_digest 做签名）
+func buildSignatureV1(privKey PrivateKey, digest []byte, hashAlgo HashAlgo, sigAlgo SigAlgo) ([]byte, []byte, Footer) {
+	sig, _ := signDigest(privKey, digest, sigAlgo, hashAlgo)
+	keyID := computeKeyID(privKey)
+	meta := Metadata{
+		TarDigest: string(hashAlgo) + ":" + hex.EncodeToString(digest),

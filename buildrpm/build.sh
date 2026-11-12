@@ -187,3 +187,12 @@ init() {
 					os="3.3-6"
 				fi
 			else
+				[[ ${os: -1} =~ [0-9] ]] || os=${os:0:-1}
+			fi
+		elif [[ "$build_type" == "docker" ]]; then
+			echo "When using build_type=docker on non-Kylin host, please specify Kylin version: $0 --build-type=docker <pkgversion> <3.3-6|3.4-4>"
+			exit 1
+		fi
+	fi
+
+	if [[ -z "$os" || ! " ${allow_os[@]} " =~ " ${os} " ]]; then

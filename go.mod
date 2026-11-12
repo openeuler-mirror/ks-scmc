@@ -41,4 +41,5 @@ require (
 	gorm.io/driver/mysql v1.3.6
 	gorm.io/driver/sqlite v1.3.6
 	gorm.io/gorm v1.23.8
+	github.com/tjfoc/gmsm v1.4.1
 )

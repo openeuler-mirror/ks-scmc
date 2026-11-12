@@ -84,3 +84,12 @@ local_build() {
 	fi
 	cp --preserve=time ${SHELL_FOLDER}/${pkgname}.spec ${spec_dir}
 
+	rpmbuild -ba ${spec_dir}/${pkgname}.spec
+	if [[ $? -ne 0 ]];then
+		echo "rpmbuild failed"
+		exit 1
+	fi
+	
+	cp -aR $build_base_dir/SRPMS/${pkgname}-${version}-${release}*.src.rpm ${resultdir}
+	cp -aR $build_base_dir/RPMS/$arch/${pkgname}-${version}-${release}.*.rpm ${resultdir}
+}

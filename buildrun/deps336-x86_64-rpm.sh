@@ -55,3 +55,9 @@ RPM_URLS=(
 	"http://10.20.20.17/kojifiles/packages/SDL2/2.0.10/1.ky3.kb3/x86_64/SDL2-2.0.10-1.ky3.kb3.x86_64.rpm"
 	"http://10.20.20.17/kojifiles/packages/slirp4netns/0.4.3/4.ky3/x86_64/slirp4netns-0.4.3-4.ky3.x86_64.rpm"
 	"http://10.20.20.17/kojifiles/packages/socat/1.7.3.2/2.ky3.kb5/x86_64/socat-1.7.3.2-2.ky3.kb5.x86_64.rpm"
+	"http://10.20.20.17/kojifiles/packages/tslib/1.0/10.ky3.kb1/x86_64/tslib-1.0-10.ky3.kb1.x86_64.rpm"
+	"http://10.20.20.17/kojifiles/packages/xinetd/2.3.15/14.ky3.kb1/x86_64/xinetd-2.3.15-14.ky3.kb1.x86_64.rpm"
+	"http://10.20.20.17/kojifiles/packages/ngbe/1.2.6/1dkms.ky3_3/noarch/ngbe-1.2.6-1dkms.ky3_3.noarch.rpm"
+)
+
+# ===================== 工具函数 =====================

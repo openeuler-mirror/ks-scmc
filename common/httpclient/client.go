@@ -24,3 +24,9 @@ func NewHTTPClient() *HTTPClient {
 }
 
 // NewHTTPClientForLongRunningPull uses a longer timeout; callers must not pass a shorter context deadline.
+func NewHTTPClientForLongRunningPull() *HTTPClient {
+	return &HTTPClient{
+		inner: &http.Client{Timeout: longRunningHTTPClientTimeout},
+	}
+}
+

@@ -697,3 +697,8 @@ func buildSignatureV2(privKey PrivateKey, tarDigest []byte, hashAlgo HashAlgo, s
 	}
 	_, _ = h2.Write(tarDigest)
 	_, _ = h2.Write(metaBytes)
+	signedDigest := h2.Sum(nil)
+
+	sig, err := signDigest(privKey, signedDigest, sigAlgo, hashAlgo)
+	if err != nil {
+		return nil, nil, Footer{}, err

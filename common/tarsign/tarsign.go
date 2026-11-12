@@ -466,3 +466,9 @@ func Remove(path string) error {
 		}
 		return err
 	}
+
+	stat, err := f.Stat()
+	if err != nil {
+		return err
+	}
+	tarSize := stat.Size() - int64(foot.SigLen) - int64(foot.MetaLen) - FooterSize

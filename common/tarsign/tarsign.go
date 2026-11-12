@@ -350,3 +350,9 @@ func ComputeBinaryHashes(tarPath string, hashAlgo HashAlgo, protectedPaths []str
 		name = path.Clean(name)
 		if name == "" || name == "." {
 			// 理论上不会命中受保护文件，直接丢弃内容
+			if _, err := io.Copy(ioutil.Discard, tr); err != nil {
+				return nil, err
+			}
+			continue
+		}
+

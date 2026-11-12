@@ -332,3 +332,9 @@ func CleanAuditRuntimeMappings(retentionDays int64) error {
 		return err
 	}
 
+	if err := db.Where("is_deleted = ? AND deleted_at > 0 AND deleted_at < ?", true, threshold).
+		Delete(&RuntimeAuditContainerName{}).Error; err != nil {
+		log.Warnf("clean runtime_audit_container_names: %v", err)
+		return translateError(err)
+	}
+	if err := db.Where("is_deleted = ? AND deleted_at > 0 AND deleted_at < ?", true, threshold).

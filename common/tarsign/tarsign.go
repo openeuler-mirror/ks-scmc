@@ -425,3 +425,9 @@ func Verify(path string, pubKey []byte) error {
 
 	expectedDigest := meta.HashAlgo + ":" + hex.EncodeToString(digest1)
 	if expectedDigest != meta.TarDigest {
+		return ErrDigestMismatch
+	}
+
+	// 第二阶段：根据版本选择签名输入：
+	// - v1：只对 digest1 做签名
+	// - v2：对 H(digest1 || metaRaw) 做签名（metaRaw 为落盘 JSON 字节，保证与签名时一致）

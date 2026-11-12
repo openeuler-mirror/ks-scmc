@@ -217,3 +217,9 @@ cp test-config.example.yaml test-config.yaml
 - [ ] /debug/leak/heap 正常 + 文件落盘
 - [ ] /debug/leak/goroutine 正常 + 文件落盘
 - [ ] SIGUSR1 触发正常
+
+#### 备注
+- 问题现象：
+- 复现步骤：
+- 日志摘录：
+```

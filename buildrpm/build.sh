@@ -127,3 +127,12 @@ container_build() {
 			else
 				tar --transform "s,^.,${pkgname}-${version}," -zcf "${source_dir}/${pkgname}-${version}.tar.gz" .
 			fi
+			cp --preserve=time /workspace/buildrpm/${pkgname}.spec ${spec_dir}
+			rpmbuild -ba ${spec_dir}/${pkgname}.spec
+			[[ $? -ne 0 ]] && { echo "Rpmbuild failed"; exit 1; }
+			cp -aR $build_base_dir/SRPMS/${pkgname}-${version}-${release}*.src.rpm /result/
+			cp -aR $build_base_dir/RPMS/$arch/${pkgname}-${version}-${release}.*.rpm /result/
+		'
+}
+
+do_build() {

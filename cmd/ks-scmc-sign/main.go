@@ -216,3 +216,8 @@ func runRemove(args []string) {
 	err := tarsign.Remove(filePath)
 	if err != nil {
 		failErr("移除签名失败", err)
+	}
+	fmt.Println("已移除签名")
+}
+
+func runGenkey(args []string) {

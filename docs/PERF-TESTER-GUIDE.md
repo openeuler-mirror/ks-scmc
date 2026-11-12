@@ -142,3 +142,9 @@ ls -la /tmp/ks-scmc-pprof/
 
 - 端口不通、404、连接被拒绝
 - JSON 返回带错误信息（例如 `perf.heap_dump_dir is empty`）
+- 信号触发后无日志、无文件
+- 服务重启失败或异常退出
+
+---
+
+## 6. 常见问题与处理

@@ -264,3 +264,12 @@ elif [[ $1 == "--clean" ]]; then
 else
 	parse_args "$@"
 	# Remaining args after build-type: pkgversion, ky_version
+	args=()
+	for a in "$@"; do
+		[[ "$a" == --build-type=* || "$a" == --local || "$a" == --mock || "$a" == --container ]] || args+=("$a")
+	done
+	clean
+	init "${args[1]:-}"
+	do_build "${args[0]:-}"
+fi
+

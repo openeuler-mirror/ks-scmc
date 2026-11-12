@@ -922,3 +922,9 @@ func genKeySM2(keyPath, certPath string, days int) error {
 	priv, err := sm2.GenerateKey(rand.Reader)
 	if err != nil {
 		return err
+	}
+	keyDER, err := gmsmx509.MarshalSm2UnecryptedPrivateKey(priv)
+	if err != nil {
+		return err
+	}
+	keyPEM := pem.EncodeToMemory(&pem.Block{Type: "PRIVATE KEY", Bytes: keyDER})

@@ -113,3 +113,9 @@ ls -la /tmp/ks-scmc-pprof/
 ```bash
 PID=$(pgrep -f ks-scmc-server | head -1)
 echo "$PID"
+
+kill -USR1 "$PID"
+sleep 2
+
+journalctl -u ks-scmc-server -n 20 --no-pager | grep -i "heap dump"
+ls -la /tmp/ks-scmc-pprof/

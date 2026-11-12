@@ -11,3 +11,4 @@
 [09:37:03] [350/5000] last=f066c51c2b42 path=common/tarsign/tarsign.go part=110/164
 [09:37:48] [400/5000] last=a6b099b3236c path=common/tarsign/tarsign.go part=160/164
 [09:38:26] [450/5000] last=b153f3821aa6 path=go.sum part=1/1
+[09:39:09] [500/5000] last=896d702b5308 path=model/db/audit_runtime_mapping.go part=50/60

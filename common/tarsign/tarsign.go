@@ -760,3 +760,9 @@ func signDigest(privKey PrivateKey, digest []byte, sigAlgo SigAlgo, hashAlgo Has
 		// SM2 对摘要签名：将 digest 作为 msg 传入，内部会计算 hash(ZA||digest)
 		return priv.Sign(rand.Reader, digest, nil)
 	default:
+		return nil, fmt.Errorf("不支持的私钥类型")
+	}
+}
+
+// selectHash 根据字符串选择 hash 实现，供 v2 复合摘要使用
+func selectHash(algo string) (hash.Hash, error) {

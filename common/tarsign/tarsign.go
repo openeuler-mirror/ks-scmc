@@ -801,3 +801,8 @@ func verifySignature(digest, sig, pubKeyPEM []byte, sigAlgo string) error {
 	case "pss":
 		rsaPub, ok := pub.(*rsa.PublicKey)
 		if !ok {
+			return errors.New("pss 需要 RSA 公钥")
+		}
+		var hash crypto.Hash
+		switch len(digest) {
+		case 32:

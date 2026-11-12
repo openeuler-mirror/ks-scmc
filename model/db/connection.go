@@ -42,3 +42,12 @@ func resetPool(reason error) {
 	}
 	sqlDB, err := old.DB()
 	if err != nil {
+		log.Warnf("Database pool reset (get sql.DB): %v; reason: %v", err, reason)
+		return
+	}
+	if err := sqlDB.Close(); err != nil {
+		log.Warnf("Database pool close: %v; reason: %v", err, reason)
+	} else {
+		log.Warnf("Database pool reset and closed: %v", reason)
+	}
+}

@@ -327,3 +327,8 @@ func CleanAuditRuntimeMappings(retentionDays int64) error {
 	retentionDate := time.Date(now.Year(), now.Month(), now.Day()-int(retentionDays)+1, 0, 0, 0, 0, now.Location())
 	threshold := retentionDate.Unix()
 
+	db, err := getAuditMappingConn()
+	if err != nil {
+		return err
+	}
+

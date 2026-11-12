@@ -79,3 +79,8 @@ func UpsertRuntimeAuditContainerName(nodeID int64, containerID, containerName st
 			log.Warnf("UpsertRuntimeAuditContainerName create node=%d cid=%s err=%v", nodeID, containerID, err)
 			return translateError(err)
 		}
+		return nil
+	}
+	if err := db.Model(&existing).Updates(map[string]interface{}{
+		"container_name": containerName,
+		"is_deleted":     false,

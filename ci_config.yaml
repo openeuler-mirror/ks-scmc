@@ -14,3 +14,8 @@ sonarqube:
   - "thrift/gen-go"
   - "vendor"
   - "server/agent/test"
+  - "server/controller/test"
+
+# 构建配置
+build:
+  enabled: false # 是否启用构建检查

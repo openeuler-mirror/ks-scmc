@@ -50,3 +50,9 @@ func ImageAuditDisplay(name, version string) string {
 		return name + ":" + version
 	}
 	return name
+}
+
+func UpsertRuntimeAuditContainerName(nodeID int64, containerID, containerName string) error {
+	if nodeID <= 0 || containerID == "" {
+		return nil
+	}

@@ -113,3 +113,9 @@ main() {
     # 前置检查
     check_wget
     echo "===== 开始批量下载RPM包（共${#RPM_URLS[@]}个） ====="
+
+    # 循环下载所有包
+    local fail_count=0
+    local fail_list=()
+    for url in "${RPM_URLS[@]}"; do
+        if ! download_rpm "$url"; then

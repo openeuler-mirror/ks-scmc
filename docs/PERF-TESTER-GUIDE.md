@@ -211,3 +211,9 @@ cp test-config.example.yaml test-config.yaml
 - 服务模式（agent/controller）：
 - 配置文件路径：
 
+#### 结果
+- [ ] perf enabled 日志正常
+- [ ] /debug/pprof/ 正常
+- [ ] /debug/leak/heap 正常 + 文件落盘
+- [ ] /debug/leak/goroutine 正常 + 文件落盘
+- [ ] SIGUSR1 触发正常

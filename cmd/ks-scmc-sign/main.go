@@ -164,3 +164,9 @@ func runVerify(args []string) {
 	fs.Parse(args)
 
 	path := *pubPath
+	if path == "" {
+		path = common.Config.Controller.ImageSigner
+	}
+	if path == "" {
+		failErr("必须指定 -pub 参数或配置 controller.image-signer", fmt.Errorf("image-signer not configured"))
+	}

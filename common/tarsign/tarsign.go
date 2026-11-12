@@ -662,3 +662,9 @@ func buildSignatureV1(privKey PrivateKey, digest []byte, hashAlgo HashAlgo, sigA
 	foot := Footer{
 		SigLen:  uint64(len(sig)),
 		MetaLen: uint64(len(metaBytes)),
+		Version: VersionV1,
+	}
+	copy(foot.Magic[:], Magic)
+	return sig, metaBytes, foot
+}
+

@@ -171,3 +171,9 @@ func computeDigestStream(f *os.File, size int64, algo string) ([]byte, error) {
 	case "sm3":
 		h = sm3.New()
 	default:
+		return nil, fmt.Errorf("不支持的摘要算法: %s", algo)
+	}
+	if _, err := f.Seek(0, io.SeekStart); err != nil {
+		return nil, err
+	}
+	if _, err := io.Copy(h, io.LimitReader(f, size)); err != nil {

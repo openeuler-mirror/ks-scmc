@@ -33,3 +33,10 @@ chmod +x ${KS_PATH}/install.sh && ${KS_PATH}/install.sh ${KS_PATH} KS_PROJECK_NA
 #	do
 #		cfg=/etc/$i.cfg
 #		if [ -e $cfg ]; then
+#			grub2-mkconfig -o $cfg
+#		fi
+#	done
+#fi
+
+rm -rf ${KS_PATH} /opt/ks-run-tmp.tar.gz
+exit 0

@@ -158,3 +158,9 @@ func runSign(args []string) {
 	fmt.Println("签名成功")
 }
 
+func runVerify(args []string) {
+	fs := flag.NewFlagSet("verify", flag.ExitOnError)
+	pubPath := fs.String("pub", "", "公钥或证书文件路径，未指定时从配置文件读取")
+	fs.Parse(args)
+
+	path := *pubPath

@@ -196,3 +196,11 @@ init() {
 	fi
 
 	if [[ -z "$os" || ! " ${allow_os[@]} " =~ " ${os} " ]]; then
+		echo "Not support os: '${os}', support list: ${allow_os[@]}"
+		exit 1
+	fi
+	ky_version="ky${os:0:3}"
+
+	container_build_image=${container_build_image}${ky_version}-v1
+	echo "container_build_image: $container_build_image"
+

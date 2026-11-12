@@ -9,3 +9,14 @@ run:
   issues-exit-code: 1
 
   # 是否扫描测试代码
+  tests: false
+
+  # 设置忽略的扫描路径
+  skip-dirs:
+    - vendor$
+    - server/controller/test
+    - server/agent/test
+    - rpc/pb
+    - thrift$
+
+  # 默认忽略以下路径:

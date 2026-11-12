@@ -177,3 +177,9 @@ func ResolveContainerNamesForNode(nodeID int64, containerIDs []string) map[strin
 		return out
 	}
 	db, err := getAuditMappingConn()
+	if err != nil {
+		log.Warnf("ResolveContainerNamesForNode: audit sqlite unavailable: %v", err)
+		return out
+	}
+	for _, cid := range containerIDs {
+		if cid == "" {

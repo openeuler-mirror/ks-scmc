@@ -43,3 +43,14 @@ linters:
     - unused
     # - gocyclo
     - gofmt
+    # - goimports
+    # - deadcode
+    # - varcheck
+    # - structcheck
+    # - godot
+    # - godox
+    # - gocognit
+    # - gosec
+    # - dupl
+    - revive
+  fast: true

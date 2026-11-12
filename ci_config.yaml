@@ -3,3 +3,8 @@
 
 # SCA配置
 sca:
+  enabled: false # 是否启用
+
+# SonarQube配置
+sonarqube:
+  enabled: true # 是否启用

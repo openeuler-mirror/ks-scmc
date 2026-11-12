@@ -806,3 +806,9 @@ func verifySignature(digest, sig, pubKeyPEM []byte, sigAlgo string) error {
 		var hash crypto.Hash
 		switch len(digest) {
 		case 32:
+			hash = crypto.SHA256
+		case 64:
+			hash = crypto.SHA512
+		default:
+			return fmt.Errorf("不支持的摘要长度: %d", len(digest))
+		}

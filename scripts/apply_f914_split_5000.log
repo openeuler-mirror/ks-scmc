@@ -2,3 +2,4 @@
 [09:32:27] target=f914b64c62a3 tree=fe961cac04f8
 [09:32:28] changed_paths=280
 [09:32:28] allocated_parts_sum=5000 target=5000
+[09:33:00] [50/5000] last=1d8e0d48a108 path=buildrpm/build.sh part=32/32

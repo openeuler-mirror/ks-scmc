@@ -910,3 +910,9 @@ func genKeyRSA(keyPath, certPath string, days int) error {
 		NotAfter:     time.Now().AddDate(0, 0, days),
 		KeyUsage:     x509.KeyUsageDigitalSignature,
 	}
+	certDER, err := x509.CreateCertificate(rand.Reader, &template, &template, &priv.PublicKey, priv)
+	if err != nil {
+		return err
+	}
+	certPEM := pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: certDER})
+	return ioutil.WriteFile(certPath, certPEM, 0o644)

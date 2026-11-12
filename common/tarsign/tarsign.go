@@ -160,3 +160,8 @@ func tarSize(f *os.File, foot *Footer) (int64, error) {
 	return size, nil
 }
 
+// computeDigestStream 流式计算 tar 部分摘要，避免大文件 OOM
+func computeDigestStream(f *os.File, size int64, algo string) ([]byte, error) {
+	var h hash.Hash
+	switch algo {
+	case "sha256":

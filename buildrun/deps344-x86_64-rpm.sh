@@ -67,3 +67,9 @@ check_wget() {
 # 下载单个RPM包（存在则跳过）
 download_rpm() {
     local url="$1"
+    local filename=$(basename "$url")
+    
+    # 检查文件是否存在且非空
+    if [ -f "$filename" ] && [ -s "$filename" ]; then
+        echo "[SKIP] $filename 已存在且非空，跳过下载"
+        return 0

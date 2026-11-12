@@ -118,3 +118,9 @@ func dumpProfileToFile(profileName, suffix string) (string, error) {
 		if p == nil {
 			return "", fmt.Errorf("profile not found: %s", profileName)
 		}
+		// 2: 带栈信息
+		if err := p.WriteTo(f, 2); err != nil {
+			return "", err
+		}
+	default:
+		return "", fmt.Errorf("unsupported profile: %s", profileName)

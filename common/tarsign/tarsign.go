@@ -472,3 +472,8 @@ func Remove(path string) error {
 		return err
 	}
 	tarSize := stat.Size() - int64(foot.SigLen) - int64(foot.MetaLen) - FooterSize
+	return f.Truncate(tarSize)
+}
+
+// PrivateKey 支持 RSA 或 SM2 私钥
+type PrivateKey interface{}

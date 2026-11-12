@@ -414,3 +414,9 @@ func Verify(path string, pubKey []byte) error {
 
 	size, err := tarSize(f, foot)
 	if err != nil {
+		return err
+	}
+
+	// 第一阶段：计算 tar 部分摘要（digest1），并与 metadata 中记录的 tar_digest 比对
+	digest1, err := computeDigestStream(f, size, meta.HashAlgo)
+	if err != nil {

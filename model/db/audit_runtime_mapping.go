@@ -269,3 +269,9 @@ func ResolveImageAuditTarget(ids []int64) string {
 		log.Warnf("ResolveImageAuditTarget query mapping err=%v", err)
 	}
 	fromMap := make(map[int64]string, len(rows))
+	for _, r := range rows {
+		if r.Display != "" {
+			fromMap[r.ImageID] = r.Display
+		}
+	}
+	var needFB []int64

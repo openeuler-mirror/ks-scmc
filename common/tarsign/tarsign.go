@@ -356,3 +356,9 @@ func ComputeBinaryHashes(tarPath string, hashAlgo HashAlgo, protectedPaths []str
 			continue
 		}
 
+		orig, ok := targets[name]
+		if !ok {
+			// 不在受保护列表中，直接跳过内容
+			if _, err := io.Copy(ioutil.Discard, tr); err != nil {
+				return nil, err
+			}

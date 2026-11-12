@@ -4,3 +4,9 @@ package tarsign
 
 import (
 	"archive/tar"
+	"crypto"
+	"crypto/ecdsa"
+	"crypto/elliptic"
+	"crypto/md5"
+	"crypto/rand"
+	"crypto/rsa"

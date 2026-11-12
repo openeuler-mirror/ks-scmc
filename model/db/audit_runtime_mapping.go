@@ -211,3 +211,9 @@ func UpsertRuntimeAuditImageTarget(imageID int64, display string) error {
 			log.Warnf("UpsertRuntimeAuditImageTarget query id=%d err=%v", imageID, q.Error)
 			return translateError(q.Error)
 		}
+		row := RuntimeAuditImageTarget{
+			ImageID:   imageID,
+			Display:   display,
+			IsDeleted: false,
+			DeletedAt: 0,
+		}

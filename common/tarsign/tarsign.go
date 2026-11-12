@@ -541,3 +541,9 @@ func Sign(path string, privKey PrivateKey, hashAlgo HashAlgo, sigAlgo SigAlgo) e
 
 	stat, err := f.Stat()
 	if err != nil {
+		return err
+	}
+	size = stat.Size()
+	digest1, err := computeDigestStream(f, size, string(hashAlgo))
+	if err != nil {
+		return err

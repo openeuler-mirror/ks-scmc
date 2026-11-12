@@ -102,3 +102,9 @@ func ParseFooter(f *os.File) (*Footer, error) {
 	if stat.Size() < FooterSize {
 		return nil, ErrNoFooter
 	}
+
+	_, err = f.Seek(-FooterSize, io.SeekEnd)
+	if err != nil {
+		return nil, err
+	}
+

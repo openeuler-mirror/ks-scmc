@@ -258,3 +258,8 @@ func MarkRuntimeAuditImageDeleted(imageID int64) error {
 func ResolveImageAuditTarget(ids []int64) string {
 	if len(ids) == 0 {
 		return ""
+	}
+	db, err := getAuditMappingConn()
+	if err != nil {
+		log.Warnf("ResolveImageAuditTarget: audit sqlite unavailable: %v", err)
+		return joinInt64s(ids)

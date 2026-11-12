@@ -67,3 +67,9 @@ systemctl status ks-scmc-server --no-pager
 ### 步骤 2：确认 perf 已启用
 
 ```bash
+journalctl -u ks-scmc-server -n 50 --no-pager | grep -i "perf enabled"
+```
+
+期望：出现类似 `perf enabled: mode=<agent|controller> pprof_listen=127.0.0.1:6060`
+
+### 步骤 3：验证 pprof 基础端点

@@ -460,3 +460,9 @@ func Remove(path string) error {
 	defer f.Close()
 
 	foot, err := ParseFooter(f)
+	if err != nil {
+		if errors.Is(err, ErrNoFooter) || errors.Is(err, ErrMagicMismatch) {
+			return nil // 未签名，无需处理
+		}
+		return err
+	}

@@ -292,3 +292,9 @@ func ResolveImageAuditTarget(ids []int64) string {
 		}
 	}
 	var parts []string
+	for _, id := range ids {
+		if s := fromMap[id]; s != "" {
+			parts = append(parts, s)
+		} else {
+			parts = append(parts, fmt.Sprintf("%d", id))
+		}

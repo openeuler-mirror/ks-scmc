@@ -258,3 +258,9 @@ func GetTarDigest(path string) (string, error) {
 	if err != nil {
 		return "", err
 	}
+	// tar_digest 格式为 "algo:hex"（如 sha256:xxx, sha512:xxx, sm3:xxx）
+	if idx := strings.Index(meta.TarDigest, ":"); idx >= 0 && idx+1 < len(meta.TarDigest) {
+		return meta.TarDigest[idx+1:], nil
+	}
+	return meta.TarDigest, nil
+}

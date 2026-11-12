@@ -477,3 +477,9 @@ func Remove(path string) error {
 
 // PrivateKey 支持 RSA 或 SM2 私钥
 type PrivateKey interface{}
+
+// LoadPrivateKey 从 PEM 文件加载 PKCS#8 格式的 RSA 或 SM2 私钥
+func LoadPrivateKey(path string) (PrivateKey, error) {
+	keyPEM, err := ioutil.ReadFile(path)
+	if err != nil {
+		return nil, err

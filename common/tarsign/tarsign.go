@@ -651,3 +651,8 @@ func buildSignatureV1(privKey PrivateKey, digest []byte, hashAlgo HashAlgo, sigA
 	keyID := computeKeyID(privKey)
 	meta := Metadata{
 		TarDigest: string(hashAlgo) + ":" + hex.EncodeToString(digest),
+		HashAlgo:  string(hashAlgo),
+		SigAlgo:   string(sigAlgo),
+		KeyID:     "sha256:" + keyID,
+		Timestamp: time.Now().Unix(),
+		Tool:      ToolName,

@@ -56,3 +56,9 @@ type Footer struct {
 
 // Metadata 签名元数据
 type Metadata struct {
+	TarDigest string `json:"tar_digest"`
+	HashAlgo  string `json:"hash_algo"`
+	SigAlgo   string `json:"sig_algo"`
+	KeyID     string `json:"key_id"`
+	Timestamp int64  `json:"timestamp"`
+	Tool      string `json:"tool"`

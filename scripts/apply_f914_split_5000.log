@@ -6,3 +6,4 @@
 [09:33:40] [100/5000] last=76964acb4eff path=buildrun/deps344-x86_64-rpm.sh part=13/26
 [09:34:21] [150/5000] last=2ed6b6642c16 path=cmd/ks-scmc-sign/main.go part=26/44
 [09:34:56] [200/5000] last=fbec0e19bc31 path=common/httpclient/client.go part=2/11
+[09:35:39] [250/5000] last=ed2d9792e8d9 path=common/tarsign/tarsign.go part=10/164

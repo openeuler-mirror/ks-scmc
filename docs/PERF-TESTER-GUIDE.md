@@ -171,3 +171,9 @@ journalctl -u ks-scmc-server -n 100 --no-pager
 处理：
 
 ```bash
+mkdir -p /tmp/ks-scmc-pprof
+chmod 755 /tmp/ks-scmc-pprof
+```
+
+并确认配置为：
+

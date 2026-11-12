@@ -187,3 +187,9 @@ func runInfo(args []string) {
 	fs.Parse(args)
 
 	if fs.NArg() == 0 {
+		failErr("必须指定 tar 文件", fmt.Errorf("missing tar file argument"))
+	}
+	filePath := fs.Arg(0)
+
+	meta, err := tarsign.Info(filePath)
+	if err != nil {

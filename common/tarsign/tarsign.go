@@ -593,3 +593,9 @@ func SignV2(path string, privKey PrivateKey, hashAlgo HashAlgo, sigAlgo SigAlgo,
 
 	// 生成 v2 签名与元数据
 	sig, metaBytes, newFoot, err := buildSignatureV2(privKey, digest1, hashAlgo, sigAlgo, binaryHashes)
+	if err != nil {
+		return err
+	}
+
+	// 幂等：如果原文件已签名，先截断到纯 tar 数据
+	if signed {

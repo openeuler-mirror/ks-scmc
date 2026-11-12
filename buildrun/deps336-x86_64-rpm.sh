@@ -78,3 +78,9 @@ download_rpm() {
     if [ -f "$filename" ] && [ -s "$filename" ]; then
         echo "[SKIP] $filename 已存在且非空，跳过下载"
         return 0
+    fi
+
+    # 执行下载（带超时、重试）
+    echo "[DOWNLOAD] 开始下载: $filename"
+    if wget --timeout="$WGET_TIMEOUT" --tries="$WGET_RETRY" --no-clobber "$url" -O "$filename"; then
+        echo "[SUCCESS] $filename 下载完成"

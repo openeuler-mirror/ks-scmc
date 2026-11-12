@@ -161,3 +161,12 @@ do_build() {
 		container)  container_build $rel ;;
 		*)
 			echo "Unknown build_type: $build_type, must be local|mock|container"
+			exit 1
+			;;
+	esac
+}
+
+clean() {
+	echo "rm -rf $builddir"
+	rm -rf $builddir
+	

@@ -899,3 +899,9 @@ func genKeyRSA(keyPath, certPath string, days int) error {
 	}
 	keyPEM := pem.EncodeToMemory(&pem.Block{Type: "PRIVATE KEY", Bytes: keyDER})
 	if err := ioutil.WriteFile(keyPath, keyPEM, 0o600); err != nil {
+		return err
+	}
+
+	serial, _ := rand.Int(rand.Reader, new(big.Int).Lsh(big.NewInt(1), 128))
+	template := x509.Certificate{
+		SerialNumber: serial,

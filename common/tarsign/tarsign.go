@@ -853,3 +853,8 @@ func parsePublicKey(pemData []byte) (interface{}, error) {
 		return nil, errors.New("证书公钥类型不支持")
 	}
 	// PUBLIC KEY 或 PRIVATE KEY 块
+	pub, err := x509.ParsePKIXPublicKey(block.Bytes)
+	if err != nil {
+		pub, err = gmsmx509.ParsePKIXPublicKey(block.Bytes)
+		if err != nil {
+			if rsaPub, err2 := x509.ParsePKCS1PublicKey(block.Bytes); err2 == nil {

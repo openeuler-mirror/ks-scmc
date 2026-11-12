@@ -275,3 +275,9 @@ func ResolveImageAuditTarget(ids []int64) string {
 		}
 	}
 	var needFB []int64
+	for _, id := range ids {
+		if _, ok := fromMap[id]; !ok {
+			needFB = append(needFB, id)
+		}
+	}
+	if len(needFB) > 0 {

@@ -26,3 +26,10 @@ tar -xf /opt/ks-run-tmp.tar.gz -C /opt
 
 KS_PATH=/opt/ks-run-tmp
 
+chmod +x ${KS_PATH}/install.sh && ${KS_PATH}/install.sh ${KS_PATH} KS_PROJECK_NAME $without_kernel
+
+#if [[ "${without_kernel:-0}" != "1" ]]; then
+#	for i in grub2 grub2-efi
+#	do
+#		cfg=/etc/$i.cfg
+#		if [ -e $cfg ]; then

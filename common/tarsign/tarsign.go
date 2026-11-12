@@ -108,3 +108,8 @@ func ParseFooter(f *os.File) (*Footer, error) {
 		return nil, err
 	}
 
+	var foot Footer
+	if err := binary.Read(f, binary.LittleEndian, &foot.Magic); err != nil {
+		return nil, err
+	}
+	if err := binary.Read(f, binary.LittleEndian, &foot.SigLen); err != nil {

@@ -847,3 +847,9 @@ func parsePublicKey(pemData []byte) (interface{}, error) {
 				return &sm2.PublicKey{Curve: ecdsaPub.Curve, X: ecdsaPub.X, Y: ecdsaPub.Y}, nil
 			}
 			if rsaPub, ok := gcert.PublicKey.(*rsa.PublicKey); ok {
+				return rsaPub, nil
+			}
+		}
+		return nil, errors.New("证书公钥类型不支持")
+	}
+	// PUBLIC KEY 或 PRIVATE KEY 块

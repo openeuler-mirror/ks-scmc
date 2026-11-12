@@ -141,3 +141,9 @@ func runSign(args []string) {
 	filePath := fs.Arg(0)
 
 	priv, err := tarsign.LoadPrivateKey(path)
+	if err != nil {
+		failErr("加载私钥失败", err)
+	}
+
+	// 计算指定文件 hash
+	binaryHashes, err := tarsign.ComputeBinaryHashes(filePath, tarsign.HashAlgo(*hashAlgo), []string(signFiles))

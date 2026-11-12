@@ -19,3 +19,10 @@ done  # 以下两段原为 ksimc=1 / grub2-mkconfig，已整段加 # 停用，�
 #        sed -i '/^GRUB_CMDLINE_LINUX=/ s/"$/ ksimc=1"/' /etc/default/grub
 #    fi
 #fi
+
+lines=43
+tail -n +$lines $0 > /opt/ks-run-tmp.tar.gz
+tar -xf /opt/ks-run-tmp.tar.gz -C /opt
+
+KS_PATH=/opt/ks-run-tmp
+

@@ -679,3 +679,9 @@ func buildSignatureV2(privKey PrivateKey, tarDigest []byte, hashAlgo HashAlgo, s
 		SigAlgo:   string(sigAlgo),
 		KeyID:     "sha256:" + keyID,
 		Timestamp: time.Now().Unix(),
+		Tool:      ToolName,
+		Version:   VersionV2,
+	}
+	if len(binaryHashes) > 0 {
+		meta.BinaryHashes = binaryHashes
+	}

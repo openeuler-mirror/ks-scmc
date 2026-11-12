@@ -14,3 +14,8 @@ const hTPClientTimeout = 10 * time.Second
 const longRunningHTTPClientTimeout = 120 * time.Second
 
 type HTTPClient struct {
+	inner *http.Client
+}
+
+func NewHTTPClient() *HTTPClient {
+	return &HTTPClient{

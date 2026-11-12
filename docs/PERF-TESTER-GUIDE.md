@@ -188,3 +188,9 @@ heap_dump_dir = "/tmp/ks-scmc-pprof"
 ---
 
 ## 7. 可选：自动化一键测试
+
+仓库已提供自动化脚本：
+
+```bash
+cd test
+cp test-config.example.yaml test-config.yaml

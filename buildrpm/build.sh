@@ -41,3 +41,12 @@ mock_build() {
 	cd ${SHELL_FOLDER}/..
         if [[ $use_git_code == '1' ]];then
 		git archive -o "${builddir}/${pkgname}-${version}.tar.gz" --prefix=${pkgname}-${version}/ HEAD
+	else
+		tar --transform "s,^.,${pkgname}-${version}," -zcf "${builddir}/${pkgname}-${version}.tar.gz" . --exclude=${pkgname}-${version}.tar.gz
+        fi
+	\cp --preserve=time ${SHELL_FOLDER}/${pkgname}.spec $builddir
+	\cp -rf ${builddir}/$mock_cfg /etc/mock
+
+	cd $builddir
+	mock -r mock-${ky_version}-${arch} --buildsrpm --spec ./${pkgname}.spec --sources ./${pkgname}-${version}.tar.gz --resultdir "$resultdir"
+	if [[ $? -ne 0 ]];then

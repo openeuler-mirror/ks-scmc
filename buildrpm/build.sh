@@ -144,3 +144,12 @@ do_build() {
 		exit 1
 	fi
 
+	# Root required for local and mock; docker build runs as root inside container
+	if [[ "$build_type" != "container" && "$(id -u)" != 0 ]]; then
+		echo "Must be root user for local/mock build, or use build_type=docker for container build"
+		return
+	fi
+
+	if [[ -n $rel ]];then
+		release=$rel
+		sed "s/^%global pkg_rel.*$/%global pkg_rel $rel/g" ${SHELL_FOLDER}/${pkgname}.spec -i

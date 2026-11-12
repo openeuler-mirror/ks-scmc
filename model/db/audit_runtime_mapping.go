@@ -27,3 +27,9 @@ func (RuntimeAuditContainerName) TableName() string {
 
 // RuntimeAuditImageTarget 审计用镜像 ID→展示串（name:version）。
 type RuntimeAuditImageTarget struct {
+	ImageID   int64  `gorm:"column:image_id;primaryKey"`
+	Display   string `gorm:"column:display;size:512"`
+	IsDeleted bool   `gorm:"column:is_deleted"`
+	DeletedAt int64  `gorm:"column:deleted_at"`
+	CreatedAt int64  `gorm:"autoCreateTime"`
+	UpdatedAt int64  `gorm:"autoUpdateTime"`

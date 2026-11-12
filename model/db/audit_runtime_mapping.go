@@ -309,3 +309,9 @@ func joinInt64s(ids []int64) string {
 	}
 	return strings.Join(parts, ";")
 }
+
+// ResolveImageAuditTargetOne 单个 image_id。
+func ResolveImageAuditTargetOne(imageID int64) string {
+	if imageID <= 0 {
+		return ""
+	}

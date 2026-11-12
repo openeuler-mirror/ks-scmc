@@ -50,3 +50,8 @@ RPM_URLS=(
 	"http://10.20.20.17/kojifiles/packages/mysql-community/8.0.44/1.ky3_3/x86_64/mysql-community-icu-data-files-8.0.44-1.ky3_3.x86_64.rpm"
 	"http://10.20.20.17/kojifiles/packages/mysql-community/8.0.44/1.ky3_3/x86_64/mysql-community-libs-8.0.44-1.ky3_3.x86_64.rpm"
 	"http://10.20.20.17/kojifiles/packages/mysql-community/8.0.44/1.ky3_3/x86_64/mysql-community-libs-compat-8.0.44-1.ky3_3.x86_64.rpm"
+	"http://10.20.20.17/kojifiles/packages/mysql-community/8.0.44/1.ky3_3/x86_64/mysql-community-server-8.0.44-1.ky3_3.x86_64.rpm"
+	"http://10.20.20.17/kojifiles/packages/qrencode/3.4.1/3.ky3.kb6/x86_64/qrencode-3.4.1-3.ky3.kb6.x86_64.rpm"
+	"http://10.20.20.17/kojifiles/packages/SDL2/2.0.10/1.ky3.kb3/x86_64/SDL2-2.0.10-1.ky3.kb3.x86_64.rpm"
+	"http://10.20.20.17/kojifiles/packages/slirp4netns/0.4.3/4.ky3/x86_64/slirp4netns-0.4.3-4.ky3.x86_64.rpm"
+	"http://10.20.20.17/kojifiles/packages/socat/1.7.3.2/2.ky3.kb5/x86_64/socat-1.7.3.2-2.ky3.kb5.x86_64.rpm"

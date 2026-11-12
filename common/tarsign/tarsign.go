@@ -119,3 +119,9 @@ func ParseFooter(f *os.File) (*Footer, error) {
 		return nil, err
 	}
 	if err := binary.Read(f, binary.LittleEndian, &foot.Version); err != nil {
+		return nil, err
+	}
+
+	if string(foot.Magic[:]) != Magic {
+		return nil, ErrMagicMismatch
+	}

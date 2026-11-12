@@ -176,3 +176,8 @@ func runVerify(args []string) {
 	filePath := fs.Arg(0)
 
 	err := tarsign.VerifyFromFile(filePath, path)
+	if err != nil {
+		failErr("验签失败", err)
+	}
+	fmt.Println("验签成功")
+}

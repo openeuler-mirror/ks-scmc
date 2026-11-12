@@ -587,3 +587,9 @@ func SignV2(path string, privKey PrivateKey, hashAlgo HashAlgo, sigAlgo SigAlgo,
 
 	// 计算 tar 部分摘要（digest1）
 	digest1, err := computeDigestStream(f, size, string(hashAlgo))
+	if err != nil {
+		return err
+	}
+
+	// 生成 v2 签名与元数据
+	sig, metaBytes, newFoot, err := buildSignatureV2(privKey, digest1, hashAlgo, sigAlgo, binaryHashes)

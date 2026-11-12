@@ -165,3 +165,9 @@ func MarkRuntimeAuditContainersDeleted(nodeID int64, containerIDs []string) erro
 			log.Warnf("MarkRuntimeAuditContainersDeleted node=%d cid=%s err=%v", nodeID, row.ContainerId, res.Error)
 			return translateError(res.Error)
 		}
+	}
+	return nil
+}
+
+// ResolveContainerNamesForNode 按节点解析容器展示名（请求里常为短 ID，映射表多为 Create 返回的完整 ID）。
+// 未命中映射时 map 中无该 key。不过滤 is_deleted：Remove 审计 defer 时可能已软删，仍展示历史名称。

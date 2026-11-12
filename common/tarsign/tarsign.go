@@ -933,3 +933,9 @@ func genKeySM2(keyPath, certPath string, days int) error {
 	}
 
 	template := &gmsmx509.Certificate{
+		SerialNumber: big.NewInt(1),
+		Subject:      pkix.Name{CommonName: "ks-scmc-image-signer"},
+		NotBefore:    time.Now(),
+		NotAfter:     time.Now().AddDate(0, 0, days),
+		KeyUsage:     gmsmx509.KeyUsageDigitalSignature,
+	}

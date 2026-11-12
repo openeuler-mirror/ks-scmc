@@ -142,3 +142,8 @@ main() {
             echo "  $fail_url"
         done
         exit 1
+    fi
+
+    echo "所有包下载完成！"
+}
+

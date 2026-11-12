@@ -153,3 +153,54 @@ type RegistryConfig struct {
 type KsimcConfig struct {
 	Device string `mapstructure:"device"`
 }
+
+type NodeProWhiteComListConfig struct {
+	Path []string `mapstructure:"path"`
+}
+
+type NetworkProcessWhitelistConfig struct {
+	Paths []string `mapstructure:"paths"`
+}
+
+type AlertConfig struct {
+	ResourceUsageThreshold float64 `mapstructure:"resource_usage_threshold"`
+}
+
+type PerfConfig struct {
+	Enable                 bool   `mapstructure:"enable"`
+	Host                   string `mapstructure:"host"`
+	Port                   uint   `mapstructure:"port"`
+	BlockProfileRate       int    `mapstructure:"block_profile_rate"`
+	MutexProfileFraction   int    `mapstructure:"mutex_profile_fraction"`
+	MemStatsLogIntervalSec uint   `mapstructure:"memstats_log_interval_sec"`
+	HeapDumpDir            string `mapstructure:"heap_dump_dir"`
+}
+
+func (m *PerfConfig) Addr() string {
+	return fmt.Sprintf("%s:%d", m.Host, m.Port)
+}
+
+var Config struct {
+	Log                  LogConfig                     `mapstructure:"log"`
+	ApiTLS               TLSConfig                     `mapstructure:"apitls"`
+	ApiController        ControllerConfig              `mapstructure:"apicontroller"`
+	TLS                  TLSConfig                     `mapstructure:"tls"`
+	Agent                AgentConfig                   `mapstructure:"agent"`
+	Controller           ControllerConfig              `mapstructure:"controller"`
+	MySQL                MySQLConfig                   `mapstructure:"mysql"`
+	SQLite               SQLiteConfig                  `mapstructure:"sqlite"`
+	CAdvisor             ServiceConfig                 `mapstructure:"cadvisor"`
+	InfluxDB             ServiceConfig                 `mapstructure:"influxdb"`
+	Network              NetworkConfig                 `mapstructure:"network"`
+	Registry             RegistryConfig                `mapstructure:"registry"`
+	Ksimc                KsimcConfig                   `mapstructure:"ksimc"`
+	NodeProWhiteComList  NodeProWhiteComListConfig     `mapstructure:"nodeprowhitecomlist"`
+	NetworkProcWhitelist NetworkProcessWhitelistConfig `mapstructure:"network_proc_whitelist"`
+	Alert                AlertConfig                   `mapstructure:"alert"`
+	Perf                 PerfConfig                    `mapstructure:"perf"`
+}
+
+type ProcessInfo struct {
+	PID       int
+	ExePath   string
+	StartTime time.Time

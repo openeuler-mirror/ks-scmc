@@ -21,3 +21,9 @@ type RuntimeAuditContainerName struct {
 	UpdatedAt      int64  `gorm:"autoUpdateTime"`
 }
 
+func (RuntimeAuditContainerName) TableName() string {
+	return "runtime_audit_container_names"
+}
+
+// RuntimeAuditImageTarget 审计用镜像 ID→展示串（name:version）。
+type RuntimeAuditImageTarget struct {

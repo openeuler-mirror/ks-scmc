@@ -93,3 +93,11 @@ local_build() {
 	cp -aR $build_base_dir/SRPMS/${pkgname}-${version}-${release}*.src.rpm ${resultdir}
 	cp -aR $build_base_dir/RPMS/$arch/${pkgname}-${version}-${release}.*.rpm ${resultdir}
 }
+
+# Container build: run rpmbuild inside build:v1 container with project code mounted
+container_build() {
+	if ! docker image inspect "$container_build_image" &>/dev/null; then
+		echo "Build image $container_build_image not found. Run: $0 --build-image"
+		exit 1
+	fi
+

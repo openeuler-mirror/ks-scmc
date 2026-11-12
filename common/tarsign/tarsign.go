@@ -778,3 +778,8 @@ func selectHash(algo string) (hash.Hash, error) {
 	}
 }
 
+func verifySignature(digest, sig, pubKeyPEM []byte, sigAlgo string) error {
+	pub, err := parsePublicKey(pubKeyPEM)
+	if err != nil {
+		return err
+	}

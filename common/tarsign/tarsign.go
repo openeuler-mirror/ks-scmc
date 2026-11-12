@@ -818,3 +818,9 @@ func verifySignature(digest, sig, pubKeyPEM []byte, sigAlgo string) error {
 		if !ok {
 			return errors.New("sm2 需要 SM2 公钥")
 		}
+		if !sm2Pub.Verify(digest, sig) {
+			return errors.New("SM2 验签失败")
+		}
+		return nil
+	default:
+		return fmt.Errorf("不支持的签名算法: %s", sigAlgo)

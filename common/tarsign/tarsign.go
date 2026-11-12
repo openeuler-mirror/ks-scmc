@@ -246,3 +246,9 @@ func GetTarDigest(path string) (string, error) {
 			// 未签名，计算整个文件
 			_, _ = f.Seek(0, io.SeekStart)
 			h := sha256.New()
+			if _, err = io.Copy(h, f); err != nil {
+				return "", err
+			}
+			return hex.EncodeToString(h.Sum(nil)), nil
+		}
+		return "", err

@@ -84,3 +84,9 @@ func writeJSON(w http.ResponseWriter, v interface{}) {
 func errString(err error) string {
 	if err == nil {
 		return ""
+	}
+	return err.Error()
+}
+
+func dumpProfileToFile(profileName, suffix string) (string, error) {
+	dir := Config.Perf.HeapDumpDir

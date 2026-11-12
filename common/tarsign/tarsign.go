@@ -881,3 +881,9 @@ func GenKey(keyPath, certPath, algo string, days int) error {
 	switch algo {
 	case "rsa":
 		return genKeyRSA(keyPath, certPath, days)
+	case "sm2":
+		return genKeySM2(keyPath, certPath, days)
+	default:
+		return fmt.Errorf("不支持的算法: %s，请使用 rsa 或 sm2", algo)
+	}
+}

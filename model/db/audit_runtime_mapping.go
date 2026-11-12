@@ -281,3 +281,8 @@ func ResolveImageAuditTarget(ids []int64) string {
 		}
 	}
 	if len(needFB) > 0 {
+		imgs, err := QueryImageByIDs(needFB)
+		if err != nil {
+			log.Warnf("ResolveImageAuditTarget fallback image_infos err=%v", err)
+		}
+		for _, img := range imgs {

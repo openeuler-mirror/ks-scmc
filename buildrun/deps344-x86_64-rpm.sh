@@ -142,3 +142,9 @@ main() {
     echo "所有包下载完成！"
 }
 
+# 执行主逻辑：check = 仅校验本地目录，不访问 URL
+if [[ "${1:-}" == "check" ]]; then
+    check_deps_local
+else
+    main
+fi

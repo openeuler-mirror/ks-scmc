@@ -195,3 +195,31 @@ rm -rf %{_datadir}/ks-scmc
 - KYOS-F: Fix container list cpu/memory usage (#57413)
 
 * Mon Jun 27 2022 Haotian Chen <chenhaotian@kylinos.com.cn> - 1.0.2-3.ky3
+- KYOS-F: Fix string args checking (#56642 #56792)
+- KYOS-F: Fix warn log format, allow only one cron task (#55827)
+- KYOS-F: Fix error handling when removing container backup (#56714)
+- KYOS-F: Optimize image management (#56592 #56808)
+- KYOS-F: Optimize deploy scripts (#56690)
+- KYOS-F: Optmize method of calculate CPU usage (#56698)
+
+* Tue Jun 14 2022 Haotian Chen <chenhaotian@kylinos.com.cn> - 1.0.2-2.ky3
+- KYOS-F: Fix manipulate opensnitch rules errors (#56692)
+- KYOS-F: update password no permission error (#56693)
+
+* Tue Jun 7 2022 Haotian Chen <chenhaotian@kylinos.com.cn> - 1.0.2-1.ky3
+- KYOS-F: Fix cannot login with user secadm (#55825)
+- KYOS-F: Fix container list display wrong start time, disk usage (#55882 #56020)
+- KYOS-F: Fix container cannot set memory limit (#55824)
+- KYOS-F: Fix remove container failed returns no error (#56029)
+- KYOS-F: Container basic/security setting need different permission (#55988)
+- KYOS-F: Fix resume container backup error because of ip conflict (#55887)
+
+* Sat May 21 2022 Haotian Chen <chenhaotian@kylinos.com.cn> - 1.0.1-1.ky3
+- KYOS-F: security settings (file protection, process whitelist). (#54582 #54770)
+- KYOS-F: security settings (net-process whitelist, iptables rules). (#54288 #53553)
+- KYOS-F: security settings (container control authz plugin). (#54542)
+- KYOS-F: runtime/warn log rpcs. (#52978)
+- KYOS-F: user/role/permission management rpcs. (#53473)
+
+* Wed Apr 20 2022 Haotian Chen <chenhaotian@kylinos.com.cn> - 1.0.0-1.ky3
+- KYOS-F: initial setup for ks-scmc. (#48150)

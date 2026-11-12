@@ -37,3 +37,9 @@ func (c *CAdvisorMetricsClient) FetchContainerStatsOnce(ctx context.Context) (ma
 	requestURL := strings.TrimSpace(c.cadvisorBaseURL) + ContainersStatsRequestStatsCountOnePath
 	body, err := c.httpClient.Get(ctx, requestURL)
 	if err != nil {
+		return nil, err
+	}
+
+	return decodeContainerInfoMap(body)
+}
+

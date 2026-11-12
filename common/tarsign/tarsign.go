@@ -564,3 +564,9 @@ func SignV2(path string, privKey PrivateKey, hashAlgo HashAlgo, sigAlgo SigAlgo,
 	if err != nil {
 		return err
 	}
+	defer f.Close()
+
+	var size int64
+	signed, _ := IsSigned(f)
+	if signed {
+		foot, err := ParseFooter(f)

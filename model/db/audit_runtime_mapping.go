@@ -38,3 +38,9 @@ type RuntimeAuditImageTarget struct {
 func (RuntimeAuditImageTarget) TableName() string {
 	return "runtime_audit_image_targets"
 }
+
+// ImageAuditDisplay 与审计 Target 展示规则一致。
+func ImageAuditDisplay(name, version string) string {
+	name = strings.TrimSpace(name)
+	version = strings.TrimSpace(version)
+	if name == "" {

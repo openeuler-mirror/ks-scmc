@@ -40,3 +40,8 @@ func (c *HTTPClient) Get(ctx context.Context, requestURL string) ([]byte, error)
 		return nil, err
 	}
 
+	resp, err := c.inner.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()

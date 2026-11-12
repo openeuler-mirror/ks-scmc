@@ -4,3 +4,9 @@
 
 ## 1. 本次功能点（测什么）
 
+最新提交新增了以下能力：
+
+- 可选开启 `pprof` HTTP 服务（默认监听 `127.0.0.1:6060`）
+- 新增两个排查端点：
+  - `/debug/leak/heap`：落盘 heap profile（`.pprof`）
+  - `/debug/leak/goroutine`：落盘 goroutine 栈（`.txt`）

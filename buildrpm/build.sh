@@ -230,3 +230,12 @@ parse_args() {
 	while [[ $# -gt 0 ]]; do
 		case "$1" in
 			--build-type=*)
+				build_type="${1#*=}"
+				shift
+				;;
+			--local)
+				build_type="local"
+				shift
+				;;
+			--mock)
+				build_type="mock"

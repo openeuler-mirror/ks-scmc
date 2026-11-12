@@ -73,3 +73,9 @@ type HashAlgo string
 const (
 	HashSHA256 HashAlgo = "sha256"
 	HashSHA512 HashAlgo = "sha512"
+	HashSM3    HashAlgo = "sm3"
+)
+
+// SigAlgo 签名算法
+type SigAlgo string
+

@@ -344,3 +344,9 @@ func ComputeBinaryHashes(tarPath string, hashAlgo HashAlgo, protectedPaths []str
 			continue
 		}
 
+		// 对 tar 头部名称做与待保护路径一致的归一化处理
+		name := strings.TrimPrefix(hdr.Name, "/")
+		name = strings.TrimPrefix(name, "./")
+		name = path.Clean(name)
+		if name == "" || name == "." {
+			// 理论上不会命中受保护文件，直接丢弃内容

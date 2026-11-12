@@ -396,3 +396,9 @@ func VerifyFromFile(path, keyPath string) error {
 // Verify 使用公钥验签。pubKey 为 PEM 格式的 RSA 公钥或 X.509 证书
 // 使用流式计算摘要，避免大文件 OOM
 func Verify(path string, pubKey []byte) error {
+	f, err := os.Open(path)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+

@@ -142,3 +142,9 @@ func MarkRuntimeAuditContainersDeleted(nodeID int64, containerIDs []string) erro
 		return err
 	}
 	now := time.Now().Unix()
+	seen := make(map[string]struct{})
+	for _, cid := range containerIDs {
+		if cid == "" {
+			continue
+		}
+		row, ok := findRuntimeAuditContainerRow(db, nodeID, cid)

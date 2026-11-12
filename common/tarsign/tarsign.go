@@ -379,3 +379,9 @@ func ComputeBinaryHashes(tarPath string, hashAlgo HashAlgo, protectedPaths []str
 		if len(found) == len(targets) {
 			break
 		}
+	}
+
+	return result, nil
+}
+
+// VerifyFromFile 使用公钥文件验签

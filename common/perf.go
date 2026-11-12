@@ -27,3 +27,8 @@ func StartPerfTools(serviceMode string) {
 
 		if Config.Perf.BlockProfileRate > 0 {
 			runtime.SetBlockProfileRate(Config.Perf.BlockProfileRate)
+		}
+		if Config.Perf.MutexProfileFraction > 0 {
+			runtime.SetMutexProfileFraction(Config.Perf.MutexProfileFraction)
+		}
+

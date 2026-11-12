@@ -256,3 +256,55 @@ func getClockTicks() int64 {
 }
 
 func getProcessStartTime(pid int) (time.Time, error) {
+	data, err := ioutil.ReadFile(fmt.Sprintf("/proc/%d/stat", pid))
+	if err != nil {
+		return time.Time{}, err
+	}
+
+	pidStr := string(data)
+	end := strings.LastIndex(pidStr, ")")
+	if end == -1 {
+		return time.Time{}, fmt.Errorf("invalid stat format")
+	}
+
+	fields := strings.Fields(pidStr[end+1:])
+	if len(fields) < 20 {
+		return time.Time{}, fmt.Errorf("invalid stat format")
+	}
+
+	clkTicks, err := strconv.ParseInt(fields[19], 10, 64)
+	if err != nil {
+		return time.Time{}, err
+	}
+
+	clkTCK := getClockTicks()
+	bootTime, err := getSystemBootTime()
+	if err != nil {
+		return time.Time{}, err
+	}
+	return bootTime.Add(time.Duration(clkTicks*1000/clkTCK) * time.Millisecond), nil
+}
+
+func getProcessUID(pid int) (string, error) {
+	statusFile := fmt.Sprintf("/proc/%d/status", pid)
+	data, err := ioutil.ReadFile(statusFile)
+	if err != nil {
+		return "", err
+	}
+
+	scanner := bufio.NewScanner(bytes.NewReader(data))
+	for scanner.Scan() {
+		if strings.HasPrefix(scanner.Text(), "Uid:") {
+			fields := strings.Fields(scanner.Text())
+			if len(fields) >= 2 {
+				return fields[1], nil
+			}
+		}
+	}
+	return "", fmt.Errorf("UID not found")
+}
+
+func isGUIProcess(exePath string) bool {
+	keywords := []string{
+		"Xorg", "lightdm", "gdm", "sddm", "gnome-shell", "kwin",
+		"mate-session", "xfce4-session", "kiran-session", "marco", "caja",

@@ -95,3 +95,9 @@ func dumpProfileToFile(profileName, suffix string) (string, error) {
 	}
 	if err := os.MkdirAll(dir, 0o755); err != nil {
 		return "", err
+	}
+
+	ts := time.Now().Format("20060102-150405.000")
+	path := filepath.Join(dir, fmt.Sprintf("%s-%s-%s%s", profileName, ts, hostnameShort(), suffix))
+
+	f, err := os.Create(path)

@@ -85,3 +85,8 @@ curl -s http://127.0.0.1:6060/debug/pprof/cmdline
 
 ```bash
 mkdir -p /tmp/ks-scmc-pprof
+curl -s http://127.0.0.1:6060/debug/leak/heap
+ls -la /tmp/ks-scmc-pprof/
+```
+
+期望：

@@ -33,3 +33,8 @@ type RuntimeAuditImageTarget struct {
 	DeletedAt int64  `gorm:"column:deleted_at"`
 	CreatedAt int64  `gorm:"autoCreateTime"`
 	UpdatedAt int64  `gorm:"autoUpdateTime"`
+}
+
+func (RuntimeAuditImageTarget) TableName() string {
+	return "runtime_audit_image_targets"
+}

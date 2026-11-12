@@ -749,3 +749,8 @@ func signDigest(privKey PrivateKey, digest []byte, sigAlgo SigAlgo, hashAlgo Has
 			return nil, fmt.Errorf("RSA 不支持的摘要: %s", hashAlgo)
 		}
 		switch sigAlgo {
+		case SigPKCS1v15:
+			return rsa.SignPKCS1v15(rand.Reader, priv, h, digest)
+		case SigPSS:
+			return rsa.SignPSS(rand.Reader, priv, h, digest, &rsa.PSSOptions{SaltLength: rsa.PSSSaltLengthEqualsHash})
+		default:

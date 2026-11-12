@@ -529,3 +529,9 @@ func Sign(path string, privKey PrivateKey, hashAlgo HashAlgo, sigAlgo SigAlgo) e
 			return err
 		}
 		digest1, err := computeDigestStream(f, size, string(hashAlgo))
+		if err != nil {
+			return err
+		}
+		sig, metaBytes, newFoot := buildSignatureV1(privKey, digest1, hashAlgo, sigAlgo)
+		if err = f.Truncate(size); err != nil {
+			return err

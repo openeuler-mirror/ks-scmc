@@ -514,3 +514,54 @@ func LoadConfig(path string) error {
 func SuperUser() bool {
 	return Config.Controller.SuperUser
 }
+
+func GetExecutableFilesInDir(dirPath string) ([]string, error) {
+	var executables []string
+
+	entries, err := ioutil.ReadDir(dirPath)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, entry := range entries {
+		fullPath := filepath.Join(dirPath, entry.Name())
+
+		fileInfo, err := os.Stat(fullPath)
+		if err != nil {
+			continue
+		}
+
+		// 排除目录和非常规文件
+		if !fileInfo.Mode().IsRegular() {
+			continue
+		}
+
+		// 检查是否有任意执行权限位被设置
+		if fileInfo.Mode().Perm()&0o111 != 0 {
+			executables = append(executables, fullPath)
+		}
+	}
+
+	return executables, nil
+}
+
+func GetNodeProWhiteListPaths() []string {
+	log.Debugf("GetNodeProWhiteListPaths %v %v", len(Config.NodeProWhiteComList.Path), Config.NodeProWhiteComList.Path)
+	var paths []string
+
+	if len(Config.NodeProWhiteComList.Path) == 0 {
+		processes, err := getBootProcesses()
+		if err != nil {
+			fmt.Println("Error:", err)
+			return nil
+		}
+
+		for _, p := range processes {
+			fmt.Printf("%d\t%s\t%s\n", p.PID, p.User, p.ExePath)
+			paths = append(paths, p.ExePath)
+		}
+
+		systemdPaths, err := GetExecutableFilesInDir("/usr/lib/systemd")
+
+		if err != nil {
+			log.Errorf("Failed to get executable files: %v", err)

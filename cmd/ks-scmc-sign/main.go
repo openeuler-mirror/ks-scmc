@@ -130,3 +130,8 @@ func runSign(args []string) {
 
 	path := *keyPath
 	if path == "" {
+		path = common.Config.Controller.ImageSignKey
+	}
+	if path == "" {
+		failErr("必须指定 -key 参数或配置 controller.image-sign-key", fmt.Errorf("image-sign-key not configured"))
+	}

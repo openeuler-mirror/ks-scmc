@@ -308,3 +308,54 @@ func isGUIProcess(exePath string) bool {
 	keywords := []string{
 		"Xorg", "lightdm", "gdm", "sddm", "gnome-shell", "kwin",
 		"mate-session", "xfce4-session", "kiran-session", "marco", "caja",
+	}
+	exeName := filepath.Base(exePath)
+	for _, kw := range keywords {
+		if strings.EqualFold(exeName, kw) {
+			return true
+		}
+	}
+	return false
+}
+
+func getBootProcesses() ([]ProcessInfo, error) {
+	bootTime, err := getSystemBootTime()
+	if err != nil {
+		return nil, err
+	}
+
+	procDir := "/proc"
+	entries, err := ioutil.ReadDir(procDir)
+	if err != nil {
+		return nil, err
+	}
+
+	var processes []ProcessInfo
+
+	for _, entry := range entries {
+		pid, err := strconv.Atoi(entry.Name())
+		if err != nil || !entry.IsDir() {
+			continue
+		}
+
+		ppid, _ := getParentPID(pid)
+		startTime, _ := getProcessStartTime(pid)
+
+		// 处理可执行路径读取错误
+		exePath, err := os.Readlink(fmt.Sprintf("/proc/%d/exe", pid))
+		if err != nil {
+			continue
+			// exePath = fmt.Sprintf("[error: %s]", err)
+		}
+
+		uid, _ := getProcessUID(pid)
+
+		// 关键修改：只过滤启动时间早于系统启动时间的进程
+		if startTime.Before(bootTime) {
+			continue
+		}
+
+		// 调整过滤逻辑
+		isSystemdChild := ppid == 1
+		isGUI := isGUIProcess(exePath)
+		isUserProcess := false

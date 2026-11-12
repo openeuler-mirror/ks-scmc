@@ -15,3 +15,9 @@ import (
 
 const defaultConfigPath = "/etc/ks-scmc/server.toml"
 
+func main() {
+	if len(os.Args) < 2 {
+		usage()
+		os.Exit(1)
+	}
+

@@ -21,3 +21,9 @@
 
 ---
 
+## 2. 测试前准备
+
+### 2.1 环境要求
+
+- 测试机可启动 `ks-scmc-server`（systemd 方式）
+- 可访问配置文件 `/etc/ks-scmc/server.toml`

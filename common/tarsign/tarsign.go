@@ -385,3 +385,9 @@ func ComputeBinaryHashes(tarPath string, hashAlgo HashAlgo, protectedPaths []str
 }
 
 // VerifyFromFile 使用公钥文件验签
+func VerifyFromFile(path, keyPath string) error {
+	pubKey, err := ioutil.ReadFile(keyPath)
+	if err != nil {
+		return fmt.Errorf("读取公钥失败: %w", err)
+	}
+	return Verify(path, pubKey)

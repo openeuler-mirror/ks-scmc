@@ -194,3 +194,9 @@ func ResolveContainerNamesForNode(nodeID int64, containerIDs []string) map[strin
 	}
 	return out
 }
+
+func UpsertRuntimeAuditImageTarget(imageID int64, display string) error {
+	if imageID <= 0 {
+		return nil
+	}
+	db, err := getAuditMappingConn()

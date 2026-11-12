@@ -96,3 +96,9 @@ check_deps_local() {
         if [[ ! -f "$fn" || ! -s "$fn" ]]; then
             missing+=("$fn")
         fi
+    done
+    if [[ ${#missing[@]} -gt 0 ]]; then
+        echo "[ERROR] 依赖目录缺少或文件为空: $(pwd)"
+        echo "请将以下 RPM 放入该目录（共需 ${#RPM_URLS[@]} 个，缺 ${#missing[@]} 个）:"
+        for m in "${missing[@]}"; do
+            echo "  - $m"

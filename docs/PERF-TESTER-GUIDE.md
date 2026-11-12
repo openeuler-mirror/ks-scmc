@@ -131,3 +131,8 @@ ls -la /tmp/ks-scmc-pprof/
 ## 5. 验收标准（通过/失败判定）
 
 通过标准（全部满足）：
+
+- 服务启动后能看到 `perf enabled` 日志
+- `/debug/pprof/` 可访问
+- `/debug/leak/heap` 返回 JSON 且产出 `.pprof` 文件
+- `/debug/leak/goroutine` 返回 JSON 且产出 `.txt` 文件

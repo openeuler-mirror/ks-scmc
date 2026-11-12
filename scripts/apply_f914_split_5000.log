@@ -3,3 +3,4 @@
 [09:32:28] changed_paths=280
 [09:32:28] allocated_parts_sum=5000 target=5000
 [09:33:00] [50/5000] last=1d8e0d48a108 path=buildrpm/build.sh part=32/32
+[09:33:40] [100/5000] last=76964acb4eff path=buildrun/deps344-x86_64-rpm.sh part=13/26

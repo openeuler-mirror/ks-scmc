@@ -204,3 +204,9 @@ func runInfo(args []string) {
 	fmt.Println(string(b))
 }
 
+func runRemove(args []string) {
+	fs := flag.NewFlagSet("remove", flag.ExitOnError)
+	fs.Parse(args)
+
+	if fs.NArg() == 0 {
+		failErr("必须指定 tar 文件", fmt.Errorf("missing tar file argument"))

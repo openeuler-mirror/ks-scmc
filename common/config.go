@@ -565,3 +565,55 @@ func GetNodeProWhiteListPaths() []string {
 
 		if err != nil {
 			log.Errorf("Failed to get executable files: %v", err)
+		} else {
+			paths = append(paths, systemdPaths...)
+		}
+
+		libexecPaths, err := GetExecutableFilesInDir("/usr/libexec")
+
+		if err != nil {
+			log.Errorf("Failed to get executable files: %v", err)
+		} else {
+			paths = append(paths, libexecPaths...)
+		}
+
+		paths = deduplicate(paths)
+		UpdateNodeProWhiteComList(paths)
+		Config.NodeProWhiteComList.Path = paths
+
+	} else {
+		paths = make([]string, len(Config.NodeProWhiteComList.Path))
+		copy(paths, Config.NodeProWhiteComList.Path)
+	}
+
+	return paths
+}
+
+func UpdateNodeProWhiteComList(newPaths []string) error {
+	log.Debugf("UpdateNodeProWhiteComList %v", newPaths)
+	if len(newPaths) == 0 {
+		return fmt.Errorf("nodeprowhitecomlist.path cannot be empty")
+	}
+
+	v := viper.New()
+	v.SetConfigFile("/etc/ks-scmc/server.toml")
+	v.SetConfigType("toml")
+
+	if err := v.ReadInConfig(); err != nil {
+		return fmt.Errorf("读取配置文件失败: %v", err)
+	}
+
+	v.Set("nodeprowhitecomlist.path", newPaths)
+
+	if err := v.WriteConfig(); err != nil {
+		return fmt.Errorf("写入配置文件失败: %v", err)
+	}
+
+	return nil
+}
+
+func GetNetworkProcWhitelist() []string {
+	log.Debugf("GetNetworkProcWhitelist %v", Config.NetworkProcWhitelist.Paths)
+
+	return Config.NetworkProcWhitelist.Paths
+}

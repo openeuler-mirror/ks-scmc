@@ -223,3 +223,9 @@ func Info(path string) (*Metadata, error) {
 			return nil, ErrNoFooter
 		}
 		return nil, err
+	}
+
+	_, meta, _, err := ReadSignatureAndMeta(f, foot)
+	if err != nil {
+		return nil, err
+	}

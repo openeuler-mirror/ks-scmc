@@ -90,3 +90,9 @@ ls -la /tmp/ks-scmc-pprof/
 ```
 
 期望：
+
+- 返回 JSON，包含 `"profile":"heap"`
+- 目录下新增 `heap-*.pprof`
+
+### 步骤 5：验证 goroutine 落盘端点
+

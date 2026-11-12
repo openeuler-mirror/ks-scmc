@@ -633,3 +633,9 @@ func validateSignAlgo(privKey PrivateKey, hashAlgo HashAlgo, sigAlgo SigAlgo) er
 // computeKeyID 计算公钥标识
 func computeKeyID(privKey PrivateKey) string {
 	switch k := privKey.(type) {
+	case *rsa.PrivateKey:
+		h := sha256.Sum256(k.N.Bytes())
+		return hex.EncodeToString(h[:])
+	case *sm2.PrivateKey:
+		pubBytes := elliptic.Marshal(k.Curve, k.X, k.Y)
+		h := sha256.Sum256(pubBytes)

@@ -58,3 +58,12 @@ mock_build() {
 	mock -r mock-${ky_version}-${arch} --rebuild "$srpmpath" --resultdir "$resultdir"
 	if [[ $? -ne 0 ]];then
 		echo "mock build rpm failed"
+		exit
+	fi
+
+}
+
+local_build() {
+
+	build_base_dir=/root/rpmbuild
+	cat /etc/.kyinfo | grep milestone | grep '3.0-' > /dev/null

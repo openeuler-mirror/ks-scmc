@@ -101,3 +101,55 @@ func (m *MySQLConfig) DSN() (string, error) {
 
 type SQLiteConfig struct {
 	Path string `mapstructure:"path"`
+}
+
+type LogConfig struct {
+	Basedir string `mapstructure:"basedir"`
+	Level   string `mapstructure:"level"`
+	Stdout  bool   `mapstructure:"stdout"`
+}
+
+type ServiceConfig struct {
+	Addr     string `mapstructure:"addr"`
+	Username string `mapstructure:"username"`
+	Password string `mapstructure:"password"`
+}
+
+// DecryptPassword 解密密码字段
+func (s *ServiceConfig) DecryptPassword() (string, error) {
+	passwordDe, err := aes.Decrypt(s.Password)
+	if err != nil {
+		return "", err
+	}
+	return string(passwordDe), nil
+}
+
+type TLSConfig struct {
+	Enable     bool   `mapstructure:"enable"`
+	CA         string `mapstructure:"ca"`
+	ServerCert string `mapstructure:"server_cert"`
+	ServerKey  string `mapstructure:"server_key"`
+}
+
+type VirtualNicConfig struct {
+	Name         string `mapstructure:"name"`
+	IpAddr       string `mapstructure:"ipaddr"`
+	ContainerIfs string `mapstructure:"container_ifs"`
+}
+
+type NetworkConfig struct {
+	IPtablesJsonFile string `mapstructure:"iptables_json_file"`
+	IPtablesPath     string `mapstructure:"iptables_path"`
+}
+
+type RegistryConfig struct {
+	Secure   bool   `mapstructure:"secure"`
+	Addr     string `mapstructure:"addr"`
+	Username string `mapstructure:"username"`
+	Password string `mapstructure:"password"`
+}
+
+// KsimcConfig：与内核 ksimc 通过字符设备通信（默认 /dev/ksimc）。
+type KsimcConfig struct {
+	Device string `mapstructure:"device"`
+}

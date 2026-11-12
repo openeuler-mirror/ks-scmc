@@ -110,3 +110,11 @@ container_build() {
 		-v "${resultdir_abs}:/result:rw" \
 		-e "pkgname=$pkgname" \
 		-e "version=$version" \
+		-e "release=$release" \
+		-e "use_git_code=$use_git_code" \
+		-e "arch=$arch" \
+		-w /workspace \
+		"$container_build_image" \
+		/bin/bash -c '
+			set -x
+			build_base_dir=/root/rpmbuild

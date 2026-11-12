@@ -876,3 +876,8 @@ func parsePublicKey(pemData []byte) (interface{}, error) {
 // algo: "rsa" 或 "sm2"
 func GenKey(keyPath, certPath, algo string, days int) error {
 	if days <= 0 {
+		days = 365
+	}
+	switch algo {
+	case "rsa":
+		return genKeyRSA(keyPath, certPath, days)

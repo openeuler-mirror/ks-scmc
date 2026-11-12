@@ -581,3 +581,9 @@ func SignV2(path string, privKey PrivateKey, hashAlgo HashAlgo, sigAlgo SigAlgo,
 		stat, err := f.Stat()
 		if err != nil {
 			return err
+		}
+		size = stat.Size()
+	}
+
+	// 计算 tar 部分摘要（digest1）
+	digest1, err := computeDigestStream(f, size, string(hashAlgo))

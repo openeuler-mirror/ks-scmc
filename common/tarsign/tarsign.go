@@ -523,3 +523,9 @@ func Sign(path string, privKey PrivateKey, hashAlgo HashAlgo, sigAlgo SigAlgo) e
 		foot, err := ParseFooter(f)
 		if err != nil {
 			return err
+		}
+		size, err = tarSize(f, foot)
+		if err != nil {
+			return err
+		}
+		digest1, err := computeDigestStream(f, size, string(hashAlgo))

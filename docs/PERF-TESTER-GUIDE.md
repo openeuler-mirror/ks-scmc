@@ -160,3 +160,8 @@ journalctl -u ks-scmc-server -n 100 --no-pager
 
 处理：
 
+- 检查 `[perf] enable` 是否为 `true`
+- 检查 `host/port` 是否配置正确且未被占用
+- 重启服务后重新验证
+
+### 6.2 `/debug/leak/heap` 返回错误

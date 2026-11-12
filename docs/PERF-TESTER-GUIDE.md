@@ -119,3 +119,9 @@ sleep 2
 
 journalctl -u ks-scmc-server -n 20 --no-pager | grep -i "heap dump"
 ls -la /tmp/ks-scmc-pprof/
+```
+
+期望：
+
+- 日志出现 `heap dump saved`
+- 目录中新增一份新的 `heap-*.pprof`

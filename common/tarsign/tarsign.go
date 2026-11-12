@@ -281,3 +281,9 @@ func ComputeBinaryHashes(tarPath string, hashAlgo HashAlgo, protectedPaths []str
 	}
 	defer f.Close()
 
+	stat, err := f.Stat()
+	if err != nil {
+		return nil, err
+	}
+
+	// 计算 tar 数据区大小（排除签名区），兼容未签名文件

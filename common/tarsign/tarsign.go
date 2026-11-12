@@ -824,3 +824,9 @@ func verifySignature(digest, sig, pubKeyPEM []byte, sigAlgo string) error {
 		return nil
 	default:
 		return fmt.Errorf("不支持的签名算法: %s", sigAlgo)
+	}
+}
+
+func parsePublicKey(pemData []byte) (interface{}, error) {
+	block, _ := pem.Decode(pemData)
+	if block == nil {

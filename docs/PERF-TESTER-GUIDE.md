@@ -154,3 +154,9 @@ ls -la /tmp/ks-scmc-pprof/
 排查：
 
 ```bash
+ss -lntp | grep 6060
+journalctl -u ks-scmc-server -n 100 --no-pager
+```
+
+处理：
+

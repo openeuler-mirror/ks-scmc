@@ -298,3 +298,9 @@ func ComputeBinaryHashes(tarPath string, hashAlgo HashAlgo, protectedPaths []str
 	} else {
 		return nil, err
 	}
+
+	// 二进制文件 hash 固定使用 md5，与签名使用的摘要算法解耦
+	h := md5.New()
+
+	// 预处理待保护路径：构建 tar 内候选路径 -> 原始路径 映射
+	targets := make(map[string]string)

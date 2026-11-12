@@ -239,3 +239,8 @@ func runGenkey(args []string) {
 	if keyOut == "" {
 		failErr("必须指定 -key 参数或配置 controller.image-sign-key", fmt.Errorf("missing -key argument and image-sign-key not configured"))
 	}
+	if certOut == "" {
+		failErr("必须指定 -cert 参数或配置 controller.image-signer", fmt.Errorf("missing -cert argument and image-signer not configured"))
+	}
+
+	err := tarsign.GenKey(keyOut, certOut, *algo, *days)

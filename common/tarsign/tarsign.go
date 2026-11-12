@@ -454,3 +454,9 @@ func Verify(path string, pubKey []byte) error {
 // Remove 移除签名，恢复为纯 tar
 func Remove(path string) error {
 	f, err := os.OpenFile(path, os.O_RDWR, 0)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	foot, err := ParseFooter(f)

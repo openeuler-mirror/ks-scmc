@@ -175,3 +175,62 @@ func QueryImageByIDs(ids []int64) ([]*ImageInfo, error) {
 
 	return data, nil
 }
+
+func QueryImageByNameVersion(name, version string) (*ImageInfo, error) {
+	db, err := getConn()
+	if err != nil {
+		return nil, err
+	}
+
+	var data ImageInfo
+	result := db.First(&data, "name = ? AND version = ?", name, version)
+	if result.Error != nil {
+		if result.Error == ErrRecordNotFound {
+			return nil, nil
+		}
+
+		log.Warnf("query imange name=%v version=%v err=%v", name, version, result.Error)
+		return nil, result.Error
+	} else if result.RowsAffected == 0 {
+		return nil, nil
+	}
+
+	return &data, nil
+}
+
+// GetImageStats returns the number of pending approvals, the number of approvals and the total image size
+func GetImageStats() (*ImageStat, error) {
+	db, err := getConn()
+	if err != nil {
+		return nil, err
+	}
+
+	var data ImageStat
+
+	query := "SUM(file_size) AS total_size, " +
+		"COUNT(file_size) AS total_count, " +
+		"COUNT(IF(approval_status=?, 1, NULL)) AS to_approve_count"
+
+	result := db.Model(&ImageInfo{}).Select(query, ApprovalWait).Scan(&data)
+	if result.Error != nil {
+		log.Warnf("GetImageStats %v", result.Error)
+		return nil, result.Error
+	}
+
+	return &data, nil
+}
+
+func GetImageMap() (map[string]*ImageInfo, error) {
+	dbImages, err := QueryImageByStatus()
+	if err != nil {
+		log.Warnf("query db images err=%v", err)
+		return nil, err
+	}
+
+	data := make(map[string]*ImageInfo, len(dbImages))
+	for _, i := range dbImages {
+		data[i.Name+":"+i.Version] = i
+	}
+
+	return data, nil
+}

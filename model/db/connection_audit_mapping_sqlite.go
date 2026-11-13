@@ -38,3 +38,9 @@ func getAuditMappingConn() (*gorm.DB, error) {
 
 	if err := os.MkdirAll(filepath.Dir(path), 0750); err != nil {
 		return nil, fmt.Errorf("create sqlite dir: %w", err)
+	}
+
+	_db, err := gorm.Open(sqlite.Open(path), &gorm.Config{
+		Logger: logger.New(&gormLogger{}, logger.Config{
+			SlowThreshold: time.Millisecond * 100,
+			LogLevel:      logger.Warn,

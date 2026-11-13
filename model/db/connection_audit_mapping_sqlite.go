@@ -21,3 +21,9 @@ var (
 	auditMappingLock sync.Mutex
 )
 
+// getAuditMappingConn 返回仅承载 runtime_audit_* 映射表的 SQLite 连接（与 MySQL 业务库分离）。
+func getAuditMappingConn() (*gorm.DB, error) {
+	auditMappingLock.Lock()
+	defer auditMappingLock.Unlock()
+
+	if auditMappingDB != nil {

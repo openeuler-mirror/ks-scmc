@@ -69,3 +69,12 @@ func healthCheckLoop() {
 			continue
 		}
 		ctx, cancel := context.WithTimeout(context.Background(), pingTimeout)
+		err = sqlDB.PingContext(ctx)
+		cancel()
+		if err != nil {
+			resetPool(err)
+		}
+	}
+}
+
+func applyPoolSettings(conn *gorm.DB) error {

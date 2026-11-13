@@ -96,3 +96,8 @@ CREATE INDEX IF NOT EXISTS idx_runtime_audit_container_deleted
 )
 
 func ensureAuditMappingSQLiteSchema(db *gorm.DB) error {
+	for _, stmt := range []string{
+		sqlCreateRuntimeAuditContainerNames,
+		sqlCreateRuntimeAuditImageTargets,
+		sqlIndexRuntimeAuditContainerDeleted,
+	} {

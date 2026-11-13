@@ -32,3 +32,9 @@ func getAuditMappingConn() (*gorm.DB, error) {
 
 	path := strings.TrimSpace(common.Config.SQLite.Path)
 	if path == "" {
+		return nil, fmt.Errorf("config sqlite.path is empty: required for audit runtime mapping tables")
+	}
+	path = filepath.Clean(path)
+
+	if err := os.MkdirAll(filepath.Dir(path), 0750); err != nil {
+		return nil, fmt.Errorf("create sqlite dir: %w", err)

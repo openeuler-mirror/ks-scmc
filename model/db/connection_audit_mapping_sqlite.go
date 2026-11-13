@@ -27,3 +27,8 @@ func getAuditMappingConn() (*gorm.DB, error) {
 	defer auditMappingLock.Unlock()
 
 	if auditMappingDB != nil {
+		return auditMappingDB, nil
+	}
+
+	path := strings.TrimSpace(common.Config.SQLite.Path)
+	if path == "" {

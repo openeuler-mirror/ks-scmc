@@ -131,3 +131,12 @@ func getConn() (*gorm.DB, error) {
 
 func closeGormDB(g *gorm.DB) error {
 	sqlDB, err := g.DB()
+	if err != nil {
+		return err
+	}
+	return sqlDB.Close()
+}
+
+func GetConn() (*gorm.DB, error) {
+	return getConn()
+}

@@ -44,3 +44,9 @@ func getAuditMappingConn() (*gorm.DB, error) {
 		Logger: logger.New(&gormLogger{}, logger.Config{
 			SlowThreshold: time.Millisecond * 100,
 			LogLevel:      logger.Warn,
+		}),
+	})
+	if err != nil {
+		return nil, fmt.Errorf("open sqlite %s: %w", path, err)
+	}
+

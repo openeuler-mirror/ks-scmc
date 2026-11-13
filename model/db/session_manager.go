@@ -32,7 +32,7 @@ type _SessionManager struct {
 	_sessionChecker *time.Ticker
 }
 
-var _sessionManagerInstance *_SessionManager = nil
+var _sessionManagerInstance *_SessionManager
 
 func init() {
 	_NewSessionManager()

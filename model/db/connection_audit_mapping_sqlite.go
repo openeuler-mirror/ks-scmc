@@ -50,3 +50,8 @@ func getAuditMappingConn() (*gorm.DB, error) {
 		return nil, fmt.Errorf("open sqlite %s: %w", path, err)
 	}
 
+	sqlDB, err := _db.DB()
+	if err != nil {
+		return nil, err
+	}
+	sqlDB.SetMaxOpenConns(1) // SQLite 单写；映射访问轻量

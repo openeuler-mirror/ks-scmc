@@ -90,3 +90,9 @@ CREATE TABLE IF NOT EXISTS runtime_audit_image_targets (
   updated_at integer NOT NULL DEFAULT 0,
   PRIMARY KEY (image_id)
 );`
+	sqlIndexRuntimeAuditContainerDeleted = `
+CREATE INDEX IF NOT EXISTS idx_runtime_audit_container_deleted
+  ON runtime_audit_container_names (is_deleted, deleted_at);`
+)
+
+func ensureAuditMappingSQLiteSchema(db *gorm.DB) error {

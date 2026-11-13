@@ -62,9 +62,11 @@ func (p *Paginator) getTotalPages(totalRows, perPage int64) (totalPages int64) {
 	return totalPages
 }
 
+/*
 func (p *Paginator) getOffset() int64 {
 	return (p.CurPage - 1) * p.PerPage
 }
+// */
 
 type Pager struct {
 	PageSize   int64

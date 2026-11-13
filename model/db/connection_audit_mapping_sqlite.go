@@ -61,3 +61,9 @@ func getAuditMappingConn() (*gorm.DB, error) {
 	// 不用 GORM AutoMigrate：SQLite 驱动对复合主键等结构会生成 invalid DDL；与 scripts/etc/sqlite_audit_mapping.sql 一致。
 	if err := ensureAuditMappingSQLiteSchema(_db); err != nil {
 		return nil, err
+	}
+
+	auditMappingDB = _db
+	log.Infof("audit mapping sqlite ready: %s", path)
+	return auditMappingDB, nil
+}

@@ -42,3 +42,18 @@ func (u *UserInfo) UpdatePassword(newPassword string) error {
 		return err
 	}
 
+	u.PasswordEn = newPassword
+	result := db.Save(u)
+	return result.Error
+}
+
+func (u *UserInfo) TryLock() error {
+	db, err := getConn()
+	if err != nil {
+		return err
+	}
+
+	u.FailCnt++
+	if u.FailCnt >= 3 {
+		t := time.Now().Add(time.Minute * 5)
+		u.LockUntil = t.Unix()

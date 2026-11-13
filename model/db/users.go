@@ -57,3 +57,18 @@ func (u *UserInfo) TryLock() error {
 	if u.FailCnt >= 3 {
 		t := time.Now().Add(time.Minute * 5)
 		u.LockUntil = t.Unix()
+		log.Infof("user=%s failcount=%v lock until=%v", u.Username, u.FailCnt, t)
+	}
+	result := db.Save(u)
+	return result.Error
+}
+
+type UserSession struct {
+	ID         int64
+	UserID     int64
+	SessionKey string // UUID
+	Source     string
+	ExpiredAt  int64
+	CreatedAt  int64 `gorm:"autoCreateTime"`
+	UpdatedAt  int64 `gorm:"autoUpdateTime"`
+}

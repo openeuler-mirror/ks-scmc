@@ -73,3 +73,8 @@ const (
 CREATE TABLE IF NOT EXISTS runtime_audit_container_names (
   node_id integer NOT NULL,
   container_id text NOT NULL,
+  container_name text NOT NULL DEFAULT '',
+  is_deleted integer NOT NULL DEFAULT 0,
+  deleted_at integer NOT NULL DEFAULT 0,
+  created_at integer NOT NULL DEFAULT 0,
+  updated_at integer NOT NULL DEFAULT 0,

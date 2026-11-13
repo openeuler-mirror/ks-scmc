@@ -113,3 +113,12 @@ func getConn() (*gorm.DB, error) {
 	}
 
 	if err := applyPoolSettings(_db); err != nil {
+		log.Warnf("access to database/sql: %v", err)
+		_ = closeGormDB(_db)
+		return nil, err
+	}
+
+	if common.Config.MySQL.Debug {
+		db = _db.Debug()
+	} else {
+		db = _db

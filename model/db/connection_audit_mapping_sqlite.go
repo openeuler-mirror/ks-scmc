@@ -67,3 +67,9 @@ func getAuditMappingConn() (*gorm.DB, error) {
 	log.Infof("audit mapping sqlite ready: %s", path)
 	return auditMappingDB, nil
 }
+
+const (
+	sqlCreateRuntimeAuditContainerNames = `
+CREATE TABLE IF NOT EXISTS runtime_audit_container_names (
+  node_id integer NOT NULL,
+  container_id text NOT NULL,

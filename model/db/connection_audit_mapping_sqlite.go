@@ -84,3 +84,9 @@ CREATE TABLE IF NOT EXISTS runtime_audit_container_names (
 CREATE TABLE IF NOT EXISTS runtime_audit_image_targets (
   image_id integer NOT NULL,
   display text NOT NULL DEFAULT '',
+  is_deleted integer NOT NULL DEFAULT 0,
+  deleted_at integer NOT NULL DEFAULT 0,
+  created_at integer NOT NULL DEFAULT 0,
+  updated_at integer NOT NULL DEFAULT 0,
+  PRIMARY KEY (image_id)
+);`

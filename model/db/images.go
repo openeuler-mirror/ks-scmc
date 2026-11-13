@@ -57,3 +57,62 @@ func FindImage(ids []int64) ([]*ImageInfo, error) {
 	if err := db.First(&data, ids).Error; err != nil {
 		log.Warnf("db query images: %v", err)
 		return nil, err
+	}
+
+	return data, nil
+}
+
+func ListImages() ([]*ImageInfo, error) {
+	db, err := getConn()
+	if err != nil {
+		return nil, err
+	}
+
+	var data []*ImageInfo
+	if err := db.Find(&data).Error; err != nil {
+		log.Warnf("db query images: %v", err)
+		return nil, err
+	}
+
+	return data, nil
+}
+
+func CreateImage(i *ImageInfo) (int64, error) {
+	db, err := getConn()
+	if err != nil {
+		return 0, err
+	}
+
+	if err := db.Create(i).Error; err != nil {
+		log.Warnf("db create image %v", err)
+		return 0, translateError(err)
+	}
+
+	log.Debugf("db create image id=%v", i.ID)
+	return i.ID, nil
+}
+
+func RemoveImages(ids []int64) ([]*ImageInfo, error) {
+	db, err := getConn()
+	if err != nil {
+		return nil, err
+	}
+
+	var data []*ImageInfo
+	if err := db.Find(&data, ids).Error; err != nil {
+		log.Warnf("RemoveImages query ids=%v err=%v", ids, err)
+		return nil, err
+	}
+
+	if err := db.Where("id IN ?", ids).Delete(ImageInfo{}).Error; err != nil {
+		log.Warnf("RemoveImages delete ids=%v err=%v", ids, err)
+		return nil, err
+	}
+
+	return data, nil
+}
+
+func UpdateImage(image *ImageInfo) error {
+	db, err := getConn()
+	if err != nil {
+		return err

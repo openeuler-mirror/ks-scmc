@@ -104,3 +104,12 @@ func getConn() (*gorm.DB, error) {
 	_db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{
 		Logger: logger.New(&gormLogger{}, logger.Config{
 			SlowThreshold: time.Millisecond * 100,
+			LogLevel:      logger.Warn,
+		}),
+	})
+	if err != nil {
+		log.Warnf("connect to database: %s, error: %v", dsn, err)
+		return nil, err
+	}
+
+	if err := applyPoolSettings(_db); err != nil {

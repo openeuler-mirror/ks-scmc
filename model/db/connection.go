@@ -87,3 +87,12 @@ func applyPoolSettings(conn *gorm.DB) error {
 	sqlDB.SetConnMaxLifetime(connMaxLifetime)
 	sqlDB.SetConnMaxIdleTime(connMaxIdleTime)
 	return nil
+}
+
+func getConn() (*gorm.DB, error) {
+	lock.Lock()
+	defer lock.Unlock()
+
+	if db != nil {
+		return db, nil
+	}

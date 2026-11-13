@@ -122,3 +122,12 @@ func getConn() (*gorm.DB, error) {
 		db = _db.Debug()
 	} else {
 		db = _db
+	}
+
+	healthOnce.Do(func() { go healthCheckLoop() })
+
+	return db, nil
+}
+
+func closeGormDB(g *gorm.DB) error {
+	sqlDB, err := g.DB()

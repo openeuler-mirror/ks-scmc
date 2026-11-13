@@ -101,3 +101,9 @@ func ensureAuditMappingSQLiteSchema(db *gorm.DB) error {
 		sqlCreateRuntimeAuditImageTargets,
 		sqlIndexRuntimeAuditContainerDeleted,
 	} {
+		if err := db.Exec(stmt).Error; err != nil {
+			return fmt.Errorf("sqlite audit mapping schema: %w", err)
+		}
+	}
+	return nil
+}

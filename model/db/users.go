@@ -28,3 +28,17 @@ type UserInfo struct {
 	UpdatedAt  int64 `gorm:"autoUpdateTime"`
 }
 
+func (UserInfo) TableName() string {
+	return "user_infos"
+}
+
+func (u *UserInfo) CheckPassword(input string) error {
+	return bcrypt.CompareHashAndPassword([]byte(u.PasswordEn), []byte(input))
+}
+
+func (u *UserInfo) UpdatePassword(newPassword string) error {
+	db, err := getConn()
+	if err != nil {
+		return err
+	}
+

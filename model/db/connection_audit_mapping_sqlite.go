@@ -55,3 +55,9 @@ func getAuditMappingConn() (*gorm.DB, error) {
 		return nil, err
 	}
 	sqlDB.SetMaxOpenConns(1) // SQLite 单写；映射访问轻量
+	sqlDB.SetMaxIdleConns(1)
+	sqlDB.SetConnMaxLifetime(time.Hour)
+
+	// 不用 GORM AutoMigrate：SQLite 驱动对复合主键等结构会生成 invalid DDL；与 scripts/etc/sqlite_audit_mapping.sql 一致。
+	if err := ensureAuditMappingSQLiteSchema(_db); err != nil {
+		return nil, err

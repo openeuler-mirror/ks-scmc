@@ -96,3 +96,11 @@ func getConn() (*gorm.DB, error) {
 	if db != nil {
 		return db, nil
 	}
+
+	dsn, err := common.Config.MySQL.DSN()
+	if err != nil {
+		return nil, err
+	}
+	_db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{
+		Logger: logger.New(&gormLogger{}, logger.Config{
+			SlowThreshold: time.Millisecond * 100,

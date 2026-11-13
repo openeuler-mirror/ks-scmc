@@ -15,3 +15,9 @@ import (
 
 	"scmc/common"
 )
+
+var (
+	auditMappingDB   *gorm.DB
+	auditMappingLock sync.Mutex
+)
+

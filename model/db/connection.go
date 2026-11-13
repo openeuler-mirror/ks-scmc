@@ -78,3 +78,12 @@ func healthCheckLoop() {
 }
 
 func applyPoolSettings(conn *gorm.DB) error {
+	sqlDB, err := conn.DB()
+	if err != nil {
+		return err
+	}
+	sqlDB.SetMaxOpenConns(10)
+	sqlDB.SetMaxIdleConns(10)
+	sqlDB.SetConnMaxLifetime(connMaxLifetime)
+	sqlDB.SetConnMaxIdleTime(connMaxIdleTime)
+	return nil
